@@ -1,0 +1,53 @@
+{
+  "pages": [
+    "pages/auth/auth",
+    "pages/activity_list/activity_list",
+    "pages/accounting/accounting",
+    "pages/history/history",
+    "pages/clear_data/clear_data",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "navigationBarTitleText": "俱乐部小程序",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundTextStyle": "light",
+    "backgroundColor": "#f5f5f5"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#007aff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/activity_list/activity_list",
+        "text": "活动管理",
+        "iconPath": "images/activity.png",
+        "selectedIconPath": "images/activity-active.png"
+      },
+      {
+        "pagePath": "pages/accounting/accounting",
+        "text": "记账",
+        "iconPath": "images/accounting.png",
+        "selectedIconPath": "images/accounting-active.png"
+      },
+      {
+        "pagePath": "pages/history/history",
+        "text": "查询",
+        "iconPath": "images/history.png",
+        "selectedIconPath": "images/history-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "images/profile.png",
+        "selectedIconPath": "images/profile-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "cloud": true,
+  "subPackages": []
+}

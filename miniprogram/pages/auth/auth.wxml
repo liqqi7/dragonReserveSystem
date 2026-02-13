@@ -1,0 +1,17 @@
+<view class="container">
+  <view class="card auth-card">
+    <view class="title">俱乐部成员专用小程序</view>
+    <view class="subtitle">请输入内部邀请码</view>
+
+    <input
+      class="input"
+      placeholder="请输入邀请码"
+      password="true"
+      value="{{inviteCodeInput}}"
+      bindinput="onInviteCodeInput"
+    />
+
+    <button class="btn primary" bindtap="checkInvite">进入系统</button>
+    <view class="tip">邀请码错误将无法访问后续内容</view>
+  </view>
+</view>
