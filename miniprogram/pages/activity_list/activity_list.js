@@ -86,6 +86,7 @@ Page({
           participants: item.participants || [],
           maxParticipants: item.maxParticipants || 20
         }));
+
         this.setData({ activityList: list });
         this.filterActivities();
         
@@ -333,7 +334,7 @@ Page({
   submitSignup() {
     const app = getApp();
     const nickname = app.globalData.userProfile?.nickname?.trim();
-    
+
     if (!nickname) {
       wx.showToast({ title: "请先完善昵称", icon: "none" });
       return;
@@ -356,19 +357,33 @@ Page({
     participants.push(nickname);
 
     wx.showLoading({ title: "报名中..." });
-    db.collection("activities")
-      .doc(activity._id)
-      .update({
-        data: {
-          participants,
-          updatedAt: db.serverDate()
+
+    // 使用云函数更新（云函数有管理员权限，不受数据库权限限制）
+    wx.cloud.callFunction({
+      name: 'signupActivity',
+      data: {
+        activityId: activity._id,
+        nickname
+      }
+    })
+      .then((res) => {
+        if (res.result && res.result.errCode === 0) {
+          if (res.result.alreadySignedUp) {
+            wx.hideLoading();
+            wx.showToast({ title: "您已报名", icon: "none" });
+            return;
+          }
+          wx.hideLoading();
+          wx.showToast({ title: "报名成功", icon: "success" });
+          this.closeSignupModal();
+          this.loadActivityList();
+        } else {
+          wx.hideLoading();
+          wx.showToast({ 
+            title: res.result && res.result.errMsg ? res.result.errMsg : "报名失败", 
+            icon: "none" 
+          });
         }
-      })
-      .then(() => {
-        wx.hideLoading();
-        wx.showToast({ title: "报名成功", icon: "success" });
-        this.closeSignupModal();
-        this.loadActivityList();
       })
       .catch(err => {
         console.error(err);

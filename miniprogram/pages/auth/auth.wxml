@@ -1,7 +1,7 @@
 <view class="container">
   <view class="card auth-card">
-    <view class="title">俱乐部成员专用小程序</view>
-    <view class="subtitle">请输入内部邀请码</view>
+    <view class="title">龙城冒险者工会预约系统</view>
+    <view class="subtitle">请填写您的邀请码获取访问权限</view>
 
     <input
       class="input"
@@ -11,7 +11,7 @@
       bindinput="onInviteCodeInput"
     />
 
-    <button class="btn primary" bindtap="checkInvite">进入系统</button>
-    <view class="tip">邀请码错误将无法访问后续内容</view>
+    <button class="btn primary" bindtap="checkInvite">进入工会</button>
+    <view class="tip">请联系柜台小姐获取您的邀请码🌹</view>
   </view>
 </view>
