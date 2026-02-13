@@ -87,6 +87,32 @@ Page({
           maxParticipants: item.maxParticipants || 20
         }));
 
+        // #region agent log
+        try {
+          wx.request({
+            url: 'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',
+            method: 'POST',
+            header: { 'Content-Type': 'application/json' },
+            data: {
+              id: 'log_' + Date.now() + '_load_list_after_remove',
+              runId: 'run1',
+              hypothesisId: 'L',
+              location: 'activity_list.js:loadActivityList',
+              message: 'loadActivityList after remove',
+              data: {
+                count: list.length,
+                items: list.map(i => ({
+                  id: i._id,
+                  participantsLength: Array.isArray(i.participants) ? i.participants.length : 'na',
+                  participants: Array.isArray(i.participants) ? i.participants : null
+                }))
+              },
+              timestamp: Date.now()
+            }
+          });
+        } catch (e) {}
+        // #endregion
+
         this.setData({ activityList: list });
         this.filterActivities();
         
@@ -435,26 +461,85 @@ Page({
   doRemoveParticipant(name, activity) {
     wx.showLoading({ title: "处理中..." });
     
-    // 1. 从活动参与者列表中删除
-    const participants = (activity.participants || []).filter(p => p !== name);
-    
-    db.collection("activities")
-      .doc(activity._id)
-      .update({
+    // #region agent log
+    try {
+      wx.request({
+        url: 'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',
+        method: 'POST',
+        header: { 'Content-Type': 'application/json' },
         data: {
-          participants: participants,
-          updatedAt: db.serverDate()
+          id: 'log_' + Date.now() + '_remove_enter',
+          runId: 'run1',
+          hypothesisId: 'I',
+          location: 'activity_list.js:doRemoveParticipant',
+          message: 'doRemoveParticipant enter',
+          data: {
+            activityId: activity._id,
+            participantName: name,
+            currentParticipantsLength: (activity.participants || []).length,
+            currentParticipants: activity.participants || []
+          },
+          timestamp: Date.now()
+        }
+      });
+    } catch (e) {}
+    // #endregion
+    
+    // 1. 使用云函数从活动参与者列表中删除（云函数有管理员权限）
+    wx.cloud.callFunction({
+      name: 'removeParticipant',
+      data: {
+        activityId: activity._id,
+        participantName: name
+      }
+    })
+      .then((res) => {
+        // #region agent log
+        try {
+          wx.request({
+            url: 'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',
+            method: 'POST',
+            header: { 'Content-Type': 'application/json' },
+            data: {
+              id: 'log_' + Date.now() + '_remove_cloud_result',
+              runId: 'run1',
+              hypothesisId: 'J',
+              location: 'activity_list.js:doRemoveParticipant',
+              message: 'removeParticipant cloud function result',
+              data: {
+                activityId: activity._id,
+                participantName: name,
+                result: res.result || null,
+                errCode: res.result && res.result.errCode !== undefined ? res.result.errCode : null,
+                stats: res.result && res.result.stats ? res.result.stats : null,
+                newParticipants: res.result && res.result.participants ? res.result.participants : null
+              },
+              timestamp: Date.now()
+            }
+          });
+        } catch (e) {}
+        // #endregion
+        
+        if (res.result && res.result.errCode === 0) {
+          if (res.result.alreadyRemoved) {
+            wx.hideLoading();
+            wx.showToast({ title: "参与者不存在", icon: "none" });
+            return;
+          }
+          
+          // 2. 查找并处理包含该成员的记账记录
+          return db.collection("bills")
+            .where({
+              activityId: activity._id
+            })
+            .get();
+        } else {
+          throw new Error(res.result && res.result.errMsg ? res.result.errMsg : "删除失败");
         }
       })
-      .then(() => {
-        // 2. 查找并处理包含该成员的记账记录
-        return db.collection("bills")
-          .where({
-            activityId: activity._id
-          })
-          .get();
-      })
       .then(res => {
+        if (!res) return; // 如果上面已经返回（alreadyRemoved），这里 res 为 undefined
+        
         const billsToDelete = [];
         const billsToUpdate = [];
         
@@ -501,6 +586,28 @@ Page({
         return Promise.all([...deletePromises, ...updatePromises]);
       })
       .then(() => {
+        // #region agent log
+        try {
+          wx.request({
+            url: 'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',
+            method: 'POST',
+            header: { 'Content-Type': 'application/json' },
+            data: {
+              id: 'log_' + Date.now() + '_remove_complete',
+              runId: 'run1',
+              hypothesisId: 'K',
+              location: 'activity_list.js:doRemoveParticipant',
+              message: 'removeParticipant complete, reloading list',
+              data: {
+                activityId: activity._id,
+                participantName: name
+              },
+              timestamp: Date.now()
+            }
+          });
+        } catch (e) {}
+        // #endregion
+        
         wx.hideLoading();
         wx.showToast({ title: "删除成功", icon: "success" });
         // 刷新活动列表和详情
@@ -508,14 +615,46 @@ Page({
         // 更新详情显示
         const updatedActivity = {
           ...activity,
-          participants: participants
+          participants: (activity.participants || []).filter(p => p !== name)
         };
         this.setData({ detailActivity: updatedActivity });
       })
       .catch(err => {
+        // #region agent log
+        try {
+          wx.request({
+            url: 'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',
+            method: 'POST',
+            header: { 'Content-Type': 'application/json' },
+            data: {
+              id: 'log_' + Date.now() + '_remove_error',
+              runId: 'run1',
+              hypothesisId: 'M',
+              location: 'activity_list.js:doRemoveParticipant',
+              message: 'removeParticipant error',
+              data: {
+                activityId: activity._id,
+                participantName: name,
+                error: err && err.errMsg ? err.errMsg : ('' + err),
+                errCode: err && err.errCode ? err.errCode : null
+              },
+              timestamp: Date.now()
+            }
+          });
+        } catch (e) {}
+        // #endregion
+        
         console.error(err);
+        let errorMsg = "删除失败";
+        if (err && err.errMsg) {
+          if (err.errMsg.includes("FUNCTION_NOT_FOUND") || err.errMsg.includes("FunctionName parameter could not be found")) {
+            errorMsg = "云函数未部署，请先上传并部署 removeParticipant 云函数";
+          } else {
+            errorMsg = err.errMsg;
+          }
+        }
         wx.hideLoading();
-        wx.showToast({ title: "删除失败", icon: "none" });
+        wx.showToast({ title: errorMsg, icon: "none", duration: 3000 });
       });
   },
 
