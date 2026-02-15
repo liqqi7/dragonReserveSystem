@@ -1,0 +1,25 @@
+<view class="container">
+  <view class="card auth-card">
+    <view class="title">龙城冒险者工会预约系统</view>
+    <view class="subtitle">请填写头像与昵称后进入</view>
+
+    <form bindsubmit="onFormSubmit">
+      <view class="auth-row">
+        <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+          <image wx:if="{{avatarUrl}}" class="avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
+          <view wx:else class="avatar-placeholder">选择头像</view>
+        </button>
+        <input
+          class="nickname-input"
+          name="nickname"
+          type="text"
+          placeholder="请输入昵称"
+        />
+      </view>
+      <button class="btn primary" form-type="submit" disabled="{{submitting}}">
+        {{submitting ? '进入中...' : '进入'}}
+      </button>
+    </form>
+    <view class="tip">进入后以游客身份，可在「我的」中获取访问权限</view>
+  </view>
+</view>

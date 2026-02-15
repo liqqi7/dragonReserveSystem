@@ -55,6 +55,13 @@ page {
   color: #ffffff;
 }
 
+.btn.small {
+  width: auto;
+  padding: 12rpx 32rpx;
+  font-size: 26rpx;
+  margin-left: 16rpx;
+}
+
 .profile-box {
   margin-top: 24rpx;
 }
@@ -73,10 +80,23 @@ page {
   height: 96rpx;
   border-radius: 50%;
   margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.profile-header .avatar.placeholder {
+  background: #e5e5e5;
 }
 
 .info {
   flex: 1;
+  min-width: 0;
+}
+
+.edit-btn {
+  flex-shrink: 0;
+  padding: 12rpx 24rpx;
+  font-size: 28rpx;
+  color: #007aff;
 }
 
 .nickname {
@@ -193,6 +213,19 @@ page {
   margin-bottom: 24rpx;
 }
 
+.avatar-form-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+
+.avatar-form-row .label {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
 .label {
   font-size: 26rpx;
   color: #333;
@@ -217,5 +250,54 @@ page {
   padding: 16rpx 20rpx;
   font-size: 28rpx;
   background-color: #fafafa;
+}
+
+.avatar-edit-wrap {
+  width: 96rpx;
+  height: 96rpx;
+  flex-shrink: 0;
+  border-radius: 48rpx;
+  overflow: hidden;
+  position: relative;
+}
+
+.avatar-edit-btn {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  width: 96rpx !important;
+  height: 96rpx !important;
+  min-width: 96rpx !important;
+  min-height: 96rpx !important;
+  line-height: 96rpx !important;
+  border-radius: 48rpx;
+  overflow: hidden;
+  display: block;
+  box-sizing: border-box;
+}
+
+.avatar-edit-btn::after {
+  border: none;
+}
+
+.avatar-edit-img {
+  width: 96rpx !important;
+  height: 96rpx !important;
+  display: block;
+  border-radius: 48rpx;
+}
+
+.avatar-edit-placeholder {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 48rpx;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+  color: #999;
+  box-sizing: border-box;
 }
 
