@@ -1,0 +1,14 @@
+{"location":"profile.js:onShow","message":"profile onShow","data":{},"timestamp":1771164580842,"hypothesisId":"H2"}
+{"location":"app.js:ensureUserReady","message":"ensureUserReady","data":{"hasUserId":true,"hasUserProfile":true},"timestamp":1771164580846,"hypothesisId":"H2"}
+{"location":"app.js:ensureUserReady_immediate","message":"immediate callback path","data":{},"timestamp":1771164580847,"hypothesisId":"H2"}
+{"location":"profile.js:ensureUserReady_callback","message":"ensureUserReady callback fired","data":{},"timestamp":1771164580847,"hypothesisId":"H2"}
+{"location":"profile.js:loadUserProfile","message":"loadUserProfile","data":{"userId":true,"userIdLen":28},"timestamp":1771164580848,"hypothesisId":"H3"}
+{"location":"profile.js:loadUserProfile_success","message":"db found user, set hasUser true","data":{"nickname":"Novusluna","userIdShort":"oz79B3SU"},"timestamp":1771164581539,"hypothesisId":"H4"}
+{"id":"log_1771164707072_load_list_after_remove","runId":"run1","hypothesisId":"L","location":"activity_list.js:loadActivityList","message":"loadActivityList after remove","data":{"count":2,"items":[{"id":"1cc906cf698ec81a000a637b7aef33a7","participantsLength":1,"participants":["Novusluna"]},{"id":"7e9cb9b7698ecae7000a72de40740962","participantsLength":1,"participants":["Novusluna"]}]},"timestamp":1771164707072}
+{"id":"log_1771164715390_load_list_after_remove","runId":"run1","hypothesisId":"L","location":"activity_list.js:loadActivityList","message":"loadActivityList after remove","data":{"count":2,"items":[{"id":"1cc906cf698ec81a000a637b7aef33a7","participantsLength":1,"participants":["Novusluna"]},{"id":"7e9cb9b7698ecae7000a72de40740962","participantsLength":1,"participants":["Novusluna"]}]},"timestamp":1771164715390}
+{"location":"profile.js:onShow","message":"profile onShow","data":{},"timestamp":1771165894034,"hypothesisId":"H2"}
+{"location":"app.js:ensureUserReady","message":"ensureUserReady","data":{"hasUserId":true,"hasUserProfile":true},"timestamp":1771165894037,"hypothesisId":"H2"}
+{"location":"app.js:ensureUserReady_immediate","message":"immediate callback path","data":{},"timestamp":1771165894038,"hypothesisId":"H2"}
+{"location":"profile.js:ensureUserReady_callback","message":"ensureUserReady callback fired","data":{},"timestamp":1771165894039,"hypothesisId":"H2"}
+{"location":"profile.js:loadUserProfile","message":"loadUserProfile","data":{"userId":true,"userIdLen":28},"timestamp":1771165894040,"hypothesisId":"H3"}
+{"location":"profile.js:loadUserProfile_success","message":"db found user, set hasUser true","data":{"nickname":"Novusluna","userIdShort":"oz79B3SU"},"timestamp":1771165894797,"hypothesisId":"H4"}

@@ -129,6 +129,7 @@
             value="{{editForm.name}}"
             bindinput="onEditFormChange"
             data-field="name"
+            adjust-position="{{false}}"
           />
         </view>
 
@@ -153,6 +154,8 @@
             value="{{editForm.remark}}"
             bindinput="onEditFormChange"
             data-field="remark"
+            adjust-position="{{true}}"
+            cursor-spacing="120"
           />
         </view>
       </view>
