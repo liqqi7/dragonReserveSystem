@@ -32,96 +32,88 @@ page {
   margin-bottom: 32rpx;
 }
 
-.auth-row {
-  display: flex;
-  align-items: center;
-  gap: 24rpx;
+/* 表单样式，参考 profile 编辑弹窗 */
+.form-item {
   margin-bottom: 24rpx;
-  padding: 16rpx 0;
 }
 
-.auth-row .avatar-btn {
+.avatar-form-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+
+.avatar-form-row .label {
+  margin-bottom: 0;
   flex-shrink: 0;
+}
+
+.label {
+  font-size: 26rpx;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.avatar-edit-wrap {
   width: 96rpx;
   height: 96rpx;
-  border-radius: 50%;
+  flex-shrink: 0;
+  border-radius: 48rpx;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
 }
 
-.auth-row .avatar-img,
-.auth-row .avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-}
-
-.auth-row .avatar-img {
+.avatar-edit-btn {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  width: 96rpx !important;
+  height: 96rpx !important;
+  min-width: 96rpx !important;
+  min-height: 96rpx !important;
+  line-height: 96rpx !important;
+  border-radius: 48rpx;
+  overflow: hidden;
   display: block;
+  box-sizing: border-box;
 }
 
-.auth-row .avatar-placeholder {
+.avatar-edit-btn::after {
+  border: none;
+}
+
+.avatar-edit-img {
+  width: 96rpx !important;
+  height: 96rpx !important;
+  display: block;
+  border-radius: 48rpx;
+}
+
+.avatar-edit-placeholder {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 48rpx;
+  background: #eee;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22rpx;
   color: #999;
-  background-color: #eee;
-}
-
-.nickname-input {
-  flex: 1;
-  border-radius: 12rpx;
-  border: 1rpx solid #ddd;
-  padding: 20rpx 24rpx;
-  font-size: 28rpx;
-  background-color: #fafafa;
   box-sizing: border-box;
 }
 
-.avatar-btn {
-  padding: 0;
-  margin: 0;
-  background: transparent;
-  border: none;
-}
-
-.avatar-btn::after {
-  border: none;
-}
-
-.avatar-img {
-  width: 160rpx;
-  height: 160rpx;
-  border-radius: 50%;
-  display: block;
-}
-
-.avatar-placeholder {
-  width: 160rpx;
-  height: 160rpx;
-  border-radius: 50%;
-  background-color: #eee;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24rpx;
-  color: #999;
-}
-
-.form-item {
-  margin-bottom: 24rpx;
-}
-
 .input {
+  width: 100%;
+  height: 72rpx;
+  line-height: 40rpx;
   border-radius: 12rpx;
   border: 1rpx solid #ddd;
   padding: 16rpx 20rpx;
   font-size: 28rpx;
   background-color: #fafafa;
-  width: 100%;
   box-sizing: border-box;
 }
 
@@ -135,6 +127,11 @@ page {
 
 .btn.primary {
   background-color: #007aff;
+  color: #ffffff;
+}
+
+.btn.primary.disabled {
+  background-color: #c8c8c8;
   color: #ffffff;
 }
 

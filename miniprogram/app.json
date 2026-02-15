@@ -1,6 +1,6 @@
 {
   "pages": [
-    "pages/auth/auth",
+    "pages/welcome/welcome",
     "pages/activity_list/activity_list",
     "pages/accounting/accounting",
     "pages/history/history",

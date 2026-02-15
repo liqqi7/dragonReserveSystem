@@ -11,7 +11,6 @@ page {
 .top-bar {
   padding: 20rpx 24rpx;
   background-color: #ffffff;
-  border-bottom: 1rpx solid #f0f0f0;
 }
 
 .top-actions {

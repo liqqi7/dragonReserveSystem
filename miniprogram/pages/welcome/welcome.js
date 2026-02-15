@@ -3,7 +3,9 @@ const app = getApp();
 Page({
   data: {
     submitting: false,
-    avatarUrl: ""
+    avatarUrl: "",
+    nickname: "",
+    canSubmit: false
   },
 
   onLoad() {
@@ -17,15 +19,25 @@ Page({
   /** 选择头像（头像昵称填写能力，基础库 2.21.2+） */
   onChooseAvatar(e) {
     const { avatarUrl } = e.detail;
-    this.setData({ avatarUrl });
+    this.setData({ avatarUrl, canSubmit: !!(avatarUrl && (this.data.nickname || "").trim()) });
   },
 
-  /** 表单提交：填写昵称后进入 */
+  onNicknameInput(e) {
+    const nickname = e.detail.value || "";
+    this.setData({ nickname, canSubmit: !!(this.data.avatarUrl && nickname.trim()) });
+  },
+
+  /** 表单提交：头像和昵称必填 */
   onFormSubmit(e) {
     if (this.data.submitting) return;
-    const nickname = (e.detail.value.nickname || "").trim() || "微信用户";
+    const nickname = (this.data.nickname || e.detail.value?.nickname || "").trim();
+    const avatarUrl = this.data.avatarUrl;
+    if (!avatarUrl || !nickname) {
+      wx.showToast({ title: "请填写头像和昵称", icon: "none" });
+      return;
+    }
     this.setData({ submitting: true });
-    this.doEnter(nickname, this.data.avatarUrl);
+    this.doEnter(nickname, avatarUrl);
   },
 
   doEnter(nickname, avatarTempPath) {

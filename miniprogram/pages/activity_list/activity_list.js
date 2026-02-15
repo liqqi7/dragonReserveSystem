@@ -15,25 +15,33 @@ Page({
       status: "进行中",
       remark: ""
     },
-    userNickname: "", // 当前用户的昵称
+    userNickname: "", // 报名弹窗输入框
+    myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
+    myNickname: "", // 当前用户昵称（userId 为空时的回退，兼容旧数据）
     detailActivity: null,
     isAdmin: false,
+    isGuest: true,
     searchKeyword: "",
     selectedFilter: "全部"
   },
 
   onLoad() {
-    this.checkAuth();
+    this.syncGuestState();
   },
 
   onShow() {
-    // 每次显示页面时刷新活动列表
-    if (app.globalData.isAuthenticated) {
-      this.setData({ isAdmin: app.globalData.userRole === "admin" });
+    this.syncGuestState();
+    if (!this.data.isGuest) {
+      const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
+      const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
+      this.setData({ isAdmin: app.globalData.userRole === "admin", myUserId, myNickname });
       this.loadActivityList();
-    } else {
-      this.checkAuth();
     }
+  },
+
+  syncGuestState() {
+    const isGuest = !app.globalData.isAuthenticated;
+    this.setData({ isGuest });
   },
 
   // 切换账号功能
@@ -56,20 +64,13 @@ Page({
 
           // 跳转到登录页面
           wx.reLaunch({
-            url: '/pages/auth/auth'
+            url: '/pages/profile/profile'
           });
         }
       }
     });
   },
 
-  checkAuth() {
-    if (!app.globalData.isAuthenticated) {
-      wx.redirectTo({
-        url: '/pages/auth/auth'
-      });
-    }
-  },
 
   loadActivityList() {
     wx.showLoading({ title: "加载中..." });
@@ -238,8 +239,8 @@ Page({
         };
 
         if (isEdit) {
-          // 编辑
-          db.collection("activities")
+          // 编辑：优先云函数，云函数未部署时回退到客户端 update
+          const doUpdate = () => db.collection("activities")
             .doc(this.data.currentActivity._id)
             .update({ data })
             .then(() => {
@@ -247,12 +248,42 @@ Page({
               wx.showToast({ title: "更新成功", icon: "success" });
               this.closeEditModal();
               this.loadActivityList();
+            });
+
+          wx.cloud.callFunction({
+            name: "updateActivity",
+            data: {
+              activityId: this.data.currentActivity._id,
+              date: data.date,
+              name: data.name,
+              status: data.status,
+              remark: data.remark,
+              participants: data.participants,
+              maxParticipants: data.maxParticipants
+            }
+          })
+            .then((res) => {
+              if (res.result && res.result.errCode === 0) {
+                wx.hideLoading();
+                wx.showToast({ title: "更新成功", icon: "success" });
+                this.closeEditModal();
+                this.loadActivityList();
+              } else {
+                throw new Error(res.result && res.result.errMsg ? res.result.errMsg : "更新失败");
+              }
             })
-        .catch(err => {
-          console.error(err);
-          wx.hideLoading();
-          wx.showToast({ title: "更新失败", icon: "none" });
-        });
+            .catch(err => {
+              const isFuncNotFound = err.errCode === -501000 || (err.errMsg && err.errMsg.includes("FunctionName")) || (err.message && String(err.message).includes("501000"));
+              if (isFuncNotFound) {
+                return doUpdate().catch(e => {
+                  console.error(e);
+                  wx.hideLoading();
+                  wx.showToast({ title: e.message || "更新失败", icon: "none" });
+                });
+              }
+              wx.hideLoading();
+              wx.showToast({ title: err.message || "更新失败", icon: "none" });
+            });
     } else {
       // 新建
       data.createdAt = db.serverDate();
@@ -372,15 +403,14 @@ Page({
       return;
     }
 
-    const participants = [...(activity.participants || [])];
+    const participants = activity.participants || [];
+    const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
 
-    // 使用昵称作为唯一标识，检查是否已报名
-    if (participants.includes(nickname)) {
+    // 按 userId 校验：同一用户不能重复报名，允许不同用户重名
+    if (myUserId && participants.some(p => typeof p === "object" && p.userId && p.userId === myUserId)) {
       wx.showToast({ title: "您已报名", icon: "none" });
       return;
     }
-
-    participants.push(nickname);
 
     wx.showLoading({ title: "报名中..." });
 
@@ -389,7 +419,8 @@ Page({
       name: 'signupActivity',
       data: {
         activityId: activity._id,
-        nickname
+        nickname,
+        userId: app.globalData.userId || null
       }
     })
       .then((res) => {
@@ -426,12 +457,19 @@ Page({
     });
   },
 
+  // 规范化参与者（兼容 string 与 {name, userId}）
+  normalizeParticipants(raw) {
+    const arr = raw || [];
+    return arr.map(p => typeof p === "string" ? { name: p, userId: null } : { name: p.name || "", userId: p.userId || null });
+  },
+
   // 查看详情
   showDetail(e) {
     const activity = e.currentTarget.dataset.activity;
+    const participants = this.normalizeParticipants(activity.participants);
     this.setData({
       showDetailModal: true,
-      detailActivity: activity
+      detailActivity: { ...activity, participants }
     });
   },
 
@@ -490,7 +528,8 @@ Page({
       name: 'removeParticipant',
       data: {
         activityId: activity._id,
-        participantName: name
+        participantName: name,
+        isAdmin: this.data.isAdmin
       }
     })
       .then((res) => {
@@ -613,10 +652,9 @@ Page({
         // 刷新活动列表和详情
         this.loadActivityList();
         // 更新详情显示
-        const updatedActivity = {
-          ...activity,
-          participants: (activity.participants || []).filter(p => p !== name)
-        };
+        const getParticipantName = p => typeof p === "string" ? p : (p && p.name);
+        const newParticipants = this.normalizeParticipants((activity.participants || []).filter(p => getParticipantName(p) !== name));
+        const updatedActivity = { ...activity, participants: newParticipants };
         this.setData({ detailActivity: updatedActivity });
       })
       .catch(err => {

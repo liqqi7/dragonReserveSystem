@@ -9,28 +9,25 @@ Page({
     memberStats: [], // 成员统计（活动tab）
     activityBillStats: [], // 活动账单统计（账单tab）
     selectedActivityBills: null, // 选中的活动账单明细
-    showBillDetail: false
+    showBillDetail: false,
+    isGuest: true
   },
 
   onLoad() {
-    this.checkAuth();
+    this.syncGuestState();
   },
 
   onShow() {
-    if (app.globalData.isAuthenticated) {
+    this.syncGuestState();
+    if (!this.data.isGuest) {
       this.loadActivityList();
       this.loadBillList();
-    } else {
-      this.checkAuth();
     }
   },
 
-  checkAuth() {
-    if (!app.globalData.isAuthenticated) {
-      wx.redirectTo({
-        url: '/pages/auth/auth'
-      });
-    }
+  syncGuestState() {
+    const isGuest = !app.globalData.isAuthenticated;
+    this.setData({ isGuest });
   },
 
   switchTab(e) {
@@ -49,13 +46,11 @@ Page({
       .orderBy("date", "desc")
       .get()
       .then(res => {
-        const list = (res.data || []).map(item => ({
-          _id: item._id,
-          date: item.date,
-          name: item.name,
-          status: item.status || "进行中",
-          participants: item.participants || []
-        }));
+        const list = (res.data || []).map(item => {
+          const raw = item.participants || [];
+          const participants = raw.map(p => typeof p === "string" ? p : (p && p.name));
+          return { ...item, _id: item._id, date: item.date, name: item.name, status: item.status || "进行中", participants };
+        });
         this.setData({ activityList: list });
         this.calculateMemberStats();
       })

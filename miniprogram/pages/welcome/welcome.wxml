@@ -4,22 +4,29 @@
     <view class="subtitle">请填写头像与昵称后进入</view>
 
     <form bindsubmit="onFormSubmit">
-      <view class="auth-row">
-        <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
-          <image wx:if="{{avatarUrl}}" class="avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
-          <view wx:else class="avatar-placeholder">选择头像</view>
-        </button>
+      <view class="form-item avatar-form-row">
+        <view class="label">头像</view>
+        <view class="avatar-edit-wrap">
+          <button class="avatar-edit-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+            <image wx:if="{{avatarUrl}}" class="avatar-edit-img" src="{{avatarUrl}}" mode="aspectFill" />
+            <view wx:else class="avatar-edit-placeholder">选择头像</view>
+          </button>
+        </view>
+      </view>
+      <view class="form-item">
+        <view class="label">昵称</view>
         <input
-          class="nickname-input"
-          name="nickname"
           type="text"
+          class="input"
+          name="nickname"
           placeholder="请输入昵称"
+          value="{{nickname}}"
+          bindinput="onNicknameInput"
         />
       </view>
-      <button class="btn primary" form-type="submit" disabled="{{submitting}}">
-        {{submitting ? '进入中...' : '进入'}}
+      <button class="btn primary {{canSubmit ? '' : 'disabled'}}" form-type="submit" disabled="{{submitting}}">
+        {{submitting ? '登记冒险者信息中...' : '进入'}}
       </button>
     </form>
-    <view class="tip">进入后以游客身份，可在「我的」中获取访问权限</view>
   </view>
 </view>
