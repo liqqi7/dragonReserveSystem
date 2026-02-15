@@ -1,0 +1,61 @@
+<view class="container">
+  <!-- 未登记用户 -->
+  <view wx:if="{{!hasUser}}" class="center-box">
+    <view class="title">欢迎加入龙城冒险者公会</view>
+    <view class="subtitle">点击下方按钮完成公会登记</view>
+
+    <button class="btn primary" bindtap="startRegister">点击登录公会</button>
+  </view>
+
+  <!-- 已登记用户 -->
+  <view wx:else class="profile-box">
+    <view class="profile-header">
+      <view class="info">
+        <view class="nickname">{{user.nickname || '未命名成员'}}</view>
+        <view class="userid">公会 ID：{{user.userIdShort}}</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">账户信息</view>
+      <view class="cell" bindtap="openEditModal">
+        <view class="cell-title">修改个人资料</view>
+        <text class="cell-desc">昵称</text>
+        <text class="cell-arrow">›</text>
+      </view>
+    </view>
+
+    <view class="bottom-area">
+      <button class="btn danger" bindtap="logout">切换账号 / 退出登录</button>
+    </view>
+  </view>
+
+  <!-- 编辑资料弹窗 -->
+  <view wx:if="{{showEditModal}}" class="modal-overlay" bindtap="closeEditModal">
+    <view class="modal-content" catchtap="stopTap">
+      <view class="modal-header">
+        <text>修改个人资料</text>
+        <text class="close-btn" bindtap="closeEditModal">×</text>
+      </view>
+
+      <view class="modal-body">
+        <view class="form-item">
+          <view class="label">昵称</view>
+          <input
+            type="nickname"
+            class="input"
+            placeholder="请输入昵称"
+            value="{{editNickname}}"
+            bindblur="onInputNickname"
+          />
+        </view>
+      </view>
+
+      <view class="modal-footer">
+        <button class="btn default" bindtap="closeEditModal">取消</button>
+        <button class="btn primary" bindtap="saveProfile">保存</button>
+      </view>
+    </view>
+  </view>
+</view>
+

@@ -1,0 +1,262 @@
+<view class="container">
+
+  <!-- 未通过邀请码时 -->
+  <view wx:if="{{!authenticated}}" class="card auth-card">
+    <view class="title">俱乐部成员专用小程序</view>
+    <view class="subtitle">请输入内部邀请码</view>
+
+    <input
+      class="input"
+      placeholder="请输入邀请码"
+      password="true"
+      value="{{inviteCodeInput}}"
+      bindinput="onInviteCodeInput"
+    />
+
+    <button class="btn primary" bindtap="checkInvite">进入系统</button>
+    <view class="tip">邀请码错误将无法访问后续内容</view>
+  </view>
+
+  <!-- 通过邀请码后 -->
+  <view wx:elif="{{authenticated}}" class="main">
+
+    <!-- 顶部标题 -->
+    <view class="header">
+      <view class="header-title">俱乐部小程序</view>
+      <view class="header-sub">活动报名 & AA 记日记</view>
+    </view>
+
+    <!-- 选项卡 -->
+    <view class="tabs">
+      <view
+        class="tab-item {{activeTab === 'activity' ? 'active' : ''}}"
+        data-tab="activity"
+        bindtap="changeTab"
+      >活动报名</view>
+
+      <view
+        class="tab-item {{activeTab === 'aa' ? 'active' : ''}}"
+        data-tab="aa"
+        bindtap="changeTab"
+      >AA 记日记</view>
+
+      <view
+        class="tab-item {{activeTab === 'history' ? 'active' : ''}}"
+        data-tab="history"
+        bindtap="changeTab"
+      >历史记录</view>
+    </view>
+
+    <!-- 活动报名模块 -->
+    <view wx:if="{{activeTab === 'activity'}}" class="card">
+      <view class="section-title">活动报名登记</view>
+
+      <view class="form-item">
+        <view class="label">活动日期</view>
+        <picker mode="date" value="{{activityDate}}" bindchange="onActivityDateChange">
+          <view class="picker">{{activityDate || '请选择日期'}}</view>
+        </picker>
+      </view>
+
+      <view class="form-item">
+        <view class="label">参与成员姓名</view>
+        <input
+          class="input"
+          placeholder="请输入姓名"
+          value="{{activityName}}"
+          bindinput="onActivityNameInput"
+        />
+      </view>
+
+      <button class="btn primary" bindtap="submitActivity">提交报名</button>
+
+      <view class="divider"></view>
+
+      <view class="section-title">历史报名</view>
+      <view wx:if="{{activityList.length === 0}}" class="empty-text">
+        暂无报名记录
+      </view>
+      <view wx:else>
+        <view
+          wx:for="{{activityList}}"
+          wx:key="_id"
+          class="list-item"
+        >
+          <view class="list-title">{{item.date}} - {{item.name}}</view>
+          <view class="list-sub">{{item.createdAtText}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- AA 记日记模块 -->
+    <view wx:elif="{{activeTab === 'aa'}}" class="card">
+      <view class="section-title">AA 记账</view>
+
+      <!-- 日期选择：驱动当日成员与账单 -->
+      <view class="form-item">
+        <view class="label">记账日期</view>
+        <picker mode="date" value="{{aaDate}}" bindchange="onAADateChange">
+          <view class="picker">{{aaDate || '请选择记账日期'}}</view>
+        </picker>
+      </view>
+
+      <view wx:if="{{aaDate}}">
+        <!-- 当日已报名成员提示 -->
+        <view class="form-item">
+          <view class="label">当日可选成员</view>
+          <view wx:if="{{aaMembers.length === 0}}" class="empty-text">
+            该日期暂无报名成员，请先在“活动报名”页登记。
+          </view>
+          <view wx:else class="list-sub">
+            已报名成员 {{aaMembers.length}} 人，可作为付款人和参与人。
+          </view>
+        </view>
+
+        <!-- 付款人：从当日成员中单选 -->
+        <view wx:if="{{aaMembers.length > 0}}" class="form-item">
+          <view class="label">付款人</view>
+          <picker
+            mode="selector"
+            range="{{aaMembers}}"
+            range-key="name"
+            value="{{aaPayerIndex}}"
+            bindchange="onAAPayerChange"
+          >
+            <view class="picker">
+              {{aaPayerName || '请选择付款人'}}
+            </view>
+          </picker>
+        </view>
+
+        <!-- 参与人：当日成员多选 -->
+        <view wx:if="{{aaMembers.length > 0}}" class="form-item">
+          <view class="label">参与人（多选）</view>
+          <view class="participants-header">
+            <button size="mini" type="default" bindtap="onSelectAllParticipants">
+              全选
+            </button>
+          </view>
+          <checkbox-group bindchange="onAAParticipantsChange">
+            <label
+              wx:for="{{aaMembers}}"
+              wx:key="name"
+              class="checkbox-item"
+            >
+              <checkbox value="{{item.name}}" checked="{{item.checked}}" />
+              <text class="checkbox-label">{{item.name}}</text>
+            </label>
+          </checkbox-group>
+        </view>
+      </view>
+
+      <view class="form-item">
+        <view class="label">支出事项</view>
+        <input
+          class="input"
+          placeholder="例如：聚餐、房费、门票等"
+          value="{{billItem}}"
+          bindinput="onBillItemInput"
+        />
+      </view>
+
+      <view class="form-item">
+        <view class="label">支出总金额（元）</view>
+        <input
+          class="input"
+          type="digit"
+          placeholder="例如：300"
+          value="{{billAmount}}"
+          bindinput="onBillAmountInput"
+        />
+      </view>
+
+      <button class="btn primary" bindtap="submitBill">保存并计算结算</button>
+
+      <view class="divider"></view>
+
+      <view class="section-title">本次结算结果</view>
+      <view wx:if="{{settlements.length === 0}}" class="empty-text">
+        提交一条账单后，这里会显示“谁给谁多少钱”
+      </view>
+      <view wx:else>
+        <view
+          wx:for="{{settlements}}"
+          wx:key="index"
+          class="list-item"
+        >
+          <view class="list-title">
+            {{item.from}} → {{item.to}}：{{item.amount}} 元
+          </view>
+        </view>
+      </view>
+
+      <view class="divider"></view>
+
+      <!-- 当日结算单（日期维度汇总） -->
+      <view class="section-title">当日结算单</view>
+      <view wx:if="{{!aaDate}}">
+        <view class="empty-text">请选择记账日期后查看当日汇总。</view>
+      </view>
+      <view wx:elif="{{!dailySummary || dailySummary.totalAmount === 0}}">
+        <view class="empty-text">该日期暂无记账记录。</view>
+      </view>
+      <view wx:else>
+        <view class="summary-header">
+          <view class="list-title">日期：{{dailySummary.date}}</view>
+          <view class="list-sub">总支出：{{dailySummary.totalAmount}} 元</view>
+        </view>
+        <view
+          wx:for="{{dailySummary.members}}"
+          wx:key="name"
+          class="list-item"
+        >
+          <view class="list-title">{{item.name}}</view>
+          <view class="list-sub">{{item.summaryText}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 历史数据模块 -->
+    <view wx:elif="{{activeTab === 'history'}}" class="card">
+      <view class="section-title">历史活动报名</view>
+      <view wx:if="{{activityList.length === 0}}" class="empty-text">
+        暂无活动报名记录
+      </view>
+      <view wx:else>
+        <view
+          wx:for="{{activityList}}"
+          wx:key="_id"
+          class="list-item"
+        >
+          <view class="list-title">{{item.date}} - {{item.name}}</view>
+          <view class="list-sub">{{item.createdAtText}}</view>
+        </view>
+      </view>
+
+      <view class="divider"></view>
+
+      <view class="section-title">历史 AA 账单</view>
+      <view wx:if="{{billList.length === 0}}" class="empty-text">
+        暂无 AA 记账记录
+      </view>
+      <view wx:else>
+        <view
+          wx:for="{{billList}}"
+          wx:key="_id"
+          class="list-item"
+        >
+          <view class="list-title">
+            {{item.item}} - {{item.totalAmount}} 元（付款人：{{item.payer}}）
+          </view>
+          <view class="list-sub">
+            参与人：{{item.participantsText}}
+          </view>
+          <view class="list-sub">
+            人均：{{item.perShare}} 元 ｜ {{item.createdAtText}}
+          </view>
+        </view>
+      </view>
+    </view>
+
+  </view>
+</view>
