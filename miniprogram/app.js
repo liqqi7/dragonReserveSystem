@@ -21,8 +21,26 @@ App({
       });
     }
 
-    // 从本地存储恢复登录状态（管理员邀请码）
+    // 从本地存储恢复登录状态（权限 + 用户）
     this.restoreAuthState();
+    this.restoreUserFromStorage();
+  },
+
+  /** 若已做过微信授权，从本地存储恢复 userId 等，供 welcome 页判断是否跳过 */
+  restoreUserFromStorage() {
+    try {
+      if (!wx.getStorageSync("hasWeChatAuth")) return;
+      const userId = wx.getStorageSync("userId");
+      if (userId) {
+        this.globalData.userId = userId;
+        const userDocId = wx.getStorageSync("userDocId");
+        const nickname = wx.getStorageSync("userNickname") || "";
+        if (userDocId) this.globalData.userDocId = userDocId;
+        this.globalData.userProfile = { nickname };
+      }
+    } catch (e) {
+      console.error("恢复用户缓存失败", e);
+    }
   },
 
   /** 管理员邀请码登录的状态恢复 */
@@ -90,8 +108,6 @@ App({
         name: "login"
       })
       .then((res) => {
-        console.log("云函数 login 返回:", res);
-        
         // 处理多种返回格式
         let openid = null;
         if (res && res.result) {
@@ -111,7 +127,6 @@ App({
         }
         
         this.globalData.userId = openid;
-        console.log("获取到 openid:", openid);
 
         return db
           .collection("users")
@@ -120,19 +135,14 @@ App({
           .get();
       })
       .then((res) => {
-        console.log("查询 users 集合结果:", res);
         if (res.data && res.data.length > 0) {
-          // 用户已存在，加载资料
           const user = res.data[0];
           this.globalData.userDocId = user._id;
           this.globalData.userProfile = {
             nickname: user.nickname || ""
           };
-          console.log("用户已存在，加载资料:", this.globalData.userProfile);
           callback && callback();
         } else {
-          // 用户不存在，自动创建新用户记录
-          console.log("用户不存在，自动创建新用户记录");
           return db.collection("users").add({
             data: {
               nickname: "", // 初始为空，用户可在"我的"页面填写
@@ -144,9 +154,7 @@ App({
         }
       })
       .then((res) => {
-        // 如果是新创建的用户，res 是 add 的结果
         if (res && res._id) {
-          console.log("新用户创建成功，_id:", res._id);
           this.globalData.userDocId = res._id;
           this.globalData.userProfile = {
             nickname: ""

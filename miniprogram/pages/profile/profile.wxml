@@ -10,27 +10,59 @@
   <!-- 已登记用户 -->
   <view wx:else class="profile-box">
     <view class="profile-header">
+      <image wx:if="{{user.avatarUrl}}" class="avatar" src="{{user.avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="avatar placeholder"></view>
       <view class="info">
         <view class="nickname">{{user.nickname || '未命名成员'}}</view>
         <view class="userid">公会 ID：{{user.userIdShort}}</view>
       </view>
+      <view class="edit-btn" bindtap="openEditModal">编辑</view>
     </view>
 
     <view class="section">
-      <view class="section-title">账户信息</view>
-      <view class="cell" bindtap="openEditModal">
-        <view class="cell-title">修改个人资料</view>
-        <text class="cell-desc">昵称</text>
-        <text class="cell-arrow">›</text>
+      <view class="section-title">访问权限</view>
+      <view wx:if="{{isGuest}}" class="cell">
+        <view class="cell-title">当前为游客，无法查看相关活动数据</view>
+        <button class="btn primary small" bindtap="openPermissionModal">获取权限</button>
+      </view>
+      <view wx:else class="cell">
+        <view class="cell-title">已获取访问权限</view>
+        <button class="btn default small" bindtap="removePermission">删除权限</button>
       </view>
     </view>
 
     <view class="bottom-area">
-      <button class="btn danger" bindtap="logout">切换账号 / 退出登录</button>
+      <button class="btn danger" bindtap="logout">退出登录</button>
     </view>
   </view>
 
-  <!-- 编辑资料弹窗 -->
+  <!-- 获取权限弹窗 -->
+  <view wx:if="{{showPermissionModal}}" class="modal-overlay" bindtap="closePermissionModal">
+    <view class="modal-content" catchtap="stopTap">
+      <view class="modal-header">
+        <text>获取权限</text>
+        <text class="close-btn" bindtap="closePermissionModal">×</text>
+      </view>
+      <view class="modal-body">
+        <view class="form-item">
+          <view class="label">请输入邀请码</view>
+          <input
+            class="input"
+            password
+            placeholder="请联系工会柜台获取邀请码🌹"
+            value="{{permissionInput}}"
+            bindinput="onPermissionInput"
+          />
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="btn default" bindtap="closePermissionModal">取消</button>
+        <button class="btn primary" bindtap="submitPermission">确认</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 编辑资料弹窗：头像 + 昵称 -->
   <view wx:if="{{showEditModal}}" class="modal-overlay" bindtap="closeEditModal">
     <view class="modal-content" catchtap="stopTap">
       <view class="modal-header">
@@ -39,14 +71,23 @@
       </view>
 
       <view class="modal-body">
+        <view class="form-item avatar-form-row">
+          <view class="label">头像</view>
+          <view class="avatar-edit-wrap">
+            <button class="avatar-edit-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatarInModal">
+              <image wx:if="{{editAvatarUrl}}" class="avatar-edit-img" src="{{editAvatarUrl}}" mode="aspectFill" />
+              <view wx:else class="avatar-edit-placeholder">选择头像</view>
+            </button>
+          </view>
+        </view>
         <view class="form-item">
           <view class="label">昵称</view>
           <input
-            type="nickname"
+            type="text"
             class="input"
             placeholder="请输入昵称"
             value="{{editNickname}}"
-            bindblur="onInputNickname"
+            bindinput="onInputNickname"
           />
         </view>
       </view>

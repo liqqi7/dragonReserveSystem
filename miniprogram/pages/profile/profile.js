@@ -4,19 +4,29 @@ const db = wx.cloud.database();
 Page({
   data: {
     hasUser: false,
+    isGuest: true,
     user: {
       nickname: "",
-      userIdShort: ""
+      userIdShort: "",
+      avatarUrl: ""
     },
     showEditModal: false,
-    editNickname: ""
+    editNickname: "",
+    editAvatarUrl: "",
+    showPermissionModal: false,
+    permissionInput: ""
   },
 
   onShow() {
-    // 使用全局的 ensureUserReady 方法，它会自动检查并创建用户记录
+    this.syncGuestState();
     app.ensureUserReady(() => {
       this.loadUserProfile();
     });
+  },
+
+  syncGuestState() {
+    const isGuest = !app.globalData.isAuthenticated;
+    this.setData({ isGuest });
   },
 
   loadUserProfile() {
@@ -24,7 +34,7 @@ Page({
     const userId = app.globalData.userId;
 
     if (!userId) {
-      this.setData({ hasUser: false });
+      this.setData({ hasUser: false, isGuest: !app.globalData.isAuthenticated });
       return;
     }
 
@@ -34,81 +44,84 @@ Page({
       .limit(1)
       .get()
       .then((res) => {
-        console.log("profile 页查询 users:", res);
         if (res.data && res.data.length > 0) {
           const user = res.data[0];
           app.globalData.userDocId = user._id;
           app.globalData.userProfile = {
-            nickname: user.nickname || ""
+            nickname: user.nickname || "",
+            avatarUrl: user.avatarUrl || ""
           };
-          
-          // 用户已存在，直接显示（即使没有昵称也算已登录）
           this.setData({
-            hasUser: true, // 有用户记录就算已登录，不需要强制填写昵称
+            hasUser: true,
+            isGuest: !app.globalData.isAuthenticated,
             user: {
               nickname: user.nickname || "",
-              userIdShort: userId.slice(0, 8)
+              userIdShort: userId.slice(0, 8),
+              avatarUrl: user.avatarUrl || ""
             }
           });
         } else {
-          // 如果查询不到，说明 ensureUserReady 可能还没执行完，稍等再试
-          // 或者用户记录创建失败
-          this.setData({ hasUser: false });
+          this.setData({
+            hasUser: false,
+            isGuest: !app.globalData.isAuthenticated
+          });
         }
       })
       .catch((err) => {
         console.error("查询 users 失败:", err);
-        this.setData({ hasUser: false });
+        this.setData({
+          hasUser: false,
+          isGuest: !app.globalData.isAuthenticated
+        });
       });
   },
 
-  // 首次注册入口（完善资料）
+  // 未授权用户：引导到欢迎页完成微信授权
   startRegister() {
-    const userId = app.globalData.userId;
-    const userDocId = app.globalData.userDocId;
-    
-    if (!userId) {
-      // 如果还没有 openid，先获取并创建用户
-      wx.cloud
-        .callFunction({
-          name: "login"
-        })
-        .then((res) => {
-          if (res.result && res.result.openid) {
-            app.globalData.userId = res.result.openid;
-            // 确保用户记录已创建
-            return this.ensureUserRecord();
-          } else {
-            wx.showToast({ title: "获取用户信息失败", icon: "none" });
-          }
-        })
-        .then(() => {
-          this.setData({
-            showEditModal: true,
-            editNickname: ""
-          });
-        })
-        .catch((err) => {
-          console.error("获取 openid 失败:", err);
-          wx.showToast({ title: "请检查云函数是否部署", icon: "none" });
-        });
-      return;
+    wx.reLaunch({ url: "/pages/welcome/welcome" });
+  },
+
+  openPermissionModal() {
+    this.setData({ showPermissionModal: true, permissionInput: "" });
+  },
+
+  closePermissionModal() {
+    this.setData({ showPermissionModal: false, permissionInput: "" });
+  },
+
+  onPermissionInput(e) {
+    this.setData({ permissionInput: e.detail.value || "" });
+  },
+
+  submitPermission() {
+    const input = (this.data.permissionInput || "").trim();
+    let role = null;
+    if (input === "dragon") {
+      role = "user";
+    } else if (input === "manage") {
+      role = "admin";
     }
-    
-    // 如果已有 userId 但没有 userDocId，先确保记录存在
-    if (!userDocId) {
-      this.ensureUserRecord().then(() => {
-        this.setData({
-          showEditModal: true,
-          editNickname: ""
-        });
-      });
+    if (role) {
+      app.setAuthState(role, true);
+      this.setData({ showPermissionModal: false, permissionInput: "", isGuest: false });
+      wx.showToast({ title: "已获取权限", icon: "success" });
     } else {
-      this.setData({
-        showEditModal: true,
-        editNickname: ""
-      });
+      wx.showToast({ title: "邀请码错误", icon: "none" });
     }
+  },
+
+  removePermission() {
+    wx.showModal({
+      title: "确认删除权限",
+      content: "确定要恢复为游客吗？将无法查看活动与记账数据。",
+      success: (res) => {
+        if (res.confirm) {
+          app.clearAuthState();
+          this.setData({ isGuest: true });
+          wx.showToast({ title: "已恢复为游客", icon: "success" });
+        }
+      }
+    });
   },
 
   // 确保用户记录存在
@@ -153,7 +166,8 @@ Page({
     const { user } = this.data;
     this.setData({
       showEditModal: true,
-      editNickname: user.nickname
+      editNickname: user.nickname,
+      editAvatarUrl: user.avatarUrl || ""
     });
   },
 
@@ -161,17 +175,22 @@ Page({
     this.setData({ showEditModal: false });
   },
 
+  onChooseAvatarInModal(e) {
+    const { avatarUrl } = e.detail;
+    this.setData({ editAvatarUrl: avatarUrl });
+  },
+
   stopTap() {
     // 阻止冒泡
   },
 
   onInputNickname(e) {
-    const nick = (e.detail.value || "").trim();
-    this.setData({ editNickname: nick });
+    this.setData({ editNickname: e.detail.value || "" });
   },
 
   saveProfile() {
     const nick = (this.data.editNickname || "").trim();
+    const editAvatarUrl = this.data.editAvatarUrl || "";
     const userId = app.globalData.userId;
 
     if (!nick) {
@@ -182,73 +201,64 @@ Page({
       wx.showToast({ title: "用户信息异常", icon: "none" });
       return;
     }
+    const userDocId = app.globalData.userDocId;
+    if (!userDocId) {
+      wx.showToast({ title: "用户信息异常", icon: "none" });
+      return;
+    }
 
     wx.showLoading({ title: "保存中...", mask: true });
-
-    const userDocId = app.globalData.userDocId;
-    const payload = {
-      nickname: nick,
-      updatedAt: db.serverDate()
-    };
-
-    const finish = (_id) => {
-      app.globalData.userDocId = _id;
-      app.globalData.userProfile = { nickname: nick };
+    const finish = (avatarUrl) => {
+      const finalAvatar = avatarUrl || this.data.user.avatarUrl || "";
+      app.globalData.userDocId = userDocId;
+      app.globalData.userProfile = { nickname: nick, avatarUrl: finalAvatar };
       this.setData({
         hasUser: true,
         user: {
           nickname: nick,
-          userIdShort: userId.slice(0, 8)
+          userIdShort: userId.slice(0, 8),
+          avatarUrl: finalAvatar
         },
+        editAvatarUrl: "",
         showEditModal: false
       });
       wx.hideLoading();
       wx.showToast({ title: "保存成功", icon: "success" });
     };
 
-    if (userDocId) {
-      console.log("更新现有用户记录，_id:", userDocId);
-      db.collection("users")
+    const doUpdate = (avatarUrl) => {
+      const payload = {
+        nickname: nick,
+        avatarUrl: avatarUrl || this.data.user.avatarUrl || "",
+        updatedAt: db.serverDate()
+      };
+      return db.collection("users")
         .doc(userDocId)
         .update({ data: payload })
-        .then((res) => {
-          console.log("更新成功，返回结果:", res);
-          finish(userDocId);
-        })
+        .then(() => finish(payload.avatarUrl));
+    };
+
+    // 若选择了新头像（临时路径），先上传到云存储
+    const isTempPath = editAvatarUrl && !editAvatarUrl.startsWith("cloud://");
+    if (isTempPath) {
+      const cloudPath = `avatars/${userId}_${Date.now()}.jpg`;
+      wx.cloud.uploadFile({
+        cloudPath,
+        filePath: editAvatarUrl
+      })
+        .then((res) => doUpdate(res.fileID))
         .catch((err) => {
-          console.error("更新失败，完整错误:", err);
-          console.error("错误信息:", err.errMsg || err.message);
+          console.error("头像上传失败", err);
           wx.hideLoading();
-          wx.showToast({ 
-            title: `保存失败: ${err.errMsg || err.message || "未知错误"}`,
-            icon: "none",
-            duration: 3000
-          });
+          wx.showToast({ title: "头像上传失败", icon: "none" });
         });
     } else {
-      console.log("创建新用户记录");
-      db.collection("users")
-        .add({
-          data: {
-            ...payload,
-            createdAt: db.serverDate()
-          }
-        })
-        .then((res) => {
-          console.log("创建成功，返回结果:", res);
-          console.log("新用户 _id:", res._id);
-          finish(res._id);
-        })
-        .catch((err) => {
-          console.error("创建失败，完整错误:", err);
-          console.error("错误信息:", err.errMsg || err.message);
-          wx.hideLoading();
-          wx.showToast({ 
-            title: `保存失败: ${err.errMsg || err.message || "未知错误"}`,
-            icon: "none",
-            duration: 3000
-          });
-        });
+      const avatarUrl = editAvatarUrl || this.data.user.avatarUrl || "";
+      doUpdate(avatarUrl).catch((err) => {
+        console.error("更新失败", err);
+        wx.hideLoading();
+        wx.showToast({ title: "保存失败", icon: "none" });
+      });
     }
   },
 
@@ -262,15 +272,21 @@ Page({
         try {
           wx.removeStorageSync("signupNickName");
           wx.removeStorageSync("signupAvatarFileId");
+          wx.removeStorageSync("hasWeChatAuth");
+          wx.removeStorageSync("userId");
+          wx.removeStorageSync("userDocId");
+          wx.removeStorageSync("userNickname");
         } catch (e) {}
 
+        app.clearAuthState();
         app.globalData.userId = "";
         app.globalData.userDocId = "";
         app.globalData.userProfile = null;
 
-        this.setData({ hasUser: false });
+        this.setData({ hasUser: false, isGuest: true });
 
         wx.showToast({ title: "已退出", icon: "success" });
+        wx.reLaunch({ url: "/pages/welcome/welcome" });
       }
     });
   }

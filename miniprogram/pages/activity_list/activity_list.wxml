@@ -1,9 +1,17 @@
-<view class="container">
-  <!-- 顶部操作栏 -->
-  <view class="top-bar">
+<view class="container {{isGuest ? 'guest-mode' : ''}}">
+  <!-- 游客缺省态 -->
+  <view wx:if="{{isGuest}}" class="guest-empty-state">
+    <image class="guest-empty-icon" src="/images/activity-empty-icon.png" mode="aspectFit" />
+    <text class="guest-empty-text">未查询到您的冒险者工会归属</text>
+    <text class="guest-empty-text">请前往「我的-访问权限」处进行登记🌹</text>
+  </view>
+
+  <!-- 已授权用户内容 -->
+  <block wx:else>
+  <!-- 顶部操作栏（仅管理员显示） -->
+  <view wx:if="{{isAdmin}}" class="top-bar">
     <view class="top-actions">
-      <text class="icon-btn" bindtap="switchAccount">⚙️</text>
-      <text wx:if="{{isAdmin}}" class="icon-btn" bindtap="showCreateModal">➕</text>
+      <text class="icon-btn" bindtap="showCreateModal">➕</text>
     </view>
   </view>
 
@@ -121,6 +129,7 @@
             value="{{editForm.name}}"
             bindinput="onEditFormChange"
             data-field="name"
+            adjust-position="{{false}}"
           />
         </view>
 
@@ -145,6 +154,8 @@
             value="{{editForm.remark}}"
             bindinput="onEditFormChange"
             data-field="remark"
+            adjust-position="{{true}}"
+            cursor-spacing="120"
           />
         </view>
       </view>
@@ -229,8 +240,8 @@
             wx:for-item="participant"
             class="participant-item"
           >
-            <text class="participant-name">{{participant}}</text>
-            <text class="participant-delete" bindtap="removeParticipant" data-name="{{participant}}">删除</text>
+            <text class="participant-name">{{participant.name}}</text>
+            <text wx:if="{{isAdmin || (participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname)}}" class="participant-delete" bindtap="removeParticipant" data-name="{{participant.name}}">删除</text>
           </view>
         </view>
       </view>
@@ -240,4 +251,5 @@
       </view>
     </view>
   </view>
+  </block>
 </view>

@@ -15,60 +15,33 @@ Page({
       status: "进行中",
       remark: ""
     },
-    userNickname: "", // 当前用户的昵称
+    userNickname: "", // 报名弹窗输入框
+    myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
+    myNickname: "", // 当前用户昵称（userId 为空时的回退，兼容旧数据）
     detailActivity: null,
     isAdmin: false,
+    isGuest: true,
     searchKeyword: "",
     selectedFilter: "全部"
   },
 
   onLoad() {
-    this.checkAuth();
+    this.syncGuestState();
   },
 
   onShow() {
-    // 每次显示页面时刷新活动列表
-    if (app.globalData.isAuthenticated) {
-      this.setData({ isAdmin: app.globalData.userRole === "admin" });
+    this.syncGuestState();
+    if (!this.data.isGuest) {
+      const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
+      const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
+      this.setData({ isAdmin: app.globalData.userRole === "admin", myUserId, myNickname });
       this.loadActivityList();
-    } else {
-      this.checkAuth();
     }
   },
 
-  // 切换账号功能
-  switchAccount() {
-    wx.showModal({
-      title: "切换账号",
-      content: "确定要退出并切换账号吗？",
-      success: (res) => {
-        if (res.confirm) {
-          // 清除本地存储
-          try {
-            wx.removeStorageSync('userRole');
-            wx.removeStorageSync('isAuthenticated');
-          } catch (e) {
-            console.error('清除本地存储失败', e);
-          }
-
-          // 清除全局变量
-          app.clearAuthState();
-
-          // 跳转到登录页面
-          wx.reLaunch({
-            url: '/pages/auth/auth'
-          });
-        }
-      }
-    });
-  },
-
-  checkAuth() {
-    if (!app.globalData.isAuthenticated) {
-      wx.redirectTo({
-        url: '/pages/auth/auth'
-      });
-    }
+  syncGuestState() {
+    const isGuest = !app.globalData.isAuthenticated;
+    this.setData({ isGuest });
   },
 
   loadActivityList() {
@@ -86,32 +59,6 @@ Page({
           participants: item.participants || [],
           maxParticipants: item.maxParticipants || 20
         }));
-
-        // #region agent log
-        try {
-          wx.request({
-            url: 'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',
-            method: 'POST',
-            header: { 'Content-Type': 'application/json' },
-            data: {
-              id: 'log_' + Date.now() + '_load_list_after_remove',
-              runId: 'run1',
-              hypothesisId: 'L',
-              location: 'activity_list.js:loadActivityList',
-              message: 'loadActivityList after remove',
-              data: {
-                count: list.length,
-                items: list.map(i => ({
-                  id: i._id,
-                  participantsLength: Array.isArray(i.participants) ? i.participants.length : 'na',
-                  participants: Array.isArray(i.participants) ? i.participants : null
-                }))
-              },
-              timestamp: Date.now()
-            }
-          });
-        } catch (e) {}
-        // #endregion
 
         this.setData({ activityList: list });
         this.filterActivities();
@@ -238,8 +185,8 @@ Page({
         };
 
         if (isEdit) {
-          // 编辑
-          db.collection("activities")
+          // 编辑：优先云函数，云函数未部署时回退到客户端 update
+          const doUpdate = () => db.collection("activities")
             .doc(this.data.currentActivity._id)
             .update({ data })
             .then(() => {
@@ -247,12 +194,42 @@ Page({
               wx.showToast({ title: "更新成功", icon: "success" });
               this.closeEditModal();
               this.loadActivityList();
+            });
+
+          wx.cloud.callFunction({
+            name: "updateActivity",
+            data: {
+              activityId: this.data.currentActivity._id,
+              date: data.date,
+              name: data.name,
+              status: data.status,
+              remark: data.remark,
+              participants: data.participants,
+              maxParticipants: data.maxParticipants
+            }
+          })
+            .then((res) => {
+              if (res.result && res.result.errCode === 0) {
+                wx.hideLoading();
+                wx.showToast({ title: "更新成功", icon: "success" });
+                this.closeEditModal();
+                this.loadActivityList();
+              } else {
+                throw new Error(res.result && res.result.errMsg ? res.result.errMsg : "更新失败");
+              }
             })
-        .catch(err => {
-          console.error(err);
-          wx.hideLoading();
-          wx.showToast({ title: "更新失败", icon: "none" });
-        });
+            .catch(err => {
+              const isFuncNotFound = err.errCode === -501000 || (err.errMsg && err.errMsg.includes("FunctionName")) || (err.message && String(err.message).includes("501000"));
+              if (isFuncNotFound) {
+                return doUpdate().catch(e => {
+                  console.error(e);
+                  wx.hideLoading();
+                  wx.showToast({ title: e.message || "更新失败", icon: "none" });
+                });
+              }
+              wx.hideLoading();
+              wx.showToast({ title: err.message || "更新失败", icon: "none" });
+            });
     } else {
       // 新建
       data.createdAt = db.serverDate();
@@ -372,15 +349,14 @@ Page({
       return;
     }
 
-    const participants = [...(activity.participants || [])];
+    const participants = activity.participants || [];
+    const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
 
-    // 使用昵称作为唯一标识，检查是否已报名
-    if (participants.includes(nickname)) {
+    // 按 userId 校验：同一用户不能重复报名，允许不同用户重名
+    if (myUserId && participants.some(p => typeof p === "object" && p.userId && p.userId === myUserId)) {
       wx.showToast({ title: "您已报名", icon: "none" });
       return;
     }
-
-    participants.push(nickname);
 
     wx.showLoading({ title: "报名中..." });
 
@@ -389,7 +365,8 @@ Page({
       name: 'signupActivity',
       data: {
         activityId: activity._id,
-        nickname
+        nickname,
+        userId: app.globalData.userId || null
       }
     })
       .then((res) => {
@@ -426,12 +403,19 @@ Page({
     });
   },
 
+  // 规范化参与者（兼容 string 与 {name, userId}）
+  normalizeParticipants(raw) {
+    const arr = raw || [];
+    return arr.map(p => typeof p === "string" ? { name: p, userId: null } : { name: p.name || "", userId: p.userId || null });
+  },
+
   // 查看详情
   showDetail(e) {
     const activity = e.currentTarget.dataset.activity;
+    const participants = this.normalizeParticipants(activity.participants);
     this.setData({
       showDetailModal: true,
-      detailActivity: activity
+      detailActivity: { ...activity, participants }
     });
   },
 
@@ -460,190 +444,41 @@ Page({
 
   doRemoveParticipant(name, activity) {
     wx.showLoading({ title: "处理中..." });
-    
-    // #region agent log
-    try {
-      wx.request({
-        url: 'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',
-        method: 'POST',
-        header: { 'Content-Type': 'application/json' },
-        data: {
-          id: 'log_' + Date.now() + '_remove_enter',
-          runId: 'run1',
-          hypothesisId: 'I',
-          location: 'activity_list.js:doRemoveParticipant',
-          message: 'doRemoveParticipant enter',
-          data: {
-            activityId: activity._id,
-            participantName: name,
-            currentParticipantsLength: (activity.participants || []).length,
-            currentParticipants: activity.participants || []
-          },
-          timestamp: Date.now()
-        }
-      });
-    } catch (e) {}
-    // #endregion
-    
+
     // 1. 使用云函数从活动参与者列表中删除（云函数有管理员权限）
     wx.cloud.callFunction({
       name: 'removeParticipant',
       data: {
         activityId: activity._id,
-        participantName: name
+        participantName: name,
+        isAdmin: this.data.isAdmin
       }
     })
       .then((res) => {
-        // #region agent log
-        try {
-          wx.request({
-            url: 'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',
-            method: 'POST',
-            header: { 'Content-Type': 'application/json' },
-            data: {
-              id: 'log_' + Date.now() + '_remove_cloud_result',
-              runId: 'run1',
-              hypothesisId: 'J',
-              location: 'activity_list.js:doRemoveParticipant',
-              message: 'removeParticipant cloud function result',
-              data: {
-                activityId: activity._id,
-                participantName: name,
-                result: res.result || null,
-                errCode: res.result && res.result.errCode !== undefined ? res.result.errCode : null,
-                stats: res.result && res.result.stats ? res.result.stats : null,
-                newParticipants: res.result && res.result.participants ? res.result.participants : null
-              },
-              timestamp: Date.now()
-            }
-          });
-        } catch (e) {}
-        // #endregion
-        
         if (res.result && res.result.errCode === 0) {
           if (res.result.alreadyRemoved) {
             wx.hideLoading();
             wx.showToast({ title: "参与者不存在", icon: "none" });
             return;
           }
-          
-          // 2. 查找并处理包含该成员的记账记录
-          return db.collection("bills")
-            .where({
-              activityId: activity._id
-            })
-            .get();
+          // 云函数已处理活动参与者和账单记录的删除/更新
+          return Promise.resolve();
         } else {
           throw new Error(res.result && res.result.errMsg ? res.result.errMsg : "删除失败");
         }
       })
-      .then(res => {
-        if (!res) return; // 如果上面已经返回（alreadyRemoved），这里 res 为 undefined
-        
-        const billsToDelete = [];
-        const billsToUpdate = [];
-        
-        res.data.forEach(bill => {
-          const billParticipants = bill.participants || [];
-          const isPayer = bill.payer === name;
-          const isParticipant = billParticipants.includes(name);
-          
-          if (isPayer) {
-            // 如果该成员是付款人，删除整条记录
-            billsToDelete.push(bill._id);
-          } else if (isParticipant) {
-            // 如果该成员是参与人，从参与人列表中移除
-            const newParticipants = billParticipants.filter(p => p !== name);
-            
-            if (newParticipants.length === 0) {
-              // 如果删除后没有参与人了，删除整条记账记录
-              billsToDelete.push(bill._id);
-            } else {
-              // 重新计算人均金额
-              const newPerShare = parseFloat((bill.totalAmount / newParticipants.length).toFixed(2));
-              billsToUpdate.push({
-                id: bill._id,
-                data: {
-                  participants: newParticipants,
-                  perShare: newPerShare,
-                  updatedAt: db.serverDate()
-                }
-              });
-            }
-          }
-        });
-
-        // 执行删除操作
-        const deletePromises = billsToDelete.map(id => 
-          db.collection("bills").doc(id).remove()
-        );
-
-        // 执行更新操作
-        const updatePromises = billsToUpdate.map(item =>
-          db.collection("bills").doc(item.id).update({ data: item.data })
-        );
-
-        return Promise.all([...deletePromises, ...updatePromises]);
-      })
       .then(() => {
-        // #region agent log
-        try {
-          wx.request({
-            url: 'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',
-            method: 'POST',
-            header: { 'Content-Type': 'application/json' },
-            data: {
-              id: 'log_' + Date.now() + '_remove_complete',
-              runId: 'run1',
-              hypothesisId: 'K',
-              location: 'activity_list.js:doRemoveParticipant',
-              message: 'removeParticipant complete, reloading list',
-              data: {
-                activityId: activity._id,
-                participantName: name
-              },
-              timestamp: Date.now()
-            }
-          });
-        } catch (e) {}
-        // #endregion
-        
         wx.hideLoading();
         wx.showToast({ title: "删除成功", icon: "success" });
         // 刷新活动列表和详情
         this.loadActivityList();
         // 更新详情显示
-        const updatedActivity = {
-          ...activity,
-          participants: (activity.participants || []).filter(p => p !== name)
-        };
+        const getParticipantName = p => typeof p === "string" ? p : (p && p.name);
+        const newParticipants = this.normalizeParticipants((activity.participants || []).filter(p => getParticipantName(p) !== name));
+        const updatedActivity = { ...activity, participants: newParticipants };
         this.setData({ detailActivity: updatedActivity });
       })
       .catch(err => {
-        // #region agent log
-        try {
-          wx.request({
-            url: 'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',
-            method: 'POST',
-            header: { 'Content-Type': 'application/json' },
-            data: {
-              id: 'log_' + Date.now() + '_remove_error',
-              runId: 'run1',
-              hypothesisId: 'M',
-              location: 'activity_list.js:doRemoveParticipant',
-              message: 'removeParticipant error',
-              data: {
-                activityId: activity._id,
-                participantName: name,
-                error: err && err.errMsg ? err.errMsg : ('' + err),
-                errCode: err && err.errCode ? err.errCode : null
-              },
-              timestamp: Date.now()
-            }
-          });
-        } catch (e) {}
-        // #endregion
-        
         console.error(err);
         let errorMsg = "删除失败";
         if (err && err.errMsg) {

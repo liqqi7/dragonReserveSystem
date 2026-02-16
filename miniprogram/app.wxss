@@ -5,3 +5,38 @@ page {
 .container {
   padding: 24rpx;
 }
+
+/* 游客缺省态时，容器无内边距、白底，避免两侧露灰/黑边 */
+.container.guest-mode {
+  padding: 0;
+  background-color: #ffffff;
+}
+
+/* 游客缺省态（三个 tab 页统一样式，全屏） */
+.guest-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 120rpx 48rpx;
+  box-sizing: border-box;
+  background-color: #ffffff;
+}
+
+.guest-empty-icon {
+  width: 160rpx;
+  height: 160rpx;
+  margin-bottom: 24rpx;
+}
+
+.guest-empty-text {
+  font-size: 28rpx;
+  color: #999;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.guest-empty-text + .guest-empty-text {
+  margin-top: 12rpx;
+}
