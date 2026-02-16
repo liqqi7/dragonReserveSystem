@@ -73,11 +73,65 @@ exports.main = async (event, context) => {
         }
       });
 
+    // 处理包含该成员的记账记录
+    const billsRes = await db.collection("bills")
+      .where({
+        activityId: activityId
+      })
+      .get();
+
+    const billsToDelete = [];
+    const billsToUpdate = [];
+
+    billsRes.data.forEach(bill => {
+      const billParticipants = bill.participants || [];
+      const isPayer = bill.payer === participantName;
+      const isParticipant = billParticipants.includes(participantName);
+
+      if (isPayer) {
+        // 如果该成员是付款人，删除整条记录
+        billsToDelete.push(bill._id);
+      } else if (isParticipant) {
+        // 如果该成员是参与人，从参与人列表中移除
+        const newBillParticipants = billParticipants.filter(p => p !== participantName);
+
+        if (newBillParticipants.length === 0) {
+          // 如果删除后没有参与人了，删除整条记账记录
+          billsToDelete.push(bill._id);
+        } else {
+          // 重新计算人均金额
+          const newPerShare = parseFloat((bill.totalAmount / newBillParticipants.length).toFixed(2));
+          billsToUpdate.push({
+            id: bill._id,
+            data: {
+              participants: newBillParticipants,
+              perShare: newPerShare,
+              updatedAt: db.serverDate()
+            }
+          });
+        }
+      }
+    });
+
+    // 执行删除操作（云函数有管理员权限）
+    const deletePromises = billsToDelete.map(id =>
+      db.collection("bills").doc(id).remove()
+    );
+
+    // 执行更新操作（云函数有管理员权限）
+    const updatePromises = billsToUpdate.map(item =>
+      db.collection("bills").doc(item.id).update({ data: item.data })
+    );
+
+    await Promise.all([...deletePromises, ...updatePromises]);
+
     return {
       errCode: 0,
       errMsg: "删除成功",
       stats: updateRes.stats,
-      participants: newParticipants
+      participants: newParticipants,
+      billsDeleted: billsToDelete.length,
+      billsUpdated: billsToUpdate.length
     };
   } catch (error) {
     console.error("云函数执行错误:", error);

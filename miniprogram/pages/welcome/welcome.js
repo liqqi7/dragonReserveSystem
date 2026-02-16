@@ -11,7 +11,7 @@ Page({
   onLoad() {
     const hasWeChatAuth = wx.getStorageSync("hasWeChatAuth");
     if (hasWeChatAuth && app.globalData.userId) {
-      wx.reLaunch({ url: "/pages/profile/profile" });
+      wx.reLaunch({ url: "/pages/activity_list/activity_list" });
       return;
     }
   },
@@ -119,7 +119,7 @@ Page({
         wx.setStorageSync("userDocId", userDocId);
         wx.setStorageSync("userNickname", nickname);
         this.setData({ submitting: false });
-        wx.reLaunch({ url: "/pages/profile/profile" });
+        wx.reLaunch({ url: "/pages/activity_list/activity_list" });
       })
       .catch((err) => {
         console.error("welcome submit error", err);

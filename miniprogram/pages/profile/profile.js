@@ -18,14 +18,8 @@ Page({
   },
 
   onShow() {
-    // #region agent log
-    try{wx.request({url:'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',method:'POST',header:{'Content-Type':'application/json'},data:{location:'profile.js:onShow',message:'profile onShow',data:{},timestamp:Date.now(),hypothesisId:'H2'}});}catch(e){}
-    // #endregion
     this.syncGuestState();
     app.ensureUserReady(() => {
-      // #region agent log
-      try{wx.request({url:'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',method:'POST',header:{'Content-Type':'application/json'},data:{location:'profile.js:ensureUserReady_callback',message:'ensureUserReady callback fired',data:{},timestamp:Date.now(),hypothesisId:'H2'}});}catch(e){}
-      // #endregion
       this.loadUserProfile();
     });
   },
@@ -38,14 +32,8 @@ Page({
   loadUserProfile() {
     const db = wx.cloud.database();
     const userId = app.globalData.userId;
-    // #region agent log
-    try{wx.request({url:'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',method:'POST',header:{'Content-Type':'application/json'},data:{location:'profile.js:loadUserProfile',message:'loadUserProfile',data:{userId:!!userId,userIdLen:userId?String(userId).length:0},timestamp:Date.now(),hypothesisId:'H3'}});}catch(e){}
-    // #endregion
 
     if (!userId) {
-      // #region agent log
-      try{wx.request({url:'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',method:'POST',header:{'Content-Type':'application/json'},data:{location:'profile.js:loadUserProfile_noUserId',message:'no userId, set hasUser false',data:{},timestamp:Date.now(),hypothesisId:'H3'}});}catch(e){}
-      // #endregion
       this.setData({ hasUser: false, isGuest: !app.globalData.isAuthenticated });
       return;
     }
@@ -56,7 +44,6 @@ Page({
       .limit(1)
       .get()
       .then((res) => {
-        console.log("profile 页查询 users:", res);
         if (res.data && res.data.length > 0) {
           const user = res.data[0];
           app.globalData.userDocId = user._id;
@@ -64,9 +51,6 @@ Page({
             nickname: user.nickname || "",
             avatarUrl: user.avatarUrl || ""
           };
-          // #region agent log
-          try{wx.request({url:'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',method:'POST',header:{'Content-Type':'application/json'},data:{location:'profile.js:loadUserProfile_success',message:'db found user, set hasUser true',data:{nickname:user.nickname||'',userIdShort:userId.slice(0,8)},timestamp:Date.now(),hypothesisId:'H4'}});}catch(e){}
-          // #endregion
           this.setData({
             hasUser: true,
             isGuest: !app.globalData.isAuthenticated,
@@ -77,9 +61,6 @@ Page({
             }
           });
         } else {
-          // #region agent log
-          try{wx.request({url:'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',method:'POST',header:{'Content-Type':'application/json'},data:{location:'profile.js:loadUserProfile_empty',message:'db returned empty, set hasUser false',data:{},timestamp:Date.now(),hypothesisId:'H4'}});}catch(e){}
-          // #endregion
           this.setData({
             hasUser: false,
             isGuest: !app.globalData.isAuthenticated
@@ -87,9 +68,6 @@ Page({
         }
       })
       .catch((err) => {
-        // #region agent log
-        try{wx.request({url:'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',method:'POST',header:{'Content-Type':'application/json'},data:{location:'profile.js:loadUserProfile_catch',message:'db query failed',data:{errMsg:err&&err.errMsg||''},timestamp:Date.now(),hypothesisId:'H4'}});}catch(e){}
-        // #endregion
         console.error("查询 users 失败:", err);
         this.setData({
           hasUser: false,
@@ -141,9 +119,6 @@ Page({
           app.clearAuthState();
           this.setData({ isGuest: true });
           wx.showToast({ title: "已恢复为游客", icon: "success" });
-          setTimeout(() => {
-            wx.reLaunch({ url: "/pages/welcome/welcome" });
-          }, 500);
         }
       }
     });

@@ -96,13 +96,7 @@ App({
    * 若无关联账号，自动创建一条新记录，然后执行回调。
    */
   ensureUserReady(callback) {
-    // #region agent log
-    try{wx.request({url:'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',method:'POST',header:{'Content-Type':'application/json'},data:{location:'app.js:ensureUserReady',message:'ensureUserReady',data:{hasUserId:!!this.globalData.userId,hasUserProfile:!!this.globalData.userProfile},timestamp:Date.now(),hypothesisId:'H2'}});}catch(e){}
-    // #endregion
     if (this.globalData.userId && this.globalData.userProfile) {
-      // #region agent log
-      try{wx.request({url:'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',method:'POST',header:{'Content-Type':'application/json'},data:{location:'app.js:ensureUserReady_immediate',message:'immediate callback path',data:{},timestamp:Date.now(),hypothesisId:'H2'}});}catch(e){}
-      // #endregion
       callback && callback();
       return;
     }
@@ -114,8 +108,6 @@ App({
         name: "login"
       })
       .then((res) => {
-        console.log("云函数 login 返回:", res);
-        
         // 处理多种返回格式
         let openid = null;
         if (res && res.result) {
@@ -135,7 +127,6 @@ App({
         }
         
         this.globalData.userId = openid;
-        console.log("获取到 openid:", openid);
 
         return db
           .collection("users")
@@ -144,19 +135,14 @@ App({
           .get();
       })
       .then((res) => {
-        console.log("查询 users 集合结果:", res);
         if (res.data && res.data.length > 0) {
-          // 用户已存在，加载资料
           const user = res.data[0];
           this.globalData.userDocId = user._id;
           this.globalData.userProfile = {
             nickname: user.nickname || ""
           };
-          console.log("用户已存在，加载资料:", this.globalData.userProfile);
           callback && callback();
         } else {
-          // 用户不存在，自动创建新用户记录
-          console.log("用户不存在，自动创建新用户记录");
           return db.collection("users").add({
             data: {
               nickname: "", // 初始为空，用户可在"我的"页面填写
@@ -168,9 +154,7 @@ App({
         }
       })
       .then((res) => {
-        // 如果是新创建的用户，res 是 add 的结果
         if (res && res._id) {
-          console.log("新用户创建成功，_id:", res._id);
           this.globalData.userDocId = res._id;
           this.globalData.userProfile = {
             nickname: ""
@@ -183,9 +167,6 @@ App({
         }
       })
       .catch((err) => {
-        // #region agent log
-        try{wx.request({url:'http://127.0.0.1:7242/ingest/f34d88b4-b211-4a11-947a-5555be024174',method:'POST',header:{'Content-Type':'application/json'},data:{location:'app.js:ensureUserReady_catch',message:'ensureUserReady error',data:{errMsg:err&&err.message||''},timestamp:Date.now(),hypothesisId:'H2'}});}catch(e){}
-        // #endregion
         console.error("ensureUserReady error", err);
         wx.showToast({
           title: "获取用户信息失败，请检查云函数",

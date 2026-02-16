@@ -5,15 +5,10 @@ cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV
 });
 
-// 获取参与者名称（兼容 string 与 {name, userId} 格式）
-function getParticipantName(p) {
-  return typeof p === "string" ? p : (p && p.name);
-}
-
 // 云函数入口函数
 exports.main = async (event, context) => {
   try {
-    const { activityId, nickname, userId } = event;
+    const { activityId, nickname } = event;
     
     if (!activityId || !nickname) {
       return {
