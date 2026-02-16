@@ -50,5 +50,10 @@
   "style": "v2",
   "sitemapLocation": "sitemap.json",
   "cloud": true,
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于选择活动位置"
+    }
+  },
   "subPackages": []
 }

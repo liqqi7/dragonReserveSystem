@@ -19,6 +19,20 @@ Page({
 
   onShow() {
     this.syncGuestState();
+    // 若全局已有用户信息，先同步到页面，避免首帧显示「登录」再闪回已登录态
+    const userId = app.globalData.userId;
+    const profile = app.globalData.userProfile;
+    if (userId && profile) {
+      this.setData({
+        hasUser: true,
+        isGuest: !app.globalData.isAuthenticated,
+        user: {
+          nickname: profile.nickname || "",
+          userIdShort: (userId || "").slice(0, 8),
+          avatarUrl: profile.avatarUrl || ""
+        }
+      });
+    }
     app.ensureUserReady(() => {
       this.loadUserProfile();
     });
@@ -30,7 +44,6 @@ Page({
   },
 
   loadUserProfile() {
-    const db = wx.cloud.database();
     const userId = app.globalData.userId;
 
     if (!userId) {

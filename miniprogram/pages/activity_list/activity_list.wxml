@@ -8,13 +8,6 @@
 
   <!-- 已授权用户内容 -->
   <block wx:else>
-  <!-- 顶部操作栏（仅管理员显示） -->
-  <view wx:if="{{isAdmin}}" class="top-bar">
-    <view class="top-actions">
-      <text class="icon-btn" bindtap="showCreateModal">➕</text>
-    </view>
-  </view>
-
   <!-- 搜索栏 -->
   <view class="search-bar">
     <view class="search-input-wrapper">
@@ -31,7 +24,7 @@
   <!-- 状态筛选 -->
   <view class="filter-tabs">
     <view
-      wx:for="{{['全部', '进行中', '已结束', '已取消']}}"
+      wx:for="{{['未开始', '进行中', '已结束', '已取消', '全部']}}"
       wx:key="*this"
       class="filter-tab {{selectedFilter === item ? 'active' : ''}}"
       data-filter="{{item}}"
@@ -43,11 +36,11 @@
 
   <!-- 活动列表 -->
   <view wx:if="{{filteredList.length === 0}}" class="empty-state">
-    <text class="empty-icon">📋</text>
+    <image class="empty-icon" src="/images/activity-empty-default.png" mode="aspectFit" />
     <text class="empty-text">{{searchKeyword ? '未找到相关活动' : '暂无活动'}}</text>
   </view>
 
-  <view wx:else class="activity-list">
+  <view wx:else class="activity-list {{isAdmin ? 'has-fixed-btn' : ''}}">
     <view
       wx:for="{{filteredList}}"
       wx:key="_id"
@@ -59,35 +52,63 @@
         <!-- 活动标题和状态 -->
         <view class="activity-header">
           <view class="activity-title">{{item.name}}</view>
-          <view class="status-badge {{item.status === '进行中' ? 'status-active' : (item.status === '已取消' ? 'status-cancelled' : 'status-ended')}}">
+          <view class="status-badge {{item.status === '进行中' ? 'status-active' : (item.status === '已取消' ? 'status-cancelled' : (item.status === '未开始' ? 'status-pending' : 'status-ended'))}}">
             {{item.status}}
           </view>
         </view>
 
         <!-- 活动信息 -->
-        <view class="activity-meta">
+        <view class="activity-meta {{!(isAdmin || item.status === '未开始' || item.status === '进行中') ? 'no-actions' : ''}}">
           <view wx:if="{{item.remark}}" class="meta-item">
             <text class="meta-icon">✏️</text>
             <text class="meta-text">{{item.remark}}</text>
           </view>
           <view class="meta-item">
             <text class="meta-icon">🕐</text>
-            <text class="meta-text">{{item.date}}</text>
+            <text class="meta-text">{{item.startTime || item.date}}</text>
           </view>
-          <view class="meta-item">
-            <text class="meta-icon">👥</text>
-            <text class="meta-text">已报名 {{item.participants.length}} 人</text>
+          <view class="meta-item participants-row">
+            <view class="participants-content">
+              <view class="avatar-list" wx:if="{{item.avatarList && item.avatarList.length}}">
+                <view
+                  wx:for="{{item.avatarList}}"
+                  wx:for-item="avatarItem"
+                  wx:for-index="ai"
+                  wx:key="ai"
+                  class="avatar-wrapper {{avatarItem.isDefault ? 'avatar-default' : ''}}"
+                >
+                  <image
+                    class="avatar-img"
+                    src="{{avatarItem.url}}"
+                    mode="aspectFill"
+                    binderror="onAvatarError"
+                    data-index="{{ai}}"
+                    data-activity-id="{{item._id}}"
+                  />
+                </view>
+              </view>
+              <!-- 有报名 + 头像：额外加一个类做光学对齐 -->
+              <text class="meta-text participants-text participants-text-with-avatar" wx:if="{{item.participants.length > 0}}">
+                等 {{item.participants.length}} 人报名
+              </text>
+              <text class="meta-text participants-text" wx:else>暂无报名</text>
+            </view>
           </view>
         </view>
 
-        <!-- 操作按钮 -->
-        <view class="card-actions">
+        <!-- 操作按钮：仅在有可显示按钮时渲染，避免非管理员/已结束时留空 -->
+        <view wx:if="{{isAdmin || item.status === '未开始' || item.status === '进行中'}}" class="card-actions">
           <button
-            wx:if="{{item.status === '进行中'}}"
+            wx:if="{{(item.status === '未开始' || item.status === '进行中') && !item.hasSignedUp}}"
             class="action-btn primary"
-            catchtap="showSignupModal"
+            catchtap="directSignup"
             data-activity="{{item}}"
           >报名</button>
+          <button
+            wx:elif="{{(item.status === '未开始' || item.status === '进行中') && item.hasSignedUp}}"
+            class="action-btn default"
+            disabled="true"
+          >已报名</button>
           <button
             wx:if="{{isAdmin}}"
             class="action-btn default"
@@ -115,14 +136,31 @@
 
       <view class="modal-body">
         <view class="form-item">
-          <view class="label">活动日期</view>
-          <picker mode="date" value="{{editForm.date}}" bindchange="onEditFormChange" data-field="date">
-            <view class="picker">{{editForm.date || '请选择日期'}}</view>
-          </picker>
+          <view class="label">开始时间：</view>
+          <view class="datetime-picker-wrapper">
+            <picker mode="date" value="{{editForm.startDate}}" bindchange="onStartDateChange">
+              <view class="picker datetime-date">{{editForm.startDate || '请选择日期'}}</view>
+            </picker>
+            <picker mode="time" value="{{editForm.startTime}}" bindchange="onStartTimeChange">
+              <view class="picker datetime-time">{{editForm.startTime || '请选择时间'}}</view>
+            </picker>
+          </view>
         </view>
 
         <view class="form-item">
-          <view class="label">活动名称</view>
+          <view class="label">结束时间：</view>
+          <view class="datetime-picker-wrapper">
+            <picker mode="date" value="{{editForm.endDate}}" bindchange="onEndDateChange">
+              <view class="picker datetime-date">{{editForm.endDate || '请选择日期'}}</view>
+            </picker>
+            <picker mode="time" value="{{editForm.endTime}}" bindchange="onEndTimeChange">
+              <view class="picker datetime-time">{{editForm.endTime || '请选择时间'}}</view>
+            </picker>
+          </view>
+        </view>
+
+        <view class="form-item">
+          <view class="label">活动名称：</view>
           <input
             class="input"
             placeholder="请输入活动名称"
@@ -134,20 +172,14 @@
         </view>
 
         <view class="form-item">
-          <view class="label">状态</view>
-          <picker
-            mode="selector"
-            range="{{['进行中', '已取消', '已结束']}}"
-            value="{{['进行中', '已取消', '已结束'].indexOf(editForm.status) >= 0 ? ['进行中', '已取消', '已结束'].indexOf(editForm.status) : 0}}"
-            bindchange="onEditFormChange"
-            data-field="status"
-          >
-            <view class="picker">{{editForm.status}}</view>
-          </picker>
+          <view class="label">活动地点：</view>
+          <view class="picker" bindtap="onChooseLocation">
+            {{editForm.locationName || '请选择活动位置'}}
+          </view>
         </view>
 
         <view class="form-item">
-          <view class="label">备注</view>
+          <view class="label">活动备注：</view>
           <textarea
             class="textarea"
             placeholder="请输入备注（可选）"
@@ -162,39 +194,8 @@
 
       <view class="modal-footer">
         <button class="btn default" bindtap="closeEditModal">取消</button>
+        <button wx:if="{{isAdmin && currentActivity && currentActivity.status !== '已取消'}}" class="btn danger" bindtap="cancelActivity">取消活动</button>
         <button class="btn primary" bindtap="saveActivity">保存</button>
-      </view>
-    </view>
-  </view>
-
-  <!-- 报名弹窗 -->
-  <view wx:if="{{showSignupModal}}" class="modal-overlay" bindtap="closeSignupModal">
-    <view class="modal-content" catchtap="stopPropagation">
-      <view class="modal-header">
-        <text>报名</text>
-        <text class="close-btn" bindtap="closeSignupModal">×</text>
-      </view>
-
-      <view class="modal-body">
-        <view class="form-item">
-          <view class="label">活动名称</view>
-          <view class="readonly-text">{{currentActivity.name}}</view>
-        </view>
-
-        <view wx:if="{{currentActivity.remark}}" class="form-item">
-          <view class="label">活动备注</view>
-          <view class="readonly-text">{{currentActivity.remark}}</view>
-        </view>
-
-        <view class="form-item">
-          <view class="label">活动时间</view>
-          <view class="readonly-text">{{currentActivity.date}}</view>
-        </view>
-      </view>
-
-      <view class="modal-footer">
-        <button class="btn default" bindtap="closeSignupModal">取消</button>
-        <button class="btn primary" bindtap="submitSignup">确认报名</button>
       </view>
     </view>
   </view>
@@ -213,16 +214,25 @@
           <text>{{detailActivity.name}}</text>
         </view>
         <view class="detail-item">
-          <text class="label">活动日期：</text>
-          <text>{{detailActivity.date}}</text>
+          <text class="label">开始时间：</text>
+          <text>{{detailActivity.startTime || detailActivity.date + ' 00:00'}}</text>
         </view>
         <view class="detail-item">
-          <text class="label">状态：</text>
+          <text class="label">结束时间：</text>
+          <text>{{detailActivity.endTime || detailActivity.date + ' 01:00'}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="label">活动状态：</text>
           <text>{{detailActivity.status}}</text>
         </view>
         <view wx:if="{{detailActivity.remark}}" class="detail-item">
-          <text class="label">备注：</text>
+          <text class="label">活动备注：</text>
           <text>{{detailActivity.remark}}</text>
+        </view>
+
+        <view wx:if="{{detailActivity.locationName || detailActivity.locationAddress}}" class="detail-item">
+          <text class="label">活动地点：</text>
+          <text>{{detailActivity.locationName}} {{detailActivity.locationAddress}}</text>
         </view>
 
         <view class="divider"></view>
@@ -253,3 +263,6 @@
   </view>
   </block>
 </view>
+
+<!-- 吸底新建活动按钮（仅管理员显示，与列表同层，弹窗遮罩会盖住按钮） -->
+<button wx:if="{{isAdmin && !isGuest}}" class="create-btn-fixed" bindtap="showCreateModal">新建活动</button>

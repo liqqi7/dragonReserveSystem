@@ -17,6 +17,9 @@ exports.main = async (event, context) => {
       };
     }
 
+    const wxContext = cloud.getWXContext();
+    const openid = wxContext.OPENID || wxContext.openid || "";
+
     const db = cloud.database();
 
     // 获取活动文档
@@ -32,8 +35,6 @@ exports.main = async (event, context) => {
     }
 
     const participants = docRes.data.participants || [];
-    const wxContext = cloud.getWXContext();
-    const openid = wxContext.OPENID || wxContext.openid || "";
 
     // 按 userId 校验：同一用户不能重复报名，允许不同用户重名
     const alreadySigned = openid && participants.some(p => typeof p === "object" && p.userId && p.userId === openid);
@@ -45,8 +46,20 @@ exports.main = async (event, context) => {
       };
     }
 
-    // 添加参与者（新格式：{name, userId}，使用服务端 openid 确保准确）
-    const newParticipant = { name: nickname, userId: openid || null };
+    // 查询用户头像，用于在活动列表展示报名头像
+    let avatarUrl = "";
+    if (openid) {
+      const userRes = await db.collection("users")
+        .where({ _openid: openid })
+        .limit(1)
+        .get();
+      if (userRes.data && userRes.data.length > 0) {
+        avatarUrl = userRes.data[0].avatarUrl || "";
+      }
+    }
+
+    // 添加参与者（新格式：{name, userId, avatarUrl}，使用服务端 openid 确保准确）
+    const newParticipant = { name: nickname, userId: openid || null, avatarUrl: avatarUrl || "" };
     const newParticipants = [...participants, newParticipant];
 
     // 更新活动文档（云函数有管理员权限，可以更新任何文档）

@@ -7,7 +7,21 @@ cloud.init({
 
 exports.main = async (event, context) => {
   try {
-    const { activityId, date, name, status, remark, participants, maxParticipants } = event;
+    const {
+      activityId,
+      date,
+      name,
+      status,
+      remark,
+      participants,
+      maxParticipants,
+      startTime,
+      endTime,
+      locationName,
+      locationAddress,
+      locationLatitude,
+      locationLongitude
+    } = event;
 
     if (!activityId) {
       return {
@@ -27,6 +41,12 @@ exports.main = async (event, context) => {
     if (remark !== undefined) updateData.remark = remark;
     if (participants !== undefined) updateData.participants = participants;
     if (maxParticipants !== undefined) updateData.maxParticipants = maxParticipants;
+    if (startTime !== undefined) updateData.startTime = startTime;
+    if (endTime !== undefined) updateData.endTime = endTime;
+    if (locationName !== undefined) updateData.locationName = locationName;
+    if (locationAddress !== undefined) updateData.locationAddress = locationAddress;
+    if (locationLatitude !== undefined) updateData.locationLatitude = locationLatitude;
+    if (locationLongitude !== undefined) updateData.locationLongitude = locationLongitude;
 
     const updateRes = await db.collection("activities")
       .doc(activityId)

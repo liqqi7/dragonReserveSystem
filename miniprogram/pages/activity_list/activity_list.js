@@ -1,28 +1,42 @@
 const app = getApp();
 const db = wx.cloud.database();
 
+// 默认头像 data URI，避免网络请求失败，CSS ::before 显示阴影人像
+const DEFAULT_AVATAR = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InRyYW5zcGFyZW50Ii8+PC9zdmc+";
+
 Page({
   data: {
     activityList: [],
     filteredList: [],
     showEditModal: false,
-    showSignupModal: false,
     showDetailModal: false,
     currentActivity: null,
     editForm: {
-      date: "",
+      // 活动名称
       name: "",
+      // 活动状态
       status: "进行中",
-      remark: ""
+      // 活动备注
+      remark: "",
+      // 活动开始时间（日期和时间分开存储）
+      startDate: "",
+      startTime: "",
+      // 活动结束时间（日期和时间分开存储）
+      endDate: "",
+      endTime: "",
+      // 活动位置
+      locationName: "",
+      locationAddress: "",
+      locationLatitude: null,
+      locationLongitude: null
     },
-    userNickname: "", // 报名弹窗输入框
     myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
     myNickname: "", // 当前用户昵称（userId 为空时的回退，兼容旧数据）
     detailActivity: null,
     isAdmin: false,
     isGuest: true,
     searchKeyword: "",
-    selectedFilter: "全部"
+    selectedFilter: "未开始"
   },
 
   onLoad() {
@@ -50,39 +64,202 @@ Page({
       .orderBy("date", "desc")
       .get()
       .then(res => {
-        const list = (res.data || []).map(item => ({
-          _id: item._id,
-          date: item.date,
-          name: item.name,
-          status: item.status || "进行中",
-          remark: item.remark || "",
-          participants: item.participants || [],
-          maxParticipants: item.maxParticipants || 20
-        }));
+        const now = new Date();
+        const timeMigrationPromises = [];
+        const statusUpdatePromises = [];
 
-        this.setData({ activityList: list });
-        this.filterActivities();
-        
-        // 更新 maxParticipants 字段（如果不存在）
-        const updatePromises = list
-          .filter(item => !item.maxParticipants)
-          .map(item => 
-            db.collection("activities")
-              .doc(item._id)
-              .update({
-                data: { maxParticipants: 20 }
-              })
-          );
-        if (updatePromises.length > 0) {
-          Promise.all(updatePromises).catch(console.error);
+        // 收集所有需要查询头像的 userId
+        const userIdsToQuery = new Set();
+        (res.data || []).forEach(item => {
+          (item.participants || []).forEach(p => {
+            if (typeof p === "object" && p !== null && p.userId) {
+              userIdsToQuery.add(p.userId);
+            }
+          });
+        });
+
+        const avatarMap = new Map();
+        if (userIdsToQuery.size > 0) {
+          return Promise.all(
+            Array.from(userIdsToQuery).map(userId =>
+              db.collection("users")
+                .where({ _openid: userId })
+                .limit(1)
+                .get()
+                .then(userRes => {
+                  if (userRes.data && userRes.data.length > 0) {
+                    const latestAvatar = userRes.data[0].avatarUrl;
+                    avatarMap.set(userId, latestAvatar || DEFAULT_AVATAR);
+                  } else {
+                    avatarMap.set(userId, DEFAULT_AVATAR);
+                  }
+                })
+                .catch(() => {
+                  avatarMap.set(userId, DEFAULT_AVATAR);
+                })
+            )
+          ).then(() => {
+            return this.processActivityList(res.data, avatarMap, DEFAULT_AVATAR, timeMigrationPromises, statusUpdatePromises, now);
+          });
         }
-        wx.hideLoading();
+        return this.processActivityList(res.data, avatarMap, DEFAULT_AVATAR, timeMigrationPromises, statusUpdatePromises, now);
+      })
+      .then(result => {
+        if (result) {
+          const { list, timeMigrationPromises, statusUpdatePromises } = result;
+          const { selectedFilter, searchKeyword } = this.data;
+          const filtered = this.computeFilteredList(list, selectedFilter, searchKeyword);
+          this.setData({ activityList: list, filteredList: filtered });
+          
+          // 更新 maxParticipants 字段（如果不存在）
+          const maxParticipantsPromises = list
+            .filter(item => !item.maxParticipants)
+            .map(item => 
+              db.collection("activities")
+                .doc(item._id)
+                .update({
+                  data: { maxParticipants: 20 }
+                })
+            );
+          
+          const allPromises = [
+            ...maxParticipantsPromises,
+            ...timeMigrationPromises,
+            ...statusUpdatePromises
+          ];
+          
+          if (allPromises.length > 0) {
+            Promise.all(allPromises).catch(err => {
+              console.error("更新失败:", err);
+            });
+          }
+          
+          wx.hideLoading();
+        }
       })
       .catch(err => {
         console.error(err);
         wx.hideLoading();
         wx.showToast({ title: "加载失败", icon: "none" });
       });
+  },
+
+  processActivityList(resData, avatarMap, defaultAvatar, timeMigrationPromises, statusUpdatePromises, now) {
+    const myUserId = this.data.myUserId;
+    const myNickname = (this.data.myNickname || "").trim();
+
+    const list = (resData || []).map(item => {
+      let startTime = item.startTime;
+      let endTime = item.endTime;
+      let needTimeMigration = false;
+
+      if (!startTime || !endTime) {
+        const baseDate = item.date;
+        startTime = `${baseDate} 00:00`;
+        endTime = `${baseDate} 01:00`;
+        needTimeMigration = true;
+      }
+
+      const activity = {
+        _id: item._id,
+        date: item.date,
+        name: item.name,
+        status: item.status || "进行中",
+        remark: item.remark || "",
+        participants: item.participants || [],
+        maxParticipants: item.maxParticipants || 20,
+        startTime,
+        endTime,
+        locationName: item.locationName || "",
+        locationAddress: item.locationAddress || "",
+        locationLatitude: item.locationLatitude,
+        locationLongitude: item.locationLongitude
+      };
+
+      let hasSignedUp = false;
+      const rawParticipants = item.participants || [];
+      const avatarList = [];
+
+      rawParticipants.forEach(p => {
+        if (typeof p === "object" && p !== null) {
+          const uid = p.userId;
+          const name = p.name;
+          // 优先使用实时查询的最新头像，如果没有则使用保存的头像，最后使用默认头像
+          let avatarUrl = avatarMap.get(uid);
+          if (!avatarUrl) {
+            const savedAvatar = p.avatarUrl && String(p.avatarUrl).trim();
+            avatarUrl = savedAvatar || defaultAvatar;
+          }
+          const hasCustomAvatar = avatarUrl !== defaultAvatar;
+          avatarList.push({
+            url: avatarUrl,
+            isDefault: !hasCustomAvatar
+          });
+          if (myUserId && uid && uid === myUserId) {
+            hasSignedUp = true;
+          } else if (!myUserId && myNickname && name === myNickname) {
+            hasSignedUp = true;
+          }
+        } else if (typeof p === "string") {
+          avatarList.push({
+            url: defaultAvatar,
+            isDefault: true
+          });
+          if (myNickname && p === myNickname) {
+            hasSignedUp = true;
+          }
+        }
+      });
+      activity.hasSignedUp = hasSignedUp;
+      activity.avatarList = avatarList;
+
+      if (needTimeMigration) {
+        timeMigrationPromises.push(
+          wx.cloud.callFunction({
+            name: "updateActivity",
+            data: {
+              activityId: item._id,
+              startTime,
+              endTime
+            }
+          }).catch(console.error)
+        );
+      }
+
+      // 基于时间自动更新状态（除已取消之外）
+      const parseDateTime = (s) => new Date(s.replace(" ", "T") + ":00");
+      const start = parseDateTime(startTime);
+      const end = parseDateTime(endTime);
+      let autoStatus = activity.status || "未开始";
+      if (activity.status === "已取消") {
+        autoStatus = "已取消";
+      } else if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+        if (now.getTime() < start.getTime()) {
+          autoStatus = "未开始";
+        } else if (now.getTime() < end.getTime()) {
+          autoStatus = "进行中";
+        } else {
+          autoStatus = "已结束";
+        }
+      }
+
+      if (autoStatus !== activity.status && activity.status !== "已取消") {
+        activity.status = autoStatus;
+        statusUpdatePromises.push(
+          wx.cloud.callFunction({
+            name: "updateActivity",
+            data: {
+              activityId: item._id,
+              status: autoStatus
+            }
+          }).catch(console.error)
+        );
+      }
+
+      return activity;
+    });
+
+    return { list, timeMigrationPromises, statusUpdatePromises };
   },
 
   onSearchInput(e) {
@@ -96,37 +273,58 @@ Page({
     this.filterActivities();
   },
 
-  filterActivities() {
-    const { activityList, searchKeyword, selectedFilter } = this.data;
-    let filtered = [...activityList];
-
-    // 按状态筛选
-    if (selectedFilter !== "全部") {
+  computeFilteredList(list, selectedFilter, searchKeyword) {
+    let filtered = list ? [...list] : [];
+    if (selectedFilter && selectedFilter !== "全部") {
       filtered = filtered.filter(item => item.status === selectedFilter);
     }
-
-    // 按关键词搜索
-    if (searchKeyword.trim()) {
+    if (searchKeyword && searchKeyword.trim()) {
       const keyword = searchKeyword.trim().toLowerCase();
-      filtered = filtered.filter(item => 
+      filtered = filtered.filter(item =>
         item.name.toLowerCase().includes(keyword) ||
         (item.remark && item.remark.toLowerCase().includes(keyword))
       );
     }
+    return filtered;
+  },
 
+  filterActivities() {
+    const { activityList, searchKeyword, selectedFilter } = this.data;
+    const filtered = this.computeFilteredList(activityList, selectedFilter, searchKeyword);
     this.setData({ filteredList: filtered });
   },
 
   // 管理员：创建活动
   showCreateModal() {
+    const now = new Date();
+    const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
+    const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    const startMinutes = now.getMinutes();
+    // 将开始时间向上取整到 10 分钟
+    const roundedMinutes = Math.ceil(startMinutes / 10) * 10;
+    const startHour = roundedMinutes === 60 ? now.getHours() + 1 : now.getHours();
+    const startMinuteFinal = roundedMinutes === 60 ? 0 : roundedMinutes;
+    const startTime = `${pad(startHour)}:${pad(startMinuteFinal)}`;
+    // 结束时间默认开始时间后 1 小时
+    const endHourDate = new Date(now.getTime());
+    endHourDate.setHours(startHour + 1, startMinuteFinal, 0, 0);
+    const endTime = `${pad(endHourDate.getHours())}:${pad(endHourDate.getMinutes())}`;
+
     this.setData({
       showEditModal: true,
       currentActivity: null,
       editForm: {
-        date: "",
         name: "",
-        status: "进行中",
-        remark: ""
+        status: "未开始",
+        remark: "",
+        startDate: date,
+        startTime: startTime,
+        endDate: date,
+        endTime: endTime,
+        locationName: "",
+        locationAddress: "",
+        locationLatitude: null,
+        locationLongitude: null
       }
     });
   },
@@ -134,14 +332,45 @@ Page({
   // 管理员：编辑活动
   showEditModal(e) {
     const activity = e.currentTarget.dataset.activity;
+    // 解析开始时间和结束时间
+    let startDate = "";
+    let startTime = "";
+    let endDate = "";
+    let endTime = "";
+    
+    if (activity.startTime) {
+      const startParts = activity.startTime.split(" ");
+      startDate = startParts[0] || activity.date || "";
+      startTime = startParts[1] || "00:00";
+    } else if (activity.date) {
+      startDate = activity.date;
+      startTime = "00:00";
+    }
+    
+    if (activity.endTime) {
+      const endParts = activity.endTime.split(" ");
+      endDate = endParts[0] || activity.date || "";
+      endTime = endParts[1] || "01:00";
+    } else if (activity.date) {
+      endDate = activity.date;
+      endTime = "01:00";
+    }
+    
     this.setData({
       showEditModal: true,
       currentActivity: activity,
       editForm: {
-        date: activity.date,
         name: activity.name,
         status: activity.status,
-        remark: activity.remark || ""
+        remark: activity.remark || "",
+        startDate: startDate,
+        startTime: startTime,
+        endDate: endDate,
+        endTime: endTime,
+        locationName: activity.locationName || "",
+        locationAddress: activity.locationAddress || "",
+        locationLatitude: activity.locationLatitude ?? null,
+        locationLongitude: activity.locationLongitude ?? null
       }
     });
   },
@@ -152,8 +381,8 @@ Page({
     
     // 如果是状态选择器，需要从数组中取值
     if (field === "status") {
-      const statusList = ["进行中", "已取消", "已结束"];
-      value = statusList[Number(value)] || "进行中";
+      const statusList = ["未开始", "进行中", "已取消", "已结束"];
+      value = statusList[Number(value)] || "未开始";
     }
     
     this.setData({
@@ -161,77 +390,173 @@ Page({
     });
   },
 
+  // 开始日期变更
+  onStartDateChange(e) {
+    this.setData({
+      "editForm.startDate": e.detail.value
+    });
+  },
+
+  // 开始时间变更
+  onStartTimeChange(e) {
+    this.setData({
+      "editForm.startTime": e.detail.value
+    });
+  },
+
+  // 结束日期变更
+  onEndDateChange(e) {
+    this.setData({
+      "editForm.endDate": e.detail.value
+    });
+  },
+
+  // 结束时间变更
+  onEndTimeChange(e) {
+    this.setData({
+      "editForm.endTime": e.detail.value
+    });
+  },
+
+  // 选择活动位置
+  onChooseLocation() {
+    wx.chooseLocation({
+      success: (res) => {
+        this.setData({
+          "editForm.locationName": res.name || res.address || "",
+          "editForm.locationAddress": res.address || "",
+          "editForm.locationLatitude": res.latitude,
+          "editForm.locationLongitude": res.longitude
+        });
+      },
+      fail: () => {
+        // 用户取消或失败时无需报错，保持原值
+      }
+    });
+  },
+
   saveActivity() {
     const form = this.data.editForm;
-    if (!form.date) {
-      wx.showToast({ title: "请选择日期", icon: "none" });
-      return;
-    }
     if (!form.name.trim()) {
       wx.showToast({ title: "请输入活动名称", icon: "none" });
       return;
     }
+    if (!form.startDate) {
+      wx.showToast({ title: "请选择开始日期", icon: "none" });
+      return;
+    }
+    if (!form.startTime) {
+      wx.showToast({ title: "请选择开始时间", icon: "none" });
+      return;
+    }
+    if (!form.endDate) {
+      wx.showToast({ title: "请选择结束日期", icon: "none" });
+      return;
+    }
+    if (!form.endTime) {
+      wx.showToast({ title: "请选择结束时间", icon: "none" });
+      return;
+    }
+
+    // 组合开始/结束时间，进行时间合法性校验
+    const startDateTime = new Date(`${form.startDate}T${form.startTime}:00`);
+    const endDateTime = new Date(`${form.endDate}T${form.endTime}:00`);
+    if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+      wx.showToast({ title: "时间格式错误，请重新选择", icon: "none" });
+      return;
+    }
+
+    const now = new Date();
+    const isEdit = !!this.data.currentActivity;
+    // 新建活动时，开始时间不能早于当前时间
+    if (!isEdit && startDateTime.getTime() < now.getTime()) {
+      wx.showToast({ title: "开始时间不能早于当前时间", icon: "none" });
+      return;
+    }
+
+    if (endDateTime.getTime() <= startDateTime.getTime()) {
+      wx.showToast({ title: "结束时间必须晚于开始时间", icon: "none" });
+      return;
+    }
+
+    const startTimeFull = `${form.startDate} ${form.startTime}`;
+    const endTimeFull = `${form.endDate} ${form.endTime}`;
+    // date 字段保留用于兼容性，使用开始日期
+    const date = form.startDate;
 
     wx.showLoading({ title: "保存中..." });
-    const isEdit = !!this.data.currentActivity;
     const data = {
-      date: form.date,
+      date: date,
       name: form.name.trim(),
       status: form.status,
       remark: form.remark.trim(),
-          participants: isEdit ? (this.data.currentActivity.participants || []) : [],
-          maxParticipants: isEdit ? (this.data.currentActivity.maxParticipants || 20) : 20,
-          updatedAt: db.serverDate()
-        };
+      startTime: startTimeFull,
+      endTime: endTimeFull,
+      locationName: form.locationName || "",
+      locationAddress: form.locationAddress || "",
+      locationLatitude: form.locationLatitude,
+      locationLongitude: form.locationLongitude,
+      participants: isEdit ? (this.data.currentActivity.participants || []) : [],
+      maxParticipants: isEdit ? (this.data.currentActivity.maxParticipants || 20) : 20,
+      updatedAt: db.serverDate()
+    };
 
-        if (isEdit) {
-          // 编辑：优先云函数，云函数未部署时回退到客户端 update
-          const doUpdate = () => db.collection("activities")
-            .doc(this.data.currentActivity._id)
-            .update({ data })
-            .then(() => {
-              wx.hideLoading();
-              wx.showToast({ title: "更新成功", icon: "success" });
-              this.closeEditModal();
-              this.loadActivityList();
-            });
+    if (isEdit) {
+      const doUpdate = () =>
+        db.collection("activities")
+          .doc(this.data.currentActivity._id)
+          .update({ data })
+          .then(() => {
+            wx.hideLoading();
+            wx.showToast({ title: "更新成功", icon: "success" });
+            this.closeEditModal();
+            this.loadActivityList();
+          });
 
-          wx.cloud.callFunction({
-            name: "updateActivity",
-            data: {
-              activityId: this.data.currentActivity._id,
-              date: data.date,
-              name: data.name,
-              status: data.status,
-              remark: data.remark,
-              participants: data.participants,
-              maxParticipants: data.maxParticipants
-            }
-          })
-            .then((res) => {
-              if (res.result && res.result.errCode === 0) {
-                wx.hideLoading();
-                wx.showToast({ title: "更新成功", icon: "success" });
-                this.closeEditModal();
-                this.loadActivityList();
-              } else {
-                throw new Error(res.result && res.result.errMsg ? res.result.errMsg : "更新失败");
-              }
-            })
-            .catch(err => {
-              const isFuncNotFound = err.errCode === -501000 || (err.errMsg && err.errMsg.includes("FunctionName")) || (err.message && String(err.message).includes("501000"));
-              if (isFuncNotFound) {
-                return doUpdate().catch(e => {
-                  console.error(e);
-                  wx.hideLoading();
-                  wx.showToast({ title: e.message || "更新失败", icon: "none" });
-                });
-              }
+      wx.cloud.callFunction({
+        name: "updateActivity",
+        data: {
+          activityId: this.data.currentActivity._id,
+          date: data.date,
+          name: data.name,
+          status: data.status,
+          remark: data.remark,
+          participants: data.participants,
+          maxParticipants: data.maxParticipants,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          locationName: data.locationName,
+          locationAddress: data.locationAddress,
+          locationLatitude: data.locationLatitude,
+          locationLongitude: data.locationLongitude
+        }
+      })
+        .then((res) => {
+          if (res.result && res.result.errCode === 0) {
+            wx.hideLoading();
+            wx.showToast({ title: "更新成功", icon: "success" });
+            this.closeEditModal();
+            this.loadActivityList();
+          } else {
+            throw new Error(res.result && res.result.errMsg ? res.result.errMsg : "更新失败");
+          }
+        })
+        .catch((err) => {
+          const isFuncNotFound =
+            err.errCode === -501000 ||
+            (err.errMsg && err.errMsg.includes("FunctionName")) ||
+            (err.message && String(err.message).includes("501000"));
+          if (isFuncNotFound) {
+            return doUpdate().catch((e) => {
+              console.error(e);
               wx.hideLoading();
-              wx.showToast({ title: err.message || "更新失败", icon: "none" });
+              wx.showToast({ title: e.message || "更新失败", icon: "none" });
             });
+          }
+          wx.hideLoading();
+          wx.showToast({ title: err.message || "更新失败", icon: "none" });
+        });
     } else {
-      // 新建
       data.createdAt = db.serverDate();
       db.collection("activities")
         .add({ data })
@@ -241,7 +566,7 @@ Page({
           this.closeEditModal();
           this.loadActivityList();
         })
-        .catch(err => {
+        .catch((err) => {
           console.error(err);
           wx.hideLoading();
           wx.showToast({ title: "创建失败", icon: "none" });
@@ -254,10 +579,90 @@ Page({
       showEditModal: false,
       currentActivity: null,
       editForm: {
-        date: "",
         name: "",
         status: "进行中",
-        remark: ""
+        remark: "",
+        startDate: "",
+        startTime: "",
+        endDate: "",
+        endTime: "",
+        locationName: "",
+        locationAddress: "",
+        locationLatitude: null,
+        locationLongitude: null
+      }
+    });
+  },
+
+  // 管理员：取消活动（将状态设为已取消）
+  cancelActivity() {
+    const activity = this.data.currentActivity;
+    if (!activity || !activity._id) return;
+    wx.showModal({
+      title: "确认取消活动",
+      content: `确定要取消活动"${activity.name}"吗？`,
+      success: (res) => {
+        if (!res.confirm) return;
+        wx.showLoading({ title: "处理中..." });
+        const doUpdate = () =>
+          db.collection("activities")
+            .doc(activity._id)
+            .update({
+              data: {
+                status: "已取消",
+                updatedAt: db.serverDate()
+              }
+            })
+            .then(() => {
+              wx.hideLoading();
+              wx.showToast({ title: "已取消活动", icon: "success" });
+              this.closeEditModal();
+              this.loadActivityList();
+            });
+        wx.cloud
+          .callFunction({
+            name: "updateActivity",
+            data: {
+              activityId: activity._id,
+              date: activity.date,
+              name: activity.name,
+              status: "已取消",
+              remark: activity.remark,
+              participants: activity.participants || [],
+              maxParticipants: activity.maxParticipants || 20,
+              startTime: activity.startTime,
+              endTime: activity.endTime,
+              locationName: activity.locationName || "",
+              locationAddress: activity.locationAddress || "",
+              locationLatitude: activity.locationLatitude,
+              locationLongitude: activity.locationLongitude
+            }
+          })
+          .then((res) => {
+            if (res.result && res.result.errCode === 0) {
+              wx.hideLoading();
+              wx.showToast({ title: "已取消活动", icon: "success" });
+              this.closeEditModal();
+              this.loadActivityList();
+            } else {
+              throw new Error(res.result && res.result.errMsg ? res.result.errMsg : "操作失败");
+            }
+          })
+          .catch((err) => {
+            const isFuncNotFound =
+              err.errCode === -501000 ||
+              (err.errMsg && err.errMsg.includes("FunctionName")) ||
+              (err.message && String(err.message).includes("501000"));
+            if (isFuncNotFound) {
+              return doUpdate().catch((e) => {
+                console.error(e);
+                wx.hideLoading();
+                wx.showToast({ title: e.message || "操作失败", icon: "none" });
+              });
+            }
+            wx.hideLoading();
+            wx.showToast({ title: err.message || "操作失败", icon: "none" });
+          });
       }
     });
   },
@@ -271,13 +676,20 @@ Page({
       success: (res) => {
         if (res.confirm) {
           wx.showLoading({ title: "删除中..." });
-          db.collection("activities")
-            .doc(activity._id)
-            .remove()
-            .then(() => {
+          wx.cloud.callFunction({
+            name: "deleteActivity",
+            data: {
+              activityId: activity._id
+            }
+          })
+            .then(res => {
               wx.hideLoading();
-              wx.showToast({ title: "删除成功", icon: "success" });
-              this.loadActivityList();
+              if (res.result && res.result.errCode === 0) {
+                wx.showToast({ title: "删除成功", icon: "success" });
+                this.loadActivityList();
+              } else {
+                wx.showToast({ title: (res.result && res.result.errMsg) || "删除失败", icon: "none" });
+              }
             })
             .catch(err => {
               console.error(err);
@@ -289,15 +701,14 @@ Page({
     });
   },
 
-  // 用户：报名
-  showSignupModal(e) {
+  // 用户：直接报名（不显示弹窗）
+  directSignup(e) {
     const activity = e.currentTarget.dataset.activity;
-    if (activity.status !== "进行中") {
+    if (activity.status === "已结束" || activity.status === "已取消") {
       wx.showToast({ title: "该活动已结束或已取消", icon: "none" });
       return;
     }
-    const app = getApp();
-    // 校验是否已在"我的"页面完成公会登记，并且有昵称
+    // 校验是否已在「我的」页面完成公会登记并有昵称
     if (!app.globalData.userId || !app.globalData.userProfile) {
       wx.showModal({
         title: "尚未登记",
@@ -328,27 +739,6 @@ Page({
       return;
     }
 
-    this.setData({
-      showSignupModal: true,
-      currentActivity: activity
-    });
-  },
-
-  submitSignup() {
-    const app = getApp();
-    const nickname = app.globalData.userProfile?.nickname?.trim();
-
-    if (!nickname) {
-      wx.showToast({ title: "请先完善昵称", icon: "none" });
-      return;
-    }
-
-    const activity = this.data.currentActivity;
-    if (!activity) {
-      wx.showToast({ title: "活动信息有误", icon: "none" });
-      return;
-    }
-
     const participants = activity.participants || [];
     const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
 
@@ -360,9 +750,8 @@ Page({
 
     wx.showLoading({ title: "报名中..." });
 
-    // 使用云函数更新（云函数有管理员权限，不受数据库权限限制）
     wx.cloud.callFunction({
-      name: 'signupActivity',
+      name: "signupActivity",
       data: {
         activityId: activity._id,
         nickname,
@@ -378,7 +767,6 @@ Page({
           }
           wx.hideLoading();
           wx.showToast({ title: "报名成功", icon: "success" });
-          this.closeSignupModal();
           this.loadActivityList();
         } else {
           wx.hideLoading();
@@ -393,14 +781,6 @@ Page({
         wx.hideLoading();
         wx.showToast({ title: "报名失败", icon: "none" });
       });
-  },
-
-  closeSignupModal() {
-    this.setData({
-      showSignupModal: false,
-      currentActivity: null,
-      userNickname: ""
-    });
   },
 
   // 规范化参与者（兼容 string 与 {name, userId}）
@@ -445,9 +825,8 @@ Page({
   doRemoveParticipant(name, activity) {
     wx.showLoading({ title: "处理中..." });
 
-    // 1. 使用云函数从活动参与者列表中删除（云函数有管理员权限）
     wx.cloud.callFunction({
-      name: 'removeParticipant',
+      name: "removeParticipant",
       data: {
         activityId: activity._id,
         participantName: name,
@@ -504,5 +883,15 @@ Page({
 
   stopPropagation() {
     // 阻止事件冒泡
+  },
+
+  onAvatarError(e) {
+    const { index, activityId } = e.currentTarget.dataset;
+    const activityList = this.data.activityList || [];
+    const activity = activityList.find((item) => item._id === activityId);
+    if (activity && activity.avatarList && activity.avatarList[index]) {
+      activity.avatarList[index] = { url: DEFAULT_AVATAR, isDefault: true };
+      this.setData({ activityList });
+    }
   }
 });
