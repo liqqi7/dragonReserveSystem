@@ -58,6 +58,18 @@ exports.main = async (event, context) => {
           errMsg: "只能删除自己的报名记录"
         };
       }
+      // 报名截止后，已报名用户不可自行删除，仅管理员可删
+      const activity = docRes.data;
+      const signupDeadline = activity.signupDeadline || activity.startTime;
+      if (signupDeadline) {
+        const dl = new Date(signupDeadline.replace(" ", "T") + ":00");
+        if (!isNaN(dl.getTime()) && Date.now() >= dl.getTime()) {
+          return {
+            errCode: -4,
+            errMsg: "报名截止后不可自行删除，请联系管理员"
+          };
+        }
+      }
     }
 
     // 从参与者列表中删除

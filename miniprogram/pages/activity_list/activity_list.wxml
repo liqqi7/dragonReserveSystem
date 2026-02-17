@@ -61,11 +61,15 @@
         <view class="activity-meta {{!(isAdmin || item.status === '未开始' || item.status === '进行中') ? 'no-actions' : ''}}">
           <view wx:if="{{item.remark}}" class="meta-item">
             <text class="meta-icon">✏️</text>
-            <text class="meta-text">{{item.remark}}</text>
+            <text class="meta-text">活动备注：{{item.remark}}</text>
           </view>
           <view class="meta-item">
             <text class="meta-icon">🕐</text>
-            <text class="meta-text">{{item.startTime || item.date}}</text>
+            <text class="meta-text">开始时间：{{item.startTime || item.date}}</text>
+          </view>
+          <view wx:if="{{item.signupDeadline}}" class="meta-item signup-deadline-row">
+            <text class="meta-icon">⏰</text>
+            <text class="meta-text">报名截止：{{item.signupDeadline}}</text>
           </view>
           <view class="meta-item participants-row">
             <view class="participants-content">
@@ -99,16 +103,32 @@
         <!-- 操作按钮：仅在有可显示按钮时渲染，避免非管理员/已结束时留空 -->
         <view wx:if="{{isAdmin || item.status === '未开始' || item.status === '进行中'}}" class="card-actions">
           <button
-            wx:if="{{(item.status === '未开始' || item.status === '进行中') && !item.hasSignedUp}}"
+            wx:if="{{(item.status === '未开始' || item.status === '进行中') && !item.hasSignedUp && !item.isSignupClosed}}"
             class="action-btn primary"
             catchtap="directSignup"
             data-activity="{{item}}"
           >报名</button>
           <button
+            wx:elif="{{(item.status === '未开始' || item.status === '进行中') && !item.hasSignedUp && item.isSignupClosed}}"
+            class="action-btn default"
+            disabled="true"
+          >报名已截止</button>
+          <button
             wx:elif="{{(item.status === '未开始' || item.status === '进行中') && item.hasSignedUp}}"
             class="action-btn default"
             disabled="true"
           >已报名</button>
+          <button
+            wx:if="{{item.hasSignedUp && item.hasCheckedIn}}"
+            class="action-btn default"
+            disabled="true"
+          >已签到</button>
+          <button
+            wx:if="{{item.hasSignedUp && !item.hasCheckedIn && (item.status === '进行中' || item.status === '未开始')}}"
+            class="action-btn primary"
+            catchtap="checkinActivity"
+            data-activity="{{item}}"
+          >签到</button>
           <button
             wx:if="{{isAdmin}}"
             class="action-btn default"
@@ -160,6 +180,18 @@
         </view>
 
         <view class="form-item">
+          <view class="label">报名截止：</view>
+          <view class="datetime-picker-wrapper">
+            <picker mode="date" value="{{editForm.signupDeadlineDate}}" bindchange="onSignupDeadlineDateChange">
+              <view class="picker datetime-date">{{editForm.signupDeadlineDate || '请选择日期'}}</view>
+            </picker>
+            <picker mode="time" value="{{editForm.signupDeadlineTime}}" bindchange="onSignupDeadlineTimeChange">
+              <view class="picker datetime-time">{{editForm.signupDeadlineTime || '请选择时间'}}</view>
+            </picker>
+          </view>
+        </view>
+
+        <view class="form-item">
           <view class="label">活动名称：</view>
           <input
             class="input"
@@ -173,7 +205,7 @@
 
         <view class="form-item">
           <view class="label">活动地点：</view>
-          <view class="picker" bindtap="onChooseLocation">
+          <view class="picker {{locationDisabled ? 'picker-disabled' : ''}}" bindtap="onChooseLocation">
             {{editForm.locationName || '请选择活动位置'}}
           </view>
         </view>
@@ -238,20 +270,18 @@
         <view class="divider"></view>
 
         <view class="detail-item">
-          <text class="label">已报名人员（{{detailActivity.participants.length}} 人）：</text>
+          <text class="label">已报名人员（{{detailActivity.participants.length}} 人，已签到 {{detailActivity.checkinCount || 0}} 人）：</text>
         </view>
-        <view wx:if="{{detailActivity.participants.length === 0}}" class="empty-text">
-          暂无报名人员
-        </view>
-        <view wx:else>
+        <view wx:if="{{detailActivity.participants.length === 0}}" class="empty-text">暂无报名人员</view>
+        <view wx:else class="participant-list">
           <view
             wx:for="{{detailActivity.participants}}"
             wx:key="index"
             wx:for-item="participant"
             class="participant-item"
           >
-            <text class="participant-name">{{participant.name}}</text>
-            <text wx:if="{{isAdmin || (participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname)}}" class="participant-delete" bindtap="removeParticipant" data-name="{{participant.name}}">删除</text>
+            <text class="participant-name">{{participant.name}}<text wx:if="{{participant.checkedInAt}}" class="participant-checkin">（已签到）</text><text wx:elif="{{detailActivity.activityStarted}}" class="participant-pigeon">（鸽子🐦！）</text></text>
+            <text wx:if="{{isAdmin || (!detailActivity.signupDeadlinePassed && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname)))}}" class="participant-delete" bindtap="removeParticipant" data-name="{{participant.name}}">删除</text>
           </view>
         </view>
       </view>

@@ -7,35 +7,6 @@ page {
   background-color: #ffffff;
 }
 
-/* 顶部操作栏 */
-.top-bar {
-  padding: 20rpx 24rpx;
-  background-color: #ffffff;
-}
-
-.top-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 20rpx;
-}
-
-.icon-btn {
-  font-size: 40rpx;
-  line-height: 1;
-  padding: 8rpx;
-}
-
-.create-btn {
-  padding: 12rpx 24rpx;
-  font-size: 28rpx;
-  color: #007aff;
-  background-color: transparent;
-  border: none;
-  border-radius: 0;
-  line-height: 1;
-  font-weight: normal;
-}
-
 /* 吸底新建活动按钮（与列表同层，弹窗遮罩 z-index:1000 会盖住按钮） */
 button.create-btn-fixed {
   position: fixed !important;
@@ -205,6 +176,19 @@ button.create-btn-fixed {
 }
 .activity-meta.no-actions {
   margin-bottom: 0; /* 无按钮时移除底部间距，避免卡片底部留白过大 */
+}
+
+.signup-deadline-row .meta-icon {
+  font-size: 24rpx;
+}
+
+.signup-deadline-row .meta-text {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.meta-item.signup-deadline-row {
+  margin-bottom: 32rpx;
 }
 
 .meta-item {
@@ -432,6 +416,11 @@ button.create-btn-fixed {
   color: #333;
 }
 
+.picker-disabled {
+  background-color: #f5f5f5;
+  color: #999;
+}
+
 /* 日期时间选择器布局 */
 .datetime-picker-wrapper {
   display: flex;
@@ -445,19 +434,6 @@ button.create-btn-fixed {
 
 .datetime-picker-wrapper .datetime-time {
   flex: 1;
-}
-
-.readonly-text {
-  padding: 16rpx 20rpx;
-  font-size: 28rpx;
-  color: #666;
-}
-
-.form-hint {
-  font-size: 24rpx;
-  color: #999;
-  margin-top: 8rpx;
-  padding-left: 20rpx;
 }
 
 .detail-item {
@@ -477,6 +453,10 @@ button.create-btn-fixed {
   margin: 24rpx 0;
 }
 
+.participant-list {
+  margin-top: 8rpx;
+}
+
 .participant-item {
   display: flex;
   justify-content: space-between;
@@ -491,9 +471,26 @@ button.create-btn-fixed {
   font-size: 26rpx;
   color: #333;
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.participant-checkin {
+  font-size: 24rpx;
+  color: #07c160;
+  margin-left: 8rpx;
+}
+
+.participant-pigeon {
+  font-size: 24rpx;
+  color: #fa9d3b;
+  margin-left: 8rpx;
 }
 
 .participant-delete {
+  flex-shrink: 0;
   font-size: 24rpx;
   color: #fa5151;
   padding: 6rpx 12rpx;

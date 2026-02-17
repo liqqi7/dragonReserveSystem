@@ -20,7 +20,8 @@ exports.main = async (event, context) => {
       locationName,
       locationAddress,
       locationLatitude,
-      locationLongitude
+      locationLongitude,
+      signupDeadline
     } = event;
 
     if (!activityId) {
@@ -47,6 +48,7 @@ exports.main = async (event, context) => {
     if (locationAddress !== undefined) updateData.locationAddress = locationAddress;
     if (locationLatitude !== undefined) updateData.locationLatitude = locationLatitude;
     if (locationLongitude !== undefined) updateData.locationLongitude = locationLongitude;
+    if (signupDeadline !== undefined) updateData.signupDeadline = signupDeadline;
 
     const updateRes = await db.collection("activities")
       .doc(activityId)

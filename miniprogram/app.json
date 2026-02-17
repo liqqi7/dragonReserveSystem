@@ -6,7 +6,8 @@
     "pages/accounting/accounting",
     "pages/history/history",
     "pages/clear_data/clear_data",
-    "pages/profile/profile"
+    "pages/profile/profile",
+    "pages/checkin_map/checkin_map"
   ],
   "window": {
     "navigationBarTitleText": "俱乐部小程序",

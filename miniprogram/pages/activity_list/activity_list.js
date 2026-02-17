@@ -1,6 +1,8 @@
 const app = getApp();
 const db = wx.cloud.database();
 
+const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
+
 // 默认头像 data URI，避免网络请求失败，CSS ::before 显示阴影人像
 const DEFAULT_AVATAR = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InRyYW5zcGFyZW50Ii8+PC9zdmc+";
 
@@ -24,6 +26,9 @@ Page({
       // 活动结束时间（日期和时间分开存储）
       endDate: "",
       endTime: "",
+      // 报名截止时间（日期和时间分开存储）
+      signupDeadlineDate: "",
+      signupDeadlineTime: "",
       // 活动位置
       locationName: "",
       locationAddress: "",
@@ -33,6 +38,7 @@ Page({
     myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
     myNickname: "", // 当前用户昵称（userId 为空时的回退，兼容旧数据）
     detailActivity: null,
+    locationDisabled: false,
     isAdmin: false,
     isGuest: true,
     searchKeyword: "",
@@ -160,6 +166,16 @@ Page({
         needTimeMigration = true;
       }
 
+      // 如果未设置报名截止时间，默认使用开始时间前 1 小时（仅前端使用）
+      let signupDeadline = item.signupDeadline;
+      if (!signupDeadline && startTime) {
+        const base = new Date(startTime.replace(" ", "T") + ":00");
+        if (!isNaN(base.getTime())) {
+          const dl = new Date(base.getTime() - 60 * 60 * 1000);
+          signupDeadline = `${dl.getFullYear()}-${pad(dl.getMonth() + 1)}-${pad(dl.getDate())} ${pad(dl.getHours())}:${pad(dl.getMinutes())}`;
+        }
+      }
+
       const activity = {
         _id: item._id,
         date: item.date,
@@ -170,6 +186,7 @@ Page({
         maxParticipants: item.maxParticipants || 20,
         startTime,
         endTime,
+        signupDeadline,
         locationName: item.locationName || "",
         locationAddress: item.locationAddress || "",
         locationLatitude: item.locationLatitude,
@@ -177,6 +194,8 @@ Page({
       };
 
       let hasSignedUp = false;
+      let hasCheckedIn = false;
+      let checkinCount = 0;
       const rawParticipants = item.participants || [];
       const avatarList = [];
 
@@ -184,6 +203,10 @@ Page({
         if (typeof p === "object" && p !== null) {
           const uid = p.userId;
           const name = p.name;
+          const checkedIn = !!p.checkedInAt;
+          if (checkedIn) {
+            checkinCount += 1;
+          }
           // 优先使用实时查询的最新头像，如果没有则使用保存的头像，最后使用默认头像
           let avatarUrl = avatarMap.get(uid);
           if (!avatarUrl) {
@@ -197,8 +220,14 @@ Page({
           });
           if (myUserId && uid && uid === myUserId) {
             hasSignedUp = true;
+            if (checkedIn) {
+              hasCheckedIn = true;
+            }
           } else if (!myUserId && myNickname && name === myNickname) {
             hasSignedUp = true;
+            if (checkedIn) {
+              hasCheckedIn = true;
+            }
           }
         } else if (typeof p === "string") {
           avatarList.push({
@@ -211,7 +240,19 @@ Page({
         }
       });
       activity.hasSignedUp = hasSignedUp;
+      activity.hasCheckedIn = hasCheckedIn;
+      activity.checkinCount = checkinCount;
       activity.avatarList = avatarList;
+
+      // 报名是否已截止
+      let isSignupClosed = false;
+      if (signupDeadline) {
+        const dl = new Date(signupDeadline.replace(" ", "T") + ":00");
+        if (!isNaN(dl.getTime())) {
+          isSignupClosed = now.getTime() >= dl.getTime();
+        }
+      }
+      activity.isSignupClosed = isSignupClosed;
 
       if (needTimeMigration) {
         timeMigrationPromises.push(
@@ -297,30 +338,33 @@ Page({
   // 管理员：创建活动
   showCreateModal() {
     const now = new Date();
-    const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
-    const date = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-    const startMinutes = now.getMinutes();
-    // 将开始时间向上取整到 10 分钟
-    const roundedMinutes = Math.ceil(startMinutes / 10) * 10;
-    const startHour = roundedMinutes === 60 ? now.getHours() + 1 : now.getHours();
-    const startMinuteFinal = roundedMinutes === 60 ? 0 : roundedMinutes;
-    const startTime = `${pad(startHour)}:${pad(startMinuteFinal)}`;
-    // 结束时间默认开始时间后 1 小时
-    const endHourDate = new Date(now.getTime());
-    endHourDate.setHours(startHour + 1, startMinuteFinal, 0, 0);
-    const endTime = `${pad(endHourDate.getHours())}:${pad(endHourDate.getMinutes())}`;
+    // 开始时间默认：当前时间 + 2 小时
+    const startDateTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+    const date = `${startDateTime.getFullYear()}-${pad(startDateTime.getMonth() + 1)}-${pad(startDateTime.getDate())}`;
+    const startTime = `${pad(startDateTime.getHours())}:${pad(startDateTime.getMinutes())}`;
+    // 结束时间默认：开始时间后 1 小时
+    const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000);
+    const endTime = `${pad(endDateTime.getHours())}:${pad(endDateTime.getMinutes())}`;
+    const endDate = `${endDateTime.getFullYear()}-${pad(endDateTime.getMonth() + 1)}-${pad(endDateTime.getDate())}`;
+    // 报名截止时间默认：开始时间前 1 小时
+    const deadlineDateTime = new Date(startDateTime.getTime() - 60 * 60 * 1000);
+    const deadlineDate = `${deadlineDateTime.getFullYear()}-${pad(deadlineDateTime.getMonth() + 1)}-${pad(deadlineDateTime.getDate())}`;
+    const deadlineTime = `${pad(deadlineDateTime.getHours())}:${pad(deadlineDateTime.getMinutes())}`;
 
     this.setData({
       showEditModal: true,
       currentActivity: null,
+      locationDisabled: false,
       editForm: {
         name: "",
         status: "未开始",
         remark: "",
         startDate: date,
         startTime: startTime,
-        endDate: date,
+        endDate: endDate,
         endTime: endTime,
+        signupDeadlineDate: deadlineDate,
+        signupDeadlineTime: deadlineTime,
         locationName: "",
         locationAddress: "",
         locationLatitude: null,
@@ -337,7 +381,9 @@ Page({
     let startTime = "";
     let endDate = "";
     let endTime = "";
-    
+    let signupDeadlineDate = "";
+    let signupDeadlineTime = "";
+
     if (activity.startTime) {
       const startParts = activity.startTime.split(" ");
       startDate = startParts[0] || activity.date || "";
@@ -355,10 +401,30 @@ Page({
       endDate = activity.date;
       endTime = "01:00";
     }
-    
+
+    // 报名截止时间：优先使用已有 signupDeadline，否则用开始时间前 1 小时
+    if (activity.signupDeadline) {
+      const parts = activity.signupDeadline.split(" ");
+      signupDeadlineDate = parts[0] || startDate;
+      signupDeadlineTime = parts[1] || startTime;
+    } else if (activity.startTime) {
+      const base = new Date(activity.startTime.replace(" ", "T") + ":00");
+      if (!isNaN(base.getTime())) {
+        const dl = new Date(base.getTime() - 60 * 60 * 1000);
+        signupDeadlineDate = `${dl.getFullYear()}-${pad(dl.getMonth() + 1)}-${pad(dl.getDate())}`;
+        signupDeadlineTime = `${pad(dl.getHours())}:${pad(dl.getMinutes())}`;
+      }
+    } else {
+      signupDeadlineDate = startDate;
+      signupDeadlineTime = startTime;
+    }
+
+    const hasCheckedIn = (activity.checkinCount || 0) > 0;
+
     this.setData({
       showEditModal: true,
       currentActivity: activity,
+      locationDisabled: hasCheckedIn,
       editForm: {
         name: activity.name,
         status: activity.status,
@@ -367,6 +433,8 @@ Page({
         startTime: startTime,
         endDate: endDate,
         endTime: endTime,
+        signupDeadlineDate: signupDeadlineDate,
+        signupDeadlineTime: signupDeadlineTime,
         locationName: activity.locationName || "",
         locationAddress: activity.locationAddress || "",
         locationLatitude: activity.locationLatitude ?? null,
@@ -418,8 +486,26 @@ Page({
     });
   },
 
-  // 选择活动位置
+  // 报名截止日期变更
+  onSignupDeadlineDateChange(e) {
+    this.setData({
+      "editForm.signupDeadlineDate": e.detail.value
+    });
+  },
+
+  // 报名截止时间变更
+  onSignupDeadlineTimeChange(e) {
+    this.setData({
+      "editForm.signupDeadlineTime": e.detail.value
+    });
+  },
+
+  // 选择活动位置：直接打开地图选点（跳过中间页）；若已有人签到则不可修改
   onChooseLocation() {
+    if (this.data.locationDisabled) {
+      wx.showToast({ title: "已有用户完成签到，不可修改活动地点", icon: "none" });
+      return;
+    }
     wx.chooseLocation({
       success: (res) => {
         this.setData({
@@ -428,9 +514,6 @@ Page({
           "editForm.locationLatitude": res.latitude,
           "editForm.locationLongitude": res.longitude
         });
-      },
-      fail: () => {
-        // 用户取消或失败时无需报错，保持原值
       }
     });
   },
@@ -457,12 +540,26 @@ Page({
       wx.showToast({ title: "请选择结束时间", icon: "none" });
       return;
     }
+    if (!form.signupDeadlineDate) {
+      wx.showToast({ title: "请选择报名截止日期", icon: "none" });
+      return;
+    }
+    if (!form.signupDeadlineTime) {
+      wx.showToast({ title: "请选择报名截止时间", icon: "none" });
+      return;
+    }
 
     // 组合开始/结束时间，进行时间合法性校验
     const startDateTime = new Date(`${form.startDate}T${form.startTime}:00`);
     const endDateTime = new Date(`${form.endDate}T${form.endTime}:00`);
     if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
       wx.showToast({ title: "时间格式错误，请重新选择", icon: "none" });
+      return;
+    }
+
+    const signupDeadlineDateTime = new Date(`${form.signupDeadlineDate}T${form.signupDeadlineTime}:00`);
+    if (isNaN(signupDeadlineDateTime.getTime())) {
+      wx.showToast({ title: "报名截止时间格式错误，请重新选择", icon: "none" });
       return;
     }
 
@@ -476,6 +573,14 @@ Page({
 
     if (endDateTime.getTime() <= startDateTime.getTime()) {
       wx.showToast({ title: "结束时间必须晚于开始时间", icon: "none" });
+      return;
+    }
+    if (signupDeadlineDateTime.getTime() > startDateTime.getTime()) {
+      wx.showToast({ title: "报名截止时间必须早于或等于开始时间", icon: "none" });
+      return;
+    }
+    if (signupDeadlineDateTime.getTime() >= endDateTime.getTime()) {
+      wx.showToast({ title: "报名截止时间必须早于结束时间", icon: "none" });
       return;
     }
 
@@ -492,6 +597,7 @@ Page({
       remark: form.remark.trim(),
       startTime: startTimeFull,
       endTime: endTimeFull,
+      signupDeadline: `${form.signupDeadlineDate} ${form.signupDeadlineTime}`,
       locationName: form.locationName || "",
       locationAddress: form.locationAddress || "",
       locationLatitude: form.locationLatitude,
@@ -525,6 +631,7 @@ Page({
           maxParticipants: data.maxParticipants,
           startTime: data.startTime,
           endTime: data.endTime,
+          signupDeadline: data.signupDeadline,
           locationName: data.locationName,
           locationAddress: data.locationAddress,
           locationLatitude: data.locationLatitude,
@@ -586,6 +693,8 @@ Page({
         startTime: "",
         endDate: "",
         endTime: "",
+        signupDeadlineDate: "",
+        signupDeadlineTime: "",
         locationName: "",
         locationAddress: "",
         locationLatitude: null,
@@ -708,6 +817,14 @@ Page({
       wx.showToast({ title: "该活动已结束或已取消", icon: "none" });
       return;
     }
+    // 报名截止校验
+    if (activity.signupDeadline) {
+      const deadline = new Date(activity.signupDeadline.replace(" ", "T") + ":00");
+      if (!isNaN(deadline.getTime()) && Date.now() >= deadline.getTime()) {
+        wx.showToast({ title: "报名已截止", icon: "none" });
+        return;
+      }
+    }
     // 校验是否已在「我的」页面完成公会登记并有昵称
     if (!app.globalData.userId || !app.globalData.userProfile) {
       wx.showModal({
@@ -783,19 +900,33 @@ Page({
       });
   },
 
-  // 规范化参与者（兼容 string 与 {name, userId}）
+  // 规范化参与者（兼容 string 与 {name, userId, checkedInAt}）
   normalizeParticipants(raw) {
     const arr = raw || [];
-    return arr.map(p => typeof p === "string" ? { name: p, userId: null } : { name: p.name || "", userId: p.userId || null });
+    return arr.map(p => {
+      if (typeof p === "string") {
+        return { name: p, userId: null, checkedInAt: null };
+      }
+      return {
+        name: p.name || "",
+        userId: p.userId || null,
+        checkedInAt: p.checkedInAt || null
+      };
+    });
   },
 
   // 查看详情
   showDetail(e) {
     const activity = e.currentTarget.dataset.activity;
     const participants = this.normalizeParticipants(activity.participants);
+    const checkinCount = participants.filter(p => !!p.checkedInAt).length;
+    const startTime = activity.startTime || (activity.date ? `${activity.date} 00:00` : "");
+    const signupDeadline = activity.signupDeadline || startTime;
+    const activityStarted = startTime ? new Date(startTime.replace(" ", "T") + ":00").getTime() <= Date.now() : false;
+    const signupDeadlinePassed = signupDeadline ? new Date(signupDeadline.replace(" ", "T") + ":00").getTime() <= Date.now() : false;
     this.setData({
       showDetailModal: true,
-      detailActivity: { ...activity, participants }
+      detailActivity: { ...activity, participants, checkinCount, activityStarted, signupDeadlinePassed }
     });
   },
 
@@ -851,10 +982,11 @@ Page({
         wx.showToast({ title: "删除成功", icon: "success" });
         // 刷新活动列表和详情
         this.loadActivityList();
-        // 更新详情显示
+        // 更新详情显示：重新计算 participants 和 checkinCount
         const getParticipantName = p => typeof p === "string" ? p : (p && p.name);
         const newParticipants = this.normalizeParticipants((activity.participants || []).filter(p => getParticipantName(p) !== name));
-        const updatedActivity = { ...activity, participants: newParticipants };
+        const checkinCount = newParticipants.filter(p => !!p.checkedInAt).length;
+        const updatedActivity = { ...activity, participants: newParticipants, checkinCount };
         this.setData({ detailActivity: updatedActivity });
       })
       .catch(err => {
@@ -872,15 +1004,6 @@ Page({
       });
   },
 
-  getStatusColor(status) {
-    const colors = {
-      "进行中": "#07c160",
-      "已取消": "#999999",
-      "已结束": "#fa5151"
-    };
-    return colors[status] || "#999999";
-  },
-
   stopPropagation() {
     // 阻止事件冒泡
   },
@@ -893,5 +1016,50 @@ Page({
       activity.avatarList[index] = { url: DEFAULT_AVATAR, isDefault: true };
       this.setData({ activityList });
     }
+  },
+
+  checkinActivity(e) {
+    const activity = e.currentTarget.dataset.activity;
+    if (!activity) {
+      wx.showToast({ title: "活动信息有误", icon: "none" });
+      return;
+    }
+
+    if (activity.status !== "进行中" && activity.status !== "未开始") {
+      wx.showToast({ title: "仅未开始或进行中的活动可以签到", icon: "none" });
+      return;
+    }
+
+    if (!activity.locationLatitude || !activity.locationLongitude) {
+      wx.showToast({ title: "活动未设置地点，无法签到", icon: "none" });
+      return;
+    }
+
+    if (!activity.hasSignedUp) {
+      wx.showToast({ title: "请先报名后再签到", icon: "none" });
+      return;
+    }
+
+    const nickname =
+      (app.globalData.userProfile && app.globalData.userProfile.nickname && app.globalData.userProfile.nickname.trim()) ||
+      this.data.myNickname ||
+      "";
+
+    if (!nickname) {
+      wx.showToast({ title: "请先在“我的”页面完善昵称", icon: "none" });
+      return;
+    }
+
+    wx.navigateTo({
+      url: "/pages/checkin_map/checkin_map",
+      success: (res) => {
+        if (res && res.eventChannel) {
+          res.eventChannel.emit("initCheckin", {
+            activity,
+            nickname
+          });
+        }
+      }
+    });
   }
 });
