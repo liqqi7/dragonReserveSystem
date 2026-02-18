@@ -130,6 +130,13 @@ Page({
       success: (res) => {
         if (res.confirm) {
           app.clearAuthState();
+          // 同步清除数据库中的角色
+          if (app.globalData.userDocId) {
+            const db = wx.cloud.database();
+            db.collection("users").doc(app.globalData.userDocId).update({
+              data: { role: "", updatedAt: db.serverDate() }
+            }).catch(() => {});
+          }
           this.setData({ isGuest: true });
           wx.showToast({ title: "已恢复为游客", icon: "success" });
         }

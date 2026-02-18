@@ -153,7 +153,7 @@ Page({
       : this.getDistanceKm(userLatitude, userLongitude, activityLatitude, activityLongitude);
 
     if (dist > CHECKIN_RADIUS_KM) {
-      wx.showToast({ title: "距离活动地点超过 1km，签到失败", icon: "none" });
+      wx.showToast({ title: `距离活动地点超过 ${CHECKIN_RADIUS_KM}km，签到失败`, icon: "none" });
       return;
     }
 

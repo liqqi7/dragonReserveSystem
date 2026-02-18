@@ -34,7 +34,28 @@ exports.main = async (event, context) => {
       };
     }
 
-    const participants = docRes.data.participants || [];
+    const activity = docRes.data;
+
+    // 报名截止校验：优先使用 signupDeadline，否则使用 startTime
+    const deadlineStr = activity.signupDeadline || activity.startTime;
+    if (deadlineStr) {
+      const deadline = new Date(deadlineStr.replace(" ", "T") + ":00");
+      if (!isNaN(deadline.getTime()) && Date.now() >= deadline.getTime()) {
+        return {
+          errCode: -5,
+          errMsg: "报名已截止"
+        };
+      }
+    }
+
+    if (activity.status === "已取消") {
+      return {
+        errCode: -3,
+        errMsg: "活动已取消，无法报名"
+      };
+    }
+
+    const participants = activity.participants || [];
 
     // 按 userId 校验：同一用户不能重复报名，允许不同用户重名
     const alreadySigned = openid && participants.some(p => typeof p === "object" && p.userId && p.userId === openid);

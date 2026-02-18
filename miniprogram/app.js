@@ -75,6 +75,14 @@ App({
     } catch (e) {
       console.error("保存登录状态失败", e);
     }
+
+    // 同步到云数据库，重新登录后可恢复
+    if (this.globalData.userDocId) {
+      const db = wx.cloud.database();
+      db.collection("users").doc(this.globalData.userDocId).update({
+        data: { role: role || "", updatedAt: db.serverDate() }
+      }).catch(() => {});
+    }
   },
 
   clearAuthState() {
@@ -141,6 +149,10 @@ App({
           this.globalData.userProfile = {
             nickname: user.nickname || ""
           };
+          // 从数据库恢复角色（退出登录后重新登录时本地存储已清空）
+          if (user.role && !this.globalData.userRole) {
+            this.setAuthState(user.role, true);
+          }
           callback && callback();
         } else {
           return db.collection("users").add({

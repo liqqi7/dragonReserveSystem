@@ -36,7 +36,7 @@
       },
       {
         "pagePath": "pages/history/history",
-        "text": "查询",
+        "text": "排行榜",
         "iconPath": "images/history.png",
         "selectedIconPath": "images/history-active.png"
       },

@@ -1,7 +1,7 @@
 <view class="container {{isGuest ? 'guest-mode' : ''}}">
   <!-- 游客缺省态 -->
   <view wx:if="{{isGuest}}" class="guest-empty-state">
-    <image class="guest-empty-icon" src="/images/empty-state-icon.png" mode="aspectFit" />
+    <image class="guest-empty-icon" src="/images/empty-state-icon.webp" mode="aspectFit" />
     <text class="guest-empty-text">未查询到您的冒险者工会归属</text>
     <text class="guest-empty-text">请前往「我的-访问权限」处进行登记🌹</text>
   </view>
@@ -26,21 +26,21 @@
     </view>
   </view>
 
-  <!-- 活动Tab：成员统计 -->
+  <!-- 活动Tab：鸽子榜 -->
   <view wx:if="{{activeTab === 'activity'}}" class="tab-content">
     <view class="section-header">
-      <text class="section-title">成员出席统计</text>
-      <text class="section-subtitle">共 {{activityList.length}} 场活动</text>
+      <text class="section-title">鸽子榜🐦</text>
+      <text class="section-subtitle">共 {{endedActivityCount}} 场已结束活动</text>
     </view>
 
-    <view wx:if="{{memberStats.length === 0}}" class="empty-state">
-      <text class="empty-icon">📊</text>
-      <text class="empty-text">暂无统计数据</text>
+    <view wx:if="{{pigeonStats.length === 0}}" class="empty-state">
+      <text class="empty-icon">🐦</text>
+      <text class="empty-text">暂无鸽子数据</text>
     </view>
 
     <view wx:else class="member-list">
       <view
-        wx:for="{{memberStats}}"
+        wx:for="{{pigeonStats}}"
         wx:key="name"
         class="member-card"
       >
@@ -50,20 +50,20 @@
         </view>
         <view class="member-stats">
           <view class="stat-item">
-            <text class="stat-label">参加次数</text>
-            <text class="stat-value">{{item.participateCount}} 次</text>
+            <text class="stat-label">活动报名数</text>
+            <text class="stat-value">{{item.signupCount}} 场</text>
           </view>
           <view class="stat-item">
-            <text class="stat-label">出席率</text>
-            <text class="stat-value">{{item.attendanceRate}}%</text>
+            <text class="stat-label">活动签到数</text>
+            <text class="stat-value">{{item.checkinCount}} 场</text>
           </view>
           <view class="stat-item">
-            <text class="stat-label">活动总数</text>
-            <text class="stat-value">{{item.totalActivities}} 场</text>
+            <text class="stat-label">鸽子率</text>
+            <text class="stat-value">{{item.pigeonRate}}%</text>
           </view>
         </view>
         <view class="progress-bar">
-          <view class="progress-fill" style="width: {{item.attendanceRate}}%"></view>
+          <view class="progress-fill pigeon-fill" style="width: {{item.pigeonRate}}%"></view>
         </view>
       </view>
     </view>
@@ -111,7 +111,7 @@
 
   <!-- 账单明细弹窗 -->
   <view wx:if="{{showBillDetail && selectedActivityBills}}" class="modal-overlay" bindtap="closeBillDetail">
-    <view class="modal-content" catchtap="stopPropagation" data-stop="true">
+    <view class="modal-content" catchtap="stopPropagation">
       <view class="modal-header">
         <text>账单明细 - {{selectedActivityBills.activityName}}</text>
         <text class="close-btn" bindtap="closeBillDetail">×</text>

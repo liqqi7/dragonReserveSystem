@@ -152,11 +152,7 @@ button.create-btn-fixed {
   color: #007aff;
 }
 
-.status-badge.status-ended {
-  background-color: #f5f5f5;
-  color: #999;
-}
-
+.status-badge.status-ended,
 .status-badge.status-cancelled {
   background-color: #f5f5f5;
   color: #999;

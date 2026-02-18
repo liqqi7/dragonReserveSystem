@@ -135,6 +135,10 @@ page {
   transition: width 0.3s;
 }
 
+.progress-fill.pigeon-fill {
+  background-color: #ff9500;
+}
+
 /* 账单Tab样式 */
 .bill-list {
   display: flex;

@@ -1004,9 +1004,7 @@ Page({
       });
   },
 
-  stopPropagation() {
-    // 阻止事件冒泡
-  },
+  stopPropagation() {},
 
   onAvatarError(e) {
     const { index, activityId } = e.currentTarget.dataset;

@@ -27,15 +27,11 @@ exports.main = async (event, context) => {
     }
     
     // 返回标准格式
-    const result = {
-      openid: openid,
+    return {
+      openid,
       appid: wxContext.APPID || wxContext.appid || process.env.WX_APPID,
       env: wxContext.ENV || wxContext.env
     };
-    
-    console.log("云函数返回结果:", JSON.stringify(result, null, 2));
-    
-    return result;
   } catch (error) {
     console.error("云函数执行错误:", error);
     return {
