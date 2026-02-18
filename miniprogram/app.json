@@ -6,7 +6,8 @@
     "pages/accounting/accounting",
     "pages/history/history",
     "pages/clear_data/clear_data",
-    "pages/profile/profile"
+    "pages/profile/profile",
+    "pages/checkin_map/checkin_map"
   ],
   "window": {
     "navigationBarTitleText": "俱乐部小程序",
@@ -35,7 +36,7 @@
       },
       {
         "pagePath": "pages/history/history",
-        "text": "查询",
+        "text": "排行榜",
         "iconPath": "images/history.png",
         "selectedIconPath": "images/history-active.png"
       },
@@ -50,5 +51,10 @@
   "style": "v2",
   "sitemapLocation": "sitemap.json",
   "cloud": true,
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于选择活动位置"
+    }
+  },
   "subPackages": []
 }

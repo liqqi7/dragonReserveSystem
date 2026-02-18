@@ -6,7 +6,8 @@ Page({
     activeTab: "activity", // activity 或 bill
     activityList: [],
     billList: [],
-    memberStats: [], // 成员统计（活动tab）
+    pigeonStats: [],
+    endedActivityCount: 0, // 已结束活动数（鸽子榜统计范围）
     activityBillStats: [], // 活动账单统计（账单tab）
     selectedActivityBills: null, // 选中的活动账单明细
     showBillDetail: false,
@@ -33,10 +34,7 @@ Page({
   switchTab(e) {
     const tab = e.currentTarget.dataset.tab;
     this.setData({ activeTab: tab });
-    
-    if (tab === "activity") {
-      this.calculateMemberStats();
-    } else {
+    if (tab === "bill") {
       this.calculateActivityBillStats();
     }
   },
@@ -48,11 +46,17 @@ Page({
       .then(res => {
         const list = (res.data || []).map(item => {
           const raw = item.participants || [];
-          const participants = raw.map(p => typeof p === "string" ? p : (p && p.name));
-          return { ...item, _id: item._id, date: item.date, name: item.name, status: item.status || "进行中", participants };
+          return {
+            ...item,
+            _id: item._id,
+            date: item.date,
+            name: item.name,
+            status: item.status || "进行中",
+            participants: raw
+          };
         });
         this.setData({ activityList: list });
-        this.calculateMemberStats();
+        this.calculatePigeonStats();
       })
       .catch(err => {
         console.error(err);
@@ -64,7 +68,7 @@ Page({
       .orderBy("createdAt", "desc")
       .get()
       .then(res => {
-        const list = res.data.map(item => ({
+        const list = (res.data || []).map(item => ({
           _id: item._id,
           activityId: item.activityId || "",
           activityName: item.activityName || "",
@@ -84,43 +88,60 @@ Page({
       });
   },
 
-  // 计算成员统计（活动tab）
-  calculateMemberStats() {
+  // 鸽子榜：按鸽子活动数从高到低，展示报名数、签到数、鸽子率
+  calculatePigeonStats() {
     const { activityList } = this.data;
-    
-    // 统计每个成员参加的活动次数
-    const memberCountMap = {};
-    const totalActivities = activityList.length;
-    
-    activityList.forEach(activity => {
+    const getParticipantName = (p) => (typeof p === "string" ? p : (p && p.name));
+    const parseDateTime = (s) => (s ? new Date(String(s).replace(" ", "T") + ":00") : null);
+    const now = Date.now();
+
+    const memberMap = {}; // name -> { signupCount, checkinCount }
+
+    activityList.forEach((activity) => {
+      let isEnded = (activity.status || "进行中") === "已结束";
+      if (!isEnded && activity.status !== "已取消") {
+        const end = parseDateTime(activity.endTime || activity.startTime || activity.date);
+        isEnded = end && !isNaN(end.getTime()) && now > end.getTime();
+      }
+      if (!isEnded) return;
+
       const participants = activity.participants || [];
-      participants.forEach(name => {
-        if (!memberCountMap[name]) {
-          memberCountMap[name] = 0;
+      participants.forEach((p) => {
+        const name = getParticipantName(p);
+        if (!name) return;
+        if (!memberMap[name]) {
+          memberMap[name] = { signupCount: 0, checkinCount: 0 };
         }
-        memberCountMap[name]++;
+        memberMap[name].signupCount++;
+        if (typeof p === "object" && p && p.checkedInAt) {
+          memberMap[name].checkinCount++;
+        }
       });
     });
 
-    // 转换为数组并计算出席率
-    const memberStats = Object.keys(memberCountMap).map(name => {
-      const participateCount = memberCountMap[name];
-      const attendanceRate = totalActivities > 0 
-        ? ((participateCount / totalActivities) * 100).toFixed(1)
+    const pigeonStats = Object.keys(memberMap).map((name) => {
+      const { signupCount, checkinCount } = memberMap[name];
+      const pigeonCount = signupCount - checkinCount;
+      const pigeonRate = signupCount > 0
+        ? parseFloat(((pigeonCount / signupCount) * 100).toFixed(1))
         : 0;
-      
       return {
         name,
-        participateCount,
-        totalActivities,
-        attendanceRate: parseFloat(attendanceRate)
+        signupCount,
+        checkinCount,
+        pigeonCount,
+        pigeonRate
       };
     });
 
-    // 按参加次数降序排列
-    memberStats.sort((a, b) => b.participateCount - a.participateCount);
-
-    this.setData({ memberStats });
+    pigeonStats.sort((a, b) => b.pigeonCount - a.pigeonCount);
+    const endedActivityCount = activityList.filter((a) => {
+      if ((a.status || "进行中") === "已结束") return true;
+      if (a.status === "已取消") return false;
+      const end = parseDateTime(a.endTime || a.startTime || a.date);
+      return end && !isNaN(end.getTime()) && now > end.getTime();
+    }).length;
+    this.setData({ pigeonStats, endedActivityCount });
   },
 
   // 计算活动账单统计（账单tab）
@@ -357,7 +378,5 @@ Page({
     });
   },
 
-  stopPropagation() {
-    // 阻止事件冒泡
-  }
+  stopPropagation() {}
 });
