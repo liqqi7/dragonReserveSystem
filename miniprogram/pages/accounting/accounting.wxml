@@ -1,7 +1,7 @@
 <view class="container {{isGuest ? 'guest-mode' : ''}}">
   <!-- 游客缺省态 -->
   <view wx:if="{{isGuest}}" class="guest-empty-state">
-    <image class="guest-empty-icon" src="/images/empty-state-icon.webp" mode="aspectFit" />
+    <image class="guest-empty-icon" src="/images/empty-state-icon.gif" mode="aspectFit" />
     <text class="guest-empty-text">未查询到您的冒险者工会归属</text>
     <text class="guest-empty-text">请前往「我的-访问权限」处进行登记🌹</text>
   </view>

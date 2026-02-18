@@ -31,9 +31,6 @@
       </view>
     </view>
 
-    <view class="bottom-area">
-      <button class="btn danger" bindtap="logout">退出登录</button>
-    </view>
   </view>
 
   <!-- 获取权限弹窗 -->

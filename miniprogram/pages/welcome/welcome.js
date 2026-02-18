@@ -9,11 +9,54 @@ Page({
   },
 
   onLoad() {
-    const hasWeChatAuth = wx.getStorageSync("hasWeChatAuth");
-    if (hasWeChatAuth && app.globalData.userId) {
-      wx.reLaunch({ url: "/pages/activity_list/activity_list" });
+    this.checkUserExists();
+  },
+
+  /** 仅当用户未在 users 表中时展示欢迎页；已注册用户直接进入主页 */
+  checkUserExists() {
+    const db = wx.cloud.database();
+    const cachedUserId = wx.getStorageSync("userId");
+
+    const queryAndRedirect = (openid) => {
+      return db
+        .collection("users")
+        .where({ _openid: openid })
+        .limit(1)
+        .get()
+        .then((res) => {
+          if (res.data && res.data.length > 0) {
+            const user = res.data[0];
+            app.globalData.userId = openid;
+            app.globalData.userDocId = user._id;
+            app.globalData.userProfile = { nickname: user.nickname || "", avatarUrl: user.avatarUrl || "" };
+            if (user.role) app.setAuthState(user.role, true);
+            wx.setStorageSync("hasWeChatAuth", true);
+            wx.setStorageSync("userId", openid);
+            wx.setStorageSync("userDocId", user._id);
+            wx.setStorageSync("userNickname", user.nickname || "");
+            wx.reLaunch({ url: "/pages/activity_list/activity_list" });
+          }
+        });
+    };
+
+    if (cachedUserId) {
+      queryAndRedirect(cachedUserId).catch(() => {});
       return;
     }
+
+    wx.cloud
+      .callFunction({ name: "login" })
+      .then((res) => {
+        let openid = null;
+        if (res && res.result) {
+          if (typeof res.result === "string") openid = res.result;
+          else if (typeof res.result === "object")
+            openid = res.result.openid || res.result.OPENID || res.result.data?.openid;
+        }
+        if (!openid) return;
+        return queryAndRedirect(openid);
+      })
+      .catch(() => {});
   },
 
   /** 选择头像（头像昵称填写能力，基础库 2.21.2+） */
@@ -91,11 +134,12 @@ Page({
           updatedAt: db.serverDate()
         };
         if (userRes.data && userRes.data.length > 0) {
+          const userDoc = userRes.data[0];
           return db
             .collection("users")
-            .doc(userRes.data[0]._id)
+            .doc(userDoc._id)
             .update({ data: payload })
-            .then(() => ({ openid, userDocId: userRes.data[0]._id }));
+            .then(() => ({ openid, userDocId: userDoc._id, existingRole: userDoc.role }));
         } else {
           return db
             .collection("users")
@@ -107,13 +151,17 @@ Page({
                 updatedAt: payload.updatedAt
               }
             })
-            .then((addRes) => ({ openid, userDocId: addRes._id }));
+            .then((addRes) => ({ openid, userDocId: addRes._id, existingRole: null }));
         }
       })
-      .then(({ openid, userDocId }) => {
+      .then(({ openid, userDocId, existingRole }) => {
         app.globalData.userId = openid;
         app.globalData.userDocId = userDocId;
         app.globalData.userProfile = { nickname };
+        // 退出登录后再次登录：从数据库恢复管理/用户权限
+        if (existingRole) {
+          app.setAuthState(existingRole, true);
+        }
         wx.setStorageSync("hasWeChatAuth", true);
         wx.setStorageSync("userId", openid);
         wx.setStorageSync("userDocId", userDocId);

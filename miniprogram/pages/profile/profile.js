@@ -282,33 +282,5 @@ Page({
     }
   },
 
-  logout() {
-    wx.showModal({
-      title: "确认退出",
-      content: "确定要退出并切换账号吗？",
-      success: (res) => {
-        if (!res.confirm) return;
-
-        try {
-          wx.removeStorageSync("signupNickName");
-          wx.removeStorageSync("signupAvatarFileId");
-          wx.removeStorageSync("hasWeChatAuth");
-          wx.removeStorageSync("userId");
-          wx.removeStorageSync("userDocId");
-          wx.removeStorageSync("userNickname");
-        } catch (e) {}
-
-        app.clearAuthState();
-        app.globalData.userId = "";
-        app.globalData.userDocId = "";
-        app.globalData.userProfile = null;
-
-        this.setData({ hasUser: false, isGuest: true });
-
-        wx.showToast({ title: "已退出", icon: "success" });
-        wx.reLaunch({ url: "/pages/welcome/welcome" });
-      }
-    });
-  }
 });
 
