@@ -49,24 +49,27 @@
 ## 目录结构
 
 .
-├── miniprogram/                # 小程序前端代码
-│   ├── app.js / app.json / app.wxss
-│   ├── images/                 # 图标与空状态图
+├── miniprogram/                 小程序前端代码
+│   ├── app.js
+│   ├── app.json
+│   ├── app.wxss
+│   ├── images/                  图标与空状态图
 │   └── pages/
-│       ├── welcome/            # 欢迎/引导页
-│       ├── activity_list/      # 活动管理主页面（含活动列表与详情弹窗）
-│       ├── checkin_map/        # 地图签到页
-│       ├── accounting/         # 记账页面
-│       ├── history/            # 历史记录与排行榜
-│       ├── clear_data/         # 数据清理
-│       └── profile/            # 个人中心
-├── cloudfunctions/             # 云函数
+│       ├── welcome/             欢迎引导页
+│       ├── activity_list/       活动管理主页面（列表 + 详情）
+│       ├── checkin_map/         地图签到页
+│       ├── accounting/          记账页面
+│       ├── history/             历史记录与排行榜
+│       ├── clear_data/          数据清理
+│       └── profile/             个人中心
+├── cloudfunctions/              云函数
 │   ├── login/
 │   ├── signupActivity/
 │   ├── checkinActivity/
 │   ├── updateActivity/
 │   ├── deleteActivity/
 │   └── removeParticipant/
-├── project.config.json         # 微信开发者工具项目配置（miniprogramRoot 等）
-├── project.private.config.json # 本地开发配置
+├── project.config.json          微信开发者工具项目配置（miniprogramRoot 等）
+├── project.private.config.json  本地开发配置
 └── sitemap.json
+
