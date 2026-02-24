@@ -43,11 +43,12 @@
   - `updateActivity`：活动信息更新（含时间迁移等）
   - `deleteActivity`：删除活动
   - `removeParticipant`：移除参与者并同步相关账单
-- **数据库**：微信云开发数据库
-  - 主要集合：`activities`、`users` 等（根据云函数逻辑使用）
+- **数据库**：微信云开发数据库  
+  主要集合：`activities`、`users` 等（根据云函数逻辑使用）
 
 ## 目录结构
 
+```text
 .
 ├── miniprogram/                 小程序前端代码
 │   ├── app.js
@@ -72,4 +73,39 @@
 ├── project.config.json          微信开发者工具项目配置（miniprogramRoot 等）
 ├── project.private.config.json  本地开发配置
 └── sitemap.json
+```
+
+## 本地开发与运行
+
+1. **准备环境**
+   - 安装并登录 **微信开发者工具**
+   - 在「云开发」中创建环境，替换 `app.js` 中 `wx.cloud.init` 的 `env` 为你的环境 ID
+
+2. **导入项目**
+   - 在微信开发者工具中选择「导入项目」
+   - 目录选择：本仓库根目录（包含 `project.config.json`）
+   - AppID 使用你自己的小程序 AppID（或体验号）
+
+3. **上传并部署云函数**
+   - 在「云开发」面板中依次右键部署：
+     - `login`
+     - `signupActivity`
+     - `checkinActivity`
+     - `updateActivity`
+     - `deleteActivity`
+     - `removeParticipant`
+
+4. **数据库初始化（简要建议）**
+   - 在云开发控制台中创建集合，例如：
+     - `activities`：存储活动信息与参与者列表
+     - `users`：存储用户头像、昵称等
+   - 可通过小程序界面创建活动进行初始化。
+
+5. **运行与调试**
+   - 在微信开发者工具中点击「编译」运行小程序
+   - 默认 Tab 为「活动管理」中的「我参与的」筛选
+   - 以管理员身份进入「我的」页面，完成权限登记后：
+     - 新建活动
+     - 设置时间、报名截止时间和地点
+     - 通过活动卡片/详情弹窗进行报名、签到与分享
 
