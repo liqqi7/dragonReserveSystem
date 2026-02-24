@@ -38,15 +38,19 @@ Page({
     myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
     myNickname: "", // 当前用户昵称（userId 为空时的回退，兼容旧数据）
     detailActivity: null,
+    shareActivityId: "",   // 用于分享小程序卡片时带上活动 id
+    shareActivityName: "", // 分享卡片标题
     locationDisabled: false,
     isAdmin: false,
     isGuest: true,
     searchKeyword: "",
-    selectedFilter: "未开始"
+    selectedFilter: "我参与的"
   },
 
-  onLoad() {
+  onLoad(options) {
     this.syncGuestState();
+    this._openActivityIdFromShare = (options && options.activityId) || "";
+    this._fromShare = !!(options && options.from === "share");
   },
 
   onShow() {
@@ -116,7 +120,46 @@ Page({
           const { selectedFilter, searchKeyword } = this.data;
           const filtered = this.computeFilteredList(list, selectedFilter, searchKeyword);
           this.setData({ activityList: list, filteredList: filtered });
-          
+
+          // 若详情弹窗正打开，同步更新 detailActivity（如刚报名成功）
+          if (this.data.showDetailModal && this.data.detailActivity) {
+            const id = this.data.detailActivity._id;
+            const updated = list.find(a => a._id === id);
+            if (updated) {
+              const participants = this.normalizeParticipants(updated.participants);
+              const checkinCount = participants.filter(p => !!p.checkedInAt).length;
+              const startTime = updated.startTime || (updated.date ? `${updated.date} 00:00` : "");
+              const signupDeadline = updated.signupDeadline || startTime;
+              const activityStarted = startTime ? new Date(startTime.replace(" ", "T") + ":00").getTime() <= Date.now() : false;
+              const signupDeadlinePassed = signupDeadline ? new Date(signupDeadline.replace(" ", "T") + ":00").getTime() <= Date.now() : false;
+              this.setData({
+                detailActivity: { ...updated, participants, checkinCount, activityStarted, signupDeadline, signupDeadlinePassed }
+              });
+            }
+          }
+
+          // 从分享链接进入时自动打开对应活动详情
+          if (this._openActivityIdFromShare && this._fromShare && list) {
+            const activity = list.find(a => a._id === this._openActivityIdFromShare);
+            if (activity) {
+              const aid = this._openActivityIdFromShare;
+              this._openActivityIdFromShare = "";
+              this._fromShare = false;
+              const participants = this.normalizeParticipants(activity.participants);
+              const checkinCount = participants.filter(p => !!p.checkedInAt).length;
+              const startTime = activity.startTime || (activity.date ? `${activity.date} 00:00` : "");
+              const signupDeadline = activity.signupDeadline || startTime;
+              const activityStarted = startTime ? new Date(startTime.replace(" ", "T") + ":00").getTime() <= Date.now() : false;
+              const signupDeadlinePassed = signupDeadline ? new Date(signupDeadline.replace(" ", "T") + ":00").getTime() <= Date.now() : false;
+              this.setData({
+                showDetailModal: true,
+                detailActivity: { ...activity, participants, checkinCount, activityStarted, signupDeadline, signupDeadlinePassed },
+                shareActivityId: aid,
+                shareActivityName: (activity.name || "活动").trim() || "活动"
+              });
+            }
+          }
+
           // 更新 maxParticipants 字段（如果不存在）
           const maxParticipantsPromises = list
             .filter(item => !item.maxParticipants)
@@ -316,7 +359,12 @@ Page({
 
   computeFilteredList(list, selectedFilter, searchKeyword) {
     let filtered = list ? [...list] : [];
-    if (selectedFilter && selectedFilter !== "全部") {
+
+    if (selectedFilter === "我参与的") {
+      // 只看当前用户参与过的活动（已通过 hasSignedUp 标记）
+      filtered = filtered.filter(item => item.hasSignedUp);
+    } else if (selectedFilter && selectedFilter !== "全部") {
+      // 其他筛选仍按状态过滤
       filtered = filtered.filter(item => item.status === selectedFilter);
     }
     if (searchKeyword && searchKeyword.trim()) {
@@ -926,15 +974,43 @@ Page({
     const signupDeadlinePassed = signupDeadline ? new Date(signupDeadline.replace(" ", "T") + ":00").getTime() <= Date.now() : false;
     this.setData({
       showDetailModal: true,
-      detailActivity: { ...activity, participants, checkinCount, activityStarted, signupDeadlinePassed }
+      detailActivity: { ...activity, participants, checkinCount, activityStarted, signupDeadline, signupDeadlinePassed },
+      shareActivityId: activity._id || "",
+      shareActivityName: (activity.name || "活动").trim() || "活动"
     });
   },
 
   closeDetailModal() {
     this.setData({
       showDetailModal: false,
-      detailActivity: null
+      detailActivity: null,
+      shareActivityId: "",
+      shareActivityName: ""
     });
+  },
+
+  // 详情弹窗内：报名（复用 directSignup 逻辑）
+  detailSignup() {
+    const activity = this.data.detailActivity;
+    if (!activity) return;
+    this.directSignup({ currentTarget: { dataset: { activity } } });
+  },
+
+  // 详情弹窗内：签到（复用 checkinActivity 逻辑，成功后刷新详情）
+  detailCheckin() {
+    const activity = this.data.detailActivity;
+    if (!activity) return;
+    this.checkinActivity({ currentTarget: { dataset: { activity } } });
+  },
+
+  // 小程序卡片分享：分享当前活动（在活动详情打开时由分享按钮触发）
+  onShareAppMessage() {
+    const id = this.data.shareActivityId;
+    const title = this.data.shareActivityName || "俱乐部活动";
+    const path = id
+      ? `/pages/activity_list/activity_list?from=share&activityId=${id}`
+      : "/pages/activity_list/activity_list";
+    return { title, path };
   },
 
   // 删除已报名人员

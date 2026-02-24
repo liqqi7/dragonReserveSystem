@@ -24,7 +24,7 @@
   <!-- 状态筛选 -->
   <view class="filter-tabs">
     <view
-      wx:for="{{['未开始', '进行中', '已结束', '已取消', '全部']}}"
+      wx:for="{{['我参与的', '未开始', '进行中', '已结束', '已取消', '全部']}}"
       wx:key="*this"
       class="filter-tab {{selectedFilter === item ? 'active' : ''}}"
       data-filter="{{item}}"
@@ -113,11 +113,6 @@
             class="action-btn default"
             disabled="true"
           >报名已截止</button>
-          <button
-            wx:elif="{{(item.status === '未开始' || item.status === '进行中') && item.hasSignedUp}}"
-            class="action-btn default"
-            disabled="true"
-          >已报名</button>
           <button
             wx:if="{{item.hasSignedUp && item.hasCheckedIn}}"
             class="action-btn default"
@@ -254,6 +249,10 @@
           <text>{{detailActivity.endTime || detailActivity.date + ' 01:00'}}</text>
         </view>
         <view class="detail-item">
+          <text class="label">报名截止：</text>
+          <text>{{detailActivity.signupDeadline}}</text>
+        </view>
+        <view class="detail-item">
           <text class="label">活动状态：</text>
           <text>{{detailActivity.status}}</text>
         </view>
@@ -286,8 +285,30 @@
         </view>
       </view>
 
-      <view class="modal-footer">
-        <button class="btn default" bindtap="closeDetailModal">关闭</button>
+      <view class="modal-footer detail-footer">
+        <block wx:if="{{detailActivity.status === '未开始' || detailActivity.status === '进行中'}}">
+          <button
+            wx:if="{{!detailActivity.hasSignedUp && !detailActivity.signupDeadlinePassed}}"
+            class="btn primary"
+            bindtap="detailSignup"
+          >报名</button>
+          <button
+            wx:elif="{{!detailActivity.hasSignedUp && detailActivity.signupDeadlinePassed}}"
+            class="btn default"
+            disabled="true"
+          >报名已截止</button>
+          <button
+            wx:elif="{{detailActivity.hasSignedUp && !detailActivity.hasCheckedIn}}"
+            class="btn primary"
+            bindtap="detailCheckin"
+          >签到</button>
+          <button
+            wx:elif="{{detailActivity.hasSignedUp && detailActivity.hasCheckedIn}}"
+            class="btn default"
+            disabled="true"
+          >已签到</button>
+        </block>
+        <button class="btn default" open-type="share">分享</button>
       </view>
     </view>
   </view>
