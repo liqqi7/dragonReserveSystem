@@ -1,25 +1,46 @@
 <view class="container">
-  <!-- 未登记用户 -->
-  <view wx:if="{{!hasUser}}" class="center-box">
-    <view class="title">欢迎加入龙城冒险者公会</view>
-    <view class="subtitle">点击下方按钮完成公会登记</view>
-
-    <button class="btn primary" bindtap="startRegister">点击登录公会</button>
-  </view>
-
-  <!-- 已登记用户 -->
-  <view wx:else class="profile-box">
+  <view class="profile-box">
     <view class="profile-header">
-      <image wx:if="{{user.avatarUrl}}" class="avatar" src="{{user.avatarUrl}}" mode="aspectFill" />
+      <image wx:if="{{hasUser && user.avatarUrl}}" class="avatar" src="{{user.avatarUrl}}" mode="aspectFill" />
       <view wx:else class="avatar placeholder"></view>
       <view class="info">
-        <view class="nickname">{{user.nickname || '未命名成员'}}</view>
-        <view class="userid">公会 ID：{{user.userIdShort}}</view>
+        <view class="nickname">
+          {{hasUser ? (user.nickname || '未命名成员') : '神秘冒险者'}}
+        </view>
+        <view class="userid">
+          <block wx:if="{{hasUser}}">
+            公会 ID：{{user.userIdShort}}
+          </block>
+          <block wx:else>
+            登录后可查看对应工会活动
+          </block>
+        </view>
       </view>
-      <view class="edit-btn" bindtap="openEditModal">编辑</view>
+      <view wx:if="{{hasUser}}" class="header-actions">
+        <view
+          class="icon-btn"
+          bindtap="openEditModal"
+        >
+          <image class="icon-img" src="/images/icon-profile-edit.svg" mode="aspectFit" />
+        </view>
+        <view
+          class="icon-btn"
+          bindtap="logout"
+        >
+          <image class="icon-img" src="/images/icon-profile-logout.svg" mode="aspectFit" />
+        </view>
+      </view>
+      <view
+        wx:else
+        class="icon-btn"
+        bindtap="startRegister"
+      >
+        <image class="icon-img" src="/images/icon-profile-login.svg" mode="aspectFit" />
+      </view>
     </view>
 
-    <view class="section">
+    <!-- 仅已登录用户展示访问权限模块 -->
+    <view wx:if="{{hasUser}}" class="section">
       <view class="section-title">访问权限</view>
       <view wx:if="{{isGuest}}" class="cell">
         <view class="cell-title">当前为游客，无法查看相关活动数据</view>

@@ -54,18 +54,24 @@ Page({
   },
 
   onShow() {
-    this.syncGuestState();
-    if (!this.data.isGuest) {
+    const isGuest = this.syncGuestState();
+    if (!isGuest) {
       const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
       const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
       this.setData({ isAdmin: app.globalData.userRole === "admin", myUserId, myNickname });
+
       this.loadActivityList();
     }
   },
 
   syncGuestState() {
-    const isGuest = !app.globalData.isAuthenticated;
+    const hasWeChatAuth = !!wx.getStorageSync("hasWeChatAuth");
+    const isAuthenticated = app.globalData.isAuthenticated;
+    // 未完成微信头像昵称授权 或 未获取访问权限，都视为游客
+    const isGuest = !hasWeChatAuth || !isAuthenticated;
     this.setData({ isGuest });
+
+    return isGuest;
   },
 
   loadActivityList() {

@@ -92,11 +92,34 @@ page {
   min-width: 0;
 }
 
+.header-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16rpx;
+}
+
 .edit-btn {
   flex-shrink: 0;
   padding: 12rpx 24rpx;
   font-size: 28rpx;
   color: #007aff;
+}
+
+.icon-btn {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 28rpx;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-img {
+  width: 32rpx;
+  height: 32rpx;
 }
 
 .nickname {
