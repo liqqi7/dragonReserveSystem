@@ -19,10 +19,11 @@ Page({
 
   onShow() {
     this.syncGuestState();
-    // 若全局已有用户信息，先同步到页面，避免首帧显示「登录」再闪回已登录态
+    const hasWeChatAuth = !!wx.getStorageSync("hasWeChatAuth");
+    // 若全局已有用户信息，且已做过微信头像昵称授权，则视为已登录用户
     const userId = app.globalData.userId;
     const profile = app.globalData.userProfile;
-    if (userId && profile) {
+    if (hasWeChatAuth && userId && profile) {
       this.setData({
         hasUser: true,
         isGuest: !app.globalData.isAuthenticated,
@@ -31,6 +32,11 @@ Page({
           userIdShort: (userId || "").slice(0, 8),
           avatarUrl: profile.avatarUrl || ""
         }
+      });
+    } else {
+      // 未做微信授权时，展示默认头像昵称 + 登录按钮
+      this.setData({
+        hasUser: false
       });
     }
     app.ensureUserReady(() => {
@@ -64,8 +70,10 @@ Page({
             nickname: user.nickname || "",
             avatarUrl: user.avatarUrl || ""
           };
+          const hasWeChatAuth = !!wx.getStorageSync("hasWeChatAuth");
           this.setData({
-            hasUser: true,
+            // 只有完成过微信头像昵称授权的用户，才视为「已登录」
+            hasUser: hasWeChatAuth,
             isGuest: !app.globalData.isAuthenticated,
             user: {
               nickname: user.nickname || "",
@@ -140,6 +148,48 @@ Page({
           this.setData({ isGuest: true });
           wx.showToast({ title: "已恢复为游客", icon: "success" });
         }
+      }
+    });
+  },
+
+  // 退出登录：清除本机头像昵称与权限信息
+  logout() {
+    wx.showModal({
+      title: "退出登录",
+      content: "退出后将清除本机的头像昵称与权限信息，下次需要重新登录。",
+      success: (res) => {
+        if (!res.confirm) return;
+
+        // 清除权限状态（角色等）
+        app.clearAuthState();
+
+        // 清除本地存储的微信授权与用户信息
+        try {
+          wx.removeStorageSync("hasWeChatAuth");
+          wx.removeStorageSync("userId");
+          wx.removeStorageSync("userDocId");
+          wx.removeStorageSync("userNickname");
+        } catch (e) {
+          console.error("清理本地登录信息失败", e);
+        }
+
+        // 清除全局内存中的用户信息
+        app.globalData.userId = "";
+        app.globalData.userDocId = "";
+        app.globalData.userProfile = null;
+
+        // 重置页面状态为未登录 + 游客
+        this.setData({
+          hasUser: false,
+          isGuest: true,
+          user: {
+            nickname: "",
+            userIdShort: "",
+            avatarUrl: ""
+          }
+        });
+
+        wx.showToast({ title: "已退出登录", icon: "success" });
       }
     });
   },

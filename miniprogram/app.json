@@ -1,8 +1,8 @@
 {
   "lazyCodeLoading": "requiredComponents",
   "pages": [
-    "pages/welcome/welcome",
     "pages/activity_list/activity_list",
+    "pages/welcome/welcome",
     "pages/accounting/accounting",
     "pages/history/history",
     "pages/clear_data/clear_data",

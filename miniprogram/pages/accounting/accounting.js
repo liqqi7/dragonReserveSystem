@@ -22,15 +22,18 @@ Page({
   },
 
   onShow() {
-    this.syncGuestState();
-    if (!this.data.isGuest) {
+    const isGuest = this.syncGuestState();
+    if (!isGuest) {
       this.loadActivityList();
     }
   },
 
   syncGuestState() {
-    const isGuest = !app.globalData.isAuthenticated;
+    const hasWeChatAuth = !!wx.getStorageSync("hasWeChatAuth");
+    const isAuthenticated = app.globalData.isAuthenticated;
+    const isGuest = !hasWeChatAuth || !isAuthenticated;
     this.setData({ isGuest });
+    return isGuest;
   },
 
   loadActivityList() {
