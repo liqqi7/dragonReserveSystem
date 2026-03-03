@@ -142,7 +142,7 @@
   </view>
 
   <!-- 编辑/创建弹窗 -->
-  <view wx:if="{{showEditModal}}" class="modal-overlay" bindtap="closeEditModal">
+  <view wx:if="{{showEditModal}}" class="modal-overlay" bindtap="closeEditModal" catchtouchmove="stopPropagation">
     <view class="modal-content" catchtap="stopPropagation">
       <view class="modal-header">
         <text>{{currentActivity ? '编辑活动' : '新增活动'}}</text>
@@ -228,7 +228,7 @@
   </view>
 
   <!-- 详情弹窗 -->
-  <view wx:if="{{showDetailModal}}" class="modal-overlay" bindtap="closeDetailModal">
+  <view wx:if="{{showDetailModal}}" class="modal-overlay" bindtap="closeDetailModal" catchtouchmove="stopPropagation">
     <view class="modal-content" catchtap="stopPropagation">
       <view class="modal-header">
         <text>活动详情</text>
