@@ -64,6 +64,27 @@ Page({
     }
   },
 
+  // 下拉刷新：仅已获得权限的用户触发，刷新活动列表
+  onPullDownRefresh() {
+    const isGuest = this.syncGuestState();
+    if (isGuest) {
+      wx.stopPullDownRefresh();
+      return;
+    }
+    const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
+    const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
+    this.setData({ isAdmin: app.globalData.userRole === "admin", myUserId, myNickname });
+
+    const p = this.loadActivityList();
+    if (p && typeof p.finally === "function") {
+      p.finally(() => {
+        wx.stopPullDownRefresh();
+      });
+    } else {
+      wx.stopPullDownRefresh();
+    }
+  },
+
   syncGuestState() {
     const hasWeChatAuth = !!wx.getStorageSync("hasWeChatAuth");
     const isAuthenticated = app.globalData.isAuthenticated;
@@ -76,7 +97,7 @@ Page({
 
   loadActivityList() {
     wx.showLoading({ title: "加载中..." });
-    db.collection("activities")
+    return db.collection("activities")
       .orderBy("date", "desc")
       .get()
       .then(res => {

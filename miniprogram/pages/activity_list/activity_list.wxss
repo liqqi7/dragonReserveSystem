@@ -461,6 +461,13 @@ button.create-btn-fixed {
   margin-top: 8rpx;
 }
 
+/* 报名人员列表滚动容器（详情弹窗内） */
+.participant-scroll {
+  margin-top: 8rpx;
+  max-height: 360rpx;
+  box-sizing: border-box;
+}
+
 .participant-item {
   display: flex;
   justify-content: space-between;

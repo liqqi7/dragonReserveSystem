@@ -29,12 +29,6 @@
         "selectedIconPath": "images/activity-active.png"
       },
       {
-        "pagePath": "pages/accounting/accounting",
-        "text": "记账",
-        "iconPath": "images/accounting.png",
-        "selectedIconPath": "images/accounting-active.png"
-      },
-      {
         "pagePath": "pages/history/history",
         "text": "排行榜",
         "iconPath": "images/history.png",
