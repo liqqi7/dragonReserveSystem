@@ -95,7 +95,7 @@ DATABASE_URL=mysql+pymysql://username:password@127.0.0.1:3306/dragon_reserve?cha
 
 ## 后续建议
 
-开始实现前，优先补以下文件：
+基础框架落地后，优先完善以下文件：
 
 - `app/core/config.py`
 - `app/core/database.py`
@@ -103,4 +103,40 @@ DATABASE_URL=mysql+pymysql://username:password@127.0.0.1:3306/dragon_reserve?cha
 - `app/api/v1/__init__.py`
 - `app/main.py`
 
-实现业务前，先定义数据库模型和迁移。
+## 当前已落地
+
+- FastAPI 入口文件
+- API v1 路由注册
+- 健康检查接口 `/api/v1/health`
+- 登录接口 `/api/v1/auth/login`
+- 当前用户接口 `/api/v1/users/me`
+- 活动接口 `/api/v1/activities`
+- 报名、取消报名、签到接口
+- 账单接口 `/api/v1/bills`
+- 统计接口 `/api/v1/stats/history`、`/api/v1/stats/bills`
+- 环境变量配置加载
+- SQLAlchemy engine / session 基础设施
+- JWT 与密码哈希工具
+- 统一错误响应
+- `users` ORM 模型
+- `activities / activity_participants` ORM 模型
+- `bills / bill_participants` ORM 模型
+- Alembic 基础配置
+- 首批 migrations
+- 本地管理员初始化脚本
+- `requirements.txt` 与 `.env.example`
+
+## 下一步
+
+- 增加 service 层与 API 层测试
+- 对接小程序的 API 访问层
+- 补充更细的权限策略与初始化流程
+
+## 本地启动最小步骤
+
+1. 安装依赖：`pip install -r requirements.txt`
+2. 复制环境变量：`cp .env.example .env`
+3. 创建数据库：`dragon_reserve`
+4. 执行迁移：`alembic upgrade head`
+5. 初始化管理员：`python scripts/create_admin.py`
+6. 启动服务：`uvicorn app.main:app --reload`
