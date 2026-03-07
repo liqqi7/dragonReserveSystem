@@ -46,6 +46,13 @@ class Bill(Base):
         back_populates="bill",
         cascade="all, delete-orphan",
     )
+    activity: Mapped[Optional["Activity"]] = relationship()
+
+    @property
+    def activity_name(self) -> str:
+        if self.activity is None:
+            return "未关联活动"
+        return self.activity.name
 
 
 class BillParticipant(Base):

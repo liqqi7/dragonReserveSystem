@@ -4,8 +4,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.schemas.auth import LoginRequest, TokenResponse
-from app.services.auth_service import authenticate_user, issue_access_token
+from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
+from app.schemas.user import CurrentUserResponse
+from app.services.auth_service import authenticate_user, issue_access_token, register_user
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -18,3 +19,11 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse
     user = authenticate_user(db, payload.username, payload.password)
     token = issue_access_token(user)
     return TokenResponse(**token)
+
+
+@router.post("/register", response_model=CurrentUserResponse, summary="Register local account")
+def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> CurrentUserResponse:
+    """Create a new local account."""
+
+    user = register_user(db, payload)
+    return CurrentUserResponse.model_validate(user, from_attributes=True)

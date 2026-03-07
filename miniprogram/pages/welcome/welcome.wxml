@@ -1,19 +1,29 @@
 <view class="container">
   <view class="card auth-card">
     <view class="title">龙城冒险者工会预约系统</view>
-    <view class="subtitle">请填写头像与昵称后进入</view>
+    <view class="subtitle">{{mode === 'register' ? '注册本地账号后进入' : '使用本地账号登录'}}</view>
+
+    <view class="form-item">
+      <view class="label">模式</view>
+      <view class="mode-switch">
+        <button class="btn default small" bindtap="switchMode" data-mode="login">登录</button>
+        <button class="btn default small" bindtap="switchMode" data-mode="register">注册</button>
+      </view>
+    </view>
 
     <form bindsubmit="onFormSubmit">
-      <view class="form-item avatar-form-row">
-        <view class="label">头像</view>
-        <view class="avatar-edit-wrap">
-          <button class="avatar-edit-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
-            <image wx:if="{{avatarUrl}}" class="avatar-edit-img" src="{{avatarUrl}}" mode="aspectFill" />
-            <view wx:else class="avatar-edit-placeholder">选择头像</view>
-          </button>
-        </view>
-      </view>
       <view class="form-item">
+        <view class="label">账号</view>
+        <input
+          type="text"
+          class="input"
+          name="username"
+          placeholder="请输入登录账号"
+          value="{{username}}"
+          bindinput="onUsernameInput"
+        />
+      </view>
+      <view wx:if="{{mode === 'register'}}" class="form-item">
         <view class="label">昵称</view>
         <input
           type="text"
@@ -24,8 +34,19 @@
           bindinput="onNicknameInput"
         />
       </view>
+      <view class="form-item">
+        <view class="label">密码</view>
+        <input
+          password
+          class="input"
+          name="password"
+          placeholder="请输入密码"
+          value="{{password}}"
+          bindinput="onPasswordInput"
+        />
+      </view>
       <button class="btn primary {{canSubmit ? '' : 'disabled'}}" form-type="submit" disabled="{{submitting}}">
-        {{submitting ? '登记冒险者信息中...' : '进入'}}
+        {{submitting ? '提交中...' : (mode === 'register' ? '注册并进入' : '登录进入')}}
       </button>
     </form>
   </view>

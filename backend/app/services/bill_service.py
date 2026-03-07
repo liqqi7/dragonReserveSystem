@@ -17,7 +17,7 @@ def _money(value: float) -> Decimal:
 
 
 def _get_bill_query():
-    return select(Bill).options(selectinload(Bill.participants)).order_by(Bill.date.desc(), Bill.id.desc())
+    return select(Bill).options(selectinload(Bill.participants), selectinload(Bill.activity)).order_by(Bill.date.desc(), Bill.id.desc())
 
 
 def _get_users_by_ids(db: Session, user_ids: list[int]) -> list[User]:

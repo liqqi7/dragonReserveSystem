@@ -25,6 +25,7 @@ class BillResponse(BaseModel):
 
     id: int
     activity_id: Optional[int]
+    activity_name: str
     item: str
     note: str
     total_amount: float

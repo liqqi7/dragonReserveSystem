@@ -146,6 +146,29 @@ def cancel_signup(db: Session, activity: Activity, user: User) -> None:
     db.commit()
 
 
+def remove_participant(db: Session, activity: Activity, participant_id: int, actor: User) -> None:
+    """Remove a participant from an activity."""
+
+    participant = db.scalar(
+        select(ActivityParticipant).where(
+            ActivityParticipant.activity_id == activity.id,
+            ActivityParticipant.id == participant_id,
+        )
+    )
+    if participant is None:
+        raise NotFoundError("Participant not found")
+
+    if actor.role != "admin" and participant.user_id != actor.id:
+        raise ValidationAppError("You can only remove your own signup")
+
+    deadline = activity.signup_deadline or activity.start_time
+    if actor.role != "admin" and deadline and _utcnow() >= deadline:
+        raise ValidationAppError("Signup deadline has passed; contact an admin to remove this signup")
+
+    db.delete(participant)
+    db.commit()
+
+
 def checkin_activity(
     db: Session,
     activity: Activity,

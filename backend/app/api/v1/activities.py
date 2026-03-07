@@ -20,6 +20,7 @@ from app.services.activity_service import (
     delete_activity,
     get_activity_by_id,
     list_activities,
+    remove_participant,
     signup_activity,
     update_activity,
 )
@@ -110,6 +111,24 @@ def delete_signup(
 
     activity = get_activity_by_id(db, activity_id)
     cancel_signup(db, activity, current_user)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.delete(
+    "/{activity_id}/participants/{participant_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove participant",
+)
+def delete_participant(
+    activity_id: int,
+    participant_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Response:
+    """Remove a participant from an activity."""
+
+    activity = get_activity_by_id(db, activity_id)
+    remove_participant(db, activity, participant_id, current_user)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

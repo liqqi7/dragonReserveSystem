@@ -84,6 +84,44 @@ def test_user_can_signup_and_cancel_signup(client, sample_activity, user_headers
     assert cancel_response.status_code == 204
 
 
+def test_admin_can_remove_participant(client, signed_up_activity, admin_headers, db_session, normal_user) -> None:
+    detail_response = client.get(f"/api/v1/activities/{signed_up_activity.id}", headers=admin_headers)
+    participant_id = detail_response.json()["participants"][0]["id"]
+
+    response = client.delete(
+        f"/api/v1/activities/{signed_up_activity.id}/participants/{participant_id}",
+        headers=admin_headers,
+    )
+
+    assert response.status_code == 204
+
+
+def test_user_cannot_remove_other_participant(
+    client,
+    db_session,
+    sample_activity,
+    second_user,
+    user_headers,
+) -> None:
+    from app.models import ActivityParticipant
+
+    participant = ActivityParticipant(
+        activity_id=sample_activity.id,
+        user_id=second_user.id,
+        nickname_snapshot=second_user.nickname,
+        avatar_url_snapshot=second_user.avatar_url,
+    )
+    db_session.add(participant)
+    db_session.commit()
+
+    response = client.delete(
+        f"/api/v1/activities/{sample_activity.id}/participants/{participant.id}",
+        headers=user_headers,
+    )
+
+    assert response.status_code == 422
+
+
 def test_duplicate_signup_returns_conflict(client, signed_up_activity, user_headers) -> None:
     response = client.post(f"/api/v1/activities/{signed_up_activity.id}/signup", headers=user_headers)
 

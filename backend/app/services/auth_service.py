@@ -6,9 +6,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
-from app.core.exceptions import AuthenticationError
-from app.core.security import create_access_token, verify_password
+from app.core.exceptions import AuthenticationError, ConflictError
+from app.core.security import create_access_token, get_password_hash, verify_password
 from app.models import User
+from app.schemas.auth import RegisterRequest
 
 settings = get_settings()
 
@@ -31,3 +32,23 @@ def issue_access_token(user: User) -> dict[str, int | str]:
         "token_type": "bearer",
         "expires_in": settings.access_token_expire_minutes * 60,
     }
+
+
+def register_user(db: Session, payload: RegisterRequest) -> User:
+    """Create a local account with guest role by default."""
+
+    existing = db.scalar(select(User).where(User.username == payload.username))
+    if existing is not None:
+        raise ConflictError("Username already exists")
+
+    user = User(
+        username=payload.username,
+        password_hash=get_password_hash(payload.password),
+        nickname=payload.nickname,
+        avatar_url=payload.avatar_url,
+        role="guest",
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user

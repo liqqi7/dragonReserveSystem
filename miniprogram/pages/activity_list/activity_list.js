@@ -1,10 +1,50 @@
 const app = getApp();
-const db = wx.cloud.database();
+const activityService = require("../../services/activity");
 
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 
 // 默认头像 data URI，避免网络请求失败，CSS ::before 显示阴影人像
 const DEFAULT_AVATAR = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InRyYW5zcGFyZW50Ii8+PC9zdmc+";
+
+function formatDateTime(value) {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(value);
+  if (isNaN(date.getTime())) return "";
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function adaptParticipant(participant) {
+  return {
+    id: participant.id,
+    name: participant.nickname_snapshot || "",
+    userId: participant.user_id != null ? String(participant.user_id) : null,
+    avatarUrl: participant.avatar_url_snapshot || DEFAULT_AVATAR,
+    checkedInAt: formatDateTime(participant.checked_in_at),
+    checkinLat: participant.checkin_lat,
+    checkinLng: participant.checkin_lng
+  };
+}
+
+function adaptActivity(item) {
+  const participants = (item.participants || []).map(adaptParticipant);
+  const startTime = formatDateTime(item.start_time);
+  return {
+    _id: String(item.id),
+    date: startTime.split(" ")[0] || "",
+    name: item.name,
+    status: item.status || "进行中",
+    remark: item.remark || "",
+    participants,
+    maxParticipants: item.max_participants || 20,
+    startTime,
+    endTime: formatDateTime(item.end_time),
+    signupDeadline: formatDateTime(item.signup_deadline),
+    locationName: item.location_name || "",
+    locationAddress: item.location_address || "",
+    locationLatitude: item.location_latitude,
+    locationLongitude: item.location_longitude
+  };
+}
 
 Page({
   data: {
@@ -97,53 +137,12 @@ Page({
 
   loadActivityList() {
     wx.showLoading({ title: "加载中..." });
-    return db.collection("activities")
-      .orderBy("date", "desc")
-      .get()
-      .then(res => {
-        const now = new Date();
-        const timeMigrationPromises = [];
-        const statusUpdatePromises = [];
-
-        // 收集所有需要查询头像的 userId
-        const userIdsToQuery = new Set();
-        (res.data || []).forEach(item => {
-          (item.participants || []).forEach(p => {
-            if (typeof p === "object" && p !== null && p.userId) {
-              userIdsToQuery.add(p.userId);
-            }
-          });
-        });
-
-        const avatarMap = new Map();
-        if (userIdsToQuery.size > 0) {
-          return Promise.all(
-            Array.from(userIdsToQuery).map(userId =>
-              db.collection("users")
-                .where({ _openid: userId })
-                .limit(1)
-                .get()
-                .then(userRes => {
-                  if (userRes.data && userRes.data.length > 0) {
-                    const latestAvatar = userRes.data[0].avatarUrl;
-                    avatarMap.set(userId, latestAvatar || DEFAULT_AVATAR);
-                  } else {
-                    avatarMap.set(userId, DEFAULT_AVATAR);
-                  }
-                })
-                .catch(() => {
-                  avatarMap.set(userId, DEFAULT_AVATAR);
-                })
-            )
-          ).then(() => {
-            return this.processActivityList(res.data, avatarMap, DEFAULT_AVATAR, timeMigrationPromises, statusUpdatePromises, now);
-          });
-        }
-        return this.processActivityList(res.data, avatarMap, DEFAULT_AVATAR, timeMigrationPromises, statusUpdatePromises, now);
-      })
+    return activityService
+      .listActivities()
+      .then((res) => this.processActivityList(res || [], new Date()))
       .then(result => {
         if (result) {
-          const { list, timeMigrationPromises, statusUpdatePromises } = result;
+          const { list } = result;
           const { selectedFilter, searchKeyword } = this.data;
           const filtered = this.computeFilteredList(list, selectedFilter, searchKeyword);
           this.setData({ activityList: list, filteredList: filtered });
@@ -187,29 +186,6 @@ Page({
             }
           }
 
-          // 更新 maxParticipants 字段（如果不存在）
-          const maxParticipantsPromises = list
-            .filter(item => !item.maxParticipants)
-            .map(item => 
-              db.collection("activities")
-                .doc(item._id)
-                .update({
-                  data: { maxParticipants: 20 }
-                })
-            );
-          
-          const allPromises = [
-            ...maxParticipantsPromises,
-            ...timeMigrationPromises,
-            ...statusUpdatePromises
-          ];
-          
-          if (allPromises.length > 0) {
-            Promise.all(allPromises).catch(err => {
-              console.error("更新失败:", err);
-            });
-          }
-          
           wx.hideLoading();
         }
       })
@@ -220,53 +196,26 @@ Page({
       });
   },
 
-  processActivityList(resData, avatarMap, defaultAvatar, timeMigrationPromises, statusUpdatePromises, now) {
+  processActivityList(resData, now) {
     const myUserId = this.data.myUserId;
     const myNickname = (this.data.myNickname || "").trim();
 
-    const list = (resData || []).map(item => {
-      let startTime = item.startTime;
-      let endTime = item.endTime;
-      let needTimeMigration = false;
-
-      if (!startTime || !endTime) {
-        const baseDate = item.date;
-        startTime = `${baseDate} 00:00`;
-        endTime = `${baseDate} 01:00`;
-        needTimeMigration = true;
-      }
-
-      // 如果未设置报名截止时间，默认使用开始时间前 1 小时（仅前端使用）
-      let signupDeadline = item.signupDeadline;
-      if (!signupDeadline && startTime) {
-        const base = new Date(startTime.replace(" ", "T") + ":00");
+    const list = (resData || []).map(rawItem => {
+      const activity = adaptActivity(rawItem);
+      let signupDeadline = activity.signupDeadline;
+      if (!signupDeadline && activity.startTime) {
+        const base = new Date(activity.startTime.replace(" ", "T") + ":00");
         if (!isNaN(base.getTime())) {
           const dl = new Date(base.getTime() - 60 * 60 * 1000);
           signupDeadline = `${dl.getFullYear()}-${pad(dl.getMonth() + 1)}-${pad(dl.getDate())} ${pad(dl.getHours())}:${pad(dl.getMinutes())}`;
         }
       }
-
-      const activity = {
-        _id: item._id,
-        date: item.date,
-        name: item.name,
-        status: item.status || "进行中",
-        remark: item.remark || "",
-        participants: item.participants || [],
-        maxParticipants: item.maxParticipants || 20,
-        startTime,
-        endTime,
-        signupDeadline,
-        locationName: item.locationName || "",
-        locationAddress: item.locationAddress || "",
-        locationLatitude: item.locationLatitude,
-        locationLongitude: item.locationLongitude
-      };
+      activity.signupDeadline = signupDeadline;
 
       let hasSignedUp = false;
       let hasCheckedIn = false;
       let checkinCount = 0;
-      const rawParticipants = item.participants || [];
+      const rawParticipants = activity.participants || [];
       const avatarList = [];
 
       rawParticipants.forEach(p => {
@@ -277,13 +226,8 @@ Page({
           if (checkedIn) {
             checkinCount += 1;
           }
-          // 优先使用实时查询的最新头像，如果没有则使用保存的头像，最后使用默认头像
-          let avatarUrl = avatarMap.get(uid);
-          if (!avatarUrl) {
-            const savedAvatar = p.avatarUrl && String(p.avatarUrl).trim();
-            avatarUrl = savedAvatar || defaultAvatar;
-          }
-          const hasCustomAvatar = avatarUrl !== defaultAvatar;
+          const avatarUrl = (p.avatarUrl && String(p.avatarUrl).trim()) || DEFAULT_AVATAR;
+          const hasCustomAvatar = avatarUrl !== DEFAULT_AVATAR;
           avatarList.push({
             url: avatarUrl,
             isDefault: !hasCustomAvatar
@@ -301,7 +245,7 @@ Page({
           }
         } else if (typeof p === "string") {
           avatarList.push({
-            url: defaultAvatar,
+            url: DEFAULT_AVATAR,
             isDefault: true
           });
           if (myNickname && p === myNickname) {
@@ -324,23 +268,10 @@ Page({
       }
       activity.isSignupClosed = isSignupClosed;
 
-      if (needTimeMigration) {
-        timeMigrationPromises.push(
-          wx.cloud.callFunction({
-            name: "updateActivity",
-            data: {
-              activityId: item._id,
-              startTime,
-              endTime
-            }
-          }).catch(console.error)
-        );
-      }
-
       // 基于时间自动更新状态（除已取消之外）
       const parseDateTime = (s) => new Date(s.replace(" ", "T") + ":00");
-      const start = parseDateTime(startTime);
-      const end = parseDateTime(endTime);
+      const start = parseDateTime(activity.startTime);
+      const end = parseDateTime(activity.endTime);
       let autoStatus = activity.status || "未开始";
       if (activity.status === "已取消") {
         autoStatus = "已取消";
@@ -354,23 +285,14 @@ Page({
         }
       }
 
-      if (autoStatus !== activity.status && activity.status !== "已取消") {
+      if (activity.status !== "已取消") {
         activity.status = autoStatus;
-        statusUpdatePromises.push(
-          wx.cloud.callFunction({
-            name: "updateActivity",
-            data: {
-              activityId: item._id,
-              status: autoStatus
-            }
-          }).catch(console.error)
-        );
       }
 
       return activity;
     });
 
-    return { list, timeMigrationPromises, statusUpdatePromises };
+    return { list };
   },
 
   onSearchInput(e) {
@@ -659,89 +581,38 @@ Page({
       return;
     }
 
-    const startTimeFull = `${form.startDate} ${form.startTime}`;
-    const endTimeFull = `${form.endDate} ${form.endTime}`;
-    // date 字段保留用于兼容性，使用开始日期
-    const date = form.startDate;
-
     wx.showLoading({ title: "保存中..." });
-    const data = {
-      date: date,
+    const payload = {
       name: form.name.trim(),
       status: form.status,
       remark: form.remark.trim(),
-      startTime: startTimeFull,
-      endTime: endTimeFull,
-      signupDeadline: `${form.signupDeadlineDate} ${form.signupDeadlineTime}`,
-      locationName: form.locationName || "",
-      locationAddress: form.locationAddress || "",
-      locationLatitude: form.locationLatitude,
-      locationLongitude: form.locationLongitude,
-      participants: isEdit ? (this.data.currentActivity.participants || []) : [],
-      maxParticipants: isEdit ? (this.data.currentActivity.maxParticipants || 20) : 20,
-      updatedAt: db.serverDate()
+      start_time: `${form.startDate}T${form.startTime}:00`,
+      end_time: `${form.endDate}T${form.endTime}:00`,
+      signup_deadline: `${form.signupDeadlineDate}T${form.signupDeadlineTime}:00`,
+      location_name: form.locationName || "",
+      location_address: form.locationAddress || "",
+      location_latitude: form.locationLatitude,
+      location_longitude: form.locationLongitude,
+      max_participants: isEdit ? (this.data.currentActivity.maxParticipants || 20) : 20
     };
 
     if (isEdit) {
-      const doUpdate = () =>
-        db.collection("activities")
-          .doc(this.data.currentActivity._id)
-          .update({ data })
-          .then(() => {
-            wx.hideLoading();
-            wx.showToast({ title: "更新成功", icon: "success" });
-            this.closeEditModal();
-            this.loadActivityList();
-          });
-
-      wx.cloud.callFunction({
-        name: "updateActivity",
-        data: {
-          activityId: this.data.currentActivity._id,
-          date: data.date,
-          name: data.name,
-          status: data.status,
-          remark: data.remark,
-          participants: data.participants,
-          maxParticipants: data.maxParticipants,
-          startTime: data.startTime,
-          endTime: data.endTime,
-          signupDeadline: data.signupDeadline,
-          locationName: data.locationName,
-          locationAddress: data.locationAddress,
-          locationLatitude: data.locationLatitude,
-          locationLongitude: data.locationLongitude
-        }
-      })
-        .then((res) => {
-          if (res.result && res.result.errCode === 0) {
-            wx.hideLoading();
-            wx.showToast({ title: "更新成功", icon: "success" });
-            this.closeEditModal();
-            this.loadActivityList();
-          } else {
-            throw new Error(res.result && res.result.errMsg ? res.result.errMsg : "更新失败");
-          }
+      activityService
+        .updateActivity(this.data.currentActivity._id, payload)
+        .then(() => {
+          wx.hideLoading();
+          wx.showToast({ title: "更新成功", icon: "success" });
+          this.closeEditModal();
+          this.loadActivityList();
         })
         .catch((err) => {
-          const isFuncNotFound =
-            err.errCode === -501000 ||
-            (err.errMsg && err.errMsg.includes("FunctionName")) ||
-            (err.message && String(err.message).includes("501000"));
-          if (isFuncNotFound) {
-            return doUpdate().catch((e) => {
-              console.error(e);
-              wx.hideLoading();
-              wx.showToast({ title: e.message || "更新失败", icon: "none" });
-            });
-          }
+          console.error(err);
           wx.hideLoading();
-          wx.showToast({ title: err.message || "更新失败", icon: "none" });
+          wx.showToast({ title: (err && err.message) || "更新失败", icon: "none" });
         });
     } else {
-      data.createdAt = db.serverDate();
-      db.collection("activities")
-        .add({ data })
+      activityService
+        .createActivity(payload)
         .then(() => {
           wx.hideLoading();
           wx.showToast({ title: "创建成功", icon: "success" });
@@ -751,7 +622,7 @@ Page({
         .catch((err) => {
           console.error(err);
           wx.hideLoading();
-          wx.showToast({ title: "创建失败", icon: "none" });
+          wx.showToast({ title: (err && err.message) || "创建失败", icon: "none" });
         });
     }
   },
@@ -788,64 +659,18 @@ Page({
       success: (res) => {
         if (!res.confirm) return;
         wx.showLoading({ title: "处理中..." });
-        const doUpdate = () =>
-          db.collection("activities")
-            .doc(activity._id)
-            .update({
-              data: {
-                status: "已取消",
-                updatedAt: db.serverDate()
-              }
-            })
-            .then(() => {
-              wx.hideLoading();
-              wx.showToast({ title: "已取消活动", icon: "success" });
-              this.closeEditModal();
-              this.loadActivityList();
-            });
-        wx.cloud
-          .callFunction({
-            name: "updateActivity",
-            data: {
-              activityId: activity._id,
-              date: activity.date,
-              name: activity.name,
-              status: "已取消",
-              remark: activity.remark,
-              participants: activity.participants || [],
-              maxParticipants: activity.maxParticipants || 20,
-              startTime: activity.startTime,
-              endTime: activity.endTime,
-              locationName: activity.locationName || "",
-              locationAddress: activity.locationAddress || "",
-              locationLatitude: activity.locationLatitude,
-              locationLongitude: activity.locationLongitude
-            }
-          })
-          .then((res) => {
-            if (res.result && res.result.errCode === 0) {
-              wx.hideLoading();
-              wx.showToast({ title: "已取消活动", icon: "success" });
-              this.closeEditModal();
-              this.loadActivityList();
-            } else {
-              throw new Error(res.result && res.result.errMsg ? res.result.errMsg : "操作失败");
-            }
+        activityService
+          .updateActivity(activity._id, { status: "已取消" })
+          .then(() => {
+            wx.hideLoading();
+            wx.showToast({ title: "已取消活动", icon: "success" });
+            this.closeEditModal();
+            this.loadActivityList();
           })
           .catch((err) => {
-            const isFuncNotFound =
-              err.errCode === -501000 ||
-              (err.errMsg && err.errMsg.includes("FunctionName")) ||
-              (err.message && String(err.message).includes("501000"));
-            if (isFuncNotFound) {
-              return doUpdate().catch((e) => {
-                console.error(e);
-                wx.hideLoading();
-                wx.showToast({ title: e.message || "操作失败", icon: "none" });
-              });
-            }
+            console.error(err);
             wx.hideLoading();
-            wx.showToast({ title: err.message || "操作失败", icon: "none" });
+            wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
           });
       }
     });
@@ -860,25 +685,17 @@ Page({
       success: (res) => {
         if (res.confirm) {
           wx.showLoading({ title: "删除中..." });
-          wx.cloud.callFunction({
-            name: "deleteActivity",
-            data: {
-              activityId: activity._id
-            }
-          })
-            .then(res => {
+          activityService
+            .deleteActivity(activity._id)
+            .then(() => {
               wx.hideLoading();
-              if (res.result && res.result.errCode === 0) {
-                wx.showToast({ title: "删除成功", icon: "success" });
-                this.loadActivityList();
-              } else {
-                wx.showToast({ title: (res.result && res.result.errMsg) || "删除失败", icon: "none" });
-              }
+              wx.showToast({ title: "删除成功", icon: "success" });
+              this.loadActivityList();
             })
             .catch(err => {
               console.error(err);
               wx.hideLoading();
-              wx.showToast({ title: "删除失败", icon: "none" });
+              wx.showToast({ title: (err && err.message) || "删除失败", icon: "none" });
             });
         }
       }
@@ -942,36 +759,17 @@ Page({
 
     wx.showLoading({ title: "报名中..." });
 
-    wx.cloud.callFunction({
-      name: "signupActivity",
-      data: {
-        activityId: activity._id,
-        nickname,
-        userId: app.globalData.userId || null
-      }
-    })
-      .then((res) => {
-        if (res.result && res.result.errCode === 0) {
-          if (res.result.alreadySignedUp) {
-            wx.hideLoading();
-            wx.showToast({ title: "您已报名", icon: "none" });
-            return;
-          }
-          wx.hideLoading();
-          wx.showToast({ title: "报名成功", icon: "success" });
-          this.loadActivityList();
-        } else {
-          wx.hideLoading();
-          wx.showToast({ 
-            title: res.result && res.result.errMsg ? res.result.errMsg : "报名失败", 
-            icon: "none" 
-          });
-        }
+    activityService
+      .signupActivity(activity._id)
+      .then(() => {
+        wx.hideLoading();
+        wx.showToast({ title: "报名成功", icon: "success" });
+        this.loadActivityList();
       })
       .catch(err => {
         console.error(err);
         wx.hideLoading();
-        wx.showToast({ title: "报名失败", icon: "none" });
+        wx.showToast({ title: (err && err.message) || "报名失败", icon: "none" });
       });
   },
 
@@ -980,11 +778,13 @@ Page({
     const arr = raw || [];
     return arr.map(p => {
       if (typeof p === "string") {
-        return { name: p, userId: null, checkedInAt: null };
+        return { id: null, name: p, userId: null, avatarUrl: DEFAULT_AVATAR, checkedInAt: null };
       }
       return {
+        id: p.id || null,
         name: p.name || "",
-        userId: p.userId || null,
+        userId: p.userId != null ? String(p.userId) : null,
+        avatarUrl: p.avatarUrl || DEFAULT_AVATAR,
         checkedInAt: p.checkedInAt || null
       };
     });
@@ -1042,6 +842,7 @@ Page({
 
   // 删除已报名人员
   removeParticipant(e) {
+    const participantId = e.currentTarget.dataset.id;
     const name = e.currentTarget.dataset.name;
     const activity = this.data.detailActivity;
     
@@ -1050,36 +851,17 @@ Page({
       content: `确定要删除"${name}"吗？如果该成员在记账明细中，相关记录也会被删除。`,
       success: (res) => {
         if (res.confirm) {
-          this.doRemoveParticipant(name, activity);
+          this.doRemoveParticipant(participantId, name, activity);
         }
       }
     });
   },
 
-  doRemoveParticipant(name, activity) {
+  doRemoveParticipant(participantId, name, activity) {
     wx.showLoading({ title: "处理中..." });
 
-    wx.cloud.callFunction({
-      name: "removeParticipant",
-      data: {
-        activityId: activity._id,
-        participantName: name,
-        isAdmin: this.data.isAdmin
-      }
-    })
-      .then((res) => {
-        if (res.result && res.result.errCode === 0) {
-          if (res.result.alreadyRemoved) {
-            wx.hideLoading();
-            wx.showToast({ title: "参与者不存在", icon: "none" });
-            return;
-          }
-          // 云函数已处理活动参与者和账单记录的删除/更新
-          return Promise.resolve();
-        } else {
-          throw new Error(res.result && res.result.errMsg ? res.result.errMsg : "删除失败");
-        }
-      })
+    activityService
+      .removeParticipant(activity._id, participantId)
       .then(() => {
         wx.hideLoading();
         wx.showToast({ title: "删除成功", icon: "success" });
@@ -1094,16 +876,8 @@ Page({
       })
       .catch(err => {
         console.error(err);
-        let errorMsg = "删除失败";
-        if (err && err.errMsg) {
-          if (err.errMsg.includes("FUNCTION_NOT_FOUND") || err.errMsg.includes("FunctionName parameter could not be found")) {
-            errorMsg = "云函数未部署，请先上传并部署 removeParticipant 云函数";
-          } else {
-            errorMsg = err.errMsg;
-          }
-        }
         wx.hideLoading();
-        wx.showToast({ title: errorMsg, icon: "none", duration: 3000 });
+        wx.showToast({ title: (err && err.message) || "删除失败", icon: "none", duration: 3000 });
       });
   },
 

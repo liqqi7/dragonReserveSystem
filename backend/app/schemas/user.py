@@ -24,3 +24,9 @@ class UpdateCurrentUserRequest(BaseModel):
 
     nickname: str = Field(min_length=1, max_length=64)
     avatar_url: str = Field(default="", max_length=512)
+
+
+class UpdateRoleRequest(BaseModel):
+    """Invite-code based role update request."""
+
+    invite_code: str = Field(min_length=1, max_length=64)

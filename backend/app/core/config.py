@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24
     checkin_radius_meters: int = 1000
+    user_invite_code: str = "dragon"
+    admin_invite_code: str = "manage"
 
     cors_origins: list[str] = Field(default_factory=lambda: ["*"])
 

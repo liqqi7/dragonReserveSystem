@@ -30,6 +30,7 @@ def test_create_list_update_delete_bill(
     assert create_response.status_code == 201
     bill = create_response.json()
     bill_id = bill["id"]
+    assert bill["activity_name"] == sample_activity.name
     assert bill["per_share"] == 60.0
 
     list_response = client.get("/api/v1/bills", headers=user_headers)
