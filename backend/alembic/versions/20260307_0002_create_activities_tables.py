@@ -16,7 +16,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("name", sa.String(length=128), nullable=False),
         sa.Column("status", sa.String(length=32), nullable=False, server_default="进行中"),
-        sa.Column("remark", sa.Text(), nullable=False, server_default=""),
+        sa.Column("remark", sa.String(length=1000), nullable=False, server_default=""),
         sa.Column("max_participants", sa.Integer(), nullable=False, server_default="20"),
         sa.Column("start_time", sa.DateTime(timezone=True), nullable=False),
         sa.Column("end_time", sa.DateTime(timezone=True), nullable=False),

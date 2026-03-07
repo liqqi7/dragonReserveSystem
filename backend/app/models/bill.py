@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 """Bill models."""
 
 from datetime import date, datetime
 from decimal import Decimal
+from typing import Optional
 
-from sqlalchemy import Date, DateTime, ForeignKey, Index, Numeric, String, Text, func
+from sqlalchemy import Date, DateTime, ForeignKey, Index, Numeric, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -19,9 +22,9 @@ class Bill(Base):
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    activity_id: Mapped[int | None] = mapped_column(ForeignKey("activities.id", ondelete="SET NULL"), nullable=True)
+    activity_id: Mapped[Optional[int]] = mapped_column(ForeignKey("activities.id", ondelete="SET NULL"), nullable=True)
     item: Mapped[str] = mapped_column(String(128), nullable=False)
-    note: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    note: Mapped[str] = mapped_column(String(1000), nullable=False, default="")
     total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     payer_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     payer_name_snapshot: Mapped[str] = mapped_column(String(64), nullable=False)

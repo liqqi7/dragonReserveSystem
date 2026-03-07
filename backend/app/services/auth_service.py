@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Authentication use cases."""
 
 from sqlalchemy import select

@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     app_name: str = "Dragon Reserve Backend"
     app_version: str = "0.1.0"
     api_v1_prefix: str = "/api/v1"
-    debug: bool = False
+    debug: bool = Field(default=False, validation_alias="APP_DEBUG")
 
     database_url: str = Field(
         default="mysql+pymysql://root:password@127.0.0.1:3306/dragon_reserve?charset=utf8mb4",
@@ -33,6 +33,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",
     )
 
 

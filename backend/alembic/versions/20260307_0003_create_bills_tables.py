@@ -16,7 +16,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("activity_id", sa.Integer(), nullable=True),
         sa.Column("item", sa.String(length=128), nullable=False),
-        sa.Column("note", sa.Text(), nullable=False, server_default=""),
+        sa.Column("note", sa.String(length=1000), nullable=False, server_default=""),
         sa.Column("total_amount", sa.Numeric(10, 2), nullable=False),
         sa.Column("payer_user_id", sa.Integer(), nullable=False),
         sa.Column("payer_name_snapshot", sa.String(length=64), nullable=False),

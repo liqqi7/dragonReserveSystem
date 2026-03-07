@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Statistics use cases."""
 
 from datetime import datetime

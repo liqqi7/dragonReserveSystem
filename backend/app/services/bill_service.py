@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Bill use cases."""
 
 from decimal import Decimal, ROUND_HALF_UP

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """Authentication and password utilities."""
 
 from dataclasses import dataclass

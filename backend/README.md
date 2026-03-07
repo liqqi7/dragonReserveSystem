@@ -140,3 +140,55 @@ DATABASE_URL=mysql+pymysql://username:password@127.0.0.1:3306/dragon_reserve?cha
 4. 执行迁移：`alembic upgrade head`
 5. 初始化管理员：`python scripts/create_admin.py`
 6. 启动服务：`uvicorn app.main:app --reload`
+
+## 环境建设
+
+当前仓库已经补齐本地开发所需的基础环境文件：
+
+- [Makefile](/Volumes/disk/project/dragonReserveSystem/backend/Makefile)：统一依赖安装、迁移、启动命令
+- [docker-compose.yml](/Volumes/disk/project/dragonReserveSystem/backend/docker-compose.yml)：本地 MySQL 8.4
+- [Dockerfile](/Volumes/disk/project/dragonReserveSystem/backend/Dockerfile)：后端容器运行镜像
+- [.env.example](/Volumes/disk/project/dragonReserveSystem/backend/.env.example)：本地环境变量模板
+- [.gitignore](/Volumes/disk/project/dragonReserveSystem/.gitignore)：忽略本地环境和缓存文件
+
+## 推荐本地开发流程
+
+### 方式一：本机 Python + Docker MySQL
+
+1. 进入目录：`cd backend`
+2. 复制环境变量：`make copy-env`
+3. 启动数据库：`make db-up`
+4. 安装依赖：`make install`
+5. 执行迁移：`make migrate`
+6. 初始化管理员：`make create-admin`
+7. 启动服务：`make run`
+8. 运行测试：`make test`
+
+### 方式二：Homebrew MySQL + 本机 Python
+
+如果当前机器没有 Docker，但有 Homebrew，可以直接：
+
+1. 安装 MySQL：`brew install mysql`
+2. 启动 MySQL：`make db-up-brew`
+3. 复制环境变量：`make copy-env`
+4. 安装依赖：`make install`
+5. 执行迁移：`make migrate`
+6. 初始化管理员：`make create-admin`
+7. 启动服务：`make run`
+
+### 方式三：仅用 Docker 运行数据库，Python 仍在本机
+
+如果本机已有 Python 环境，但没有 MySQL，推荐使用这种方式。数据库连接默认指向：
+
+```text
+mysql+pymysql://dragon_user:dragon_password@127.0.0.1:3306/dragon_reserve?charset=utf8mb4
+```
+
+### 方式四：容器化后端
+
+当前 `Dockerfile` 已可用于单独构建后端镜像，但默认开发路径仍建议：
+
+- MySQL 用 `docker compose`
+- FastAPI 用本机 `uvicorn --reload`
+
+这样调试效率更高。

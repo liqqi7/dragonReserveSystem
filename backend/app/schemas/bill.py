@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 """Bill schemas."""
 
 from datetime import date, datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -21,7 +24,7 @@ class BillResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    activity_id: int | None
+    activity_id: Optional[int]
     item: str
     note: str
     total_amount: float
@@ -37,7 +40,7 @@ class BillResponse(BaseModel):
 class BillCreateRequest(BaseModel):
     """Create bill payload."""
 
-    activity_id: int | None = None
+    activity_id: Optional[int] = None
     item: str = Field(min_length=1, max_length=128)
     note: str = ""
     total_amount: float = Field(gt=0)
@@ -57,10 +60,10 @@ class BillCreateRequest(BaseModel):
 class BillUpdateRequest(BaseModel):
     """Update bill payload."""
 
-    activity_id: int | None = None
-    item: str | None = Field(default=None, min_length=1, max_length=128)
-    note: str | None = None
-    total_amount: float | None = Field(default=None, gt=0)
-    payer_user_id: int | None = None
-    participant_user_ids: list[int] | None = None
-    date: date | None = None
+    activity_id: Optional[int] = None
+    item: Optional[str] = Field(default=None, min_length=1, max_length=128)
+    note: Optional[str] = None
+    total_amount: Optional[float] = Field(default=None, gt=0)
+    payer_user_id: Optional[int] = None
+    participant_user_ids: Optional[list[int]] = None
+    date: Optional[date] = None

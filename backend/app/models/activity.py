@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 """Activity models."""
 
 from datetime import datetime
+from typing import Optional
 
-from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, String, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -20,15 +23,15 @@ class Activity(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="进行中")
-    remark: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    remark: Mapped[str] = mapped_column(String(1000), nullable=False, default="")
     max_participants: Mapped[int] = mapped_column(Integer, nullable=False, default=20)
     start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     end_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    signup_deadline: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    signup_deadline: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     location_name: Mapped[str] = mapped_column(String(255), nullable=False, default="")
     location_address: Mapped[str] = mapped_column(String(255), nullable=False, default="")
-    location_latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
-    location_longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    location_latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    location_longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -62,9 +65,9 @@ class ActivityParticipant(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     nickname_snapshot: Mapped[str] = mapped_column(String(64), nullable=False)
     avatar_url_snapshot: Mapped[str] = mapped_column(String(512), nullable=False, default="")
-    checked_in_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    checkin_lat: Mapped[float | None] = mapped_column(Float, nullable=True)
-    checkin_lng: Mapped[float | None] = mapped_column(Float, nullable=True)
+    checked_in_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    checkin_lat: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    checkin_lng: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
