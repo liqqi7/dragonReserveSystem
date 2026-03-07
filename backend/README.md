@@ -1,6 +1,6 @@
 # Backend Blueprint
 
-本目录承载“脱离微信云、支持持续迭代”的本地后端实现。
+本目录承载当前分支的本地后端实现，已经是可运行、可测试、可继续迭代的主后端。
 
 ## 目标
 
@@ -46,16 +46,16 @@ backend/
 - 所有数据库结构变化必须通过 Alembic
 - 数据库连接实现以 MySQL 方言为默认目标，不先按 SQLite 妥协
 
-## 第一阶段范围
+## 当前能力
 
-第一阶段只做能替代现有微信云能力的基础能力：
+当前已经覆盖原小程序主流程所需的后端能力：
 
-- 登录与令牌签发
-- 当前用户信息查询与更新
+- 本地账号注册、登录、JWT 签发
+- 当前用户查询、资料更新、角色切换
 - 活动列表、详情、创建、编辑、删除
-- 报名、取消报名、签到
-- 账单的基础 CRUD
-- 历史统计与排行
+- 报名、取消报名、签到、移除参与者
+- 账单 CRUD
+- 鸽子榜与活动账单统计
 
 ## 数据库策略
 
@@ -93,25 +93,17 @@ backend/
 DATABASE_URL=mysql+pymysql://username:password@127.0.0.1:3306/dragon_reserve?charset=utf8mb4
 ```
 
-## 后续建议
-
-基础框架落地后，优先完善以下文件：
-
-- `app/core/config.py`
-- `app/core/database.py`
-- `app/core/security.py`
-- `app/api/v1/__init__.py`
-- `app/main.py`
-
 ## 当前已落地
 
 - FastAPI 入口文件
 - API v1 路由注册
 - 健康检查接口 `/api/v1/health`
 - 登录接口 `/api/v1/auth/login`
+- 注册接口 `/api/v1/auth/register`
 - 当前用户接口 `/api/v1/users/me`
+- 当前用户角色接口 `/api/v1/users/me/role`
 - 活动接口 `/api/v1/activities`
-- 报名、取消报名、签到接口
+- 报名、取消报名、签到、移除参与者接口
 - 账单接口 `/api/v1/bills`
 - 统计接口 `/api/v1/stats/history`、`/api/v1/stats/bills`
 - 环境变量配置加载
@@ -125,12 +117,8 @@ DATABASE_URL=mysql+pymysql://username:password@127.0.0.1:3306/dragon_reserve?cha
 - 首批 migrations
 - 本地管理员初始化脚本
 - `requirements.txt` 与 `.env.example`
-
-## 下一步
-
-- 增加 service 层与 API 层测试
-- 对接小程序的 API 访问层
-- 补充更细的权限策略与初始化流程
+- 小程序 API 对接所需的完整主流程
+- 后端测试基线
 
 ## 本地启动最小步骤
 
@@ -140,6 +128,8 @@ DATABASE_URL=mysql+pymysql://username:password@127.0.0.1:3306/dragon_reserve?cha
 4. 执行迁移：`alembic upgrade head`
 5. 初始化管理员：`python scripts/create_admin.py`
 6. 启动服务：`uvicorn app.main:app --reload`
+
+默认管理员初始化脚本会引导你创建账号；如果使用当前仓库默认本地环境，常见开发命令见 [Makefile](/Volumes/disk/project/dragonReserveSystem/backend/Makefile)。
 
 ## 环境建设
 
@@ -192,3 +182,17 @@ mysql+pymysql://dragon_user:dragon_password@127.0.0.1:3306/dragon_reserve?charse
 - FastAPI 用本机 `uvicorn --reload`
 
 这样调试效率更高。
+
+## 当前验证结果
+
+- 后端接口测试已覆盖现有公开接口
+- 最近一次全量测试结果：`25 passed`
+- 已完成本地联调：
+  - 注册
+  - 登录
+  - 角色切换
+  - 创建活动
+  - 报名
+  - 签到
+  - 创建账单
+  - 查询统计
