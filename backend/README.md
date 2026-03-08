@@ -1,6 +1,6 @@
 # Backend Blueprint
 
-本目录承载当前分支的本地后端实现，已经是可运行、可测试、可继续迭代的主后端。
+本目录承载当前分支的本地后端实现，已经是可运行、可测试、可继续迭代的主后端，并支持微信小程序登录。
 
 ## 目标
 
@@ -16,7 +16,7 @@
 - 数据迁移：Alembic
 - 数据库：MySQL
 - 驱动：PyMySQL
-- 认证：JWT
+- 认证：`wx.login` + JWT
 - 校验：Pydantic
 
 ## 目录说明
@@ -51,6 +51,7 @@ backend/
 当前已经覆盖原小程序主流程所需的后端能力：
 
 - 本地账号注册、登录、JWT 签发
+- 微信 `wx.login` 登录、JWT 签发
 - 当前用户查询、资料更新、角色切换
 - 活动列表、详情、创建、编辑、删除
 - 报名、取消报名、签到、移除参与者
@@ -99,7 +100,7 @@ DATABASE_URL=mysql+pymysql://username:password@127.0.0.1:3306/dragon_reserve?cha
 - API v1 路由注册
 - 健康检查接口 `/api/v1/health`
 - 登录接口 `/api/v1/auth/login`
-- 注册接口 `/api/v1/auth/register`
+- 微信登录接口 `/api/v1/auth/wechat-login`
 - 当前用户接口 `/api/v1/users/me`
 - 当前用户角色接口 `/api/v1/users/me/role`
 - 活动接口 `/api/v1/activities`
@@ -125,9 +126,10 @@ DATABASE_URL=mysql+pymysql://username:password@127.0.0.1:3306/dragon_reserve?cha
 1. 安装依赖：`pip install -r requirements.txt`
 2. 复制环境变量：`cp .env.example .env`
 3. 创建数据库：`dragon_reserve`
-4. 执行迁移：`alembic upgrade head`
-5. 初始化管理员：`python scripts/create_admin.py`
-6. 启动服务：`uvicorn app.main:app --reload`
+4. 配置 `WECHAT_APP_ID` 和 `WECHAT_APP_SECRET`
+5. 执行迁移：`alembic upgrade head`
+6. 初始化管理员：`python scripts/create_admin.py`
+7. 启动服务：`uvicorn app.main:app --reload`
 
 默认管理员初始化脚本会引导你创建账号；如果使用当前仓库默认本地环境，常见开发命令见 [Makefile](/Volumes/disk/project/dragonReserveSystem/backend/Makefile)。
 
@@ -188,11 +190,19 @@ mysql+pymysql://dragon_user:dragon_password@127.0.0.1:3306/dragon_reserve?charse
 - 后端接口测试已覆盖现有公开接口
 - 最近一次全量测试结果：`25 passed`
 - 已完成本地联调：
-  - 注册
-  - 登录
+  - 微信登录
   - 角色切换
   - 创建活动
   - 报名
   - 签到
   - 创建账单
   - 查询统计
+
+## 作为正式服务器
+
+如果当前这台 Mac 后续就是正式服务器，直接看：
+
+- [DEPLOY_MAC_SERVER.md](/Volumes/disk/project/dragonReserveSystem/backend/DEPLOY_MAC_SERVER.md)
+- [Caddyfile.example](/Volumes/disk/project/dragonReserveSystem/backend/deploy/Caddyfile.example)
+- [com.dragonreserve.backend.plist.example](/Volumes/disk/project/dragonReserveSystem/backend/deploy/com.dragonreserve.backend.plist.example)
+- [.env.production.example](/Volumes/disk/project/dragonReserveSystem/backend/.env.production.example)

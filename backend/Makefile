@@ -4,13 +4,16 @@ PIP ?= $(PYTHON) -m pip
 UVICORN ?= $(VENV)/bin/uvicorn
 ALEMBIC ?= $(VENV)/bin/alembic
 
-.PHONY: install copy-env db-up db-down db-up-brew db-down-brew migrate create-admin run dev-check test
+.PHONY: install copy-env copy-prod-env db-up db-down db-up-brew db-down-brew migrate create-admin run run-prod dev-check test
 
 install:
 	$(PIP) install -r requirements.txt
 
 copy-env:
 	cp -n .env.example .env || true
+
+copy-prod-env:
+	cp -n .env.production.example .env || true
 
 db-up:
 	docker compose up -d mysql
@@ -32,6 +35,9 @@ create-admin:
 
 run:
 	$(UVICORN) app.main:app --reload --host 0.0.0.0 --port 8000
+
+run-prod:
+	$(UVICORN) app.main:app --host 127.0.0.1 --port 8000
 
 dev-check:
 	PYTHONPYCACHEPREFIX=/tmp/python-cache $(PYTHON) -m compileall app scripts alembic

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.exceptions import NotFoundError, ValidationAppError
-from app.models import User
+from app.models import ActivityParticipant, Bill, BillParticipant, User
 from app.schemas.user import UpdateCurrentUserRequest
 
 settings = get_settings()
@@ -25,6 +25,27 @@ def update_current_user(db: Session, user: User, payload: UpdateCurrentUserReque
 
     user.nickname = payload.nickname
     user.avatar_url = payload.avatar_url
+
+    participant_snapshots = list(
+        db.scalars(select(ActivityParticipant).where(ActivityParticipant.user_id == user.id)).all()
+    )
+    for participant in participant_snapshots:
+        participant.nickname_snapshot = user.nickname
+        participant.avatar_url_snapshot = user.avatar_url
+        db.add(participant)
+
+    bill_participant_snapshots = list(
+        db.scalars(select(BillParticipant).where(BillParticipant.user_id == user.id)).all()
+    )
+    for participant in bill_participant_snapshots:
+        participant.nickname_snapshot = user.nickname
+        db.add(participant)
+
+    payer_bills = list(db.scalars(select(Bill).where(Bill.payer_user_id == user.id)).all())
+    for bill in payer_bills:
+        bill.payer_name_snapshot = user.nickname
+        db.add(bill)
+
     db.add(user)
     db.commit()
     db.refresh(user)

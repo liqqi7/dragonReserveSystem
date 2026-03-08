@@ -1,3 +1,8 @@
+from sqlalchemy import select
+
+from app.models import ActivityParticipant, Bill, BillParticipant
+
+
 def test_get_current_user(client, admin_user, admin_headers) -> None:
     response = client.get("/api/v1/users/me", headers=admin_headers)
 
@@ -17,6 +22,39 @@ def test_update_current_user(client, user_headers) -> None:
     body = response.json()
     assert body["nickname"] == "改名后的成员"
     assert body["avatar_url"] == "https://example.com/new.png"
+
+
+def test_update_current_user_syncs_activity_and_bill_snapshots(
+    client,
+    db_session,
+    user_headers,
+    signed_up_activity,
+    sample_bill,
+) -> None:
+    response = client.patch(
+        "/api/v1/users/me",
+        headers=user_headers,
+        json={"nickname": "改名后的成员", "avatar_url": "https://example.com/new.png"},
+    )
+
+    assert response.status_code == 200
+
+    activity_participant = db_session.scalar(
+        select(ActivityParticipant).where(ActivityParticipant.user_id == sample_bill.payer_user_id)
+    )
+    assert activity_participant is not None
+    assert activity_participant.nickname_snapshot == "改名后的成员"
+    assert activity_participant.avatar_url_snapshot == "https://example.com/new.png"
+
+    bill = db_session.scalar(select(Bill).where(Bill.id == sample_bill.id))
+    assert bill is not None
+    assert bill.payer_name_snapshot == "改名后的成员"
+
+    bill_participant = db_session.scalar(
+        select(BillParticipant).where(BillParticipant.user_id == sample_bill.payer_user_id)
+    )
+    assert bill_participant is not None
+    assert bill_participant.nickname_snapshot == "改名后的成员"
 
 
 def test_get_current_user_requires_auth(client) -> None:

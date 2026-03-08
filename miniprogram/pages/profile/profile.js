@@ -165,8 +165,15 @@ Page({
     this.setData({ editNickname: e.detail.value || "" });
   },
 
-  onAvatarUrlInput(e) {
-    this.setData({ editAvatarUrl: e.detail.value || "" });
+  onChooseAvatar(e) {
+    const avatarUrl = e.detail && e.detail.avatarUrl;
+    if (!avatarUrl) {
+      wx.showToast({ title: "未选择头像", icon: "none" });
+      return;
+    }
+
+    this.setData({ editAvatarUrl: avatarUrl });
+    wx.showToast({ title: "已选择微信头像", icon: "success" });
   },
 
   saveProfile() {

@@ -18,7 +18,17 @@ function register(payload) {
   });
 }
 
+function wechatLogin(payload) {
+  return request({
+    url: "/auth/wechat-login",
+    method: "POST",
+    data: payload,
+    auth: false
+  });
+}
+
 module.exports = {
   login,
-  register
+  register,
+  wechatLogin
 };

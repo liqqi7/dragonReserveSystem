@@ -1,6 +1,7 @@
 """User model."""
 
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import DateTime, Index, String, func
 from sqlalchemy.orm import Mapped, mapped_column
@@ -9,16 +10,18 @@ from app.core.database import Base
 
 
 class User(Base):
-    """Application user for local authentication and authorization."""
+    """Application user for local and WeChat-based authentication."""
 
     __tablename__ = "users"
     __table_args__ = (
         Index("ix_users_role", "role"),
+        Index("ix_users_wechat_openid", "wechat_openid"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    username: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    username: Mapped[Optional[str]] = mapped_column(String(64), unique=True, nullable=True)
+    wechat_openid: Mapped[Optional[str]] = mapped_column(String(64), unique=True, nullable=True)
+    password_hash: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     nickname: Mapped[str] = mapped_column(String(64), nullable=False)
     avatar_url: Mapped[str] = mapped_column(String(512), nullable=False, default="")
     role: Mapped[str] = mapped_column(String(32), nullable=False, default="user")

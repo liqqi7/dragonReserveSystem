@@ -1,6 +1,6 @@
 # 龙城俱乐部小程序
 
-当前分支已将项目从“微信云开发直连”迁移为“微信小程序前端 + 本地 Python 后端”架构。
+当前分支已将项目从“微信云开发直连”迁移为“微信小程序前端 + 本地 Python 后端”架构，并保留微信登录体验。
 
 ## 当前架构
 
@@ -8,7 +8,7 @@
 - 后端：FastAPI
 - 数据库：MySQL
 - 数据访问：小程序通过 `wx.request` 调用本地 HTTP API
-- 认证：本地账号密码 + JWT
+- 认证：`wx.login` + 后端签发 JWT
 
 当前小程序端已经不再依赖 `wx.cloud`、云函数或云数据库。
 
@@ -26,7 +26,7 @@
   - 鸽子榜
   - 活动账单统计
 - 个人中心
-  - 本地账号注册、登录、退出
+  - 微信登录、退出
   - 昵称、头像链接维护
   - 邀请码切换 `guest / user / admin`
 - 数据清理
@@ -91,8 +91,8 @@
 ## 关键接口
 
 - 认证
-  - `POST /api/v1/auth/register`
   - `POST /api/v1/auth/login`
+  - `POST /api/v1/auth/wechat-login`
 - 用户
   - `GET /api/v1/users/me`
   - `PATCH /api/v1/users/me`
@@ -143,7 +143,8 @@ http://127.0.0.1:8000/api/v1
 1. 用微信开发者工具导入仓库根目录
 2. 确认请求域名允许访问本地开发地址
 3. 编译运行小程序
-4. 先注册本地账号，再在“我的”页面输入邀请码获取权限
+4. 在欢迎页点击微信登录
+5. 进入“我的”页面输入邀请码获取权限
 
 默认邀请码：
 
@@ -165,8 +166,7 @@ make test
 
 已完成本地联调的主链路：
 
-- 注册
-- 登录
+- 微信登录
 - 角色升级
 - 创建活动
 - 报名
@@ -178,4 +178,5 @@ make test
 
 - `cloudfunctions/` 仍保留在仓库中，主要用于对照旧实现和迁移参考
 - 当前运行链路不再依赖微信云函数或微信云数据库
+- 后端微信登录需要在 [backend/.env.example](/Volumes/disk/project/dragonReserveSystem/backend/.env.example) 对应的 `.env` 中配置 `WECHAT_APP_ID` 和 `WECHAT_APP_SECRET`
 - 生产环境如果接入真机或线上小程序，请改为 HTTPS 域名并在小程序后台配置合法 request 域名

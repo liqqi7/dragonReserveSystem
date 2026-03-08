@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     checkin_radius_meters: int = 1000
     user_invite_code: str = "dragon"
     admin_invite_code: str = "manage"
+    wechat_app_id: str = ""
+    wechat_app_secret: str = ""
+    wechat_code2session_url: str = "https://api.weixin.qq.com/sns/jscode2session"
 
     cors_origins: list[str] = Field(default_factory=lambda: ["*"])
 

@@ -44,3 +44,10 @@ class ValidationAppError(AppError):
 
     def __init__(self, message: str = "Validation failed") -> None:
         super().__init__("VALIDATION_ERROR", message, 422)
+
+
+class IntegrationError(AppError):
+    """Raised when an upstream integration fails."""
+
+    def __init__(self, message: str = "Upstream integration failed") -> None:
+        super().__init__("INTEGRATION_ERROR", message, 502)

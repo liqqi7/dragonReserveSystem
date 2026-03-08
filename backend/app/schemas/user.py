@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 """User schemas."""
 
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -11,7 +14,8 @@ class CurrentUserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    username: str
+    username: Optional[str]
+    wechat_openid: Optional[str]
     nickname: str
     avatar_url: str
     role: str

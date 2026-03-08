@@ -80,7 +80,7 @@
     </view>
   </view>
 
-  <!-- 编辑资料弹窗：头像 + 昵称 -->
+  <!-- 编辑资料弹窗：昵称 + 微信头像 -->
   <view wx:if="{{showEditModal}}" class="modal-overlay" bindtap="closeEditModal">
     <view class="modal-content" catchtap="stopTap">
       <view class="modal-header">
@@ -89,6 +89,15 @@
       </view>
 
       <view class="modal-body">
+        <view class="form-item avatar-form-row">
+          <view class="label">头像</view>
+          <view class="avatar-edit-wrap">
+            <button class="avatar-edit-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+              <image wx:if="{{editAvatarUrl}}" class="avatar-edit-img" src="{{editAvatarUrl}}" mode="aspectFill" />
+              <view wx:else class="avatar-edit-placeholder">选择头像</view>
+            </button>
+          </view>
+        </view>
         <view class="form-item">
           <view class="label">昵称</view>
           <input
@@ -97,16 +106,6 @@
             placeholder="请输入昵称"
             value="{{editNickname}}"
             bindinput="onInputNickname"
-          />
-        </view>
-        <view class="form-item">
-          <view class="label">头像地址</view>
-          <input
-            type="text"
-            class="input"
-            placeholder="可选，填写可访问的图片 URL"
-            value="{{editAvatarUrl}}"
-            bindinput="onAvatarUrlInput"
           />
         </view>
       </view>
