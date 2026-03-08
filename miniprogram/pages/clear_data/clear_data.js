@@ -1,5 +1,6 @@
 const app = getApp();
-const db = wx.cloud.database();
+const activityService = require("../../services/activity");
+const billService = require("../../services/bill");
 
 Page({
   data: {
@@ -8,7 +9,6 @@ Page({
   },
 
   onLoad() {
-    // 只有管理员可以使用
     if (app.globalData.userRole !== "admin") {
       wx.showToast({ title: "无权限", icon: "none" });
       setTimeout(() => {
@@ -34,44 +34,34 @@ Page({
   doClearAllData() {
     this.setData({ clearing: true, result: "正在清空数据..." });
 
-    // 先删除所有活动数据
-    db.collection("activities")
-      .get()
-      .then(res => {
-        if (res.data.length === 0) {
-          return Promise.resolve([]);
-        }
-        const deletePromises = res.data.map(item => 
-          db.collection("activities").doc(item._id).remove()
-        );
-        return Promise.all(deletePromises);
+    activityService
+      .listActivities()
+      .then((activities) => {
+        const list = activities || [];
+        if (!list.length) return Promise.resolve();
+        return Promise.all(list.map((activity) => activityService.deleteActivity(activity.id || activity._id)));
       })
       .then(() => {
         this.setData({ result: "活动数据已清空，正在清空记账数据..." });
-        // 再删除所有记账数据
-        return db.collection("bills").get();
+        return billService.listBills();
       })
-      .then(res => {
-        if (res.data.length === 0) {
-          return Promise.resolve([]);
-        }
-        const deletePromises = res.data.map(item => 
-          db.collection("bills").doc(item._id).remove()
-        );
-        return Promise.all(deletePromises);
+      .then((bills) => {
+        const list = bills || [];
+        if (!list.length) return Promise.resolve();
+        return Promise.all(list.map((bill) => billService.deleteBill(bill.id || bill._id)));
       })
       .then(() => {
-        this.setData({ 
+        this.setData({
           clearing: false,
           result: "✅ 所有数据已清空！\n\n- 活动数据：已清空\n- 记账数据：已清空"
         });
         wx.showToast({ title: "清空成功", icon: "success" });
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
-        this.setData({ 
+        this.setData({
           clearing: false,
-          result: "❌ 清空失败：" + (err.message || "未知错误")
+          result: `❌ 清空失败：${(err && err.message) || "未知错误"}`
         });
         wx.showToast({ title: "清空失败", icon: "none" });
       });

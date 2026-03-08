@@ -1,5 +1,6 @@
 const app = getApp();
-const db = wx.cloud.database();
+const authService = require("../../services/auth");
+const userService = require("../../services/user");
 
 Page({
   data: {
@@ -19,11 +20,10 @@ Page({
 
   onShow() {
     this.syncGuestState();
-    const hasWeChatAuth = !!wx.getStorageSync("hasWeChatAuth");
-    // 若全局已有用户信息，且已做过微信头像昵称授权，则视为已登录用户
+    const hasLocalAuth = !!wx.getStorageSync("accessToken");
     const userId = app.globalData.userId;
     const profile = app.globalData.userProfile;
-    if (hasWeChatAuth && userId && profile) {
+    if (hasLocalAuth && userId && profile) {
       this.setData({
         hasUser: true,
         isGuest: !app.globalData.isAuthenticated,
@@ -34,11 +34,9 @@ Page({
         }
       });
     } else {
-      // 未做微信授权时，展示默认头像昵称 + 登录按钮
-      this.setData({
-        hasUser: false
-      });
+      this.setData({ hasUser: false });
     }
+
     app.ensureUserReady(() => {
       this.loadUserProfile();
     });
@@ -50,46 +48,27 @@ Page({
   },
 
   loadUserProfile() {
-    const userId = app.globalData.userId;
-
-    if (!userId) {
+    if (!app.globalData.accessToken) {
       this.setData({ hasUser: false, isGuest: !app.globalData.isAuthenticated });
       return;
     }
 
-    // 查询 users 集合
-    db.collection("users")
-      .where({ _openid: userId })
-      .limit(1)
-      .get()
-      .then((res) => {
-        if (res.data && res.data.length > 0) {
-          const user = res.data[0];
-          app.globalData.userDocId = user._id;
-          app.globalData.userProfile = {
+    userService.getMe()
+      .then((user) => {
+        app.applyCurrentUser(user);
+        const userId = String(user.id || "");
+        this.setData({
+          hasUser: true,
+          isGuest: !app.globalData.isAuthenticated,
+          user: {
             nickname: user.nickname || "",
-            avatarUrl: user.avatarUrl || ""
-          };
-          const hasWeChatAuth = !!wx.getStorageSync("hasWeChatAuth");
-          this.setData({
-            // 只有完成过微信头像昵称授权的用户，才视为「已登录」
-            hasUser: hasWeChatAuth,
-            isGuest: !app.globalData.isAuthenticated,
-            user: {
-              nickname: user.nickname || "",
-              userIdShort: userId.slice(0, 8),
-              avatarUrl: user.avatarUrl || ""
-            }
-          });
-        } else {
-          this.setData({
-            hasUser: false,
-            isGuest: !app.globalData.isAuthenticated
-          });
-        }
+            userIdShort: userId.slice(0, 8),
+            avatarUrl: user.avatar_url || ""
+          }
+        });
       })
       .catch((err) => {
-        console.error("查询 users 失败:", err);
+        console.error("查询用户失败:", err);
         this.setData({
           hasUser: false,
           isGuest: !app.globalData.isAuthenticated
@@ -97,9 +76,23 @@ Page({
       });
   },
 
-  // 未授权用户：引导到欢迎页完成微信授权
   startRegister() {
-    wx.reLaunch({ url: "/pages/welcome/welcome" });
+    wx.showLoading({ title: "登录中...", mask: true });
+    authService.loginWithWechat(app)
+      .then(() => {
+        wx.hideLoading();
+        this.loadUserProfile();
+        wx.showToast({ title: "登录成功", icon: "success" });
+      })
+      .catch((err) => {
+        console.error("wechat login error", err);
+        wx.hideLoading();
+        wx.showToast({
+          title: (err && err.message) || "微信登录失败",
+          icon: "none",
+          duration: 3000
+        });
+      });
   },
 
   openPermissionModal() {
@@ -116,19 +109,15 @@ Page({
 
   submitPermission() {
     const input = (this.data.permissionInput || "").trim();
-    let role = null;
-    if (input === "dragon") {
-      role = "user";
-    } else if (input === "manage") {
-      role = "admin";
-    }
-    if (role) {
-      app.setAuthState(role, true);
-      this.setData({ showPermissionModal: false, permissionInput: "", isGuest: false });
-      wx.showToast({ title: "已获取权限", icon: "success" });
-    } else {
-      wx.showToast({ title: "邀请码错误", icon: "none" });
-    }
+    userService.updateMyRole(input)
+      .then((user) => {
+        app.applyCurrentUser(user);
+        this.setData({ showPermissionModal: false, permissionInput: "", isGuest: false });
+        wx.showToast({ title: "已获取权限", icon: "success" });
+      })
+      .catch((err) => {
+        wx.showToast({ title: err.message || "邀请码错误", icon: "none" });
+      });
   },
 
   removePermission() {
@@ -136,49 +125,28 @@ Page({
       title: "确认删除权限",
       content: "确定要恢复为游客吗？将无法查看活动与记账数据。",
       success: (res) => {
-        if (res.confirm) {
-          app.clearAuthState();
-          // 同步清除数据库中的角色
-          if (app.globalData.userDocId) {
-            const db = wx.cloud.database();
-            db.collection("users").doc(app.globalData.userDocId).update({
-              data: { role: "", updatedAt: db.serverDate() }
-            }).catch(() => {});
-          }
-          this.setData({ isGuest: true });
-          wx.showToast({ title: "已恢复为游客", icon: "success" });
-        }
+        if (!res.confirm) return;
+        userService.clearMyRole()
+          .then((user) => {
+            app.applyCurrentUser(user);
+            this.setData({ isGuest: true });
+            wx.showToast({ title: "已恢复为游客", icon: "success" });
+          })
+          .catch((err) => {
+            wx.showToast({ title: err.message || "恢复失败", icon: "none" });
+          });
       }
     });
   },
 
-  // 退出登录：清除本机头像昵称与权限信息
   logout() {
     wx.showModal({
       title: "退出登录",
-      content: "退出后将清除本机的头像昵称与权限信息，下次需要重新登录。",
+      content: "退出后将清除本机的账号信息，下次需要重新登录。",
       success: (res) => {
         if (!res.confirm) return;
 
-        // 清除权限状态（角色等）
-        app.clearAuthState();
-
-        // 清除本地存储的微信授权与用户信息
-        try {
-          wx.removeStorageSync("hasWeChatAuth");
-          wx.removeStorageSync("userId");
-          wx.removeStorageSync("userDocId");
-          wx.removeStorageSync("userNickname");
-        } catch (e) {
-          console.error("清理本地登录信息失败", e);
-        }
-
-        // 清除全局内存中的用户信息
-        app.globalData.userId = "";
-        app.globalData.userDocId = "";
-        app.globalData.userProfile = null;
-
-        // 重置页面状态为未登录 + 游客
+        app.logout();
         this.setData({
           hasUser: false,
           isGuest: true,
@@ -194,44 +162,6 @@ Page({
     });
   },
 
-  // 确保用户记录存在
-  ensureUserRecord() {
-    const db = wx.cloud.database();
-    const userId = app.globalData.userId;
-    
-    if (!userId) {
-      return Promise.reject("没有 openid");
-    }
-    
-    return db.collection("users")
-      .where({ _openid: userId })
-      .limit(1)
-      .get()
-      .then((res) => {
-        if (res.data && res.data.length > 0) {
-          // 用户已存在
-          app.globalData.userDocId = res.data[0]._id;
-          return Promise.resolve();
-        } else {
-          // 创建新用户
-          return db.collection("users").add({
-            data: {
-              nickname: "",
-              avatarFileId: "",
-              createdAt: db.serverDate(),
-              updatedAt: db.serverDate()
-            }
-          }).then((addRes) => {
-            app.globalData.userDocId = addRes._id;
-            app.globalData.userProfile = {
-              nickname: ""
-            };
-            return Promise.resolve();
-          });
-        }
-      });
-  },
-
   openEditModal() {
     const { user } = this.data;
     this.setData({
@@ -245,25 +175,29 @@ Page({
     this.setData({ showEditModal: false });
   },
 
-  onChooseAvatarInModal(e) {
-    const { avatarUrl } = e.detail;
-    this.setData({ editAvatarUrl: avatarUrl });
-  },
-
-  stopTap() {
-    // 阻止冒泡
-  },
+  stopTap() {},
 
   onInputNickname(e) {
     this.setData({ editNickname: e.detail.value || "" });
   },
 
+  onChooseAvatar(e) {
+    const avatarUrl = e.detail && e.detail.avatarUrl;
+    if (!avatarUrl) {
+      wx.showToast({ title: "未选择头像", icon: "none" });
+      return;
+    }
+
+    this.setData({ editAvatarUrl: avatarUrl });
+    wx.showToast({ title: "已选择微信头像", icon: "success" });
+  },
+
   saveProfile() {
-    const nick = (this.data.editNickname || "").trim();
-    const editAvatarUrl = this.data.editAvatarUrl || "";
+    const nickname = (this.data.editNickname || "").trim();
+    const avatarUrl = (this.data.editAvatarUrl || "").trim();
     const userId = app.globalData.userId;
 
-    if (!nick) {
+    if (!nickname) {
       wx.showToast({ title: "请输入昵称", icon: "none" });
       return;
     }
@@ -271,66 +205,31 @@ Page({
       wx.showToast({ title: "用户信息异常", icon: "none" });
       return;
     }
-    const userDocId = app.globalData.userDocId;
-    if (!userDocId) {
-      wx.showToast({ title: "用户信息异常", icon: "none" });
-      return;
-    }
 
     wx.showLoading({ title: "保存中...", mask: true });
-    const finish = (avatarUrl) => {
-      const finalAvatar = avatarUrl || this.data.user.avatarUrl || "";
-      app.globalData.userDocId = userDocId;
-      app.globalData.userProfile = { nickname: nick, avatarUrl: finalAvatar };
-      this.setData({
-        hasUser: true,
-        user: {
-          nickname: nick,
-          userIdShort: userId.slice(0, 8),
-          avatarUrl: finalAvatar
-        },
-        editAvatarUrl: "",
-        showEditModal: false
-      });
-      wx.hideLoading();
-      wx.showToast({ title: "保存成功", icon: "success" });
-    };
-
-    const doUpdate = (avatarUrl) => {
-      const payload = {
-        nickname: nick,
-        avatarUrl: avatarUrl || this.data.user.avatarUrl || "",
-        updatedAt: db.serverDate()
-      };
-      return db.collection("users")
-        .doc(userDocId)
-        .update({ data: payload })
-        .then(() => finish(payload.avatarUrl));
-    };
-
-    // 若选择了新头像（临时路径），先上传到云存储
-    const isTempPath = editAvatarUrl && !editAvatarUrl.startsWith("cloud://");
-    if (isTempPath) {
-      const cloudPath = `avatars/${userId}_${Date.now()}.jpg`;
-      wx.cloud.uploadFile({
-        cloudPath,
-        filePath: editAvatarUrl
-      })
-        .then((res) => doUpdate(res.fileID))
-        .catch((err) => {
-          console.error("头像上传失败", err);
-          wx.hideLoading();
-          wx.showToast({ title: "头像上传失败", icon: "none" });
+    userService.updateMe({
+      nickname,
+      avatar_url: avatarUrl
+    })
+      .then((user) => {
+        app.applyCurrentUser(user);
+        this.setData({
+          hasUser: true,
+          user: {
+            nickname: user.nickname || "",
+            userIdShort: String(user.id || "").slice(0, 8),
+            avatarUrl: user.avatar_url || ""
+          },
+          editAvatarUrl: user.avatar_url || "",
+          showEditModal: false
         });
-    } else {
-      const avatarUrl = editAvatarUrl || this.data.user.avatarUrl || "";
-      doUpdate(avatarUrl).catch((err) => {
+        wx.hideLoading();
+        wx.showToast({ title: "保存成功", icon: "success" });
+      })
+      .catch((err) => {
         console.error("更新失败", err);
         wx.hideLoading();
-        wx.showToast({ title: "保存失败", icon: "none" });
+        wx.showToast({ title: err.message || "保存失败", icon: "none" });
       });
-    }
-  },
-
+  }
 });
-

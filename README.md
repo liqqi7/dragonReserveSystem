@@ -1,111 +1,211 @@
 # 龙城俱乐部小程序
 
-基于微信小程序 + 云开发的俱乐部活动管理工具，用于管理线下活动、签到、记账和成员信息。
+当前分支已将项目从“微信云开发直连”迁移为“微信小程序前端 + Python 后端”架构，并保留微信登录体验。
+
+## 当前架构
+
+- 前端：微信小程序
+- 后端：FastAPI
+- 数据库：MySQL
+- 数据访问：小程序通过 `wx.request` 调用 HTTP API
+- 认证：`wx.login` + 后端签发 JWT
+
+当前小程序端已经不再依赖 `wx.cloud`、云函数或云数据库。
 
 ## 功能概览
 
-- **活动管理**
-  - 创建/编辑/取消/删除活动（管理员）
-  - 设置活动时间、地点、报名截止时间、备注等
-  - 活动列表按状态展示：**我参与的 / 未开始 / 进行中 / 已结束 / 已取消 / 全部**
-  - 活动详情弹窗：展示时间、地点、报名截止时间、参与人员及签到情况
-  - 从详情页一键 **报名 / 签到 / 分享活动卡片到微信**
-
-- **签到地图**
-  - 为活动配置地点（经纬度）
-  - 进入签到页展示地图和签到半径（默认 1km）
-  - 计算当前定位与活动地点的距离，仅在范围内允许签到
-
-- **记账功能**
-  - 为活动记录费用明细
-  - 按人员分摊和统计
-  - 可配合活动记录进行结算查询（见 `pages/accounting`）
-
-- **历史与排行**
-  - 历史活动记录
-  - 参与 / 签到等维度的排行展示（见 `pages/history`）
-
-- **个人中心**
-  - 个人信息与昵称管理
-  - 公会/权限登记（区分管理员和普通用户）
-  - 入口跳转到其他页面（如访问权限、清理数据等）
-
-- **数据清理**
-  - 提供清理数据相关入口（`pages/clear_data`），供管理员维护环境
-
-## 技术栈
-
-- **前端**：微信小程序（WXML / WXSS / JS）
-- **云开发**：微信云函数（Cloud Functions）
-  - `login`：登录与用户信息初始化
-  - `signupActivity`：活动报名
-  - `checkinActivity`：活动签到
-  - `updateActivity`：活动信息更新（含时间迁移等）
-  - `deleteActivity`：删除活动
-  - `removeParticipant`：移除参与者并同步相关账单
-- **数据库**：微信云开发数据库  
-  主要集合：`activities`、`users` 等（根据云函数逻辑使用）
+- 活动管理
+  - 创建、编辑、取消、删除活动
+  - 报名、取消报名、签到
+  - 活动详情、分享卡片、地点签到
+- 记账
+  - 按活动记账
+  - AA 参与人分摊
+  - 当日结算汇总
+- 历史统计
+  - 鸽子榜
+  - 活动账单统计
+- 个人中心
+  - 微信登录、退出
+  - 昵称、微信头像维护
+  - 邀请码切换 `guest / user / admin`
+- 数据清理
+  - 管理员清空活动和账单数据
 
 ## 目录结构
 
 ```text
 .
-├── miniprogram/                 小程序前端代码
+├── miniprogram/                 微信小程序前端
 │   ├── app.js
 │   ├── app.json
 │   ├── app.wxss
-│   ├── images/                  图标与空状态图
-│   └── pages/
-│       ├── welcome/             欢迎引导页
-│       ├── activity_list/       活动管理主页面（列表 + 详情）
-│       ├── checkin_map/         地图签到页
-│       ├── accounting/          记账页面
-│       ├── history/             历史记录与排行榜
-│       ├── clear_data/          数据清理
-│       └── profile/             个人中心
-├── cloudfunctions/              云函数
-│   ├── login/
-│   ├── signupActivity/
-│   ├── checkinActivity/
-│   ├── updateActivity/
-│   ├── deleteActivity/
-│   └── removeParticipant/
-├── project.config.json          微信开发者工具项目配置（miniprogramRoot 等）
-├── project.private.config.json  本地开发配置
+│   ├── images/
+│   ├── pages/
+│   │   ├── welcome/             登录 / 注册
+│   │   ├── activity_list/       活动列表、详情、报名、编辑
+│   │   ├── checkin_map/         地图签到
+│   │   ├── accounting/          记账与日结
+│   │   ├── history/             鸽子榜与账单统计
+│   │   ├── clear_data/          管理员清空数据
+│   │   └── profile/             个人中心与角色切换
+│   └── services/                小程序 API 封装层
+│       ├── request.js
+│       ├── config.js
+│       ├── auth.js
+│       ├── user.js
+│       ├── activity.js
+│       ├── bill.js
+│       └── stats.js
+├── backend/                     本地 Python 后端
+│   ├── app/
+│   │   ├── api/v1/
+│   │   ├── core/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   ├── services/
+│   │   └── main.py
+│   ├── alembic/
+│   ├── scripts/
+│   ├── tests/
+│   ├── Makefile
+│   ├── docker-compose.yml
+│   └── README.md
+├── cloudfunctions/              旧微信云函数目录，当前分支不再作为运行依赖
+├── project.config.json
+├── project.private.config.json
 └── sitemap.json
 ```
 
-## 本地开发与运行
+## 技术栈
 
-1. **准备环境**
-   - 安装并登录 **微信开发者工具**
-   - 在「云开发」中创建环境，替换 `app.js` 中 `wx.cloud.init` 的 `env` 为你的环境 ID
+- 小程序：WXML / WXSS / JavaScript
+- 后端：FastAPI
+- ORM：SQLAlchemy 2.0
+- 迁移：Alembic
+- 数据库：MySQL
+- 驱动：PyMySQL
+- 认证：JWT
+- 校验：Pydantic
 
-2. **导入项目**
-   - 在微信开发者工具中选择「导入项目」
-   - 目录选择：本仓库根目录（包含 `project.config.json`）
-   - AppID 使用你自己的小程序 AppID（或体验号）
+## 关键接口
 
-3. **上传并部署云函数**
-   - 在「云开发」面板中依次右键部署：
-     - `login`
-     - `signupActivity`
-     - `checkinActivity`
-     - `updateActivity`
-     - `deleteActivity`
-     - `removeParticipant`
+- 认证
+  - `POST /api/v1/auth/login`
+  - `POST /api/v1/auth/wechat-login`
+- 用户
+  - `GET /api/v1/users/me`
+  - `PATCH /api/v1/users/me`
+  - `POST /api/v1/users/me/role`
+  - `DELETE /api/v1/users/me/role`
+- 活动
+  - `GET /api/v1/activities`
+  - `POST /api/v1/activities`
+  - `PATCH /api/v1/activities/{id}`
+  - `DELETE /api/v1/activities/{id}`
+  - `POST /api/v1/activities/{id}/signup`
+  - `DELETE /api/v1/activities/{id}/signup`
+  - `POST /api/v1/activities/{id}/checkin`
+  - `DELETE /api/v1/activities/{id}/participants/{participant_id}`
+- 账单与统计
+  - `GET /api/v1/bills`
+  - `POST /api/v1/bills`
+  - `PATCH /api/v1/bills/{id}`
+  - `DELETE /api/v1/bills/{id}`
+  - `GET /api/v1/stats/history`
+  - `GET /api/v1/stats/bills`
 
-4. **数据库初始化（简要建议）**
-   - 在云开发控制台中创建集合，例如：
-     - `activities`：存储活动信息与参与者列表
-     - `users`：存储用户头像、昵称等
-   - 可通过小程序界面创建活动进行初始化。
+## 本地启动
 
-5. **运行与调试**
-   - 在微信开发者工具中点击「编译」运行小程序
-   - 默认 Tab 为「活动管理」中的「我参与的」筛选
-   - 以管理员身份进入「我的」页面，完成权限登记后：
-     - 新建活动
-     - 设置时间、报名截止时间和地点
-     - 通过活动卡片/详情弹窗进行报名、签到与分享
+后端先启动，再用微信开发者工具打开小程序。
 
+### 1. 启动后端
+
+```bash
+cd backend
+cp .env.example .env
+make install
+make migrate
+make create-admin
+make run
+```
+
+开发环境默认接口地址：
+
+```text
+http://127.0.0.1:8000/api/v1
+```
+
+小程序 API 地址规则在 [config.js](/Volumes/disk/project/dragonReserveSystem/miniprogram/services/config.js)：
+
+- `develop` 环境默认走本地：`http://127.0.0.1:8000/api/v1`
+- 非 `develop` 环境默认走正式域名：`https://dragon.liqqihome.top/api/v1`
+- 也可以通过本地存储 `apiBaseUrl` 显式覆盖
+
+### 2. 启动小程序
+
+1. 用微信开发者工具导入仓库根目录
+2. 确认请求域名允许访问本地开发地址
+3. 编译运行小程序
+4. 在欢迎页点击微信登录
+5. 进入“我的”页面输入邀请码获取权限
+
+默认邀请码：
+
+- 普通用户：`dragon`
+- 管理员：`manage`
+
+## 测试与联调
+
+后端测试：
+
+```bash
+cd backend
+make test
+```
+
+当前分支最近一次全量后端测试结果：
+
+- `28 passed`
+
+已完成本地联调的主链路：
+
+- 微信登录
+- 角色升级
+- 创建活动
+- 报名
+- 签到
+- 创建账单
+- 查询历史统计
+
+已完成腾讯云线上验证的主链路：
+
+- `https://dragon.liqqihome.top/api/v1/health`
+- 公网管理员登录
+- 公网 `users/me`
+- 活动、账单、统计接口线上冒烟
+
+## 说明
+
+- `cloudfunctions/` 仍保留在仓库中，主要用于对照旧实现和迁移参考
+- 当前运行链路不再依赖微信云函数或微信云数据库
+- 后端微信登录需要在 [backend/.env.example](/Volumes/disk/project/dragonReserveSystem/backend/.env.example) 对应的 `.env` 中配置 `WECHAT_APP_ID` 和 `WECHAT_APP_SECRET`
+- 生产环境如果接入真机或线上小程序，请改为 HTTPS 域名并在小程序后台配置合法 request 域名
+
+## 上线部署
+
+当前仓库已经提供两种部署文档：
+
+部署入口文档：
+
+- [DEPLOY_MAC_SERVER.md](/Volumes/disk/project/dragonReserveSystem/backend/DEPLOY_MAC_SERVER.md)
+- [DEPLOY_TENCENT_CLOUD.md](/Volumes/disk/project/dragonReserveSystem/backend/DEPLOY_TENCENT_CLOUD.md)
+
+当前正式环境已验证可用的域名：
+
+- `https://dragon.liqqihome.top`
+
+腾讯云部署后的关键收尾：
+
+1. 在微信小程序后台配置合法 `request` 域名 `https://dragon.liqqihome.top`
+2. 修改默认管理员密码 `admin123456`

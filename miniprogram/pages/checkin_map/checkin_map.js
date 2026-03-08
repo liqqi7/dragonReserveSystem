@@ -1,4 +1,5 @@
 const app = getApp();
+const activityService = require("../../services/activity");
 
 const CHECKIN_RADIUS_M = 1000;
 const CHECKIN_RADIUS_KM = CHECKIN_RADIUS_M / 1000;
@@ -157,46 +158,20 @@ Page({
       return;
     }
 
-    const nickname =
-      (app.globalData.userProfile && app.globalData.userProfile.nickname && app.globalData.userProfile.nickname.trim()) ||
-      this.nickname ||
-      "";
-
-    if (!nickname) {
-      wx.showToast({ title: "请先在“我的”页面完善昵称", icon: "none" });
-      return;
-    }
-
     wx.showLoading({ title: "签到中..." });
-    wx.cloud.callFunction({
-      name: "checkinActivity",
-      data: {
-        activityId,
-        nickname,
-        lat: userLatitude,
-        lng: userLongitude
-      }
+    activityService.checkinActivity(activityId, {
+      lat: userLatitude,
+      lng: userLongitude
     })
-      .then((res) => {
-        const result = res.result || {};
-        if (result.errCode === 0) {
-          wx.hideLoading();
-          if (result.alreadyCheckedIn) {
-            wx.showToast({ title: "已签到，无需重复", icon: "none" });
-          } else {
-            wx.showToast({ title: "签到成功", icon: "success" });
-          }
-          wx.navigateBack();
-        } else {
-          wx.hideLoading();
-          const msg = result.errMsg || "签到失败";
-          wx.showToast({ title: msg, icon: "none", duration: 2500 });
-        }
+      .then(() => {
+        wx.hideLoading();
+        wx.showToast({ title: "签到成功", icon: "success" });
+        wx.navigateBack();
       })
       .catch((err) => {
         console.error("checkinActivity 调用失败:", err);
         wx.hideLoading();
-        const msg = (err.errMsg || err.message || "").includes("fail") ? "网络异常，请重试" : "签到失败";
+        const msg = err.message || "签到失败";
         wx.showToast({ title: msg, icon: "none", duration: 2500 });
       });
   },
@@ -205,4 +180,3 @@ Page({
     wx.navigateBack();
   }
 });
-

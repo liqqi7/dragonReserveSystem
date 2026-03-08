@@ -280,7 +280,7 @@
             class="participant-item"
           >
             <text class="participant-name">{{participant.name}}<text wx:if="{{participant.checkedInAt}}" class="participant-checkin">（已签到）</text><text wx:elif="{{detailActivity.activityStarted}}" class="participant-pigeon">（鸽子🐦！）</text></text>
-            <text wx:if="{{isAdmin || (!detailActivity.signupDeadlinePassed && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname)))}}" class="participant-delete" bindtap="removeParticipant" data-name="{{participant.name}}">删除</text>
+            <text wx:if="{{isAdmin || (!detailActivity.signupDeadlinePassed && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname)))}}" class="participant-delete" bindtap="removeParticipant" data-id="{{participant.id}}" data-name="{{participant.name}}">删除</text>
           </view>
         </scroll-view>
       </view>
