@@ -27,3 +27,4 @@ backend/.alembic_cache/
 # Project-local artifacts
 backend/.coverage
 backend/htmlcov/
+backend/deploy/*.generated

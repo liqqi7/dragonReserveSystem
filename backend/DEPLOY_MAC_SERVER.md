@@ -20,6 +20,7 @@ MySQL
 - 这台 Mac 能被公网访问
 - 微信小程序后台可配置合法 request 域名
 - 小程序 `AppSecret`
+- 已创建并可启动的 `backend/.venv`
 
 ## 1. 生产环境变量
 
@@ -66,6 +67,14 @@ curl http://127.0.0.1:8000/api/v1/health
 模板文件：
 
 - [com.dragonreserve.backend.plist.example](/Volumes/disk/project/dragonReserveSystem/backend/deploy/com.dragonreserve.backend.plist.example)
+- 自动生成文件：`backend/deploy/com.dragonreserve.backend.generated.plist`
+
+先生成与你当前机器路径匹配的配置：
+
+```bash
+cd backend
+SERVER_DOMAIN=your-domain.example make render-deploy
+```
 
 操作步骤：
 
@@ -75,13 +84,18 @@ curl http://127.0.0.1:8000/api/v1/health
 mkdir -p /Volumes/disk/project/dragonReserveSystem/backend/logs
 ```
 
-2. 复制模板到用户 LaunchAgents：
+2. 复制生成后的文件到用户 LaunchAgents：
 
 ```bash
-cp backend/deploy/com.dragonreserve.backend.plist.example ~/Library/LaunchAgents/com.dragonreserve.backend.plist
+cp backend/deploy/com.dragonreserve.backend.generated.plist ~/Library/LaunchAgents/com.dragonreserve.backend.plist
 ```
 
-3. 如果仓库路径变了，先改 `WorkingDirectory` 和日志路径
+3. 如果你的仓库不在默认路径，可先传 `PROJECT_ROOT`：
+
+```bash
+cd backend
+SERVER_DOMAIN=your-domain.example PROJECT_ROOT=/actual/project/root make render-deploy
+```
 
 4. 加载服务：
 
@@ -101,24 +115,37 @@ launchctl list | grep dragonreserve
 模板文件：
 
 - [Caddyfile.example](/Volumes/disk/project/dragonReserveSystem/backend/deploy/Caddyfile.example)
+- 自动生成文件：`backend/deploy/Caddyfile.generated`
 
-把 `your-domain.example` 改成你的真实域名，然后让 Caddy 反代到 `127.0.0.1:8000`。
+先生成与你真实域名匹配的配置：
+
+```bash
+cd backend
+SERVER_DOMAIN=your-domain.example make render-deploy
+```
 
 如果已安装 Caddy，可参考：
 
 ```bash
-sudo cp backend/deploy/Caddyfile.example /opt/homebrew/etc/Caddyfile
+sudo cp backend/deploy/Caddyfile.generated /opt/homebrew/etc/Caddyfile
 sudo caddy validate --config /opt/homebrew/etc/Caddyfile
 sudo brew services restart caddy
 ```
 
 ## 6. 小程序前端地址
 
-将 [config.js](/Volumes/disk/project/dragonReserveSystem/miniprogram/services/config.js) 中的默认地址改成你的正式 HTTPS 域名：
+将 [config.js](/Volumes/disk/project/dragonReserveSystem/miniprogram/services/config.js) 中的正式地址常量改成你的真实 HTTPS 域名：
 
 ```js
-const DEFAULT_API_BASE_URL = "https://your-domain.example/api/v1";
+const PRODUCTION_API_BASE_URL = "https://your-domain.example/api/v1";
 ```
+
+当前实现默认行为：
+
+- `develop` 环境自动走 `http://127.0.0.1:8000/api/v1`
+- 非 `develop` 环境自动走 `PRODUCTION_API_BASE_URL`
+
+建议在正式发布前将这里的占位值替换成真实域名，不要依赖运行时手动覆盖。
 
 ## 7. 微信后台配置
 
@@ -141,6 +168,7 @@ const DEFAULT_API_BASE_URL = "https://your-domain.example/api/v1";
 - MySQL 不暴露公网 `3306`
 - 反向代理只暴露 `443`
 - `backend/logs/` 可写
+- `SERVER_DOMAIN=your-domain.example make render-deploy` 已执行
 - `make test` 通过
 
 ## 9. 建议的长期项

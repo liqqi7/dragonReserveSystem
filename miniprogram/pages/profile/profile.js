@@ -1,4 +1,5 @@
 const app = getApp();
+const authService = require("../../services/auth");
 const userService = require("../../services/user");
 
 Page({
@@ -76,7 +77,22 @@ Page({
   },
 
   startRegister() {
-    wx.reLaunch({ url: "/pages/welcome/welcome" });
+    wx.showLoading({ title: "登录中...", mask: true });
+    authService.loginWithWechat(app)
+      .then(() => {
+        wx.hideLoading();
+        this.loadUserProfile();
+        wx.showToast({ title: "登录成功", icon: "success" });
+      })
+      .catch((err) => {
+        console.error("wechat login error", err);
+        wx.hideLoading();
+        wx.showToast({
+          title: (err && err.message) || "微信登录失败",
+          icon: "none",
+          duration: 3000
+        });
+      });
   },
 
   openPermissionModal() {

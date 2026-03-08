@@ -4,7 +4,7 @@ PIP ?= $(PYTHON) -m pip
 UVICORN ?= $(VENV)/bin/uvicorn
 ALEMBIC ?= $(VENV)/bin/alembic
 
-.PHONY: install copy-env copy-prod-env db-up db-down db-up-brew db-down-brew migrate create-admin run run-prod dev-check test
+.PHONY: install copy-env copy-prod-env render-deploy db-up db-down db-up-brew db-down-brew migrate create-admin run run-prod dev-check test
 
 install:
 	$(PIP) install -r requirements.txt
@@ -14,6 +14,9 @@ copy-env:
 
 copy-prod-env:
 	cp -n .env.production.example .env || true
+
+render-deploy:
+	$(PYTHON) scripts/render_deploy_templates.py
 
 db-up:
 	docker compose up -d mysql

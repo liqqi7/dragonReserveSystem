@@ -188,7 +188,7 @@ mysql+pymysql://dragon_user:dragon_password@127.0.0.1:3306/dragon_reserve?charse
 ## 当前验证结果
 
 - 后端接口测试已覆盖现有公开接口
-- 最近一次全量测试结果：`25 passed`
+- 最近一次全量测试结果：`28 passed`
 - 已完成本地联调：
   - 微信登录
   - 角色切换
@@ -197,6 +197,13 @@ mysql+pymysql://dragon_user:dragon_password@127.0.0.1:3306/dragon_reserve?charse
   - 签到
   - 创建账单
   - 查询统计
+- 已完成腾讯云服务器部署验证：
+  - Ubuntu 24.04
+  - MySQL 8
+  - Caddy HTTPS
+  - `systemd` 常驻后端服务
+  - 公网 `health` / `login` / `users/me`
+  - 线上主流程接口冒烟
 
 ## 作为正式服务器
 
@@ -206,3 +213,7 @@ mysql+pymysql://dragon_user:dragon_password@127.0.0.1:3306/dragon_reserve?charse
 - [Caddyfile.example](/Volumes/disk/project/dragonReserveSystem/backend/deploy/Caddyfile.example)
 - [com.dragonreserve.backend.plist.example](/Volumes/disk/project/dragonReserveSystem/backend/deploy/com.dragonreserve.backend.plist.example)
 - [.env.production.example](/Volumes/disk/project/dragonReserveSystem/backend/.env.production.example)
+
+如果当前正式环境部署在腾讯云 Ubuntu 服务器，直接看：
+
+- [DEPLOY_TENCENT_CLOUD.md](/Volumes/disk/project/dragonReserveSystem/backend/DEPLOY_TENCENT_CLOUD.md)

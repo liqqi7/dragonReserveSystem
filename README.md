@@ -1,13 +1,13 @@
 # 龙城俱乐部小程序
 
-当前分支已将项目从“微信云开发直连”迁移为“微信小程序前端 + 本地 Python 后端”架构，并保留微信登录体验。
+当前分支已将项目从“微信云开发直连”迁移为“微信小程序前端 + Python 后端”架构，并保留微信登录体验。
 
 ## 当前架构
 
 - 前端：微信小程序
 - 后端：FastAPI
 - 数据库：MySQL
-- 数据访问：小程序通过 `wx.request` 调用本地 HTTP API
+- 数据访问：小程序通过 `wx.request` 调用 HTTP API
 - 认证：`wx.login` + 后端签发 JWT
 
 当前小程序端已经不再依赖 `wx.cloud`、云函数或云数据库。
@@ -27,7 +27,7 @@
   - 活动账单统计
 - 个人中心
   - 微信登录、退出
-  - 昵称、头像链接维护
+  - 昵称、微信头像维护
   - 邀请码切换 `guest / user / admin`
 - 数据清理
   - 管理员清空活动和账单数据
@@ -130,13 +130,17 @@ make create-admin
 make run
 ```
 
-默认接口地址：
+开发环境默认接口地址：
 
 ```text
 http://127.0.0.1:8000/api/v1
 ```
 
-小程序默认也指向这个地址，配置在 [config.js](/Volumes/disk/project/dragonReserveSystem/miniprogram/services/config.js)。
+小程序 API 地址规则在 [config.js](/Volumes/disk/project/dragonReserveSystem/miniprogram/services/config.js)：
+
+- `develop` 环境默认走本地：`http://127.0.0.1:8000/api/v1`
+- 非 `develop` 环境默认走正式域名：`https://dragon.liqqihome.top/api/v1`
+- 也可以通过本地存储 `apiBaseUrl` 显式覆盖
 
 ### 2. 启动小程序
 
@@ -162,7 +166,7 @@ make test
 
 当前分支最近一次全量后端测试结果：
 
-- `25 passed`
+- `28 passed`
 
 已完成本地联调的主链路：
 
@@ -174,9 +178,34 @@ make test
 - 创建账单
 - 查询历史统计
 
+已完成腾讯云线上验证的主链路：
+
+- `https://dragon.liqqihome.top/api/v1/health`
+- 公网管理员登录
+- 公网 `users/me`
+- 活动、账单、统计接口线上冒烟
+
 ## 说明
 
 - `cloudfunctions/` 仍保留在仓库中，主要用于对照旧实现和迁移参考
 - 当前运行链路不再依赖微信云函数或微信云数据库
 - 后端微信登录需要在 [backend/.env.example](/Volumes/disk/project/dragonReserveSystem/backend/.env.example) 对应的 `.env` 中配置 `WECHAT_APP_ID` 和 `WECHAT_APP_SECRET`
 - 生产环境如果接入真机或线上小程序，请改为 HTTPS 域名并在小程序后台配置合法 request 域名
+
+## 上线部署
+
+当前仓库已经提供两种部署文档：
+
+部署入口文档：
+
+- [DEPLOY_MAC_SERVER.md](/Volumes/disk/project/dragonReserveSystem/backend/DEPLOY_MAC_SERVER.md)
+- [DEPLOY_TENCENT_CLOUD.md](/Volumes/disk/project/dragonReserveSystem/backend/DEPLOY_TENCENT_CLOUD.md)
+
+当前正式环境已验证可用的域名：
+
+- `https://dragon.liqqihome.top`
+
+腾讯云部署后的关键收尾：
+
+1. 在微信小程序后台配置合法 `request` 域名 `https://dragon.liqqihome.top`
+2. 修改默认管理员密码 `admin123456`
