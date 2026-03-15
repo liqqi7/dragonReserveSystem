@@ -2,6 +2,15 @@ const app = getApp();
 const authService = require("../../services/auth");
 const userService = require("../../services/user");
 
+function isTemporaryAvatarUrl(url) {
+  if (!url) return false;
+  const normalized = String(url).trim().toLowerCase();
+  return normalized.startsWith("http://tmp/")
+    || normalized.startsWith("https://tmp/")
+    || normalized.startsWith("wxfile://")
+    || normalized.startsWith("tmp/");
+}
+
 Page({
   data: {
     hasUser: false,
@@ -195,6 +204,7 @@ Page({
   saveProfile() {
     const nickname = (this.data.editNickname || "").trim();
     const avatarUrl = (this.data.editAvatarUrl || "").trim();
+    const currentAvatarUrl = (this.data.user.avatarUrl || "").trim();
     const userId = app.globalData.userId;
 
     if (!nickname) {
@@ -207,10 +217,16 @@ Page({
     }
 
     wx.showLoading({ title: "保存中...", mask: true });
-    userService.updateMe({
-      nickname,
-      avatar_url: avatarUrl
-    })
+
+    const avatarTask = avatarUrl && isTemporaryAvatarUrl(avatarUrl)
+      ? userService.uploadAvatar(avatarUrl).then((res) => res.avatar_url)
+      : Promise.resolve(avatarUrl || currentAvatarUrl);
+
+    avatarTask
+      .then((resolvedAvatarUrl) => userService.updateMe({
+        nickname,
+        avatar_url: resolvedAvatarUrl || ""
+      }))
       .then((user) => {
         app.applyCurrentUser(user);
         this.setData({

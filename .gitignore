@@ -28,3 +28,4 @@ backend/.alembic_cache/
 backend/.coverage
 backend/htmlcov/
 backend/deploy/*.generated
+backend/storage/

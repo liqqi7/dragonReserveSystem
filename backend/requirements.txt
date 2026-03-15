@@ -10,3 +10,4 @@ bcrypt<4.1
 httpx>=0.28,<1.0
 pytest>=8.3,<9.0
 cryptography>=46.0,<47.0
+python-multipart>=0.0.9,<1.0

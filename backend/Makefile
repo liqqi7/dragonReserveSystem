@@ -4,7 +4,7 @@ PIP ?= $(PYTHON) -m pip
 UVICORN ?= $(VENV)/bin/uvicorn
 ALEMBIC ?= $(VENV)/bin/alembic
 
-.PHONY: install copy-env copy-prod-env render-deploy db-up db-down db-up-brew db-down-brew migrate create-admin run run-prod dev-check test
+.PHONY: install copy-env copy-prod-env render-deploy db-up db-down db-up-brew db-down-brew migrate create-admin run run-prod run-test-env dev-check test
 
 install:
 	$(PIP) install -r requirements.txt
@@ -41,6 +41,9 @@ run:
 
 run-prod:
 	$(UVICORN) app.main:app --host 127.0.0.1 --port 8000
+
+run-test-env:
+	./scripts/start_test_env.sh
 
 dev-check:
 	PYTHONPYCACHEPREFIX=/tmp/python-cache $(PYTHON) -m compileall app scripts alembic

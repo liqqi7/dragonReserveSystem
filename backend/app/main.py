@@ -1,10 +1,13 @@
 """FastAPI application entrypoint."""
 
+from pathlib import Path
+
 from fastapi import HTTPException, Request
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.v1 import api_router
 from app.core.config import get_settings
@@ -14,6 +17,8 @@ from app.middleware import RequestContextMiddleware
 
 
 settings = get_settings()
+media_root = Path(settings.media_root).resolve()
+media_root.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(
     title=settings.app_name,
@@ -29,6 +34,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.mount(settings.media_url_prefix, StaticFiles(directory=media_root), name="media")
 
 
 @app.exception_handler(AppError)
