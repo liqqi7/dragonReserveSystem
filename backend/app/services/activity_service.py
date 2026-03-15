@@ -37,9 +37,13 @@ def get_activity_by_id(db: Session, activity_id: int) -> Activity:
 
 
 def list_activities(db: Session) -> list[Activity]:
-    """List activities ordered by start time descending."""
+    """List activities ordered by start time descending. Excludes logically deleted (已删除)."""
 
-    stmt = _get_activity_query().order_by(Activity.start_time.desc())
+    stmt = (
+        _get_activity_query()
+        .where(Activity.status != "已删除")
+        .order_by(Activity.start_time.desc())
+    )
     return list(db.scalars(stmt).unique().all())
 
 

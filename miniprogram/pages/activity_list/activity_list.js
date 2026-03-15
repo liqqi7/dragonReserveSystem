@@ -268,13 +268,13 @@ Page({
       }
       activity.isSignupClosed = isSignupClosed;
 
-      // 基于时间自动更新状态（除已取消之外）
+      // 基于时间自动更新状态（已取消、已删除不参与自动推算，避免删除后又显示为未开始）
       const parseDateTime = (s) => new Date(s.replace(" ", "T") + ":00");
       const start = parseDateTime(activity.startTime);
       const end = parseDateTime(activity.endTime);
       let autoStatus = activity.status || "未开始";
-      if (activity.status === "已取消") {
-        autoStatus = "已取消";
+      if (activity.status === "已取消" || activity.status === "已删除") {
+        autoStatus = activity.status;
       } else if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
         if (now.getTime() < start.getTime()) {
           autoStatus = "未开始";
@@ -285,7 +285,7 @@ Page({
         }
       }
 
-      if (activity.status !== "已取消") {
+      if (activity.status !== "已取消" && activity.status !== "已删除") {
         activity.status = autoStatus;
       }
 
@@ -307,7 +307,8 @@ Page({
   },
 
   computeFilteredList(list, selectedFilter, searchKeyword) {
-    let filtered = list ? [...list] : [];
+    // 逻辑删除的活动不在任何 Tab 展示
+    let filtered = list ? list.filter(item => item.status !== "已删除") : [];
 
     if (selectedFilter === "我参与的") {
       // 只看当前用户参与过的活动（已通过 hasSignedUp 标记）
@@ -676,7 +677,61 @@ Page({
     });
   },
 
-  // 管理员：删除活动
+  // 管理员：逻辑删除已取消的活动（标记为已删除，列表中不再展示）
+  logicalDeleteActivity(e) {
+    const activity = e.currentTarget.dataset.activity;
+    if (!activity || !activity._id) return;
+    if (activity.status !== "已取消") return;
+    wx.showModal({
+      title: "确认删除",
+      content: "确定要删除该活动吗？删除后将不再在列表中展示。",
+      success: (res) => {
+        if (!res.confirm) return;
+        wx.showLoading({ title: "处理中..." });
+        activityService
+          .updateActivity(activity._id, { status: "已删除" })
+          .then(() => {
+            wx.hideLoading();
+            wx.showToast({ title: "已删除", icon: "success" });
+            this.loadActivityList();
+          })
+          .catch((err) => {
+            console.error(err);
+            wx.hideLoading();
+            wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
+          });
+      }
+    });
+  },
+
+  // 管理员：从列表卡片取消活动（标记为已取消，不删除数据）
+  cancelActivityFromCard(e) {
+    const activity = e.currentTarget.dataset.activity;
+    if (!activity || !activity._id) return;
+    if (activity.status === "已取消") return;
+    wx.showModal({
+      title: "确认取消活动",
+      content: `确定要取消活动"${activity.name}"吗？取消后活动将进入「已取消」列表，不可再报名或签到。`,
+      success: (res) => {
+        if (!res.confirm) return;
+        wx.showLoading({ title: "处理中..." });
+        activityService
+          .updateActivity(activity._id, { status: "已取消" })
+          .then(() => {
+            wx.hideLoading();
+            wx.showToast({ title: "已取消活动", icon: "success" });
+            this.loadActivityList();
+          })
+          .catch((err) => {
+            console.error(err);
+            wx.hideLoading();
+            wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
+          });
+      }
+    });
+  },
+
+  // 管理员：删除活动（从后端彻底删除，保留用于后续如需恢复）
   deleteActivity(e) {
     const activity = e.currentTarget.dataset.activity;
     wx.showModal({
