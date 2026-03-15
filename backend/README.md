@@ -142,6 +142,13 @@ cd backend
 make run-test-env
 ```
 
+Windows 环境如果没有 `make`，可直接在 PowerShell 中运行：
+
+```powershell
+cd backend
+powershell -ExecutionPolicy Bypass -File .\scripts\start_test_env.ps1
+```
+
 该脚本会：
 
 1. 读取 `backend/.env.test`
@@ -170,6 +177,13 @@ make run-test-env
 ```bash
 cd backend
 APP_RELOAD=0 make run-test-env
+```
+
+Windows 下可用：
+
+```powershell
+cd backend
+powershell -ExecutionPolicy Bypass -File .\scripts\start_test_env.ps1 -AppReload 0
 ```
 
 ## 头像上传说明
