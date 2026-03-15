@@ -339,6 +339,7 @@ button.create-btn-fixed {
   max-height: 80vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .modal-header {
@@ -358,9 +359,65 @@ button.create-btn-fixed {
 }
 
 .modal-body {
-  padding: 24rpx;
-  overflow-y: auto;
   flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 24rpx;
+}
+
+.edit-modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-modal-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.edit-modal-panel {
+  position: relative;
+  z-index: 1;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  width: 90%;
+  height: 80vh;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.edit-modal-header,
+.edit-modal-footer {
+  flex-shrink: 0;
+}
+
+.edit-modal-body-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.edit-modal-body {
+  height: 100%;
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+.detail-modal-body {
+  padding-bottom: 32rpx;
 }
 
 .modal-footer {
@@ -377,6 +434,8 @@ button.create-btn-fixed {
 
 .modal-footer.detail-footer {
   flex-wrap: wrap;
+  padding-top: 20rpx;
+  background-color: #ffffff;
 }
 
 .modal-footer.detail-footer .btn {
@@ -466,6 +525,7 @@ button.create-btn-fixed {
   margin-top: 8rpx;
   max-height: 360rpx;
   box-sizing: border-box;
+  padding-bottom: 16rpx;
 }
 
 .participant-item {

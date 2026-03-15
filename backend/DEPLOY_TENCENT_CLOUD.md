@@ -115,9 +115,33 @@ sudo systemctl status caddy
 - `APP_DEBUG=false`
 - `CORS_ORIGINS=["https://dragon.liqqihome.top"]`
 - `WECHAT_APP_ID` / `WECHAT_APP_SECRET` 已配置
+- `PUBLIC_BASE_URL=https://dragon.liqqihome.top`
+- `MEDIA_ROOT=storage`
+- `MEDIA_URL_PREFIX=/media`
 - `DATABASE_URL` 指向 `127.0.0.1:3306`
 - MySQL 仅监听本机
 - FastAPI 仅监听 `127.0.0.1:8000`
+
+## 头像上传上线要求
+
+当前头像方案不依赖对象存储，文件直接保存在应用服务器本地磁盘。
+
+上线前需要确认：
+
+1. 线上代码已经包含 `POST /api/v1/users/me/avatar`
+2. 线上 `backend/.env` 已配置：
+   - `PUBLIC_BASE_URL=https://dragon.liqqihome.top`
+   - `MEDIA_ROOT=storage`
+   - `MEDIA_URL_PREFIX=/media`
+3. 运行后端进程的用户对 `backend/storage/avatars` 有写权限
+4. Caddy 将 `https://dragon.liqqihome.top` 正常转发到当前这台后端服务
+5. 新头像需要重新上传一次，旧的 `http://tmp/...` 不会自动修复
+
+当前设计下：
+
+- 上传后的文件路径位于 `backend/storage/avatars`
+- 公网访问路径位于 `https://dragon.liqqihome.top/media/...`
+- 如果后端部署到新机器，需要同时迁移 `storage/avatars` 目录中的历史文件
 
 ## 生产收尾
 

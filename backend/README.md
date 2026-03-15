@@ -53,6 +53,7 @@ backend/
 - 本地账号注册、登录、JWT 签发
 - 微信 `wx.login` 登录、JWT 签发
 - 当前用户查询、资料更新、角色切换
+- 用户头像上传与公网 URL 返回
 - 活动列表、详情、创建、编辑、删除
 - 报名、取消报名、签到、移除参与者
 - 账单 CRUD
@@ -102,6 +103,7 @@ DATABASE_URL=mysql+pymysql://username:password@127.0.0.1:3306/dragon_reserve?cha
 - 登录接口 `/api/v1/auth/login`
 - 微信登录接口 `/api/v1/auth/wechat-login`
 - 当前用户接口 `/api/v1/users/me`
+- 当前用户头像上传接口 `/api/v1/users/me/avatar`
 - 当前用户角色接口 `/api/v1/users/me/role`
 - 活动接口 `/api/v1/activities`
 - 报名、取消报名、签到、移除参与者接口
@@ -132,6 +134,77 @@ DATABASE_URL=mysql+pymysql://username:password@127.0.0.1:3306/dragon_reserve?cha
 7. 启动服务：`uvicorn app.main:app --reload`
 
 默认管理员初始化脚本会引导你创建账号；如果使用当前仓库默认本地环境，常见开发命令见 [Makefile](/Volumes/disk/project/dragonReserveSystem/backend/Makefile)。
+
+如果当前联调环境需要先通过 SSH 隧道接入远端测试库，再启动本地后端，可以直接运行：
+
+```bash
+cd backend
+make run-test-env
+```
+
+Windows 环境如果没有 `make`，可直接在 PowerShell 中运行：
+
+```powershell
+cd backend
+powershell -ExecutionPolicy Bypass -File .\scripts\start_test_env.ps1
+```
+
+该脚本会：
+
+1. 读取 `backend/.env.test`
+2. 在本地 `127.0.0.1:3307` 不可用时自动建立 SSH 隧道
+3. 使用 `--env-file .env.test` 启动本地 FastAPI 服务
+4. 默认带 `--reload`，本地改后端代码会自动重启
+
+默认 SSH 隧道目标会使用：
+
+- `ubuntu@124.156.228.148`
+- 本地端口 `3307`
+- 远端数据库 `127.0.0.1:3306`
+
+如需覆盖默认值，可在 shell 环境或 `backend/.env.test` 中加入以下变量，后端本身会忽略这些额外字段：
+
+- `SSH_TEST_DB_HOST`
+- `SSH_TEST_DB_USER`
+- `SSH_TEST_DB_REMOTE_HOST`
+- `SSH_TEST_DB_REMOTE_PORT`
+- `SSH_TEST_DB_LOCAL_HOST`
+- `SSH_TEST_DB_LOCAL_PORT`
+- `SSH_TEST_DB_IDENTITY_FILE`
+
+如需关闭热重载，可以这样启动：
+
+```bash
+cd backend
+APP_RELOAD=0 make run-test-env
+```
+
+Windows 下可用：
+
+```powershell
+cd backend
+powershell -ExecutionPolicy Bypass -File .\scripts\start_test_env.ps1 -AppReload 0
+```
+
+## 头像上传说明
+
+当前个人资料页的微信头像保存链路已经调整为：
+
+1. 小程序 `chooseAvatar` 返回临时文件路径
+2. 前端先调用 `POST /api/v1/users/me/avatar` 上传图片文件
+3. 后端将图片写入 `MEDIA_ROOT/avatars`
+4. 后端返回正式 `avatar_url`
+5. 前端再调用 `PATCH /api/v1/users/me` 保存昵称和正式头像地址
+
+这样可以避免把 `http://tmp/...` 或 `wxfile://...` 这类微信临时路径直接写入数据库。
+
+当前涉及的关键环境变量：
+
+- `PUBLIC_BASE_URL`：头像对外返回的正式域名，例如 `https://dragon.liqqihome.top`
+- `MEDIA_ROOT`：头像文件落盘目录，默认 `storage`
+- `MEDIA_URL_PREFIX`：静态访问前缀，默认 `/media`
+
+当前后端还会拒绝将明显的临时头像路径直接写入 `avatar_url`，避免脏数据再次入库。
 
 ## 环境建设
 

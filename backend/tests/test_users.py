@@ -1,3 +1,6 @@
+from io import BytesIO
+from urllib.parse import urlparse
+
 from sqlalchemy import select
 
 from app.models import ActivityParticipant, Bill, BillParticipant
@@ -22,6 +25,45 @@ def test_update_current_user(client, user_headers) -> None:
     body = response.json()
     assert body["nickname"] == "改名后的成员"
     assert body["avatar_url"] == "https://example.com/new.png"
+
+
+def test_update_current_user_rejects_temporary_avatar_url(client, user_headers) -> None:
+    response = client.patch(
+        "/api/v1/users/me",
+        headers=user_headers,
+        json={"nickname": "改名后的成员", "avatar_url": "http://tmp/avatar.jpeg"},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "REQUEST_VALIDATION_ERROR"
+
+
+def test_upload_current_user_avatar_returns_permanent_url(client, user_headers) -> None:
+    response = client.post(
+        "/api/v1/users/me/avatar",
+        headers=user_headers,
+        files={"file": ("avatar.png", BytesIO(b"\x89PNG\r\n\x1a\nfake"), "image/png")},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert "/media/avatars/" in body["avatar_url"]
+
+    avatar_path = urlparse(body["avatar_url"]).path
+    image_response = client.get(avatar_path)
+    assert image_response.status_code == 200
+    assert image_response.content == b"\x89PNG\r\n\x1a\nfake"
+
+
+def test_upload_current_user_avatar_rejects_non_image(client, user_headers) -> None:
+    response = client.post(
+        "/api/v1/users/me/avatar",
+        headers=user_headers,
+        files={"file": ("avatar.txt", BytesIO(b"hello"), "text/plain")},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "VALIDATION_ERROR"
 
 
 def test_update_current_user_syncs_activity_and_bill_snapshots(

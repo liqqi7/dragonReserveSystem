@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     wechat_app_id: str = ""
     wechat_app_secret: str = ""
     wechat_code2session_url: str = "https://api.weixin.qq.com/sns/jscode2session"
+    public_base_url: str = ""
+    media_root: str = "storage"
+    media_url_prefix: str = "/media"
 
     cors_origins: list[str] = Field(default_factory=lambda: ["*"])
 

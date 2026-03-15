@@ -125,15 +125,27 @@
             data-activity="{{item}}"
           >签到</button>
           <button
-            wx:if="{{isAdmin}}"
+            wx:if="{{item.hasSignedUp && !item.hasCheckedIn && (item.status === '进行中' || item.status === '未开始')}}"
+            class="action-btn default"
+            catchtap="cancelSignup"
+            data-activity="{{item}}"
+          >取消</button>
+          <button
+            wx:if="{{isAdmin && item.status !== '已取消'}}"
             class="action-btn default"
             catchtap="showEditModal"
             data-activity="{{item}}"
           >编辑</button>
           <button
-            wx:if="{{isAdmin}}"
+            wx:if="{{isAdmin && item.status !== '已取消'}}"
             class="action-btn danger"
-            catchtap="deleteActivity"
+            catchtap="cancelActivityFromCard"
+            data-activity="{{item}}"
+          >取消</button>
+          <button
+            wx:if="{{isAdmin && item.status === '已取消'}}"
+            class="action-btn danger"
+            catchtap="logicalDeleteActivity"
             data-activity="{{item}}"
           >删除</button>
         </view>
@@ -141,15 +153,17 @@
     </view>
   </view>
 
-  <!-- 编辑/创建弹窗 -->
-  <view wx:if="{{showEditModal}}" class="modal-overlay" bindtap="closeEditModal" catchtouchmove="stopPropagation">
-    <view class="modal-content" catchtap="stopPropagation">
-      <view class="modal-header">
+  <!-- 编辑/创建弹窗：兄弟结构使 scroll-view 可滑动，遮罩拦截背后列表 -->
+  <view wx:if="{{showEditModal}}" class="edit-modal-container">
+    <view class="edit-modal-bg" catchtouchmove="stopPropagation" bindtap="closeEditModal"></view>
+    <view class="edit-modal-panel" catchtap="stopPropagation" catchtouchmove="stopPropagation">
+      <view class="modal-header edit-modal-header">
         <text>{{currentActivity ? '编辑活动' : '新增活动'}}</text>
         <text class="close-btn" bindtap="closeEditModal">×</text>
       </view>
 
-      <view class="modal-body">
+      <view class="edit-modal-body-wrapper">
+      <scroll-view scroll-y="{{true}}" class="edit-modal-body">
         <view class="form-item">
           <view class="label">开始时间：</view>
           <view class="datetime-picker-wrapper">
@@ -217,9 +231,11 @@
             cursor-spacing="120"
           />
         </view>
+        <view style="height:24rpx"></view>
+      </scroll-view>
       </view>
 
-      <view class="modal-footer">
+      <view class="modal-footer edit-modal-footer">
         <button class="btn default" bindtap="closeEditModal">取消</button>
         <button wx:if="{{isAdmin && currentActivity && currentActivity.status !== '已取消'}}" class="btn danger" bindtap="cancelActivity">取消活动</button>
         <button class="btn primary" bindtap="saveActivity">保存</button>
@@ -235,7 +251,7 @@
         <text class="close-btn" bindtap="closeDetailModal">×</text>
       </view>
 
-      <view class="modal-body">
+      <scroll-view class="modal-body detail-modal-body" scroll-y="true" enable-flex="true">
         <view class="detail-item">
           <text class="label">活动名称：</text>
           <text>{{detailActivity.name}}</text>
@@ -280,10 +296,11 @@
             class="participant-item"
           >
             <text class="participant-name">{{participant.name}}<text wx:if="{{participant.checkedInAt}}" class="participant-checkin">（已签到）</text><text wx:elif="{{detailActivity.activityStarted}}" class="participant-pigeon">（鸽子🐦！）</text></text>
-            <text wx:if="{{isAdmin || (!detailActivity.signupDeadlinePassed && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname)))}}" class="participant-delete" bindtap="removeParticipant" data-id="{{participant.id}}" data-name="{{participant.name}}">删除</text>
+            <text wx:if="{{isAdmin || (!detailActivity.signupDeadlinePassed && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname)))}}" class="participant-delete" bindtap="removeParticipant" data-id="{{participant.id}}" data-name="{{participant.name}}" data-self="{{(!isAdmin && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname))) ? '1' : ''}}">{{(!isAdmin && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname))) ? '取消' : '删除'}}</text>
           </view>
+          <view style="height:64rpx"></view>
         </scroll-view>
-      </view>
+      </scroll-view>
 
       <view class="modal-footer detail-footer">
         <block wx:if="{{detailActivity.status === '未开始' || detailActivity.status === '进行中'}}">
@@ -302,6 +319,11 @@
             class="btn primary"
             bindtap="detailCheckin"
           >签到</button>
+          <button
+            wx:if="{{detailActivity.hasSignedUp && !detailActivity.hasCheckedIn && !detailActivity.signupDeadlinePassed}}"
+            class="btn default"
+            bindtap="detailCancelSignup"
+          >取消</button>
           <button
             wx:elif="{{detailActivity.hasSignedUp && detailActivity.hasCheckedIn}}"
             class="btn default"

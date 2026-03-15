@@ -268,13 +268,13 @@ Page({
       }
       activity.isSignupClosed = isSignupClosed;
 
-      // 基于时间自动更新状态（除已取消之外）
+      // 基于时间自动更新状态（已取消、已删除不参与自动推算，避免删除后又显示为未开始）
       const parseDateTime = (s) => new Date(s.replace(" ", "T") + ":00");
       const start = parseDateTime(activity.startTime);
       const end = parseDateTime(activity.endTime);
       let autoStatus = activity.status || "未开始";
-      if (activity.status === "已取消") {
-        autoStatus = "已取消";
+      if (activity.status === "已取消" || activity.status === "已删除") {
+        autoStatus = activity.status;
       } else if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
         if (now.getTime() < start.getTime()) {
           autoStatus = "未开始";
@@ -285,7 +285,7 @@ Page({
         }
       }
 
-      if (activity.status !== "已取消") {
+      if (activity.status !== "已取消" && activity.status !== "已删除") {
         activity.status = autoStatus;
       }
 
@@ -307,7 +307,8 @@ Page({
   },
 
   computeFilteredList(list, selectedFilter, searchKeyword) {
-    let filtered = list ? [...list] : [];
+    // 逻辑删除的活动不在任何 Tab 展示
+    let filtered = list ? list.filter(item => item.status !== "已删除") : [];
 
     if (selectedFilter === "我参与的") {
       // 只看当前用户参与过的活动（已通过 hasSignedUp 标记）
@@ -676,7 +677,61 @@ Page({
     });
   },
 
-  // 管理员：删除活动
+  // 管理员：逻辑删除已取消的活动（标记为已删除，列表中不再展示）
+  logicalDeleteActivity(e) {
+    const activity = e.currentTarget.dataset.activity;
+    if (!activity || !activity._id) return;
+    if (activity.status !== "已取消") return;
+    wx.showModal({
+      title: "确认删除",
+      content: "确定要删除该活动吗？删除后将不再在列表中展示。",
+      success: (res) => {
+        if (!res.confirm) return;
+        wx.showLoading({ title: "处理中..." });
+        activityService
+          .updateActivity(activity._id, { status: "已删除" })
+          .then(() => {
+            wx.hideLoading();
+            wx.showToast({ title: "已删除", icon: "success" });
+            this.loadActivityList();
+          })
+          .catch((err) => {
+            console.error(err);
+            wx.hideLoading();
+            wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
+          });
+      }
+    });
+  },
+
+  // 管理员：从列表卡片取消活动（标记为已取消，不删除数据）
+  cancelActivityFromCard(e) {
+    const activity = e.currentTarget.dataset.activity;
+    if (!activity || !activity._id) return;
+    if (activity.status === "已取消") return;
+    wx.showModal({
+      title: "确认取消活动",
+      content: `确定要取消活动"${activity.name}"吗？取消后活动将进入「已取消」列表，不可再报名或签到。`,
+      success: (res) => {
+        if (!res.confirm) return;
+        wx.showLoading({ title: "处理中..." });
+        activityService
+          .updateActivity(activity._id, { status: "已取消" })
+          .then(() => {
+            wx.hideLoading();
+            wx.showToast({ title: "已取消活动", icon: "success" });
+            this.loadActivityList();
+          })
+          .catch((err) => {
+            console.error(err);
+            wx.hideLoading();
+            wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
+          });
+      }
+    });
+  },
+
+  // 管理员：删除活动（从后端彻底删除，保留用于后续如需恢复）
   deleteActivity(e) {
     const activity = e.currentTarget.dataset.activity;
     wx.showModal({
@@ -698,6 +753,32 @@ Page({
               wx.showToast({ title: (err && err.message) || "删除失败", icon: "none" });
             });
         }
+      }
+    });
+  },
+
+  cancelSignup(e) {
+    const activity = e.currentTarget.dataset.activity;
+    if (!activity || !activity._id) return;
+
+    wx.showModal({
+      title: "确认取消报名",
+      content: `确定要取消活动"${activity.name}"的报名吗？`,
+      success: (res) => {
+        if (!res.confirm) return;
+        wx.showLoading({ title: "处理中..." });
+        activityService
+          .cancelSignup(activity._id)
+          .then(() => {
+            wx.hideLoading();
+            wx.showToast({ title: "已取消报名", icon: "success" });
+            this.loadActivityList();
+          })
+          .catch((err) => {
+            console.error(err);
+            wx.hideLoading();
+            wx.showToast({ title: (err && err.message) || "取消失败", icon: "none" });
+          });
       }
     });
   },
@@ -830,6 +911,12 @@ Page({
     this.checkinActivity({ currentTarget: { dataset: { activity } } });
   },
 
+  detailCancelSignup() {
+    const activity = this.data.detailActivity;
+    if (!activity) return;
+    this.cancelSignup({ currentTarget: { dataset: { activity } } });
+  },
+
   // 小程序卡片分享：分享当前活动（在活动详情打开时由分享按钮触发）
   onShareAppMessage() {
     const id = this.data.shareActivityId;
@@ -844,40 +931,49 @@ Page({
   removeParticipant(e) {
     const participantId = e.currentTarget.dataset.id;
     const name = e.currentTarget.dataset.name;
+    const isSelf = !!e.currentTarget.dataset.self;
     const activity = this.data.detailActivity;
-    
+
     wx.showModal({
-      title: "确认删除",
-      content: `确定要删除"${name}"吗？如果该成员在记账明细中，相关记录也会被删除。`,
+      title: isSelf ? "确认取消报名" : "确认删除",
+      content: isSelf
+        ? `确定要取消活动"${activity.name}"的报名吗？`
+        : `确定要删除"${name}"吗？如果该成员在记账明细中，相关记录也会被删除。`,
       success: (res) => {
         if (res.confirm) {
-          this.doRemoveParticipant(participantId, name, activity);
+          this.doRemoveParticipant(participantId, name, activity, isSelf);
         }
       }
     });
   },
 
-  doRemoveParticipant(participantId, name, activity) {
+  doRemoveParticipant(participantId, name, activity, isSelf = false) {
     wx.showLoading({ title: "处理中..." });
 
     activityService
       .removeParticipant(activity._id, participantId)
       .then(() => {
         wx.hideLoading();
-        wx.showToast({ title: "删除成功", icon: "success" });
+        wx.showToast({ title: isSelf ? "已取消报名" : "删除成功", icon: "success" });
         // 刷新活动列表和详情
         this.loadActivityList();
         // 更新详情显示：重新计算 participants 和 checkinCount
         const getParticipantName = p => typeof p === "string" ? p : (p && p.name);
         const newParticipants = this.normalizeParticipants((activity.participants || []).filter(p => getParticipantName(p) !== name));
         const checkinCount = newParticipants.filter(p => !!p.checkedInAt).length;
-        const updatedActivity = { ...activity, participants: newParticipants, checkinCount };
+        const updatedActivity = {
+          ...activity,
+          participants: newParticipants,
+          checkinCount,
+          hasSignedUp: isSelf ? false : activity.hasSignedUp,
+          hasCheckedIn: isSelf ? false : activity.hasCheckedIn
+        };
         this.setData({ detailActivity: updatedActivity });
       })
       .catch(err => {
         console.error(err);
         wx.hideLoading();
-        wx.showToast({ title: (err && err.message) || "删除失败", icon: "none", duration: 3000 });
+        wx.showToast({ title: (err && err.message) || (isSelf ? "取消失败" : "删除失败"), icon: "none", duration: 3000 });
       });
   },
 
