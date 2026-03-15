@@ -41,13 +41,13 @@ function Get-DotenvValue {
 
 function Test-PortOpen {
     param(
-        [string]$Host,
+        [string]$TargetHost,
         [int]$Port
     )
 
     $client = New-Object System.Net.Sockets.TcpClient
     try {
-        $async = $client.BeginConnect($Host, $Port, $null, $null)
+        $async = $client.BeginConnect($TargetHost, $Port, $null, $null)
         if (-not $async.AsyncWaitHandle.WaitOne(500)) {
             return $false
         }
@@ -64,13 +64,13 @@ function Test-PortOpen {
 
 function Wait-ForPort {
     param(
-        [string]$Host,
+        [string]$TargetHost,
         [int]$Port,
         [int]$MaxAttempts = 20
     )
 
     for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
-        if (Test-PortOpen -Host $Host -Port $Port) {
+        if (Test-PortOpen -TargetHost $TargetHost -Port $Port) {
             return $true
         }
         Start-Sleep -Milliseconds 500
@@ -116,7 +116,7 @@ $tunnelProcess = $null
 $appProcess = $null
 
 try {
-    if (Test-PortOpen -Host $sshLocalHost -Port $sshLocalPort) {
+    if (Test-PortOpen -TargetHost $sshLocalHost -Port $sshLocalPort) {
         Write-Host "Reusing existing DB tunnel on ${sshLocalHost}:${sshLocalPort}"
     }
     else {
@@ -138,7 +138,7 @@ try {
 
         $tunnelProcess = Start-Process -FilePath "ssh" -ArgumentList $sshArgs -PassThru -WindowStyle Hidden
 
-        if (-not (Wait-ForPort -Host $sshLocalHost -Port $sshLocalPort)) {
+        if (-not (Wait-ForPort -TargetHost $sshLocalHost -Port $sshLocalPort)) {
             throw "SSH tunnel did not become ready on ${sshLocalHost}:${sshLocalPort}"
         }
     }
@@ -150,7 +150,7 @@ try {
         "app.main:app",
         "--host", $AppHost,
         "--port", [string]$AppPort,
-        "--env-file", $EnvFile
+        "--env-file", "`"$EnvFile`""
     )
 
     if ($AppReload -eq 1) {
@@ -159,7 +159,7 @@ try {
 
     Push-Location $RootDir
     try {
-        $appProcess = Start-Process -FilePath $VenvPython -ArgumentList $uvicornArgs -PassThru -NoNewWindow -Wait
+        $appProcess = Start-Process -FilePath "`"$VenvPython`"" -ArgumentList $uvicornArgs -PassThru -NoNewWindow -Wait
     }
     finally {
         Pop-Location
