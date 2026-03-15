@@ -702,6 +702,32 @@ Page({
     });
   },
 
+  cancelSignup(e) {
+    const activity = e.currentTarget.dataset.activity;
+    if (!activity || !activity._id) return;
+
+    wx.showModal({
+      title: "确认取消报名",
+      content: `确定要取消活动"${activity.name}"的报名吗？`,
+      success: (res) => {
+        if (!res.confirm) return;
+        wx.showLoading({ title: "处理中..." });
+        activityService
+          .cancelSignup(activity._id)
+          .then(() => {
+            wx.hideLoading();
+            wx.showToast({ title: "已取消报名", icon: "success" });
+            this.loadActivityList();
+          })
+          .catch((err) => {
+            console.error(err);
+            wx.hideLoading();
+            wx.showToast({ title: (err && err.message) || "取消失败", icon: "none" });
+          });
+      }
+    });
+  },
+
   // 用户：直接报名（不显示弹窗）
   directSignup(e) {
     const activity = e.currentTarget.dataset.activity;
@@ -830,6 +856,12 @@ Page({
     this.checkinActivity({ currentTarget: { dataset: { activity } } });
   },
 
+  detailCancelSignup() {
+    const activity = this.data.detailActivity;
+    if (!activity) return;
+    this.cancelSignup({ currentTarget: { dataset: { activity } } });
+  },
+
   // 小程序卡片分享：分享当前活动（在活动详情打开时由分享按钮触发）
   onShareAppMessage() {
     const id = this.data.shareActivityId;
@@ -844,40 +876,49 @@ Page({
   removeParticipant(e) {
     const participantId = e.currentTarget.dataset.id;
     const name = e.currentTarget.dataset.name;
+    const isSelf = !!e.currentTarget.dataset.self;
     const activity = this.data.detailActivity;
-    
+
     wx.showModal({
-      title: "确认删除",
-      content: `确定要删除"${name}"吗？如果该成员在记账明细中，相关记录也会被删除。`,
+      title: isSelf ? "确认取消报名" : "确认删除",
+      content: isSelf
+        ? `确定要取消活动"${activity.name}"的报名吗？`
+        : `确定要删除"${name}"吗？如果该成员在记账明细中，相关记录也会被删除。`,
       success: (res) => {
         if (res.confirm) {
-          this.doRemoveParticipant(participantId, name, activity);
+          this.doRemoveParticipant(participantId, name, activity, isSelf);
         }
       }
     });
   },
 
-  doRemoveParticipant(participantId, name, activity) {
+  doRemoveParticipant(participantId, name, activity, isSelf = false) {
     wx.showLoading({ title: "处理中..." });
 
     activityService
       .removeParticipant(activity._id, participantId)
       .then(() => {
         wx.hideLoading();
-        wx.showToast({ title: "删除成功", icon: "success" });
+        wx.showToast({ title: isSelf ? "已取消报名" : "删除成功", icon: "success" });
         // 刷新活动列表和详情
         this.loadActivityList();
         // 更新详情显示：重新计算 participants 和 checkinCount
         const getParticipantName = p => typeof p === "string" ? p : (p && p.name);
         const newParticipants = this.normalizeParticipants((activity.participants || []).filter(p => getParticipantName(p) !== name));
         const checkinCount = newParticipants.filter(p => !!p.checkedInAt).length;
-        const updatedActivity = { ...activity, participants: newParticipants, checkinCount };
+        const updatedActivity = {
+          ...activity,
+          participants: newParticipants,
+          checkinCount,
+          hasSignedUp: isSelf ? false : activity.hasSignedUp,
+          hasCheckedIn: isSelf ? false : activity.hasCheckedIn
+        };
         this.setData({ detailActivity: updatedActivity });
       })
       .catch(err => {
         console.error(err);
         wx.hideLoading();
-        wx.showToast({ title: (err && err.message) || "删除失败", icon: "none", duration: 3000 });
+        wx.showToast({ title: (err && err.message) || (isSelf ? "取消失败" : "删除失败"), icon: "none", duration: 3000 });
       });
   },
 

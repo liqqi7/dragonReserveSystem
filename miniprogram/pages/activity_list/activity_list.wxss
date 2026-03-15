@@ -339,6 +339,7 @@ button.create-btn-fixed {
   max-height: 80vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .modal-header {
@@ -358,9 +359,14 @@ button.create-btn-fixed {
 }
 
 .modal-body {
-  padding: 24rpx;
-  overflow-y: auto;
   flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 24rpx;
+}
+
+.detail-modal-body {
+  padding-bottom: 32rpx;
 }
 
 .modal-footer {
@@ -377,6 +383,8 @@ button.create-btn-fixed {
 
 .modal-footer.detail-footer {
   flex-wrap: wrap;
+  padding-top: 20rpx;
+  background-color: #ffffff;
 }
 
 .modal-footer.detail-footer .btn {
@@ -466,6 +474,7 @@ button.create-btn-fixed {
   margin-top: 8rpx;
   max-height: 360rpx;
   box-sizing: border-box;
+  padding-bottom: 16rpx;
 }
 
 .participant-item {
