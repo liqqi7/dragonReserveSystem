@@ -14,6 +14,9 @@ if (-not $EnvFile) {
 
 $VenvPython = Join-Path $RootDir ".venv\Scripts\python.exe"
 
+$MpConfigFile = Join-Path $RootDir "..\miniprogram\services\config.js"
+$MpTemplateFile = "${MpConfigFile}.template"
+
 function Get-DotenvValue {
     param(
         [string]$Key,
@@ -116,6 +119,23 @@ $tunnelProcess = $null
 $appProcess = $null
 
 try {
+    # Switch WeChat miniprogram config to local backend for this test session
+    if (Test-Path $MpConfigFile) {
+        $localConfig = @"
+const API_BASE_URL = "http://${AppHost}:${AppPort}/api/v1";
+
+function getApiBaseUrl() {
+  return API_BASE_URL;
+}
+
+module.exports = {
+  API_BASE_URL,
+  getApiBaseUrl
+};
+"@
+        Set-Content -Path $MpConfigFile -Value $localConfig -Encoding UTF8 -NoNewline:$false
+    }
+
     if (Test-PortOpen -TargetHost $sshLocalHost -Port $sshLocalPort) {
         Write-Host "Reusing existing DB tunnel on ${sshLocalHost}:${sshLocalPort}"
     }
@@ -166,6 +186,11 @@ try {
     }
 }
 finally {
+    # Always restore miniprogram config back to template (production) value
+    if (Test-Path $MpTemplateFile) {
+        Copy-Item -Path $MpTemplateFile -Destination $MpConfigFile -Force
+    }
+
     if ($appProcess -and -not $appProcess.HasExited) {
         Stop-Process -Id $appProcess.Id -Force -ErrorAction SilentlyContinue
     }

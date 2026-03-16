@@ -29,3 +29,6 @@ backend/.coverage
 backend/htmlcov/
 backend/deploy/*.generated
 backend/storage/
+
+# WeChat miniprogram local config (do not commit env-specific base URLs)
+miniprogram/services/config.js
