@@ -135,26 +135,27 @@ DATABASE_URL=mysql+pymysql://username:password@127.0.0.1:3306/dragon_reserve?cha
 
 默认管理员初始化脚本会引导你创建账号；如果使用当前仓库默认本地环境，常见开发命令见 [Makefile](/Volumes/disk/project/dragonReserveSystem/backend/Makefile)。
 
-如果当前联调环境需要先通过 SSH 隧道接入远端测试库，再启动本地后端，可以直接运行：
+如果当前联调环境需要先通过 SSH 隧道接入远端测试库，再启动本地后端，可以使用统一命名的脚本：
 
 ```bash
 cd backend
-make run-test-env
+./scripts/start_backend_test.sh
 ```
 
 Windows 环境如果没有 `make`，可直接在 PowerShell 中运行：
 
 ```powershell
 cd backend
-powershell -ExecutionPolicy Bypass -File .\scripts\start_test_env.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\start_backend_test.ps1
 ```
 
-该脚本会：
+`start_backend_test.*` 会：
 
 1. 读取 `backend/.env.test`
 2. 在本地 `127.0.0.1:3307` 不可用时自动建立 SSH 隧道
 3. 使用 `--env-file .env.test` 启动本地 FastAPI 服务
-4. 默认带 `--reload`，本地改后端代码会自动重启
+4. 在整个测试会话期间，将小程序 `miniprogram/services/config.js` 自动切到 `http://127.0.0.1:8001/api/v1`，退出脚本时再从 `config.js.template` 恢复为线上地址
+5. 默认带 `--reload`，本地改后端代码会自动重启
 
 默认 SSH 隧道目标会使用：
 
@@ -176,14 +177,28 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start_test_env.ps1
 
 ```bash
 cd backend
-APP_RELOAD=0 make run-test-env
+APP_RELOAD=0 ./scripts/start_backend_test.sh
 ```
 
 Windows 下可用：
 
 ```powershell
 cd backend
-powershell -ExecutionPolicy Bypass -File .\scripts\start_test_env.ps1 -AppReload 0
+powershell -ExecutionPolicy Bypass -File .\scripts\start_backend_test.ps1 -AppReload 0
+```
+
+如果只需要在本机/正式环境直接启动后端（不走 SSH 隧道，也不改小程序配置），可以使用：
+
+```bash
+cd backend
+./scripts/start_backend_prod.sh
+```
+
+或在 Windows PowerShell 中：
+
+```powershell
+cd backend
+powershell -ExecutionPolicy Bypass -File .\scripts\start_backend_prod.ps1
 ```
 
 ## 头像上传说明

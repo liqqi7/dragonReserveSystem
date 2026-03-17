@@ -9,6 +9,10 @@ APP_HOST="${APP_HOST:-127.0.0.1}"
 APP_PORT="${APP_PORT:-8001}"
 APP_RELOAD="${APP_RELOAD:-1}"
 
+# WeChat miniprogram config paths
+MP_CONFIG_FILE="$ROOT_DIR/../miniprogram/services/config.js"
+MP_TEMPLATE_FILE="${MP_CONFIG_FILE}.template"
+
 dotenv_get() {
   python3 - "$1" "$ENV_FILE" <<'PY'
 from pathlib import Path
@@ -68,7 +72,34 @@ wait_for_port() {
   return 1
 }
 
+set_local_config() {
+  if [ -z "$MP_CONFIG_FILE" ]; then
+    return 0
+  fi
+  cat <<EOF > "$MP_CONFIG_FILE"
+const API_BASE_URL = "http://${APP_HOST}:${APP_PORT}/api/v1";
+
+function getApiBaseUrl() {
+  return API_BASE_URL;
+}
+
+module.exports = {
+  API_BASE_URL,
+  getApiBaseUrl
+};
+EOF
+}
+
+restore_prod_config() {
+  if [ -n "$MP_TEMPLATE_FILE" ] && [ -f "$MP_TEMPLATE_FILE" ]; then
+    cp "$MP_TEMPLATE_FILE" "$MP_CONFIG_FILE"
+  fi
+}
+
 cleanup() {
+  # Always restore miniprogram config to production value
+  restore_prod_config
+
   if [ -n "${APP_PID:-}" ] && kill -0 "$APP_PID" >/dev/null 2>&1; then
     kill "$APP_PID" >/dev/null 2>&1 || true
   fi
@@ -135,6 +166,9 @@ else
 fi
 
 echo "Starting backend on http://${APP_HOST}:${APP_PORT} using ${ENV_FILE}"
+
+# Switch miniprogram config to local backend for test session
+set_local_config
 cd "$ROOT_DIR"
 UVICORN_ARGS=(
   -m uvicorn
