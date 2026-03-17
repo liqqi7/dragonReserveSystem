@@ -78,6 +78,7 @@ Page({
       this.loadEndedActivityCount();
       this.loadPigeonStats();
       this.loadBillList();
+      app.checkProfileCompleteness();
     }
   },
 

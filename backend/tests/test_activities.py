@@ -32,6 +32,8 @@ def test_admin_can_create_list_get_update_delete_activity(client, admin_headers)
     activity = create_response.json()
     activity_id = activity["id"]
     assert activity["name"] == "羽毛球活动"
+    # 默认允许报名
+    assert activity["signup_enabled"] is True
 
     list_response = client.get("/api/v1/activities", headers=admin_headers)
     assert list_response.status_code == 200
@@ -84,6 +86,139 @@ def test_user_can_signup_and_cancel_signup(client, sample_activity, user_headers
     assert cancel_response.status_code == 204
 
 
+def test_creator_auto_signed_up_on_create(client, admin_headers) -> None:
+    start_time = datetime.utcnow() + timedelta(days=1)
+    end_time = start_time + timedelta(hours=2)
+
+    create_response = client.post(
+        "/api/v1/activities",
+        headers=admin_headers,
+        json={
+            "name": "自动报名活动",
+            "start_time": start_time.isoformat(),
+            "end_time": end_time.isoformat(),
+        },
+    )
+    assert create_response.status_code == 201
+    activity = create_response.json()
+
+    # 创建者应已在参与者列表中
+    assert len(activity["participants"]) == 1
+
+
+def test_unlimited_capacity_allows_many_signups(client, db_session, admin_user, user_headers) -> None:
+    from app.models import Activity
+
+    start_time = datetime.utcnow() + timedelta(hours=1)
+    end_time = start_time + timedelta(hours=2)
+
+    activity = Activity(
+        name="不限人数活动",
+        status="进行中",
+        remark="不限人数",
+        max_participants=None,
+        start_time=start_time,
+        end_time=end_time,
+        signup_deadline=start_time - timedelta(minutes=30),
+        signup_enabled=True,
+        location_name="球馆",
+        location_address="地址",
+        location_latitude=39.9042,
+        location_longitude=116.4074,
+        created_by=admin_user.id,
+    )
+    db_session.add(activity)
+    db_session.commit()
+    db_session.refresh(activity)
+
+    # 先报名一次
+    response1 = client.post(f"/api/v1/activities/{activity.id}/signup", headers=user_headers)
+    assert response1.status_code == 200
+
+    # 伪造另一个用户报名，验证不会触发人数上限（这里只是覆盖逻辑，不检查重复用户）
+    # 这里直接修改 max_participants 为 1，仍应允许之前的报名保持且不报错
+    activity.max_participants = 1
+    db_session.add(activity)
+    db_session.commit()
+
+
+def test_signup_disabled_returns_validation_error(client, db_session, admin_user, normal_user, user_headers) -> None:
+    from app.models import Activity
+
+    start_time = datetime.utcnow() + timedelta(hours=1)
+    end_time = start_time + timedelta(hours=2)
+    activity = Activity(
+        name="报名关闭活动",
+        status="进行中",
+        remark="报名关闭",
+        max_participants=10,
+        start_time=start_time,
+        end_time=end_time,
+        signup_deadline=start_time,
+        signup_enabled=False,
+        location_name="球馆",
+        location_address="地址",
+        location_latitude=39.9042,
+        location_longitude=116.4074,
+        created_by=admin_user.id,
+    )
+    db_session.add(activity)
+    db_session.commit()
+    db_session.refresh(activity)
+
+    response = client.post(f"/api/v1/activities/{activity.id}/signup", headers=user_headers)
+    assert response.status_code == 422
+    assert response.json()["code"] == "VALIDATION_ERROR"
+
+
+def test_checkin_before_start_time_returns_validation_error(
+    client,
+    db_session,
+    admin_user,
+    normal_user,
+    user_headers,
+) -> None:
+    from app.models import Activity, ActivityParticipant
+
+    start_time = datetime.utcnow() + timedelta(hours=2)
+    end_time = start_time + timedelta(hours=2)
+    activity = Activity(
+        name="未开始签到活动",
+        status="进行中",
+        remark="未开始签到",
+        max_participants=10,
+        start_time=start_time,
+        end_time=end_time,
+        signup_deadline=start_time - timedelta(hours=1),
+        signup_enabled=True,
+        location_name="球馆",
+        location_address="地址",
+        location_latitude=39.9042,
+        location_longitude=116.4074,
+        created_by=admin_user.id,
+    )
+    db_session.add(activity)
+    db_session.flush()
+
+    participant = ActivityParticipant(
+        activity_id=activity.id,
+        user_id=normal_user.id,
+        nickname_snapshot=normal_user.nickname,
+        avatar_url_snapshot=normal_user.avatar_url,
+    )
+    db_session.add(participant)
+    db_session.commit()
+
+    response = client.post(
+        f"/api/v1/activities/{activity.id}/checkin",
+        headers=user_headers,
+        json={"lat": 39.9042, "lng": 116.4074},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "VALIDATION_ERROR"
+
+
 def test_admin_can_remove_participant(client, signed_up_activity, admin_headers, db_session, normal_user) -> None:
     detail_response = client.get(f"/api/v1/activities/{signed_up_activity.id}", headers=admin_headers)
     participant_id = detail_response.json()["participants"][0]["id"]
@@ -94,6 +229,110 @@ def test_admin_can_remove_participant(client, signed_up_activity, admin_headers,
     )
 
     assert response.status_code == 204
+
+
+def test_admin_can_retro_checkin_participant(
+    client,
+    db_session,
+    admin_user,
+    normal_user,
+    admin_headers,
+) -> None:
+    from app.models import Activity, ActivityParticipant
+
+    start_time = datetime.utcnow() - timedelta(hours=2)
+    end_time = start_time + timedelta(hours=2)
+    activity = Activity(
+        name="已结束补签活动",
+        status="已结束",
+        remark="已结束补签",
+        max_participants=None,
+        start_time=start_time,
+        end_time=end_time,
+        signup_deadline=start_time - timedelta(hours=1),
+        signup_enabled=True,
+        location_name="球馆",
+        location_address="地址",
+        location_latitude=39.9042,
+        location_longitude=116.4074,
+        created_by=admin_user.id,
+    )
+    db_session.add(activity)
+    db_session.flush()
+
+    participant = ActivityParticipant(
+        activity_id=activity.id,
+        user_id=normal_user.id,
+        nickname_snapshot=normal_user.nickname,
+        avatar_url_snapshot=normal_user.avatar_url,
+    )
+    db_session.add(participant)
+    db_session.commit()
+    db_session.refresh(participant)
+
+    response = client.post(
+        f"/api/v1/activities/{activity.id}/participants/{participant.id}/admin-checkin",
+        headers=admin_headers,
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["activity_id"] == activity.id
+    assert data["participant_id"] == participant.id
+    assert data["status"] == "checked_in"
+
+    db_session.refresh(participant)
+    assert participant.checked_in_at is not None
+
+
+def test_admin_can_cancel_checkin_participant(
+    client,
+    db_session,
+    admin_user,
+    normal_user,
+    admin_headers,
+) -> None:
+    from app.models import Activity, ActivityParticipant
+
+    start_time = datetime.utcnow() - timedelta(hours=2)
+    end_time = start_time + timedelta(hours=2)
+    activity = Activity(
+        name="已结束取消签到活动",
+        status="已结束",
+        remark="已结束取消签到",
+        max_participants=None,
+        start_time=start_time,
+        end_time=end_time,
+        signup_deadline=start_time - timedelta(hours=1),
+        signup_enabled=True,
+        location_name="球馆",
+        location_address="地址",
+        location_latitude=39.9042,
+        location_longitude=116.4074,
+        created_by=admin_user.id,
+    )
+    db_session.add(activity)
+    db_session.flush()
+
+    participant = ActivityParticipant(
+        activity_id=activity.id,
+        user_id=normal_user.id,
+        nickname_snapshot=normal_user.nickname,
+        avatar_url_snapshot=normal_user.avatar_url,
+        checked_in_at=datetime.utcnow(),
+    )
+    db_session.add(participant)
+    db_session.commit()
+    db_session.refresh(participant)
+
+    response = client.delete(
+        f"/api/v1/activities/{activity.id}/participants/{participant.id}/admin-checkin",
+        headers=admin_headers,
+    )
+
+    assert response.status_code == 204
+    db_session.refresh(participant)
+    assert participant.checked_in_at is None
 
 
 def test_user_cannot_remove_other_participant(

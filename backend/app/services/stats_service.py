@@ -63,7 +63,14 @@ def get_pigeon_stats(db: Session) -> list[PigeonStatResponse]:
             )
         )
 
-    return sorted(result, key=lambda item: item.pigeon_count, reverse=True)
+    # 排序规则：
+    # 1. 按鸽子率从高到低
+    # 2. 鸽子率相同按报名次数从高到低
+    return sorted(
+        result,
+        key=lambda item: (item.pigeon_rate, item.signup_count),
+        reverse=True,
+    )
 
 
 def get_activity_bill_stats(db: Session) -> list[ActivityBillStatResponse]:

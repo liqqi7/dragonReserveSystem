@@ -97,9 +97,6 @@ restore_prod_config() {
 }
 
 cleanup() {
-  # Always restore miniprogram config to production value
-  restore_prod_config
-
   if [ -n "${APP_PID:-}" ] && kill -0 "$APP_PID" >/dev/null 2>&1; then
     kill "$APP_PID" >/dev/null 2>&1 || true
   fi

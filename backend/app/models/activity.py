@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, String, UniqueConstraint, func
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, String, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -24,10 +24,11 @@ class Activity(Base):
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="进行中")
     remark: Mapped[str] = mapped_column(String(1000), nullable=False, default="")
-    max_participants: Mapped[int] = mapped_column(Integer, nullable=False, default=20)
+    max_participants: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, default=None)
     start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     end_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     signup_deadline: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    signup_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     location_name: Mapped[str] = mapped_column(String(255), nullable=False, default="")
     location_address: Mapped[str] = mapped_column(String(255), nullable=False, default="")
     location_latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)

@@ -48,6 +48,12 @@ Page({
 
     app.ensureUserReady(() => {
       this.loadUserProfile();
+      if (app.globalData._pendingOpenEditProfile) {
+        app.globalData._pendingOpenEditProfile = false;
+        this.openEditModal();
+      } else {
+        app.checkProfileCompleteness();
+      }
     });
   },
 

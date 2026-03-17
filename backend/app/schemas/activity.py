@@ -32,10 +32,11 @@ class ActivityResponse(BaseModel):
     name: str
     status: str
     remark: str
-    max_participants: int
+    max_participants: Optional[int]
     start_time: datetime
     end_time: datetime
     signup_deadline: Optional[datetime]
+    signup_enabled: bool
     location_name: str
     location_address: str
     location_latitude: Optional[float]
@@ -52,10 +53,11 @@ class ActivityCreateRequest(BaseModel):
     name: str = Field(min_length=1, max_length=128)
     status: str = Field(default="进行中", max_length=32)
     remark: str = ""
-    max_participants: int = Field(default=20, ge=1, le=999)
+    max_participants: Optional[int] = Field(default=None, ge=1, le=999)
     start_time: datetime
     end_time: datetime
     signup_deadline: Optional[datetime] = None
+    signup_enabled: bool = Field(default=True)
     location_name: str = Field(default="", max_length=255)
     location_address: str = Field(default="", max_length=255)
     location_latitude: Optional[float] = None
@@ -88,6 +90,7 @@ class ActivityUpdateRequest(BaseModel):
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     signup_deadline: Optional[datetime] = None
+    signup_enabled: Optional[bool] = None
     location_name: Optional[str] = Field(default=None, max_length=255)
     location_address: Optional[str] = Field(default=None, max_length=255)
     location_latitude: Optional[float] = None

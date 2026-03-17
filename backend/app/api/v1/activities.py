@@ -14,6 +14,8 @@ from app.schemas.activity import (
     ActivityUpdateRequest,
 )
 from app.services.activity_service import (
+    admin_cancel_checkin_participant,
+    admin_checkin_participant,
     cancel_signup,
     checkin_activity,
     create_activity,
@@ -144,3 +146,39 @@ def post_checkin(
     activity = get_activity_by_id(db, activity_id)
     participant = checkin_activity(db, activity, current_user, payload)
     return ActivitySignupResponse(activity_id=activity.id, participant_id=participant.id, status="checked_in")
+
+
+@router.post(
+    "/{activity_id}/participants/{participant_id}/admin-checkin",
+    response_model=ActivitySignupResponse,
+    summary="Admin retroactive checkin for a participant",
+)
+def post_admin_checkin_participant(
+    activity_id: int,
+    participant_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+) -> ActivitySignupResponse:
+    """Retroactively check a participant in to an activity (admin only)."""
+
+    activity = get_activity_by_id(db, activity_id)
+    participant = admin_checkin_participant(db, activity, participant_id, current_user)
+    return ActivitySignupResponse(activity_id=activity.id, participant_id=participant.id, status="checked_in")
+
+
+@router.delete(
+    "/{activity_id}/participants/{participant_id}/admin-checkin",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Admin cancel checkin for a participant",
+)
+def delete_admin_checkin_participant(
+    activity_id: int,
+    participant_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+) -> Response:
+    """Cancel a participant's checkin (admin only)."""
+
+    activity = get_activity_by_id(db, activity_id)
+    admin_cancel_checkin_participant(db, activity, participant_id, current_user)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -38,7 +38,6 @@ def get_activity_by_id(db: Session, activity_id: int) -> Activity:
 
 def list_activities(db: Session) -> list[Activity]:
     """List activities ordered by start time descending. Excludes logically deleted (已删除)."""
-
     stmt = (
         _get_activity_query()
         .where(Activity.status != "已删除")
@@ -58,6 +57,7 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
         start_time=payload.start_time,
         end_time=payload.end_time,
         signup_deadline=payload.signup_deadline,
+        signup_enabled=payload.signup_enabled,
         location_name=payload.location_name,
         location_address=payload.location_address,
         location_latitude=payload.location_latitude,
@@ -65,6 +65,17 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
         created_by=created_by.id,
     )
     db.add(activity)
+    db.flush()
+
+    # Auto-signup creator as a participant
+    creator_participant = ActivityParticipant(
+        activity_id=activity.id,
+        user_id=created_by.id,
+        nickname_snapshot=created_by.nickname,
+        avatar_url_snapshot=created_by.avatar_url,
+    )
+    db.add(creator_participant)
+
     db.commit()
     db.refresh(activity)
     return get_activity_by_id(db, activity.id)
@@ -101,6 +112,9 @@ def signup_activity(db: Session, activity: Activity, user: User) -> ActivityPart
     if activity.status == "已取消":
         raise ValidationAppError("Activity has been cancelled")
 
+    if activity.signup_enabled is False:
+        raise ValidationAppError("Signup is currently disabled for this activity")
+
     deadline = activity.signup_deadline or activity.start_time
     if deadline and _utcnow() >= deadline:
         raise ValidationAppError("Signup deadline has passed")
@@ -114,9 +128,14 @@ def signup_activity(db: Session, activity: Activity, user: User) -> ActivityPart
     if existing is not None:
         raise ConflictError("You have already signed up for this activity")
 
-    participant_count = db.query(ActivityParticipant).filter(ActivityParticipant.activity_id == activity.id).count()
-    if participant_count >= activity.max_participants:
-        raise ValidationAppError("Activity is already full")
+    if activity.max_participants is not None:
+        participant_count = (
+            db.query(ActivityParticipant)
+            .filter(ActivityParticipant.activity_id == activity.id)
+            .count()
+        )
+        if participant_count >= activity.max_participants:
+            raise ValidationAppError("Activity is already full")
 
     participant = ActivityParticipant(
         activity_id=activity.id,
@@ -173,6 +192,76 @@ def remove_participant(db: Session, activity: Activity, participant_id: int, act
     db.commit()
 
 
+def admin_checkin_participant(
+    db: Session,
+    activity: Activity,
+    participant_id: int,
+    actor: User,
+) -> ActivityParticipant:
+    """Admin-only retroactive checkin for a participant.
+
+    Does not perform location or time window checks; intended for correcting records
+    after an activity has completed or when on-site checkin failed.
+    """
+
+    if actor.role != "admin":
+        raise ValidationAppError("Only admins can perform retroactive checkin")
+    if activity.status in {"已取消", "已删除"}:
+        raise ValidationAppError("Cannot check in participants for a cancelled or deleted activity")
+
+    participant = db.scalar(
+        select(ActivityParticipant).where(
+            ActivityParticipant.activity_id == activity.id,
+            ActivityParticipant.id == participant_id,
+        )
+    )
+    if participant is None:
+        raise NotFoundError("Participant not found")
+    if participant.checked_in_at is not None:
+        raise ConflictError("Participant has already checked in")
+
+    participant.checked_in_at = _utcnow()
+    participant.checkin_lat = None
+    participant.checkin_lng = None
+    db.add(participant)
+    db.commit()
+    db.refresh(participant)
+    return participant
+
+
+def admin_cancel_checkin_participant(
+    db: Session,
+    activity: Activity,
+    participant_id: int,
+    actor: User,
+) -> ActivityParticipant:
+    """Admin-only cancel checkin for a participant."""
+
+    if actor.role != "admin":
+        raise ValidationAppError("Only admins can cancel checkin")
+    if activity.status in {"已取消", "已删除"}:
+        raise ValidationAppError("Cannot cancel checkin for a cancelled or deleted activity")
+
+    participant = db.scalar(
+        select(ActivityParticipant).where(
+            ActivityParticipant.activity_id == activity.id,
+            ActivityParticipant.id == participant_id,
+        )
+    )
+    if participant is None:
+        raise NotFoundError("Participant not found")
+    if participant.checked_in_at is None:
+        raise ConflictError("Participant has not checked in")
+
+    participant.checked_in_at = None
+    participant.checkin_lat = None
+    participant.checkin_lng = None
+    db.add(participant)
+    db.commit()
+    db.refresh(participant)
+    return participant
+
+
 def checkin_activity(
     db: Session,
     activity: Activity,
@@ -183,6 +272,16 @@ def checkin_activity(
 
     if activity.status == "已取消":
         raise ValidationAppError("Activity has been cancelled")
+
+    # Disallow checkin before activity start time（按活动时间所在时区判断）
+    start_dt = activity.start_time
+    if start_dt is not None:
+        if start_dt.tzinfo is not None:
+            now = datetime.now(tz=start_dt.tzinfo)
+        else:
+            now = datetime.now()
+        if now < start_dt:
+            raise ValidationAppError("提前签到的人杀球下网桌游丢件持仓全绿抽卡把把大保底！")
 
     participant = db.scalar(
         select(ActivityParticipant).where(
