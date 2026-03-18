@@ -538,6 +538,11 @@ button.create-btn-fixed {
   margin-bottom: 8rpx;
 }
 
+.participant-actions {
+  display: flex;
+  align-items: center;
+}
+
 .participant-name {
   font-size: 26rpx;
   color: #333;
@@ -568,6 +573,15 @@ button.create-btn-fixed {
   background-color: #fff5f5;
   border-radius: 8rpx;
   margin-left: 12rpx;
+}
+
+.participant-retro-checkin {
+  flex-shrink: 0;
+  font-size: 24rpx;
+  color: #07c160;
+  padding: 6rpx 12rpx;
+  background-color: #e6f9ed;
+  border-radius: 8rpx;
 }
 
 .btn {

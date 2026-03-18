@@ -117,6 +117,38 @@ App({
     ].forEach((key) => wx.removeStorageSync(key));
   },
 
+  checkProfileCompleteness() {
+    if (!this.globalData.isAuthenticated || !this.globalData.userProfile) return;
+
+    const profile = this.globalData.userProfile;
+    const nickname = (profile.nickname || "").trim();
+    const avatarUrl = (profile.avatarUrl || "").trim();
+
+    const isNicknameDefault = !nickname || nickname === "微信用户";
+    const isAvatarDefault =
+      !avatarUrl ||
+      avatarUrl.includes("thirdwx.qlogo.cn/mmopen/vi_32") ||
+      avatarUrl.includes("/0") ||
+      avatarUrl.endsWith("/0") ||
+      avatarUrl.endsWith("/132") ||
+      avatarUrl.startsWith("https://thirdwx.qlogo.cn/mmopen/");
+
+    if (!isNicknameDefault && !isAvatarDefault) return;
+
+    wx.showModal({
+      title: "完善个人信息",
+      content: "您的昵称或头像尚未设置，是否立刻修改？",
+      confirmText: "修改",
+      cancelText: "稍后再说",
+      success: (res) => {
+        if (res.confirm) {
+          this.globalData._pendingOpenEditProfile = true;
+          wx.switchTab({ url: "/pages/profile/profile" });
+        }
+      }
+    });
+  },
+
   ensureUserReady(callback) {
     if (
       this.globalData.sessionValidated &&

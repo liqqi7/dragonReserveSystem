@@ -3,6 +3,16 @@ const activityService = require("../../services/activity");
 
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 
+const WEEKDAY_LABELS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+
+function getWeekdayLabel(dateTimeString) {
+  if (!dateTimeString) return "";
+  const safe = String(dateTimeString).replace(" ", "T");
+  const d = new Date(safe);
+  if (Number.isNaN(d.getTime())) return "";
+  return WEEKDAY_LABELS[d.getDay()];
+}
+
 // 默认头像 data URI，避免网络请求失败，CSS ::before 显示阴影人像
 const DEFAULT_AVATAR = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InRyYW5zcGFyZW50Ii8+PC9zdmc+";
 
@@ -35,14 +45,15 @@ function adaptActivity(item) {
     status: item.status || "进行中",
     remark: item.remark || "",
     participants,
-    maxParticipants: item.max_participants || 20,
+    maxParticipants: item.max_participants == null ? null : item.max_participants,
     startTime,
     endTime: formatDateTime(item.end_time),
     signupDeadline: formatDateTime(item.signup_deadline),
     locationName: item.location_name || "",
     locationAddress: item.location_address || "",
     locationLatitude: item.location_latitude,
-    locationLongitude: item.location_longitude
+    locationLongitude: item.location_longitude,
+    signupEnabled: item.signup_enabled !== false
   };
 }
 
@@ -73,7 +84,11 @@ Page({
       locationName: "",
       locationAddress: "",
       locationLatitude: null,
-      locationLongitude: null
+      locationLongitude: null,
+      signupEnabled: true,
+      // 报名人数上限
+      limitEnabled: false,
+      maxParticipants: null
     },
     myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
     myNickname: "", // 当前用户昵称（userId 为空时的回退，兼容旧数据）
@@ -101,6 +116,7 @@ Page({
       this.setData({ isAdmin: app.globalData.userRole === "admin", myUserId, myNickname });
 
       this.loadActivityList();
+      app.checkProfileCompleteness();
     }
   },
 
@@ -212,6 +228,10 @@ Page({
       }
       activity.signupDeadline = signupDeadline;
 
+      // 计算开始时间与报名截止时间对应的周几标签，用于前端展示
+      activity.startWeekdayLabel = getWeekdayLabel(activity.startTime || activity.date);
+      activity.signupDeadlineWeekdayLabel = getWeekdayLabel(signupDeadline);
+
       let hasSignedUp = false;
       let hasCheckedIn = false;
       let checkinCount = 0;
@@ -258,9 +278,16 @@ Page({
       activity.checkinCount = checkinCount;
       activity.avatarList = avatarList;
 
-      // 报名是否已截止
+      // 是否已满员（仅在设置了人数上限时生效）
+      const max = activity.maxParticipants;
+      const currentCount = rawParticipants.length;
+      activity.isFull = max != null && currentCount >= max;
+
+      // 报名是否已截止（受报名开关与截止时间共同控制）
       let isSignupClosed = false;
-      if (signupDeadline) {
+      if (activity.signupEnabled === false) {
+        isSignupClosed = true;
+      } else if (signupDeadline) {
         const dl = new Date(signupDeadline.replace(" ", "T") + ":00");
         if (!isNaN(dl.getTime())) {
           isSignupClosed = now.getTime() >= dl.getTime();
@@ -366,7 +393,10 @@ Page({
         locationName: "",
         locationAddress: "",
         locationLatitude: null,
-        locationLongitude: null
+        locationLongitude: null,
+        signupEnabled: true,
+        limitEnabled: false,
+        maxParticipants: null
       }
     });
   },
@@ -419,6 +449,8 @@ Page({
 
     const hasCheckedIn = (activity.checkinCount || 0) > 0;
 
+    const maxParticipants = activity.maxParticipants == null ? null : activity.maxParticipants;
+
     this.setData({
       showEditModal: true,
       currentActivity: activity,
@@ -436,7 +468,10 @@ Page({
         locationName: activity.locationName || "",
         locationAddress: activity.locationAddress || "",
         locationLatitude: activity.locationLatitude ?? null,
-        locationLongitude: activity.locationLongitude ?? null
+        locationLongitude: activity.locationLongitude ?? null,
+        signupEnabled: activity.signupEnabled !== false,
+        limitEnabled: maxParticipants != null,
+        maxParticipants: maxParticipants
       }
     });
   },
@@ -449,6 +484,20 @@ Page({
     if (field === "status") {
       const statusList = ["未开始", "进行中", "已取消", "已结束"];
       value = statusList[Number(value)] || "未开始";
+    } else if (field === "signupEnabled") {
+      value = !!e.detail.value;
+    } else if (field === "limitEnabled") {
+      value = !!e.detail.value;
+    } else if (field === "maxParticipants") {
+      const num = Number(value);
+      if (!value) {
+        value = "";
+      } else if (Number.isNaN(num) || !Number.isFinite(num)) {
+        wx.showToast({ title: "人数上限需为数字", icon: "none" });
+        return;
+      } else {
+        value = String(Math.floor(num));
+      }
     }
     
     this.setData({
@@ -547,6 +596,23 @@ Page({
       return;
     }
 
+    if (form.limitEnabled) {
+      const raw = form.maxParticipants;
+      const num = Number(raw);
+      if (!raw) {
+        wx.showToast({ title: "请输入人数上限", icon: "none" });
+        return;
+      }
+      if (Number.isNaN(num) || !Number.isFinite(num) || num <= 0) {
+        wx.showToast({ title: "人数上限需为正整数", icon: "none" });
+        return;
+      }
+      if (num > 999) {
+        wx.showToast({ title: "人数上限不能超过 999", icon: "none" });
+        return;
+      }
+    }
+
     // 组合开始/结束时间，进行时间合法性校验
     const startDateTime = new Date(`${form.startDate}T${form.startTime}:00`);
     const endDateTime = new Date(`${form.endDate}T${form.endTime}:00`);
@@ -583,6 +649,10 @@ Page({
     }
 
     wx.showLoading({ title: "保存中..." });
+    const maxParticipants =
+      form.limitEnabled && form.maxParticipants
+        ? Number(form.maxParticipants)
+        : null;
     const payload = {
       name: form.name.trim(),
       status: form.status,
@@ -594,7 +664,8 @@ Page({
       location_address: form.locationAddress || "",
       location_latitude: form.locationLatitude,
       location_longitude: form.locationLongitude,
-      max_participants: isEdit ? (this.data.currentActivity.maxParticipants || 20) : 20
+      max_participants: maxParticipants,
+      signup_enabled: form.signupEnabled
     };
 
     if (isEdit) {
@@ -790,6 +861,10 @@ Page({
       wx.showToast({ title: "该活动已结束或已取消", icon: "none" });
       return;
     }
+    if (activity.signupEnabled === false) {
+      wx.showToast({ title: "活动报名暂未开放", icon: "none" });
+      return;
+    }
     // 报名截止校验
     if (activity.signupDeadline) {
       const deadline = new Date(activity.signupDeadline.replace(" ", "T") + ":00");
@@ -850,7 +925,12 @@ Page({
       .catch(err => {
         console.error(err);
         wx.hideLoading();
-        wx.showToast({ title: (err && err.message) || "报名失败", icon: "none" });
+        const msg = (err && err.message) || "";
+        if (msg.includes("disabled") || msg.includes("未开放")) {
+          wx.showToast({ title: "活动报名暂未开盖", icon: "none" });
+        } else {
+          wx.showToast({ title: msg || "报名失败", icon: "none" });
+        }
       });
   },
 
@@ -943,6 +1023,62 @@ Page({
         if (res.confirm) {
           this.doRemoveParticipant(participantId, name, activity, isSelf);
         }
+      }
+    });
+  },
+
+  adminRetroCheckin(e) {
+    const participantId = e.currentTarget.dataset.id;
+    const name = e.currentTarget.dataset.name;
+    const activity = this.data.detailActivity;
+    if (!activity || !activity._id || !participantId) return;
+
+    wx.showModal({
+      title: "确认补签",
+      content: `确认将「${name}」标记为已签到吗？`,
+      success: (res) => {
+        if (!res.confirm) return;
+        wx.showLoading({ title: "处理中..." });
+        activityService
+          .adminCheckinParticipant(activity._id, participantId)
+          .then(() => {
+            wx.hideLoading();
+            wx.showToast({ title: "补签成功", icon: "success" });
+            this.loadActivityList();
+          })
+          .catch(err => {
+            console.error(err);
+            wx.hideLoading();
+            wx.showToast({ title: (err && err.message) || "补签失败", icon: "none" });
+          });
+      }
+    });
+  },
+
+  adminCancelCheckin(e) {
+    const participantId = e.currentTarget.dataset.id;
+    const name = e.currentTarget.dataset.name;
+    const activity = this.data.detailActivity;
+    if (!activity || !activity._id || !participantId) return;
+
+    wx.showModal({
+      title: "确认取消签到",
+      content: `确认将「${name}」的签到记录撤销吗？`,
+      success: (res) => {
+        if (!res.confirm) return;
+        wx.showLoading({ title: "处理中..." });
+        activityService
+          .adminCancelCheckinParticipant(activity._id, participantId)
+          .then(() => {
+            wx.hideLoading();
+            wx.showToast({ title: "已取消签到", icon: "success" });
+            this.loadActivityList();
+          })
+          .catch(err => {
+            console.error(err);
+            wx.hideLoading();
+            wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
+          });
       }
     });
   },

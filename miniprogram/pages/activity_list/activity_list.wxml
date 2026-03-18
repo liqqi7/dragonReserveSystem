@@ -65,11 +65,11 @@
           </view>
           <view class="meta-item">
             <text class="meta-icon">🕐</text>
-            <text class="meta-text">开始时间：{{item.startTime || item.date}}</text>
+            <text class="meta-text">开始时间：{{item.startTime || item.date}}{{item.startWeekdayLabel ? '（' + item.startWeekdayLabel + '）' : ''}}</text>
           </view>
           <view wx:if="{{item.signupDeadline}}" class="meta-item signup-deadline-row">
             <text class="meta-icon">⏰</text>
-            <text class="meta-text">报名截止：{{item.signupDeadline}}</text>
+            <text class="meta-text">报名截止：{{item.signupDeadline}}{{item.signupDeadlineWeekdayLabel ? '（' + item.signupDeadlineWeekdayLabel + '）' : ''}}</text>
           </view>
           <view class="meta-item participants-row">
             <view class="participants-content">
@@ -91,11 +91,22 @@
                   />
                 </view>
               </view>
-              <!-- 有报名 + 头像：额外加一个类做光学对齐 -->
-              <text class="meta-text participants-text participants-text-with-avatar" wx:if="{{item.participants.length > 0}}">
-                等 {{item.participants.length}} 人报名
+              <!-- 报名人数文案：
+                   - 有人数上限：0/上限 人报名
+                   - 无人数上限：有报名时 N 人报名；无人报名时 暂无报名人员 -->
+              <text
+                class="meta-text participants-text {{item.participants.length > 0 ? 'participants-text-with-avatar' : ''}}"
+                wx:if="{{item.maxParticipants != null}}"
+              >
+                {{item.participants.length}} / {{item.maxParticipants}} 人报名
               </text>
-              <text class="meta-text participants-text" wx:else>暂无报名</text>
+              <text
+                class="meta-text participants-text participants-text-with-avatar"
+                wx:elif="{{item.participants.length > 0}}"
+              >
+                {{item.participants.length}} 人报名
+              </text>
+              <text class="meta-text participants-text" wx:else>暂无报名人员</text>
             </view>
           </view>
         </view>
@@ -103,16 +114,16 @@
         <!-- 操作按钮：仅在有可显示按钮时渲染，避免非管理员/已结束时留空 -->
         <view wx:if="{{isAdmin || item.status === '未开始' || item.status === '进行中'}}" class="card-actions">
           <button
-            wx:if="{{(item.status === '未开始' || item.status === '进行中') && !item.hasSignedUp && !item.isSignupClosed}}"
+            wx:if="{{(item.status === '未开始' || item.status === '进行中') && !item.hasSignedUp && !item.isSignupClosed && !item.isFull}}"
             class="action-btn primary"
             catchtap="directSignup"
             data-activity="{{item}}"
           >报名</button>
           <button
-            wx:elif="{{(item.status === '未开始' || item.status === '进行中') && !item.hasSignedUp && item.isSignupClosed}}"
+            wx:elif="{{(item.status === '未开始' || item.status === '进行中') && !item.hasSignedUp && (item.isSignupClosed || item.isFull)}}"
             class="action-btn default"
             disabled="true"
-          >报名已截止</button>
+          >{{item.isFull ? '活动已满' : (item.signupEnabled === false ? '报名未开放' : '报名已截止')}}</button>
           <button
             wx:if="{{item.hasSignedUp && item.hasCheckedIn}}"
             class="action-btn default"
@@ -125,23 +136,11 @@
             data-activity="{{item}}"
           >签到</button>
           <button
-            wx:if="{{item.hasSignedUp && !item.hasCheckedIn && (item.status === '进行中' || item.status === '未开始')}}"
-            class="action-btn default"
-            catchtap="cancelSignup"
-            data-activity="{{item}}"
-          >取消</button>
-          <button
             wx:if="{{isAdmin && item.status !== '已取消'}}"
             class="action-btn default"
             catchtap="showEditModal"
             data-activity="{{item}}"
           >编辑</button>
-          <button
-            wx:if="{{isAdmin && item.status !== '已取消'}}"
-            class="action-btn danger"
-            catchtap="cancelActivityFromCard"
-            data-activity="{{item}}"
-          >取消</button>
           <button
             wx:if="{{isAdmin && item.status === '已取消'}}"
             class="action-btn danger"
@@ -158,7 +157,7 @@
     <view class="edit-modal-bg" catchtouchmove="stopPropagation" bindtap="closeEditModal"></view>
     <view class="edit-modal-panel" catchtap="stopPropagation" catchtouchmove="stopPropagation">
       <view class="modal-header edit-modal-header">
-        <text>{{currentActivity ? '编辑活动' : '新增活动'}}</text>
+        <text>{{currentActivity ? '编辑活动' : '新建活动'}}</text>
         <text class="close-btn" bindtap="closeEditModal">×</text>
       </view>
 
@@ -200,6 +199,38 @@
           </view>
         </view>
 
+        <!-- 报名人数上限设置：新建和编辑都可配置 -->
+        <view wx:if="{{isAdmin}}" class="form-item">
+          <view class="label">限制报名人数：</view>
+          <switch
+            checked="{{editForm.limitEnabled}}"
+            bindchange="onEditFormChange"
+            data-field="limitEnabled"
+          />
+        </view>
+        <view wx:if="{{isAdmin && editForm.limitEnabled}}" class="form-item">
+          <view class="label">人数上限：</view>
+          <input
+            class="input"
+            type="number"
+            placeholder="请输入人数上限（1-999）"
+            value="{{editForm.maxParticipants}}"
+            bindinput="onEditFormChange"
+            data-field="maxParticipants"
+            adjust-position="{{false}}"
+          />
+        </view>
+
+        <!-- 仅编辑已有活动时展示报名开关，新建活动不显示 -->
+        <view wx:if="{{isAdmin && currentActivity}}" class="form-item">
+          <view class="label">允许报名：</view>
+          <switch
+            checked="{{editForm.signupEnabled}}"
+            bindchange="onEditFormChange"
+            data-field="signupEnabled"
+          />
+        </view>
+
         <view class="form-item">
           <view class="label">活动名称：</view>
           <input
@@ -236,7 +267,6 @@
       </view>
 
       <view class="modal-footer edit-modal-footer">
-        <button class="btn default" bindtap="closeEditModal">取消</button>
         <button wx:if="{{isAdmin && currentActivity && currentActivity.status !== '已取消'}}" class="btn danger" bindtap="cancelActivity">取消活动</button>
         <button class="btn primary" bindtap="saveActivity">保存</button>
       </view>
@@ -296,7 +326,30 @@
             class="participant-item"
           >
             <text class="participant-name">{{participant.name}}<text wx:if="{{participant.checkedInAt}}" class="participant-checkin">（已签到）</text><text wx:elif="{{detailActivity.activityStarted}}" class="participant-pigeon">（鸽子🐦！）</text></text>
-            <text wx:if="{{isAdmin || (!detailActivity.signupDeadlinePassed && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname)))}}" class="participant-delete" bindtap="removeParticipant" data-id="{{participant.id}}" data-name="{{participant.name}}" data-self="{{(!isAdmin && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname))) ? '1' : ''}}">{{(!isAdmin && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname))) ? '取消' : '删除'}}</text>
+            <view class="participant-actions">
+              <text
+                wx:if="{{isAdmin && !participant.checkedInAt && detailActivity.status === '已结束'}}"
+                class="participant-retro-checkin"
+                bindtap="adminRetroCheckin"
+                data-id="{{participant.id}}"
+                data-name="{{participant.name}}"
+              >补签</text>
+              <text
+                wx:elif="{{isAdmin && participant.checkedInAt}}"
+                class="participant-retro-checkin"
+                bindtap="adminCancelCheckin"
+                data-id="{{participant.id}}"
+                data-name="{{participant.name}}"
+              >取消签到</text>
+              <text
+                wx:if="{{isAdmin || (!detailActivity.signupDeadlinePassed && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname)))}}"
+                class="participant-delete"
+                bindtap="removeParticipant"
+                data-id="{{participant.id}}"
+                data-name="{{participant.name}}"
+                data-self="{{(!isAdmin && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname))) ? '1' : ''}}"
+              >{{(!isAdmin && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname))) ? '取消' : '删除'}}</text>
+            </view>
           </view>
           <view style="height:64rpx"></view>
         </scroll-view>
@@ -319,11 +372,6 @@
             class="btn primary"
             bindtap="detailCheckin"
           >签到</button>
-          <button
-            wx:if="{{detailActivity.hasSignedUp && !detailActivity.hasCheckedIn && !detailActivity.signupDeadlinePassed}}"
-            class="btn default"
-            bindtap="detailCancelSignup"
-          >取消</button>
           <button
             wx:elif="{{detailActivity.hasSignedUp && detailActivity.hasCheckedIn}}"
             class="btn default"

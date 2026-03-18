@@ -186,11 +186,6 @@ module.exports = {
     }
 }
 finally {
-    # Always restore miniprogram config back to template (production) value
-    if (Test-Path $MpTemplateFile) {
-        Copy-Item -Path $MpTemplateFile -Destination $MpConfigFile -Force
-    }
-
     if ($appProcess -and -not $appProcess.HasExited) {
         Stop-Process -Id $appProcess.Id -Force -ErrorAction SilentlyContinue
     }

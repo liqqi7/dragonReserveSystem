@@ -60,6 +60,20 @@ function checkinActivity(activityId, payload) {
   });
 }
 
+function adminCheckinParticipant(activityId, participantId) {
+  return request({
+    url: `/activities/${activityId}/participants/${participantId}/admin-checkin`,
+    method: "POST"
+  });
+}
+
+function adminCancelCheckinParticipant(activityId, participantId) {
+  return request({
+    url: `/activities/${activityId}/participants/${participantId}/admin-checkin`,
+    method: "DELETE"
+  });
+}
+
 module.exports = {
   listActivities,
   getActivity,
@@ -69,5 +83,7 @@ module.exports = {
   signupActivity,
   cancelSignup,
   removeParticipant,
-  checkinActivity
+  checkinActivity,
+  adminCheckinParticipant,
+  adminCancelCheckinParticipant
 };
