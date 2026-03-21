@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from app.models import Activity, ActivityParticipant
 
@@ -57,6 +57,55 @@ def test_history_stats_returns_pigeon_ranking(
     assert len(body) == 2
     assert body[0]["nickname"] == second_user.nickname
     assert body[0]["pigeon_count"] == 1
+
+
+def test_pigeon_stats_includes_naive_local_end_when_status_not_ended(
+    client,
+    db_session,
+    admin_user,
+    normal_user,
+    user_headers,
+) -> None:
+    """naive end_time 按东八区墙钟解析，避免「详情已结束但统计仍排除」。"""
+    cn = timezone(timedelta(hours=8))
+    past_local = datetime.now(cn) - timedelta(hours=2)
+    end_naive = past_local.replace(tzinfo=None)
+
+    act = Activity(
+        name="naive-local-ended",
+        status="未开始",
+        remark="",
+        max_participants=10,
+        start_time=datetime.now(timezone.utc) - timedelta(days=1),
+        end_time=end_naive,
+        signup_deadline=datetime.now(timezone.utc) - timedelta(days=1),
+        location_name="x",
+        location_address="y",
+        location_latitude=39.9,
+        location_longitude=116.4,
+        created_by=admin_user.id,
+    )
+    db_session.add(act)
+    db_session.commit()
+    db_session.refresh(act)
+
+    db_session.add(
+        ActivityParticipant(
+            activity_id=act.id,
+            user_id=normal_user.id,
+            nickname_snapshot=normal_user.nickname,
+            avatar_url_snapshot=normal_user.avatar_url,
+        )
+    )
+    db_session.commit()
+
+    response = client.get("/api/v1/stats/history", headers=user_headers)
+    assert response.status_code == 200
+    body = response.json()
+    row = next((r for r in body if r["user_id"] == normal_user.id), None)
+    assert row is not None
+    assert row["signup_count"] >= 1
+    assert row["pigeon_count"] >= 1
 
 
 def test_bill_stats_returns_aggregated_amounts(

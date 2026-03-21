@@ -2,8 +2,9 @@ from __future__ import annotations
 
 """Statistics use cases."""
 
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
@@ -11,11 +12,29 @@ from sqlalchemy.orm import Session, selectinload
 from app.models import Activity, Bill
 from app.schemas.stats import ActivityBillStatResponse, PigeonStatResponse
 
+# 小程序端对无 Z 后缀的 ISO 时间按设备本地时区解析；国内用户即东八区。
+# 库内 naive datetime 与 utcnow() 直接比较会把「本地日历日」误判为未来，导致已结束活动未计入鸽子榜。
+try:
+    _APP_LOCAL_TZ = ZoneInfo("Asia/Shanghai")
+except (ZoneInfoNotFoundError, ModuleNotFoundError):  # 未安装 tzdata 等，见 PEP 615
+    _APP_LOCAL_TZ = timezone(timedelta(hours=8))  # 中国大陆无夏令时，与东八区一致
+
+
+def _activity_end_to_utc(end_time: datetime) -> datetime:
+    """将活动结束时刻转为 UTC，与小程序「本地墙钟」语义一致。"""
+    if end_time.tzinfo is not None:
+        return end_time.astimezone(timezone.utc)
+    return end_time.replace(tzinfo=_APP_LOCAL_TZ).astimezone(timezone.utc)
+
+
+def _pigeon_stats_now_utc() -> datetime:
+    return datetime.now(timezone.utc)
+
 
 def get_pigeon_stats(db: Session) -> list[PigeonStatResponse]:
     """Compute signup/checkin ranking for ended activities."""
 
-    now = datetime.utcnow()
+    now_utc = _pigeon_stats_now_utc()
     activities = list(
         db.scalars(
             select(Activity)
@@ -30,7 +49,8 @@ def get_pigeon_stats(db: Session) -> list[PigeonStatResponse]:
     for activity in activities:
         if activity.status == "已取消":
             continue
-        if activity.end_time > now and activity.status != "已结束":
+        end_utc = _activity_end_to_utc(activity.end_time)
+        if end_utc > now_utc and activity.status != "已结束":
             continue
 
         for participant in activity.participants:
