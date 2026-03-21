@@ -24,7 +24,7 @@ class Settings(BaseSettings):
         description="JWT signing secret",
     )
     jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60 * 24
+    access_token_expire_minutes: int = 60 * 24 * 30
     checkin_radius_meters: int = 1000
     user_invite_code: str = "dragon"
     admin_invite_code: str = "manage"

@@ -8,25 +8,14 @@
 
   <!-- 已授权用户内容 -->
   <block wx:else>
-  <!-- 搜索栏 -->
-  <view class="search-bar">
-    <view class="search-input-wrapper">
-      <text class="search-icon">🔍</text>
-      <input
-        class="search-input"
-        placeholder="请输入活动名称"
-        value="{{searchKeyword}}"
-        bindinput="onSearchInput"
-      />
-    </view>
-  </view>
-
   <!-- 状态筛选 -->
   <view class="filter-tabs">
     <view
       wx:for="{{['我参与的', '未开始', '进行中', '已结束', '已取消', '全部']}}"
       wx:key="*this"
       class="filter-tab {{selectedFilter === item ? 'active' : ''}}"
+      hover-class="tab-hover"
+      hover-stay-time="80"
       data-filter="{{item}}"
       bindtap="onFilterChange"
     >
@@ -37,7 +26,7 @@
   <!-- 活动列表 -->
   <view wx:if="{{filteredList.length === 0}}" class="empty-state">
     <image class="empty-icon" src="/images/activity-empty-default.gif" mode="aspectFit" />
-    <text class="empty-text">{{searchKeyword ? '未找到相关活动' : '暂无活动'}}</text>
+    <text class="empty-text">暂无活动</text>
   </view>
 
   <view wx:else class="activity-list {{isAdmin ? 'has-fixed-btn' : ''}}">
@@ -45,6 +34,8 @@
       wx:for="{{filteredList}}"
       wx:key="_id"
       class="activity-card"
+      hover-class="card-hover"
+      hover-stay-time="80"
       bindtap="showDetail"
       data-activity="{{item}}"
     >
@@ -60,15 +51,15 @@
         <!-- 活动信息 -->
         <view class="activity-meta {{!(isAdmin || item.status === '未开始' || item.status === '进行中') ? 'no-actions' : ''}}">
           <view wx:if="{{item.remark}}" class="meta-item">
-            <text class="meta-icon">✏️</text>
+            <view class="meta-icon meta-icon-note"></view>
             <text class="meta-text">活动备注：{{item.remark}}</text>
           </view>
           <view class="meta-item">
-            <text class="meta-icon">🕐</text>
+            <view class="meta-icon meta-icon-time"></view>
             <text class="meta-text">开始时间：{{item.startTime || item.date}}{{item.startWeekdayLabel ? '（' + item.startWeekdayLabel + '）' : ''}}</text>
           </view>
           <view wx:if="{{item.signupDeadline}}" class="meta-item signup-deadline-row">
-            <text class="meta-icon">⏰</text>
+            <view class="meta-icon meta-icon-deadline"></view>
             <text class="meta-text">报名截止：{{item.signupDeadline}}{{item.signupDeadlineWeekdayLabel ? '（' + item.signupDeadlineWeekdayLabel + '）' : ''}}</text>
           </view>
           <view class="meta-item participants-row">
@@ -112,10 +103,12 @@
         </view>
 
         <!-- 操作按钮：仅在有可显示按钮时渲染，避免非管理员/已结束时留空 -->
-        <view wx:if="{{isAdmin || item.status === '未开始' || item.status === '进行中'}}" class="card-actions">
+        <view wx:if="{{isAdmin || item.status === '未开始' || item.status === '进行中'}}" class="card-actions" hover-stop-propagation="{{true}}">
           <button
             wx:if="{{(item.status === '未开始' || item.status === '进行中') && !item.hasSignedUp && !item.isSignupClosed && !item.isFull}}"
             class="action-btn primary"
+            hover-class="action-btn-hover"
+            hover-stay-time="80"
             catchtap="directSignup"
             data-activity="{{item}}"
           >报名</button>
@@ -132,18 +125,24 @@
           <button
             wx:if="{{item.hasSignedUp && !item.hasCheckedIn && (item.status === '进行中' || item.status === '未开始')}}"
             class="action-btn primary"
+            hover-class="action-btn-hover"
+            hover-stay-time="80"
             catchtap="checkinActivity"
             data-activity="{{item}}"
           >签到</button>
           <button
             wx:if="{{isAdmin && item.status !== '已取消'}}"
             class="action-btn default"
+            hover-class="action-btn-hover"
+            hover-stay-time="80"
             catchtap="showEditModal"
             data-activity="{{item}}"
           >编辑</button>
           <button
             wx:if="{{isAdmin && item.status === '已取消'}}"
             class="action-btn danger"
+            hover-class="action-btn-hover"
+            hover-stay-time="80"
             catchtap="logicalDeleteActivity"
             data-activity="{{item}}"
           >删除</button>
@@ -267,8 +266,8 @@
       </view>
 
       <view class="modal-footer edit-modal-footer">
-        <button wx:if="{{isAdmin && currentActivity && currentActivity.status !== '已取消'}}" class="btn danger" bindtap="cancelActivity">取消活动</button>
-        <button class="btn primary" bindtap="saveActivity">保存</button>
+        <button wx:if="{{isAdmin && currentActivity && currentActivity.status !== '已取消'}}" class="btn danger" hover-class="btn-hover" hover-stay-time="80" bindtap="cancelActivity">取消活动</button>
+        <button class="btn primary" hover-class="btn-hover" hover-stay-time="80" bindtap="saveActivity">保存</button>
       </view>
     </view>
   </view>
@@ -330,6 +329,8 @@
               <text
                 wx:if="{{isAdmin && !participant.checkedInAt && detailActivity.status === '已结束'}}"
                 class="participant-retro-checkin"
+                hover-class="participant-btn-hover"
+                hover-stay-time="80"
                 bindtap="adminRetroCheckin"
                 data-id="{{participant.id}}"
                 data-name="{{participant.name}}"
@@ -337,6 +338,8 @@
               <text
                 wx:elif="{{isAdmin && participant.checkedInAt}}"
                 class="participant-retro-checkin"
+                hover-class="participant-btn-hover"
+                hover-stay-time="80"
                 bindtap="adminCancelCheckin"
                 data-id="{{participant.id}}"
                 data-name="{{participant.name}}"
@@ -344,6 +347,8 @@
               <text
                 wx:if="{{isAdmin || (!detailActivity.signupDeadlinePassed && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname)))}}"
                 class="participant-delete"
+                hover-class="participant-btn-hover"
+                hover-stay-time="80"
                 bindtap="removeParticipant"
                 data-id="{{participant.id}}"
                 data-name="{{participant.name}}"
@@ -360,6 +365,8 @@
           <button
             wx:if="{{!detailActivity.hasSignedUp && !detailActivity.signupDeadlinePassed}}"
             class="btn primary"
+            hover-class="btn-hover"
+            hover-stay-time="80"
             bindtap="detailSignup"
           >报名</button>
           <button
@@ -370,6 +377,8 @@
           <button
             wx:elif="{{detailActivity.hasSignedUp && !detailActivity.hasCheckedIn}}"
             class="btn primary"
+            hover-class="btn-hover"
+            hover-stay-time="80"
             bindtap="detailCheckin"
           >签到</button>
           <button
@@ -378,7 +387,7 @@
             disabled="true"
           >已签到</button>
         </block>
-        <button class="btn default" open-type="share">分享</button>
+        <button class="btn {{detailActivity.status !== '未开始' && detailActivity.status !== '进行中' ? 'primary' : 'default'}}" hover-class="btn-hover" hover-stay-time="80" open-type="share">分享</button>
       </view>
     </view>
   </view>
@@ -386,4 +395,4 @@
 </view>
 
 <!-- 吸底新建活动按钮（仅管理员显示，与列表同层，弹窗遮罩会盖住按钮） -->
-<button wx:if="{{isAdmin && !isGuest}}" class="create-btn-fixed" bindtap="showCreateModal">新建活动</button>
+<button wx:if="{{isAdmin && !isGuest}}" class="create-btn-fixed" hover-class="create-btn-hover" hover-stay-time="100" bindtap="showCreateModal">新建活动</button>

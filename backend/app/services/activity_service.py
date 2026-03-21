@@ -281,7 +281,7 @@ def checkin_activity(
         else:
             now = datetime.now()
         if now < start_dt:
-            raise ValidationAppError("提前签到的人杀球下网桌游丢件持仓全绿抽卡把把大保底！")
+            raise ValidationAppError("提前签到杀球下网桌游丢件持仓全绿抽卡把把大保底！")
 
     participant = db.scalar(
         select(ActivityParticipant).where(
