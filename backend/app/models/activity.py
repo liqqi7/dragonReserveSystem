@@ -29,6 +29,7 @@ class Activity(Base):
     end_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     signup_deadline: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     signup_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    activity_type: Mapped[Optional[str]] = mapped_column(String(32), nullable=True, default=None)
     location_name: Mapped[str] = mapped_column(String(255), nullable=False, default="")
     location_address: Mapped[str] = mapped_column(String(255), nullable=False, default="")
     location_latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
