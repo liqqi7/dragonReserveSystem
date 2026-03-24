@@ -28,6 +28,9 @@ Page({
   },
 
   onShow() {
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 2 });
+    }
     this.syncGuestState();
     const hasLocalAuth = !!wx.getStorageSync("accessToken");
     const userId = app.globalData.userId;

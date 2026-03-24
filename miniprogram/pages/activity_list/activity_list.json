@@ -1,6 +1,5 @@
 {
-  "navigationBarTitleText": "活动管理",
+  "navigationStyle": "custom",
   "disableScroll": false,
-  "enablePullDownRefresh": true,
-  "onReachBottomDistance": 50
+  "enablePullDownRefresh": false
 }

@@ -722,3 +722,487 @@ button.create-btn-fixed.create-btn-hover {
   background-color: #FA5151;
   color: #ffffff;
 }
+
+/* ============================================================
+   重构新增样式 — 首页分组卡片流
+   ============================================================ */
+
+/* ── 页面根容器 ── */
+page {
+  background-color: #ffffff;
+}
+
+.page-wrap {
+  min-height: 100vh;
+  background-color: #F7F7F7;
+  position: relative;
+}
+
+/* ── 自定义透明顶部栏 ── */
+.custom-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background-color: transparent;
+}
+
+.navbar-inner {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 24rpx;
+  position: relative;
+}
+
+.navbar-title {
+  font-size: 48rpx;
+  font-weight: 600;
+  color: #0a0a0a;
+  letter-spacing: 0;
+  flex: 1;
+}
+
+.navbar-logo-watermark {
+  position: absolute;
+  right: 20rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 80rpx;
+  height: 80rpx;
+  opacity: 0.15;
+}
+
+/* ── 主滚动区 ── */
+.main-scroll {
+  background-color: #F7F7F7;
+}
+
+/* ── 分组区块 ── */
+.group-section {
+  margin-bottom: 40rpx;
+}
+
+.group-header {
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 24rpx;
+}
+
+.group-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #0a0a0a;
+}
+
+.group-empty {
+  padding: 24rpx 24rpx 0;
+}
+
+.group-empty-text {
+  font-size: 26rpx;
+  color: #C6C6C6;
+}
+
+/* ── 横向滚动容器 ── */
+.cards-scroll-h {
+  width: 100%;
+  white-space: nowrap;
+}
+
+/* ── 大卡片行（我参与的） ── */
+.large-cards-row {
+  display: inline-flex;
+  align-items: flex-start;
+  padding-left: 24rpx;
+  gap: 20rpx;
+}
+
+.large-card-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12rpx;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.card-press {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+.card-datetime-label {
+  font-size: 26rpx;
+  color: #89898d;
+  white-space: nowrap;
+}
+
+/* 大卡片主体 */
+.large-card {
+  width: 520rpx;
+  height: 700rpx;
+  border-radius: 40rpx;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.16);
+  flex-shrink: 0;
+}
+
+/* 小卡片行 */
+.small-cards-row {
+  display: inline-flex;
+  align-items: flex-start;
+  padding-left: 24rpx;
+  gap: 20rpx;
+}
+
+.small-card-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14rpx;
+  flex-shrink: 0;
+  width: 300rpx;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+/* 小卡片主体 */
+.small-card {
+  width: 300rpx;
+  height: 300rpx;
+  border-radius: 12rpx;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+}
+
+.small-card-info {
+  padding: 0 4rpx;
+}
+
+.small-card-name {
+  display: block;
+  font-size: 24rpx;
+  font-weight: 500;
+  color: #0a0a0a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 292rpx;
+}
+
+.small-card-time {
+  display: block;
+  font-size: 22rpx;
+  color: #8a8a8e;
+  margin-top: 4rpx;
+  white-space: nowrap;
+}
+
+/* 末尾留白 */
+.cards-row-end-spacer {
+  display: inline-block;
+  width: 4rpx;
+  flex-shrink: 0;
+}
+
+/* ── 卡片背景渐变 ── */
+/* 羽毛球：粉橙渐变 */
+.card-bg-badminton {
+  background: linear-gradient(126.87deg, #FA709A 0%, #FEE140 100%);
+}
+
+/* 桌游：深蓝渐变 */
+.card-bg-boardgame {
+  background: linear-gradient(180deg, #05245E 0%, #0058E3 100%);
+}
+
+/* 其它：灰紫渐变（fallback，视频加载前显示） */
+.card-bg-other {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* 已结束：灰色 */
+.card-bg-ended {
+  background: linear-gradient(135deg, #a8a8a8 0%, #6e6e6e 100%);
+}
+
+/* ── 其它类型卡片背景图 ── */
+.card-video-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* ── 类型角标 ── */
+.card-type-label {
+  position: absolute;
+  top: 24rpx;
+  right: 24rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #ffffff;
+  z-index: 2;
+  text-shadow: 0 1rpx 4rpx rgba(0,0,0,0.2);
+}
+
+.card-type-label-sm {
+  position: absolute;
+  top: 14rpx;
+  right: 14rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #ffffff;
+  z-index: 2;
+  text-shadow: 0 1rpx 3rpx rgba(0,0,0,0.25);
+}
+
+/* ── 大卡片头像群 ── */
+.avatar-cluster-large {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  /* 高度覆盖卡片上半区 */
+  height: 100%;
+  z-index: 1;
+}
+
+/* 左上大头像 */
+.avatar-tl {
+  position: absolute;
+  top: 28rpx;
+  left: 28rpx;
+  width: 300rpx;
+  height: 300rpx;
+  border-radius: 150rpx;
+  overflow: hidden;
+  background-color: rgba(255,255,255,0.3);
+  border: 4rpx solid rgba(255,255,255,0.9);
+}
+
+/* 右上中头像 */
+.avatar-tr {
+  position: absolute;
+  top: 238rpx;
+  left: 298rpx;
+  width: 172rpx;
+  height: 172rpx;
+  border-radius: 86rpx;
+  overflow: hidden;
+  background-color: rgba(255,255,255,0.3);
+  border: 4rpx solid rgba(255,255,255,0.9);
+}
+
+/* 中部小头像 */
+.avatar-mid {
+  position: absolute;
+  top: 330rpx;
+  left: 148rpx;
+  width: 150rpx;
+  height: 150rpx;
+  border-radius: 75rpx;
+  overflow: hidden;
+  background-color: rgba(255,255,255,0.3);
+  border: 4rpx solid rgba(255,255,255,0.9);
+}
+
+/* ── 小卡片头像群 ── */
+.avatar-cluster-small {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.avatar-tl-sm {
+  position: absolute;
+  top: 18rpx;
+  left: 18rpx;
+  width: 170rpx;
+  height: 170rpx;
+  border-radius: 85rpx;
+  overflow: hidden;
+  background-color: rgba(255,255,255,0.3);
+  border: 3rpx solid rgba(255,255,255,0.85);
+}
+
+.avatar-tr-sm {
+  position: absolute;
+  top: 136rpx;
+  left: 178rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50rpx;
+  overflow: hidden;
+  background-color: rgba(255,255,255,0.3);
+  border: 3rpx solid rgba(255,255,255,0.85);
+}
+
+.avatar-mid-sm {
+  position: absolute;
+  top: 192rpx;
+  left: 90rpx;
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 42rpx;
+  overflow: hidden;
+  background-color: rgba(255,255,255,0.3);
+  border: 3rpx solid rgba(255,255,255,0.85);
+}
+
+.cluster-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: block;
+}
+
+/* ── 大卡片毛玻璃底部 ── */
+.glass-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24rpx;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.12), rgba(0,0,0,0.42));
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  z-index: 3;
+  border-bottom-left-radius: 40rpx;
+  border-bottom-right-radius: 40rpx;
+}
+
+.glass-name {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 8rpx;
+}
+
+.glass-remark {
+  display: block;
+  font-size: 22rpx;
+  color: rgba(255,255,255,0.85);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 10rpx;
+}
+
+.glass-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.glass-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.glass-meta-icon {
+  font-size: 22rpx;
+  flex-shrink: 0;
+}
+
+.glass-meta-text {
+  font-size: 22rpx;
+  color: rgba(255,255,255,0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200rpx;
+}
+
+/* ── 自定义底部 Tab ── */
+.custom-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8rpx 24rpx;
+  padding-bottom: calc(8rpx + env(safe-area-inset-bottom));
+  gap: 32rpx;
+}
+
+.tab-items-wrap {
+  display: flex;
+  align-items: center;
+  padding: 8rpx;
+  border-radius: 999rpx;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: inset 0 -2rpx 4rpx rgba(0,0,0,0.12), inset 0 2rpx 2rpx #fff;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 170rpx;
+  height: 108rpx;
+  border-radius: 999rpx;
+  gap: 6rpx;
+  transition: background-color 0.15s ease;
+}
+
+.tab-item-active {
+  background-color: rgba(232,233,233,0.5);
+}
+
+.tab-icon {
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.tab-label {
+  font-size: 20rpx;
+  color: #1a191a;
+}
+
+.tab-label-active {
+  color: #ff001f;
+}
+
+/* 管理员创建按钮 */
+.tab-create-fab {
+  width: 124rpx;
+  height: 124rpx;
+  border-radius: 62rpx;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: inset 0 -2rpx 4rpx rgba(0,0,0,0.12), inset 0 2rpx 2rpx #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-create-icon {
+  font-size: 56rpx;
+  color: #0a0a0a;
+  line-height: 1;
+  font-weight: 300;
+}

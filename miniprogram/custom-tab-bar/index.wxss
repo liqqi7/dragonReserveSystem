@@ -1,0 +1,77 @@
+.tab-bar-wrap {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8rpx 24rpx;
+  padding-bottom: calc(8rpx + env(safe-area-inset-bottom));
+  gap: 32rpx;
+  pointer-events: none;
+}
+
+.tab-items-wrap {
+  display: flex;
+  align-items: center;
+  padding: 8rpx;
+  border-radius: 999rpx;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: inset 0 -2rpx 4rpx rgba(0,0,0,0.12), inset 0 2rpx 2rpx #fff;
+  pointer-events: auto;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 170rpx;
+  height: 108rpx;
+  border-radius: 999rpx;
+  gap: 6rpx;
+  transition: background-color 0.15s ease;
+}
+
+.tab-item-active {
+  background-color: rgba(232,233,233,0.5);
+}
+
+.tab-icon {
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.tab-label {
+  font-size: 20rpx;
+  color: #1a191a;
+}
+
+.tab-label-active {
+  color: #ff001f;
+}
+
+.tab-create-fab {
+  width: 124rpx;
+  height: 124rpx;
+  border-radius: 62rpx;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: inset 0 -2rpx 4rpx rgba(0,0,0,0.12), inset 0 2rpx 2rpx #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.tab-create-icon {
+  font-size: 56rpx;
+  color: #0a0a0a;
+  line-height: 1;
+  font-weight: 300;
+}

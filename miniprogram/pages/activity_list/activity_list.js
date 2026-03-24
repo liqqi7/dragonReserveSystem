@@ -53,7 +53,8 @@ function adaptActivity(item) {
     locationAddress: item.location_address || "",
     locationLatitude: item.location_latitude,
     locationLongitude: item.location_longitude,
-    signupEnabled: item.signup_enabled !== false
+    signupEnabled: item.signup_enabled !== false,
+    activityType: item.activity_type || ""
   };
 }
 
@@ -61,6 +62,10 @@ Page({
   data: {
     activityList: [],
     filteredList: [],
+    groupedActivities: { joined: [], accepting: [], notStarted: [], ended: [] },
+    statusBarHeight: 0,
+    navBarHeight: 0,
+    groupScrollLeft: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
     showEditModal: false,
     showDetailModal: false,
     currentActivity: null,
@@ -88,7 +93,9 @@ Page({
       signupEnabled: true,
       // 报名人数上限
       limitEnabled: false,
-      maxParticipants: null
+      maxParticipants: null,
+      // 活动类型：badminton / boardgame / other
+      activityType: ""
     },
     myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
     myNickname: "", // 当前用户昵称（userId 为空时的回退，兼容旧数据）
@@ -106,17 +113,32 @@ Page({
     this.syncGuestState();
     this._openActivityIdFromShare = (options && options.activityId) || "";
     this._fromShare = !!(options && options.from === "share");
+    // 计算自定义导航栏高度
+    try {
+      const windowInfo = wx.getWindowInfo();
+      const statusBarHeight = windowInfo.statusBarHeight || 20;
+      this.setData({
+        statusBarHeight,
+        navBarHeight: statusBarHeight + 44
+      });
+    } catch (e) {
+      this.setData({ statusBarHeight: 20, navBarHeight: 64 });
+    }
   },
 
   onShow() {
     const isGuest = this.syncGuestState();
     if (!isGuest) {
+      const isAdmin = app.globalData.userRole === "admin";
       const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
       const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
-      this.setData({ isAdmin: app.globalData.userRole === "admin", myUserId, myNickname });
-
+      this.setData({ isAdmin, myUserId, myNickname });
       this.loadActivityList();
       app.checkProfileCompleteness();
+    }
+    // 同步 isAdmin 到自定义 tabBar 组件
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({ isAdmin: app.globalData.userRole === "admin" });
     }
   },
 
@@ -161,7 +183,8 @@ Page({
           const { list } = result;
           const { selectedFilter, searchKeyword } = this.data;
           const filtered = this.computeFilteredList(list, selectedFilter, searchKeyword);
-          this.setData({ activityList: list, filteredList: filtered });
+          const groupedActivities = this.computeGroupedActivities(list);
+          this.setData({ activityList: list, filteredList: filtered, groupedActivities });
 
           // 若详情弹窗正打开，同步更新 detailActivity（如刚报名成功）
           if (this.data.showDetailModal && this.data.detailActivity) {
@@ -277,6 +300,8 @@ Page({
       activity.hasCheckedIn = hasCheckedIn;
       activity.checkinCount = checkinCount;
       activity.avatarList = avatarList;
+      // 卡片头像：取最近报名的 3 人（avatarList 末尾），从下往上递减排列
+      activity.cardAvatars = avatarList.slice(-3);
 
       // 是否已满员（仅在设置了人数上限时生效）
       const max = activity.maxParticipants;
@@ -360,6 +385,49 @@ Page({
     this.setData({ filteredList: filtered });
   },
 
+  // 四分组计算（全局去重，优先级：我参与的 > 接受报名 > 未开始 > 已结束）
+  computeGroupedActivities(list) {
+    const sortByStart = (a, b) =>
+      new Date((a.startTime || "").replace(" ", "T") + ":00") -
+      new Date((b.startTime || "").replace(" ", "T") + ":00");
+    const sortByStartDesc = (a, b) =>
+      new Date((b.startTime || "").replace(" ", "T") + ":00") -
+      new Date((a.startTime || "").replace(" ", "T") + ":00");
+
+    const usedIds = new Set();
+    const valid = (list || []).filter(a => a.status !== "已取消" && a.status !== "已删除");
+
+    // 1. 我参与的：已报名 + 未结束
+    const joined = valid
+      .filter(a => a.hasSignedUp && a.status !== "已结束")
+      .sort(sortByStart);
+    joined.forEach(a => usedIds.add(a._id));
+
+    // 2. 接受报名：未开始 + 报名未截止 + 开关开启 + 未满员 + 未报名
+    const accepting = valid
+      .filter(a => !usedIds.has(a._id) &&
+        a.status === "未开始" &&
+        !a.isSignupClosed &&
+        a.signupEnabled !== false &&
+        !a.isFull &&
+        !a.hasSignedUp)
+      .sort(sortByStart);
+    accepting.forEach(a => usedIds.add(a._id));
+
+    // 3. 未开始：状态未开始且不在接受报名中
+    const notStarted = valid
+      .filter(a => !usedIds.has(a._id) && a.status === "未开始")
+      .sort(sortByStart);
+    notStarted.forEach(a => usedIds.add(a._id));
+
+    // 4. 已结束：按开始时间降序
+    const ended = valid
+      .filter(a => !usedIds.has(a._id) && a.status === "已结束")
+      .sort(sortByStartDesc);
+
+    return { joined, accepting, notStarted, ended };
+  },
+
   // 管理员：创建活动
   showCreateModal() {
     const now = new Date();
@@ -396,7 +464,8 @@ Page({
         locationLongitude: null,
         signupEnabled: true,
         limitEnabled: false,
-        maxParticipants: null
+        maxParticipants: null,
+        activityType: ""
       }
     });
   },
@@ -471,7 +540,8 @@ Page({
         locationLongitude: activity.locationLongitude ?? null,
         signupEnabled: activity.signupEnabled !== false,
         limitEnabled: maxParticipants != null,
-        maxParticipants: maxParticipants
+        maxParticipants: maxParticipants,
+        activityType: activity.activityType || ""
       }
     });
   },
@@ -503,6 +573,30 @@ Page({
     this.setData({
       [`editForm.${field}`]: value
     });
+  },
+
+  // 活动类型选择
+  onActivityTypeChange(e) {
+    const types = ["badminton", "boardgame", "other"];
+    const index = Number(e.detail.value);
+    this.setData({ "editForm.activityType": types[index] || "" });
+  },
+
+  // 详情弹窗内打开编辑（仅管理员）
+  detailShowEditModal() {
+    const activity = this.data.detailActivity;
+    if (!activity) return;
+    this.closeDetailModal();
+    this.showEditModal({ currentTarget: { dataset: { activity } } });
+  },
+
+  // 已由 custom-tab-bar 组件统一处理导航，这两个方法保留兼容性
+  goToHistory() {
+    wx.switchTab({ url: "/pages/history/history" });
+  },
+
+  goToProfile() {
+    wx.switchTab({ url: "/pages/profile/profile" });
   },
 
   // 开始日期变更
@@ -665,7 +759,8 @@ Page({
       location_latitude: form.locationLatitude,
       location_longitude: form.locationLongitude,
       max_participants: maxParticipants,
-      signup_enabled: form.signupEnabled
+      signup_enabled: form.signupEnabled,
+      activity_type: form.activityType || null
     };
 
     if (isEdit) {
@@ -716,7 +811,8 @@ Page({
         locationName: "",
         locationAddress: "",
         locationLatitude: null,
-        locationLongitude: null
+        locationLongitude: null,
+        activityType: ""
       }
     });
   },

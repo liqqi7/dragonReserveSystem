@@ -1,0 +1,19 @@
+<view class="tab-bar-wrap">
+  <view class="tab-items-wrap">
+    <view class="tab-item {{selected === 0 ? 'tab-item-active' : ''}}" bindtap="onTabTap" data-index="0">
+      <image class="tab-icon" src="{{selected === 0 ? '/images/activity-active.png' : '/images/activity.png'}}" mode="aspectFit" />
+      <text class="tab-label {{selected === 0 ? 'tab-label-active' : ''}}">主页</text>
+    </view>
+    <view class="tab-item {{selected === 1 ? 'tab-item-active' : ''}}" bindtap="onTabTap" data-index="1">
+      <image class="tab-icon" src="{{selected === 1 ? '/images/history-active.png' : '/images/history.png'}}" mode="aspectFit" />
+      <text class="tab-label {{selected === 1 ? 'tab-label-active' : ''}}">排行榜</text>
+    </view>
+    <view class="tab-item {{selected === 2 ? 'tab-item-active' : ''}}" bindtap="onTabTap" data-index="2">
+      <image class="tab-icon" src="{{selected === 2 ? '/images/profile-active.png' : '/images/profile.png'}}" mode="aspectFit" />
+      <text class="tab-label {{selected === 2 ? 'tab-label-active' : ''}}">我的</text>
+    </view>
+  </view>
+  <view wx:if="{{isAdmin && selected === 0}}" class="tab-create-fab" bindtap="onCreateTap">
+    <text class="tab-create-icon">＋</text>
+  </view>
+</view>
