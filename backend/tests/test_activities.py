@@ -59,12 +59,14 @@ def test_admin_can_create_list_get_update_delete_activity(client, admin_headers)
             "location_address": "测试地址 A",
             "location_latitude": 39.9042,
             "location_longitude": 116.4074,
+            "activity_type": "badminton",
         },
     )
     assert create_response.status_code == 201
     activity = create_response.json()
     activity_id = activity["id"]
     assert activity["name"] == "羽毛球活动"
+    assert activity["activity_type"] == "badminton"
     # 默认允许报名
     assert activity["signup_enabled"] is True
 
@@ -79,11 +81,12 @@ def test_admin_can_create_list_get_update_delete_activity(client, admin_headers)
     update_response = client.patch(
         f"/api/v1/activities/{activity_id}",
         headers=admin_headers,
-        json={"remark": "已修改", "max_participants": 16},
+        json={"remark": "已修改", "max_participants": 16, "activity_type": "boardgame"},
     )
     assert update_response.status_code == 200
     assert update_response.json()["remark"] == "已修改"
     assert update_response.json()["max_participants"] == 16
+    assert update_response.json()["activity_type"] == "boardgame"
 
     delete_response = client.delete(f"/api/v1/activities/{activity_id}", headers=admin_headers)
     assert delete_response.status_code == 204

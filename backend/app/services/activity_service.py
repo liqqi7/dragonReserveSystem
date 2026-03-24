@@ -59,6 +59,7 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
         end_time=payload.end_time,
         signup_deadline=payload.signup_deadline,
         signup_enabled=payload.signup_enabled,
+        activity_type=payload.activity_type,
         location_name=payload.location_name,
         location_address=payload.location_address,
         location_latitude=payload.location_latitude,
