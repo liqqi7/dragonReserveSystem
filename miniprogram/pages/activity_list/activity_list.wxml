@@ -3,10 +3,9 @@
 
   <!-- 自定义透明顶部栏 -->
   <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px">
+    <image class="navbar-logo-watermark" src="https://dragon.liqqihome.top/media/images/activity-home-logo.png" mode="aspectFit" />
     <view class="navbar-inner">
       <text class="navbar-title">龙城预约系统</text>
-      <!-- 右上角水印龙 Logo，图片放置于 images/dragon-watermark.png 后自动显示 -->
-      <!-- <image class="navbar-logo-watermark" src="/images/dragon-watermark.png" mode="aspectFit" /> -->
     </view>
   </view>
 
@@ -53,12 +52,18 @@
               <text class="card-datetime-label">{{item.startTime}}</text>
               <!-- 大卡片 -->
               <view class="large-card {{item.activityType === 'badminton' ? 'card-bg-badminton' : (item.activityType === 'boardgame' ? 'card-bg-boardgame' : 'card-bg-other')}}">
-                <!-- 其它类型：静态图片背景 -->
-                <image
+                <video
                   wx:if="{{item.activityType === 'other'}}"
                   class="card-video-bg"
-                  src="/images/card-bg-other.jpg"
-                  mode="aspectFill"
+                  src="https://dragon.liqqihome.top/media/media/card-bg-other.mp4"
+                  objectFit="cover"
+                  autoplay="{{true}}"
+                  loop="{{true}}"
+                  muted="{{true}}"
+                  controls="{{false}}"
+                  show-center-play-btn="{{false}}"
+                  show-play-btn="{{false}}"
+                  enable-progress-gesture="{{false}}"
                 />
                 <!-- 类型角标 -->
                 <text wx:if="{{item.activityType === 'badminton'}}" class="card-type-label">Badminton</text>
@@ -101,9 +106,9 @@
                     </view>
                     <view class="glass-meta-item">
                       <text class="glass-meta-icon">👥</text>
-                      <text class="glass-meta-text" wx:if="{{item.maxParticipants != null}}">{{item.participants.length}}/{{item.maxParticipants}} 人</text>
-                      <text class="glass-meta-text" wx:elif="{{item.participants.length > 0}}">{{item.participants.length}} 人</text>
-                      <text class="glass-meta-text" wx:else>0 人</text>
+                      <text class="glass-meta-text" wx:if="{{item.maxParticipants != null}}">{{item.participants.length}}/{{item.maxParticipants}}</text>
+                      <text class="glass-meta-text" wx:elif="{{item.participants.length > 0}}">{{item.participants.length}}</text>
+                      <text class="glass-meta-text" wx:else>0</text>
                     </view>
                   </view>
                 </view>
@@ -141,14 +146,19 @@
               data-activity="{{item}}"
             >
               <view class="small-card {{item.activityType === 'badminton' ? 'card-bg-badminton' : (item.activityType === 'boardgame' ? 'card-bg-boardgame' : 'card-bg-other')}}">
-                <image
+                <video
                   wx:if="{{item.activityType === 'other'}}"
                   class="card-video-bg"
-                  src="/images/card-bg-other.jpg"
-                  mode="aspectFill"
+                  src="https://dragon.liqqihome.top/media/media/card-bg-other.mp4"
+                  objectFit="cover"
+                  autoplay="{{true}}"
+                  loop="{{true}}"
+                  muted="{{true}}"
+                  controls="{{false}}"
+                  show-center-play-btn="{{false}}"
+                  show-play-btn="{{false}}"
+                  enable-progress-gesture="{{false}}"
                 />
-                <text wx:if="{{item.activityType === 'badminton'}}" class="card-type-label-sm">Badminton</text>
-                <text wx:elif="{{item.activityType === 'boardgame'}}" class="card-type-label-sm">Boardgame</text>
                 <view class="avatar-cluster-small">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
@@ -197,14 +207,19 @@
               data-activity="{{item}}"
             >
               <view class="small-card {{item.activityType === 'badminton' ? 'card-bg-badminton' : (item.activityType === 'boardgame' ? 'card-bg-boardgame' : 'card-bg-other')}}">
-                <image
+                <video
                   wx:if="{{item.activityType === 'other'}}"
                   class="card-video-bg"
-                  src="/images/card-bg-other.jpg"
-                  mode="aspectFill"
+                  src="https://dragon.liqqihome.top/media/media/card-bg-other.mp4"
+                  objectFit="cover"
+                  autoplay="{{true}}"
+                  loop="{{true}}"
+                  muted="{{true}}"
+                  controls="{{false}}"
+                  show-center-play-btn="{{false}}"
+                  show-play-btn="{{false}}"
+                  enable-progress-gesture="{{false}}"
                 />
-                <text wx:if="{{item.activityType === 'badminton'}}" class="card-type-label-sm">Badminton</text>
-                <text wx:elif="{{item.activityType === 'boardgame'}}" class="card-type-label-sm">Boardgame</text>
                 <view class="avatar-cluster-small">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />

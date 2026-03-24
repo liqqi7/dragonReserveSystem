@@ -54,7 +54,7 @@ function adaptActivity(item) {
     locationLatitude: item.location_latitude,
     locationLongitude: item.location_longitude,
     signupEnabled: item.signup_enabled !== false,
-    activityType: item.activity_type || ""
+    activityType: item.activity_type || "other"
   };
 }
 
