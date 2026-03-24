@@ -7,6 +7,19 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+VALID_ACTIVITY_TYPES = {"badminton", "boardgame", "other"}
+
+
+def _normalize_activity_type(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    normalized = value.strip()
+    if not normalized:
+        return None
+    if normalized not in VALID_ACTIVITY_TYPES:
+        raise ValueError("activity_type must be one of: badminton, boardgame, other")
+    return normalized
+
 
 class ActivityParticipantResponse(BaseModel):
     """Participant payload."""
@@ -37,6 +50,7 @@ class ActivityResponse(BaseModel):
     end_time: datetime
     signup_deadline: Optional[datetime]
     signup_enabled: bool
+    activity_type: Optional[str]
     location_name: str
     location_address: str
     location_latitude: Optional[float]
@@ -45,6 +59,12 @@ class ActivityResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     participants: list[ActivityParticipantResponse]
+
+    @field_validator("activity_type", mode="before")
+    @classmethod
+    def default_activity_type(cls, value: Optional[str]) -> str:
+        normalized = _normalize_activity_type(value)
+        return normalized or "other"
 
 
 class ActivityCreateRequest(BaseModel):
@@ -58,6 +78,7 @@ class ActivityCreateRequest(BaseModel):
     end_time: datetime
     signup_deadline: Optional[datetime] = None
     signup_enabled: bool = Field(default=True)
+    activity_type: Optional[str] = Field(default=None, max_length=32)
     location_name: str = Field(default="", max_length=255)
     location_address: str = Field(default="", max_length=255)
     location_latitude: Optional[float] = None
@@ -79,6 +100,11 @@ class ActivityCreateRequest(BaseModel):
             raise ValueError("signup_deadline must be earlier than or equal to start_time")
         return value
 
+    @field_validator("activity_type")
+    @classmethod
+    def validate_activity_type(cls, value: Optional[str]) -> Optional[str]:
+        return _normalize_activity_type(value)
+
 
 class ActivityUpdateRequest(BaseModel):
     """Admin-only activity update payload."""
@@ -91,10 +117,16 @@ class ActivityUpdateRequest(BaseModel):
     end_time: Optional[datetime] = None
     signup_deadline: Optional[datetime] = None
     signup_enabled: Optional[bool] = None
+    activity_type: Optional[str] = Field(default=None, max_length=32)
     location_name: Optional[str] = Field(default=None, max_length=255)
     location_address: Optional[str] = Field(default=None, max_length=255)
     location_latitude: Optional[float] = None
     location_longitude: Optional[float] = None
+
+    @field_validator("activity_type")
+    @classmethod
+    def validate_activity_type(cls, value: Optional[str]) -> Optional[str]:
+        return _normalize_activity_type(value)
 
 
 class ActivitySignupResponse(BaseModel):
