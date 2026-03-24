@@ -1,6 +1,39 @@
 from datetime import datetime, timedelta
 
 
+def _create_signed_up_activity_for_checkin(db_session, admin_user, normal_user, start_time):
+    from app.models import Activity, ActivityParticipant
+
+    end_time = start_time + timedelta(hours=2)
+    activity = Activity(
+        name="签到测试活动",
+        status="进行中",
+        remark="签到测试",
+        max_participants=10,
+        start_time=start_time,
+        end_time=end_time,
+        signup_deadline=start_time - timedelta(hours=1),
+        signup_enabled=True,
+        location_name="球馆",
+        location_address="地址",
+        location_latitude=39.9042,
+        location_longitude=116.4074,
+        created_by=admin_user.id,
+    )
+    db_session.add(activity)
+    db_session.flush()
+
+    participant = ActivityParticipant(
+        activity_id=activity.id,
+        user_id=normal_user.id,
+        nickname_snapshot=normal_user.nickname,
+        avatar_url_snapshot=normal_user.avatar_url,
+    )
+    db_session.add(participant)
+    db_session.commit()
+    return activity
+
+
 def test_activity_requires_auth(client) -> None:
     response = client.get("/api/v1/activities")
 
@@ -178,36 +211,12 @@ def test_checkin_before_start_time_returns_validation_error(
     normal_user,
     user_headers,
 ) -> None:
-    from app.models import Activity, ActivityParticipant
-
-    start_time = datetime.utcnow() + timedelta(hours=2)
-    end_time = start_time + timedelta(hours=2)
-    activity = Activity(
-        name="未开始签到活动",
-        status="进行中",
-        remark="未开始签到",
-        max_participants=10,
-        start_time=start_time,
-        end_time=end_time,
-        signup_deadline=start_time - timedelta(hours=1),
-        signup_enabled=True,
-        location_name="球馆",
-        location_address="地址",
-        location_latitude=39.9042,
-        location_longitude=116.4074,
-        created_by=admin_user.id,
+    activity = _create_signed_up_activity_for_checkin(
+        db_session=db_session,
+        admin_user=admin_user,
+        normal_user=normal_user,
+        start_time=datetime.now() + timedelta(hours=2),
     )
-    db_session.add(activity)
-    db_session.flush()
-
-    participant = ActivityParticipant(
-        activity_id=activity.id,
-        user_id=normal_user.id,
-        nickname_snapshot=normal_user.nickname,
-        avatar_url_snapshot=normal_user.avatar_url,
-    )
-    db_session.add(participant)
-    db_session.commit()
 
     response = client.post(
         f"/api/v1/activities/{activity.id}/checkin",
@@ -217,6 +226,30 @@ def test_checkin_before_start_time_returns_validation_error(
 
     assert response.status_code == 422
     assert response.json()["code"] == "VALIDATION_ERROR"
+
+
+def test_checkin_within_30_minutes_before_start_succeeds(
+    client,
+    db_session,
+    admin_user,
+    normal_user,
+    user_headers,
+) -> None:
+    activity = _create_signed_up_activity_for_checkin(
+        db_session=db_session,
+        admin_user=admin_user,
+        normal_user=normal_user,
+        start_time=datetime.now() + timedelta(minutes=20),
+    )
+
+    response = client.post(
+        f"/api/v1/activities/{activity.id}/checkin",
+        headers=user_headers,
+        json={"lat": 39.9042, "lng": 116.4074},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "checked_in"
 
 
 def test_admin_can_remove_participant(client, signed_up_activity, admin_headers, db_session, normal_user) -> None:
@@ -368,9 +401,16 @@ def test_duplicate_signup_returns_conflict(client, signed_up_activity, user_head
     assert response.json()["code"] == "CONFLICT"
 
 
-def test_checkin_success(client, signed_up_activity, user_headers) -> None:
+def test_checkin_success(client, db_session, admin_user, normal_user, user_headers) -> None:
+    activity = _create_signed_up_activity_for_checkin(
+        db_session=db_session,
+        admin_user=admin_user,
+        normal_user=normal_user,
+        start_time=datetime.now() - timedelta(minutes=5),
+    )
+
     response = client.post(
-        f"/api/v1/activities/{signed_up_activity.id}/checkin",
+        f"/api/v1/activities/{activity.id}/checkin",
         headers=user_headers,
         json={"lat": 39.9042, "lng": 116.4074},
     )
@@ -379,9 +419,18 @@ def test_checkin_success(client, signed_up_activity, user_headers) -> None:
     assert response.json()["status"] == "checked_in"
 
 
-def test_checkin_outside_radius_returns_validation_error(client, signed_up_activity, user_headers) -> None:
+def test_checkin_outside_radius_returns_validation_error(
+    client, db_session, admin_user, normal_user, user_headers
+) -> None:
+    activity = _create_signed_up_activity_for_checkin(
+        db_session=db_session,
+        admin_user=admin_user,
+        normal_user=normal_user,
+        start_time=datetime.now() - timedelta(minutes=5),
+    )
+
     response = client.post(
-        f"/api/v1/activities/{signed_up_activity.id}/checkin",
+        f"/api/v1/activities/{activity.id}/checkin",
         headers=user_headers,
         json={"lat": 31.2304, "lng": 121.4737},
     )
