@@ -1,6 +1,6 @@
 """Activity use cases."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
@@ -17,6 +17,7 @@ from app.utils.geo import haversine_distance_meters
 
 
 settings = get_settings()
+CHECKIN_EARLY_WINDOW_MINUTES = 30
 
 
 def _get_activity_query():
@@ -273,15 +274,17 @@ def checkin_activity(
     if activity.status == "已取消":
         raise ValidationAppError("Activity has been cancelled")
 
-    # Disallow checkin before activity start time（按活动时间所在时区判断）
+    # Allow checkin from 30 minutes before activity start.
     start_dt = activity.start_time
     if start_dt is not None:
         if start_dt.tzinfo is not None:
             now = datetime.now(tz=start_dt.tzinfo)
         else:
+            # Naive datetime is treated in local time on both frontend and backend.
             now = datetime.now()
-        if now < start_dt:
-            raise ValidationAppError("提前签到杀球下网桌游丢件持仓全绿抽卡把把大保底！")
+        checkin_open_time = start_dt - timedelta(minutes=CHECKIN_EARLY_WINDOW_MINUTES)
+        if now < checkin_open_time:
+            raise ValidationAppError("提前签到杀球下网、桌游丢件、持仓全绿、抽卡大保底")
 
     participant = db.scalar(
         select(ActivityParticipant).where(
