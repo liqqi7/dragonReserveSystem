@@ -751,14 +751,15 @@ page {
 .navbar-inner {
   height: 44px;
   display: flex;
-  align-items: center;
-  padding: 0 24rpx;
+  align-items: flex-end;
+  padding: 0 24rpx 6rpx;
   position: relative;
 }
 
 .navbar-title {
   font-size: 48rpx;
   font-weight: 600;
+  line-height: 1;
   color: #0a0a0a;
   letter-spacing: 0;
   flex: 1;
@@ -780,12 +781,16 @@ page {
 }
 
 /* ── 分组区块 ── */
+.group-section:first-child {
+  margin-top: 26rpx;
+}
+
 .group-section {
   margin-bottom: 40rpx;
 }
 
 .group-header {
-  height: 60rpx;
+  height: 56rpx;
   display: flex;
   align-items: center;
   padding: 0 24rpx;
