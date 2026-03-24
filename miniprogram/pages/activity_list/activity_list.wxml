@@ -69,7 +69,7 @@
                 <text wx:if="{{item.activityType === 'badminton'}}" class="card-type-label">Badminton</text>
                 <text wx:elif="{{item.activityType === 'boardgame'}}" class="card-type-label">Boardgame</text>
                 <!-- 头像群（最近 3 人，从下往上递减：TL > TR > Middle） -->
-                <view class="avatar-cluster-large">
+                <view wx:if="{{item.activityType !== 'other'}}" class="avatar-cluster-large">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl">
                     <image
                       class="cluster-avatar"
@@ -159,7 +159,7 @@
                   show-play-btn="{{false}}"
                   enable-progress-gesture="{{false}}"
                 />
-                <view class="avatar-cluster-small">
+                <view wx:if="{{item.activityType !== 'other'}}" class="avatar-cluster-small">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
                   </view>
@@ -220,7 +220,7 @@
                   show-play-btn="{{false}}"
                   enable-progress-gesture="{{false}}"
                 />
-                <view class="avatar-cluster-small">
+                <view wx:if="{{item.activityType !== 'other'}}" class="avatar-cluster-small">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
                   </view>

@@ -752,8 +752,8 @@ page {
 .navbar-inner {
   height: 44px;
   display: flex;
-  align-items: flex-end;
-  padding: 0 24rpx 6rpx;
+  align-items: center;
+  padding: 0 24rpx;
   position: relative;
   z-index: 2;
 }
@@ -765,6 +765,7 @@ page {
   color: #0a0a0a;
   letter-spacing: 0;
   flex: 1;
+  transform: translateY(-1px);
 }
 
 .navbar-logo-watermark {

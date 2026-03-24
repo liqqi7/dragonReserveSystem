@@ -26,20 +26,20 @@
       {
         "pagePath": "pages/activity_list/activity_list",
         "text": "活动管理",
-        "iconPath": "images/activity.png",
-        "selectedIconPath": "images/activity-active.png"
+        "iconPath": "images/tab-home.jpg",
+        "selectedIconPath": "images/tab-home-active.jpg"
       },
       {
         "pagePath": "pages/history/history",
         "text": "排行榜",
-        "iconPath": "images/history.png",
-        "selectedIconPath": "images/history-active.png"
+        "iconPath": "images/tab-ranking.jpg",
+        "selectedIconPath": "images/tab-ranking-active.jpg"
       },
       {
         "pagePath": "pages/profile/profile",
         "text": "我的",
-        "iconPath": "images/profile.png",
-        "selectedIconPath": "images/profile-active.png"
+        "iconPath": "images/tab-profile.jpg",
+        "selectedIconPath": "images/tab-profile-active.jpg"
       }
     ]
   },

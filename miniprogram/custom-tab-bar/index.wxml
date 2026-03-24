@@ -1,15 +1,15 @@
 <view class="tab-bar-wrap">
   <view class="tab-items-wrap">
     <view class="tab-item {{selected === 0 ? 'tab-item-active' : ''}}" bindtap="onTabTap" data-index="0">
-      <image class="tab-icon" src="{{selected === 0 ? '/images/activity-active.png' : '/images/activity.png'}}" mode="aspectFit" />
+      <image class="tab-icon" src="{{selected === 0 ? '/images/tab-home-active.jpg' : '/images/tab-home.jpg'}}" mode="aspectFit" />
       <text class="tab-label {{selected === 0 ? 'tab-label-active' : ''}}">主页</text>
     </view>
     <view class="tab-item {{selected === 1 ? 'tab-item-active' : ''}}" bindtap="onTabTap" data-index="1">
-      <image class="tab-icon" src="{{selected === 1 ? '/images/history-active.png' : '/images/history.png'}}" mode="aspectFit" />
+      <image class="tab-icon" src="{{selected === 1 ? '/images/tab-ranking-active.jpg' : '/images/tab-ranking.jpg'}}" mode="aspectFit" />
       <text class="tab-label {{selected === 1 ? 'tab-label-active' : ''}}">排行榜</text>
     </view>
     <view class="tab-item {{selected === 2 ? 'tab-item-active' : ''}}" bindtap="onTabTap" data-index="2">
-      <image class="tab-icon" src="{{selected === 2 ? '/images/profile-active.png' : '/images/profile.png'}}" mode="aspectFit" />
+      <image class="tab-icon" src="{{selected === 2 ? '/images/tab-profile-active.jpg' : '/images/tab-profile.jpg'}}" mode="aspectFit" />
       <text class="tab-label {{selected === 2 ? 'tab-label-active' : ''}}">我的</text>
     </view>
   </view>
