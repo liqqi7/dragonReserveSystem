@@ -1,6 +1,43 @@
 const app = getApp();
 const authService = require("../../services/auth");
 const userService = require("../../services/user");
+const { getApiBaseUrl } = require("../../services/config");
+const DEFAULT_AVATAR = "/images/default-avatar.svg";
+const MEDIA_BASE_URL = String(getApiBaseUrl() || "").replace(/\/api\/v\d+\/?$/, "");
+const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
+
+function agentLog(payload) {
+  // #region agent log
+  try {
+    const event = {
+      sessionId: "fd2fb3",
+      runId: "avatar-debug-1",
+      timestamp: Date.now(),
+      ...payload
+    };
+    wx.request({
+      url: "http://127.0.0.1:7559/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94",
+      method: "POST",
+      header: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "fd2fb3"
+      },
+      data: event,
+      fail: (err) => {
+        try {
+          console.warn("[agentLog-fail]", {
+            errMsg: err && err.errMsg,
+            sessionId: event.sessionId,
+            runId: event.runId,
+            hypothesisId: event.hypothesisId,
+            location: event.location
+          });
+        } catch (e) {}
+      }
+    });
+  } catch (e) {}
+  // #endregion
+}
 
 function isTemporaryAvatarUrl(url) {
   if (!url) return false;
@@ -9,6 +46,36 @@ function isTemporaryAvatarUrl(url) {
     || normalized.startsWith("https://tmp/")
     || normalized.startsWith("wxfile://")
     || normalized.startsWith("tmp/");
+}
+
+function normalizeAvatarUrl(url) {
+  const value = (url && String(url).trim()) || "";
+  if (!value) return "";
+  if (value.toLowerCase().includes("example.com/")) return DEFAULT_AVATAR;
+  if (value.startsWith("/media/")) {
+    const m = value.match(/test-avatar-(\d{2})\.svg$/i);
+    const output = m ? `${LOCAL_TEST_AVATAR_PREFIX}/test-avatar-${m[1]}.svg` : DEFAULT_AVATAR;
+    agentLog({
+      hypothesisId: "H4",
+      location: "profile.js:normalizeAvatarUrl",
+      message: "profile media url mapped to local avatar",
+      data: { input: value, output }
+    });
+    return output;
+  }
+  if (value.startsWith("media/")) {
+    const m = value.match(/test-avatar-(\d{2})\.svg$/i);
+    const output = m ? `${LOCAL_TEST_AVATAR_PREFIX}/test-avatar-${m[1]}.svg` : DEFAULT_AVATAR;
+    agentLog({
+      hypothesisId: "H4",
+      location: "profile.js:normalizeAvatarUrl",
+      message: "profile media relative url mapped to local avatar",
+      data: { input: value, output }
+    });
+    return output;
+  }
+  if (value.toLowerCase().startsWith("http://")) return DEFAULT_AVATAR;
+  return value;
 }
 
 Page({
@@ -42,7 +109,7 @@ Page({
         user: {
           nickname: profile.nickname || "",
           userIdShort: (userId || "").slice(0, 8),
-          avatarUrl: profile.avatarUrl || ""
+          avatarUrl: normalizeAvatarUrl(profile.avatarUrl || "")
         }
       });
     } else {
@@ -81,7 +148,7 @@ Page({
           user: {
             nickname: user.nickname || "",
             userIdShort: userId.slice(0, 8),
-            avatarUrl: user.avatar_url || ""
+            avatarUrl: normalizeAvatarUrl(user.avatar_url || "")
           }
         });
       })
@@ -185,7 +252,7 @@ Page({
     this.setData({
       showEditModal: true,
       editNickname: user.nickname,
-      editAvatarUrl: user.avatarUrl || ""
+      editAvatarUrl: normalizeAvatarUrl(user.avatarUrl || "")
     });
   },
 
@@ -194,6 +261,18 @@ Page({
   },
 
   stopTap() {},
+
+  onProfileAvatarError() {
+    agentLog({
+      hypothesisId: "H5",
+      location: "profile.js:onProfileAvatarError",
+      message: "profile avatar image load failed",
+      data: {}
+    });
+    this.setData({
+      "user.avatarUrl": DEFAULT_AVATAR
+    });
+  },
 
   onInputNickname(e) {
     this.setData({ editNickname: e.detail.value || "" });

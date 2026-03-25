@@ -1,7 +1,7 @@
 <view class="container">
   <view class="profile-box">
     <view class="profile-header">
-      <image wx:if="{{hasUser}}" class="avatar" src="{{user.avatarUrl || '/images/default-avatar.svg'}}" mode="aspectFill" />
+      <image wx:if="{{hasUser}}" class="avatar" src="{{user.avatarUrl || '/images/default-avatar.svg'}}" mode="aspectFill" binderror="onProfileAvatarError" />
       <view wx:else class="avatar placeholder"></view>
       <view class="info">
         <view class="nickname">
