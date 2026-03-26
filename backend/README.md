@@ -221,6 +221,81 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start_backend_prod.ps1
 
 当前后端还会拒绝将明显的临时头像路径直接写入 `avatar_url`，避免脏数据再次入库。
 
+## 活动卡片静态资源协作流程（活动类型 + 图片/MP4）
+
+用于后续“你给需求，我落资源并上线”的固定流程。目标是：不改小程序代码结构，只更新后端配置即可切换或新增卡片样式。
+
+### 现行资源规则（必须统一）
+
+- 当前线上静态前缀是 `/media`，不是 `/static`
+- 线上基础域名：`https://dragon.liqqihome.top`
+- 资源 URL 统一写成：`https://dragon.liqqihome.top/media/<子目录>/<文件名>`
+- 后端挂载来源：
+  - `MEDIA_ROOT=storage`
+  - `MEDIA_URL_PREFIX=/media`
+  - `app.mount("/media", StaticFiles(directory=storage), name="media")`
+
+### 目录约定（服务器）
+
+以线上后端目录 `backend/storage` 为根，建议按类型存放：
+
+- 图片：`storage/images/`
+- 视频：`storage/videos/`（历史上也存在 `storage/media/`，新资源建议统一放 `videos`）
+- 头像：`storage/avatars/`（头像流程独立，走 `/users/me/avatar` 接口）
+
+### 你需要提供给我的信息
+
+每次新增或替换卡片资源，请给一份映射清单（文本即可）：
+
+- `activity_type`（例如 `badminton` / `boardgame` / `other`）
+- `style_key`（例如 `badminton-neon`）
+- `style_name`（给运营/产品看的名称）
+- 大卡背景图文件（或目标 URL）
+- 小卡背景图文件（或目标 URL）
+- 可选背景视频 MP4 文件（无则留空）
+- `badge_label` / `show_badge` / `show_avatar_cluster`（如有特殊展示规则）
+
+### 我执行的标准步骤
+
+1. 接收你的资源文件（图片/MP4）和映射清单
+2. 上传到服务器 `backend/storage/images` 或 `backend/storage/videos`
+3. 生成正式 URL，例如：
+   - `https://dragon.liqqihome.top/media/images/card-bg-xxx-lg.png`
+   - `https://dragon.liqqihome.top/media/videos/card-bg-xxx.mp4`
+4. 回填到 `app/services/activity_type_style_service.py` 的对应样式：
+   - `large_card_bg_image_url`
+   - `small_card_bg_image_url`
+   - `bg_video_url`
+5. 部署后端并重启服务
+6. 通过 `GET /api/v1/activities/type-styles` 验证配置是否生效
+7. 小程序刷新后确认渲染（焦点视频播放、图片可加载、无 404）
+
+### 资源替换防呆清单（本次新增）
+
+为避免“素材黑边/位置错乱”这类乌龙（实际原因是上传了错误图片），每次替换资源必须额外做以下检查：
+
+1. 上传前先本地确认文件内容和命名一致（`*-lg.*` 真的是大卡图，`*-sm.*` 真的是小卡图）
+2. 上传后立即验证线上 URL：
+   - `curl -I https://dragon.liqqihome.top/media/images/<file-lg>`
+   - `curl -I https://dragon.liqqihome.top/media/images/<file-sm>`
+   预期都为 `200`
+3. 记录线上文件大小（`content-length`）或 ETag，确认不是旧缓存或错文件
+4. 在小程序里分别验证大卡分区和小卡分区，确认不是同一张图被误用于两种卡片
+5. 若出现“看起来像小卡图/有黑边”，优先排查素材源文件本身是否包含黑边、拼图分隔条或错误裁切，而不是先改代码
+
+### 前端使用约束
+
+- 前端不要再写 `/static/...` 链接，统一使用 `/media/...`
+- 前端不要拼本地文件路径替代线上 URL（避免环境切换后失效）
+- 活动创建时一旦确定 `activity_style_key`，后续应按业务要求保持不变（除非显式编辑）
+
+### 故障排查速查
+
+- 资源 404：先检查文件是否真实存在于 `backend/storage/<子目录>/`
+- 返回 422：检查接口路由和请求参数（尤其是 `type-styles` 与活动类型/样式键）
+- 小程序不显示：检查 URL 是否 HTTPS、域名白名单、路径是否 `/media/...`
+- 图片位置异常或黑边：先核对线上实际图片内容（是否上传错图/切图错位），再看前端样式（`card-image-bg` 是否铺满卡片）
+
 ## 线上库排查与“手工修头像”踩坑记录
 
 下面这些坑都来自真实线上排障，目的是让你在最短时间内定位“为什么小程序还在加载 `cloud://...` / 为什么头像 500 / 为什么我改了 `users.avatar_url` 还是不生效”。

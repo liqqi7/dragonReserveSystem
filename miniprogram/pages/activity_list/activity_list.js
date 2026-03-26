@@ -40,6 +40,38 @@ function debugLog(payload) {
   } catch (e) {}
 }
 
+function agentDebug865(payload) {
+  // #region agent log
+  const finalPayload = {
+    sessionId: "86a13e",
+    runId: "pre-fix-1",
+    ...payload,
+    timestamp: Date.now()
+  };
+  try {
+    fetch("http://127.0.0.1:7559/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "86a13e"
+      },
+      body: JSON.stringify(finalPayload)
+    }).catch(() => {});
+  } catch (e) {}
+  try {
+    wx.request({
+      url: "http://127.0.0.1:7559/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94",
+      method: "POST",
+      header: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "86a13e"
+      },
+      data: finalPayload
+    });
+  } catch (e) {}
+  // #endregion
+}
+
 const DEFAULT_AVATAR = "/images/default-avatar.svg";
 const MEDIA_BASE_URL = String(getApiBaseUrl() || "").replace(/\/api\/v\d+\/?$/, "");
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
@@ -52,7 +84,7 @@ const DEFAULT_ACTIVITY_TYPE_STYLES = [
     styles: [
       {
         style_key: "badminton-default",
-        style_name: "默认粉黄",
+        style_name: "默认蓝色（互换）",
         badge_label: "Badminton",
         show_badge: true,
         show_avatar_cluster: true,
@@ -69,7 +101,7 @@ const DEFAULT_ACTIVITY_TYPE_STYLES = [
     styles: [
       {
         style_key: "boardgame-default",
-        style_name: "默认蓝色",
+        style_name: "默认粉黄（互换）",
         badge_label: "Boardgame",
         show_badge: true,
         show_avatar_cluster: true,
@@ -92,7 +124,7 @@ const DEFAULT_ACTIVITY_TYPE_STYLES = [
         show_avatar_cluster: false,
         large_card_bg_image_url: "",
         small_card_bg_image_url: "",
-        bg_video_url: "https://dragon.liqqihome.top/media/media/card-bg-other.mp4"
+        bg_video_url: "https://dragon.liqqihome.top/media/videos/card-bg-other.mp4"
       }
     ]
   }
@@ -917,6 +949,19 @@ Page({
       .listActivityTypeStyles()
       .then((res) => {
         const styles = Array.isArray(res) && res.length > 0 ? res : DEFAULT_ACTIVITY_TYPE_STYLES;
+        const badmintonType = styles.find((t) => normalizeTypeKey(t && t.key) === "badminton");
+        const badmintonDefault = ((badmintonType && badmintonType.styles) || [])
+          .find((s) => String((s && s.style_key) || "").trim() === "badminton-default");
+        agentDebug865({
+          hypothesisId: "H1",
+          location: "activity_list.js:loadActivityTypeStyles:then",
+          message: "type styles loaded",
+          data: {
+            source: Array.isArray(res) && res.length > 0 ? "backend" : "fallback-in-then",
+            badmintonDefaultLarge: badmintonDefault ? badmintonDefault.large_card_bg_image_url : "",
+            badmintonDefaultSmall: badmintonDefault ? badmintonDefault.small_card_bg_image_url : ""
+          }
+        });
         const optionValues = styles.map((item) => normalizeTypeKey(item.key)).filter(Boolean);
         const optionLabels = styles.map((item) => String(item.display_name || item.key || ""));
         const currentType = this.data.editForm && this.data.editForm.activityType
@@ -947,6 +992,19 @@ Page({
       .catch(() => {
         // Silent fallback to built-in defaults for compatibility.
         const styles = DEFAULT_ACTIVITY_TYPE_STYLES;
+        const badmintonType = styles.find((t) => normalizeTypeKey(t && t.key) === "badminton");
+        const badmintonDefault = ((badmintonType && badmintonType.styles) || [])
+          .find((s) => String((s && s.style_key) || "").trim() === "badminton-default");
+        agentDebug865({
+          hypothesisId: "H2",
+          location: "activity_list.js:loadActivityTypeStyles:catch",
+          message: "type styles fallback by catch",
+          data: {
+            source: "fallback-in-catch",
+            badmintonDefaultLarge: badmintonDefault ? badmintonDefault.large_card_bg_image_url : "",
+            badmintonDefaultSmall: badmintonDefault ? badmintonDefault.small_card_bg_image_url : ""
+          }
+        });
         const optionValues = styles.map((item) => normalizeTypeKey(item.key)).filter(Boolean);
         const optionLabels = styles.map((item) => String(item.display_name || item.key || ""));
         let editIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
@@ -988,6 +1046,53 @@ Page({
           const { selectedFilter, searchKeyword } = this.data;
           const filtered = this.computeFilteredList(list, selectedFilter, searchKeyword);
           const groupedActivities = this.computeGroupedActivities(list);
+          const targets = list.filter((a) => {
+            const n = a.name || "";
+            return n.includes("清河羽毛球-周日") || n.includes("挽救计划大观看");
+          });
+          targets.forEach((target) => {
+            const inJoined = (groupedActivities.joined || []).some((a) => a._id === target._id);
+            const inAccepting = (groupedActivities.accepting || []).some((a) => a._id === target._id);
+            const inNotStarted = (groupedActivities.notStarted || []).some((a) => a._id === target._id);
+            const inEnded = (groupedActivities.ended || []).some((a) => a._id === target._id);
+            agentDebug865({
+              hypothesisId: "H4",
+              location: "activity_list.js:loadActivityList:grouping",
+              message: "target activity group placement",
+              data: {
+                id: target._id,
+                name: target.name,
+                inJoined,
+                inAccepting,
+                inNotStarted,
+                inEnded,
+                largeCardBgImageUrl: target.largeCardBgImageUrl,
+                smallCardBgImageUrl: target.smallCardBgImageUrl
+              }
+            });
+          });
+          const eatingTarget = list.find((a) => (a.name || "").includes("观后饭"));
+          if (eatingTarget) {
+            const inJoined = (groupedActivities.joined || []).some((a) => a._id === eatingTarget._id);
+            const inAccepting = (groupedActivities.accepting || []).some((a) => a._id === eatingTarget._id);
+            const inNotStarted = (groupedActivities.notStarted || []).some((a) => a._id === eatingTarget._id);
+            const inEnded = (groupedActivities.ended || []).some((a) => a._id === eatingTarget._id);
+            agentDebug865({
+              hypothesisId: "H10",
+              location: "activity_list.js:loadActivityList:grouping:eating",
+              message: "eating activity group placement",
+              data: {
+                id: eatingTarget._id,
+                name: eatingTarget.name,
+                inJoined,
+                inAccepting,
+                inNotStarted,
+                inEnded,
+                largeCardBgImageUrl: eatingTarget.largeCardBgImageUrl,
+                smallCardBgImageUrl: eatingTarget.smallCardBgImageUrl
+              }
+            });
+          }
           this.setData({
             activityList: list,
             filteredList: filtered,
@@ -1075,6 +1180,25 @@ Page({
       activity.bgVideoUrl = selectedStyle ? (selectedStyle.bgVideoUrl || "") : "";
       activity.largeCardBgImageUrl = selectedStyle ? (selectedStyle.largeCardBgImageUrl || "") : "";
       activity.smallCardBgImageUrl = selectedStyle ? (selectedStyle.smallCardBgImageUrl || "") : "";
+      if (
+        (activity.name || "").includes("清河羽毛球-周日") ||
+        (activity.name || "").includes("挽救计划大观看") ||
+        (activity.name || "").includes("观后饭")
+      ) {
+        agentDebug865({
+          hypothesisId: "H3",
+          location: "activity_list.js:processActivityList:resolveStyle",
+          message: "target activity style resolved",
+          data: {
+            id: activity._id,
+            name: activity.name,
+            activityType: activity.activityType,
+            activityStyleKey: activity.activityStyleKey,
+            largeCardBgImageUrl: activity.largeCardBgImageUrl,
+            smallCardBgImageUrl: activity.smallCardBgImageUrl
+          }
+        });
+      }
 
       if (!this._seenTypeDebugIds) this._seenTypeDebugIds = {};
       if (!this._seenTypeDebugIds[activity._id]) {
@@ -2138,6 +2262,53 @@ Page({
     if (activity && activity.avatarList && activity.avatarList[index]) {
       activity.avatarList[index] = { url: DEFAULT_AVATAR, isDefault: true };
       this.setData({ activityList });
+    }
+  },
+
+  onCardBgLoaded(e) {
+    const ds = (e && e.currentTarget && e.currentTarget.dataset) || {};
+    const activityName = String(ds.activityName || "");
+    const activityId = String(ds.activityId || "");
+    const isTarget =
+      activityId === "29" ||
+      activityId === "32" ||
+      activityId === "33" ||
+      activityName.includes("清河羽毛球-周日") ||
+      activityName.includes("挽救计划大观看") ||
+      activityName.includes("观后饭");
+    if (!isTarget) return;
+    const detail = (e && e.detail) || {};
+    agentDebug865({
+      hypothesisId: "H6",
+      location: "activity_list.js:onCardBgLoaded",
+      message: "render node image loaded",
+      data: {
+        activityId,
+        activityName,
+        cardSize: ds.cardSize || "",
+        group: ds.group || "",
+        src: String(ds.src || ""),
+        imageWidth: detail.width,
+        imageHeight: detail.height
+      }
+    });
+    if ((ds.cardSize || "") === "large") {
+      const q = wx.createSelectorQuery();
+      q.select(".large-card .card-image-bg").boundingClientRect();
+      q.select(".large-card .glass-bottom").boundingClientRect();
+      q.select(".large-card").boundingClientRect();
+      q.exec((res) => {
+        agentDebug865({
+          hypothesisId: "H7",
+          location: "activity_list.js:onCardBgLoaded:rects",
+          message: "large card/image/glass rects",
+          data: {
+            imageRect: (res && res[0]) || null,
+            glassRect: (res && res[1]) || null,
+            cardRect: (res && res[2]) || null
+          }
+        });
+      });
     }
   },
 

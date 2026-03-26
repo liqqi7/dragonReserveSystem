@@ -56,7 +56,13 @@
                   wx:if="{{item.largeCardBgImageUrl}}"
                   class="card-image-bg"
                   src="{{item.largeCardBgImageUrl}}"
+                  data-src="{{item.largeCardBgImageUrl}}"
                   mode="aspectFill"
+                  bindload="onCardBgLoaded"
+                  data-activity-id="{{item._id}}"
+                  data-activity-name="{{item.name}}"
+                  data-card-size="large"
+                  data-group="joined"
                 />
                 <video
                   wx:if="{{item.bgVideoUrl}}"
@@ -153,7 +159,13 @@
                   wx:if="{{item.smallCardBgImageUrl}}"
                   class="card-image-bg"
                   src="{{item.smallCardBgImageUrl}}"
+                  data-src="{{item.smallCardBgImageUrl}}"
                   mode="aspectFill"
+                  bindload="onCardBgLoaded"
+                  data-activity-id="{{item._id}}"
+                  data-activity-name="{{item.name}}"
+                  data-card-size="small"
+                  data-group="accepting"
                 />
                 <video
                   wx:if="{{item.bgVideoUrl}}"
@@ -220,7 +232,13 @@
                   wx:if="{{item.smallCardBgImageUrl}}"
                   class="card-image-bg"
                   src="{{item.smallCardBgImageUrl}}"
+                  data-src="{{item.smallCardBgImageUrl}}"
                   mode="aspectFill"
+                  bindload="onCardBgLoaded"
+                  data-activity-id="{{item._id}}"
+                  data-activity-name="{{item.name}}"
+                  data-card-size="small"
+                  data-group="notStarted"
                 />
                 <video
                   wx:if="{{item.bgVideoUrl}}"
@@ -287,7 +305,13 @@
                   wx:if="{{item.smallCardBgImageUrl}}"
                   class="card-image-bg"
                   src="{{item.smallCardBgImageUrl}}"
+                  data-src="{{item.smallCardBgImageUrl}}"
                   mode="aspectFill"
+                  bindload="onCardBgLoaded"
+                  data-activity-id="{{item._id}}"
+                  data-activity-name="{{item.name}}"
+                  data-card-size="small"
+                  data-group="ended"
                 />
                 <video
                   wx:if="{{item.bgVideoUrl}}"

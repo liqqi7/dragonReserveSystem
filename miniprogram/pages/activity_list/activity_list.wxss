@@ -835,12 +835,6 @@ page {
   overflow: visible;
 }
 
-.cards-carousel {
-  width: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
 /* ── 大卡片行（我参与的） ── */
 .large-cards-row {
   display: inline-flex;
@@ -941,7 +935,7 @@ page {
 /* 末尾留白 */
 .cards-row-end-spacer {
   display: inline-block;
-  width: 0;
+  width: 10px;
   flex-shrink: 0;
 }
 
@@ -949,7 +943,7 @@ page {
 /* 羽毛球 / 桌游：改用设计切图 */
 .large-card.card-bg-badminton {
   background-color: #f7a37b;
-  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png');
+  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -957,7 +951,7 @@ page {
 
 .small-card.card-bg-badminton {
   background-color: #f7a37b;
-  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg');
+  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -965,7 +959,7 @@ page {
 
 .large-card.card-bg-boardgame {
   background-color: #1e55c8;
-  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png');
+  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -973,7 +967,7 @@ page {
 
 .small-card.card-bg-boardgame {
   background-color: #1e55c8;
-  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png');
+  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -996,9 +990,10 @@ page {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1;
+  z-index: 0;
 }
 
+/* 背景图必须铺满卡片，否则会出现下半区露底色 */
 .card-image-bg {
   position: absolute;
   top: 0;
