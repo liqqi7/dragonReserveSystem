@@ -44,18 +44,25 @@
               wx:for="{{groupedActivities.joined}}"
               wx:key="_id"
               class="large-card-wrap"
-              hover-class="card-press"
+              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
               hover-stay-time="80"
               bindtap="showDetail"
               data-activity="{{item}}"
             >
               <text class="card-datetime-label">{{item.cardDateTimeLabel || item.startTime}}</text>
               <!-- 大卡片 -->
-              <view class="large-card {{item.activityType === 'badminton' ? 'card-bg-badminton' : (item.activityType === 'boardgame' ? 'card-bg-boardgame' : 'card-bg-other')}}">
+              <view class="large-card">
+                <image
+                  wx:if="{{item.largeCardBgImageUrl}}"
+                  class="card-image-bg"
+                  src="{{item.largeCardBgImageUrl}}"
+                  mode="aspectFill"
+                />
                 <video
-                  wx:if="{{item.activityType === 'other'}}"
+                  wx:if="{{item.bgVideoUrl}}"
+                  id="vid-joined-{{index}}"
                   class="card-video-bg"
-                  src="https://dragon.liqqihome.top/media/media/card-bg-other.mp4"
+                  src="{{item.bgVideoUrl}}"
                   objectFit="cover"
                   autoplay="{{focusedCardIndex.joined === index}}"
                   loop="{{true}}"
@@ -66,10 +73,9 @@
                   enable-progress-gesture="{{false}}"
                 />
                 <!-- 类型角标 -->
-                <text wx:if="{{item.activityType === 'badminton'}}" class="card-type-label">Badminton</text>
-                <text wx:elif="{{item.activityType === 'boardgame'}}" class="card-type-label">Boardgame</text>
+                <text wx:if="{{item.showTypeBadge}}" class="card-type-label">{{item.typeBadgeLabel}}</text>
                 <!-- 头像群（最近 3 人，从下往上递减：TL > TR > Middle） -->
-                <view wx:if="{{item.activityType !== 'other'}}" class="avatar-cluster-large">
+                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-large">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl">
                     <image
                       class="cluster-avatar"
@@ -137,16 +143,23 @@
               wx:for="{{groupedActivities.accepting}}"
               wx:key="_id"
               class="small-card-wrap"
-              hover-class="card-press"
+              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
               hover-stay-time="80"
               bindtap="showDetail"
               data-activity="{{item}}"
             >
-              <view class="small-card {{item.activityType === 'badminton' ? 'card-bg-badminton' : (item.activityType === 'boardgame' ? 'card-bg-boardgame' : 'card-bg-other')}}">
+              <view class="small-card">
+                <image
+                  wx:if="{{item.smallCardBgImageUrl}}"
+                  class="card-image-bg"
+                  src="{{item.smallCardBgImageUrl}}"
+                  mode="aspectFill"
+                />
                 <video
-                  wx:if="{{item.activityType === 'other'}}"
+                  wx:if="{{item.bgVideoUrl}}"
+                  id="vid-accepting-{{index}}"
                   class="card-video-bg"
-                  src="https://dragon.liqqihome.top/media/media/card-bg-other.mp4"
+                  src="{{item.bgVideoUrl}}"
                   objectFit="cover"
                   autoplay="{{focusedCardIndex.accepting === index}}"
                   loop="{{true}}"
@@ -157,9 +170,8 @@
                   enable-progress-gesture="{{false}}"
                 />
                 <!-- 小卡类型角标（仅羽毛球/桌游） -->
-                <text wx:if="{{item.activityType === 'badminton'}}" class="card-type-label-sm">Badminton</text>
-                <text wx:elif="{{item.activityType === 'boardgame'}}" class="card-type-label-sm">Boardgame</text>
-                <view wx:if="{{item.activityType !== 'other'}}" class="avatar-cluster-small">
+                <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
+                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
                   </view>
@@ -198,16 +210,23 @@
               wx:for="{{groupedActivities.notStarted}}"
               wx:key="_id"
               class="small-card-wrap"
-              hover-class="card-press"
+              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
               hover-stay-time="80"
               bindtap="showDetail"
               data-activity="{{item}}"
             >
-              <view class="small-card {{item.activityType === 'badminton' ? 'card-bg-badminton' : (item.activityType === 'boardgame' ? 'card-bg-boardgame' : 'card-bg-other')}}">
+              <view class="small-card">
+                <image
+                  wx:if="{{item.smallCardBgImageUrl}}"
+                  class="card-image-bg"
+                  src="{{item.smallCardBgImageUrl}}"
+                  mode="aspectFill"
+                />
                 <video
-                  wx:if="{{item.activityType === 'other'}}"
+                  wx:if="{{item.bgVideoUrl}}"
+                  id="vid-notStarted-{{index}}"
                   class="card-video-bg"
-                  src="https://dragon.liqqihome.top/media/media/card-bg-other.mp4"
+                  src="{{item.bgVideoUrl}}"
                   objectFit="cover"
                   autoplay="{{focusedCardIndex.notStarted === index}}"
                   loop="{{true}}"
@@ -218,9 +237,8 @@
                   enable-progress-gesture="{{false}}"
                 />
                 <!-- 小卡类型角标（仅羽毛球/桌游） -->
-                <text wx:if="{{item.activityType === 'badminton'}}" class="card-type-label-sm">Badminton</text>
-                <text wx:elif="{{item.activityType === 'boardgame'}}" class="card-type-label-sm">Boardgame</text>
-                <view wx:if="{{item.activityType !== 'other'}}" class="avatar-cluster-small">
+                <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
+                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
                   </view>
@@ -259,16 +277,23 @@
               wx:for="{{groupedActivities.ended}}"
               wx:key="_id"
               class="small-card-wrap"
-              hover-class="card-press"
+              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
               hover-stay-time="80"
               bindtap="showDetail"
               data-activity="{{item}}"
             >
-              <view class="small-card {{item.activityType === 'badminton' ? 'card-bg-badminton' : (item.activityType === 'boardgame' ? 'card-bg-boardgame' : 'card-bg-other')}}">
+              <view class="small-card">
+                <image
+                  wx:if="{{item.smallCardBgImageUrl}}"
+                  class="card-image-bg"
+                  src="{{item.smallCardBgImageUrl}}"
+                  mode="aspectFill"
+                />
                 <video
-                  wx:if="{{item.activityType === 'other'}}"
+                  wx:if="{{item.bgVideoUrl}}"
+                  id="vid-ended-{{index}}"
                   class="card-video-bg"
-                  src="https://dragon.liqqihome.top/media/media/card-bg-other.mp4"
+                  src="{{item.bgVideoUrl}}"
                   objectFit="cover"
                   autoplay="{{focusedCardIndex.ended === index}}"
                   loop="{{true}}"
@@ -279,9 +304,8 @@
                   enable-progress-gesture="{{false}}"
                 />
                 <!-- 小卡类型角标（仅羽毛球/桌游） -->
-                <text wx:if="{{item.activityType === 'badminton'}}" class="card-type-label-sm">Badminton</text>
-                <text wx:elif="{{item.activityType === 'boardgame'}}" class="card-type-label-sm">Boardgame</text>
-                <view wx:if="{{item.activityType !== 'other'}}" class="avatar-cluster-small">
+                <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
+                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
                   </view>
@@ -361,12 +385,25 @@
             <view class="label">活动类型：</view>
             <picker
               mode="selector"
-              range="{{['羽毛球', '桌游', '其它']}}"
-              value="{{editForm.activityType === 'badminton' ? 0 : (editForm.activityType === 'boardgame' ? 1 : (editForm.activityType === 'other' ? 2 : -1))}}"
+              range="{{activityTypeOptionLabels}}"
+              value="{{editActivityTypeIndex}}"
               bindchange="onActivityTypeChange"
             >
               <view class="picker">
-                {{editForm.activityType === 'badminton' ? '羽毛球' : (editForm.activityType === 'boardgame' ? '桌游' : (editForm.activityType === 'other' ? '其它' : '请选择类型'))}}
+                {{activityTypeOptionLabels[editActivityTypeIndex] || '请选择类型'}}
+              </view>
+            </picker>
+          </view>
+          <view class="form-item">
+            <view class="label">卡片样式：</view>
+            <picker
+              mode="selector"
+              range="{{activityStyleOptionLabels}}"
+              value="{{editActivityStyleIndex}}"
+              bindchange="onActivityStyleChange"
+            >
+              <view class="picker">
+                {{activityStyleOptionLabels[editActivityStyleIndex] || '请选择样式'}}
               </view>
             </picker>
           </view>

@@ -1,19 +1,20 @@
 <view class="tab-bar-wrap">
   <view class="tab-items-wrap">
-    <view class="tab-item {{selected === 0 ? 'tab-item-active' : ''}}" bindtap="onTabTap" data-index="0">
+    <view class="tab-indicator" style="transform: translateX({{selected * 85}}px)"></view>
+    <view class="tab-item" bindtap="onTabTap" data-index="0">
       <image class="tab-icon" src="{{selected === 0 ? '/images/tab-home-active.jpg' : '/images/tab-home.jpg'}}" mode="aspectFit" />
       <text class="tab-label {{selected === 0 ? 'tab-label-active' : ''}}">主页</text>
     </view>
-    <view class="tab-item {{selected === 1 ? 'tab-item-active' : ''}}" bindtap="onTabTap" data-index="1">
+    <view class="tab-item" bindtap="onTabTap" data-index="1">
       <image class="tab-icon" src="{{selected === 1 ? '/images/tab-ranking-active.jpg' : '/images/tab-ranking.jpg'}}" mode="aspectFit" />
       <text class="tab-label {{selected === 1 ? 'tab-label-active' : ''}}">排行榜</text>
     </view>
-    <view class="tab-item {{selected === 2 ? 'tab-item-active' : ''}}" bindtap="onTabTap" data-index="2">
+    <view class="tab-item" bindtap="onTabTap" data-index="2">
       <image class="tab-icon" src="{{selected === 2 ? '/images/tab-profile-active.jpg' : '/images/tab-profile.jpg'}}" mode="aspectFit" />
       <text class="tab-label {{selected === 2 ? 'tab-label-active' : ''}}">我的</text>
     </view>
   </view>
   <view wx:if="{{isAdmin && selected === 0}}" class="tab-create-fab" bindtap="onCreateTap">
-    <text class="tab-create-icon">＋</text>
+    <image class="tab-create-icon" src="/images/tab-create.png" mode="aspectFit" />
   </view>
 </view>

@@ -43,6 +43,166 @@ function debugLog(payload) {
 const DEFAULT_AVATAR = "/images/default-avatar.svg";
 const MEDIA_BASE_URL = String(getApiBaseUrl() || "").replace(/\/api\/v\d+\/?$/, "");
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
+const DEFAULT_ACTIVITY_TYPE_KEY = "other";
+const DEFAULT_ACTIVITY_TYPE_STYLES = [
+  {
+    key: "badminton",
+    display_name: "羽毛球",
+    default_style_key: "badminton-default",
+    styles: [
+      {
+        style_key: "badminton-default",
+        style_name: "默认粉黄",
+        badge_label: "Badminton",
+        show_badge: true,
+        show_avatar_cluster: true,
+        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png",
+        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg",
+        bg_video_url: null
+      }
+    ]
+  },
+  {
+    key: "boardgame",
+    display_name: "桌游",
+    default_style_key: "boardgame-default",
+    styles: [
+      {
+        style_key: "boardgame-default",
+        style_name: "默认蓝色",
+        badge_label: "Boardgame",
+        show_badge: true,
+        show_avatar_cluster: true,
+        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png",
+        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png",
+        bg_video_url: null
+      }
+    ]
+  },
+  {
+    key: "other",
+    display_name: "其它",
+    default_style_key: "other-video",
+    styles: [
+      {
+        style_key: "other-video",
+        style_name: "默认视频",
+        badge_label: "",
+        show_badge: false,
+        show_avatar_cluster: false,
+        large_card_bg_image_url: "",
+        small_card_bg_image_url: "",
+        bg_video_url: "https://dragon.liqqihome.top/media/media/card-bg-other.mp4"
+      }
+    ]
+  }
+];
+
+function normalizeTypeKey(value) {
+  if (value == null) return "";
+  const t = String(value).trim().toLowerCase();
+  if (!t) return "";
+  if (t === "羽毛球") return "badminton";
+  if (t === "桌游" || t === "board game") return "boardgame";
+  if (t === "其它" || t === "其他") return "other";
+  return t;
+}
+
+function buildTypeStyleMap(typeStyles) {
+  const source = Array.isArray(typeStyles) && typeStyles.length > 0 ? typeStyles : DEFAULT_ACTIVITY_TYPE_STYLES;
+  const map = {};
+  source.forEach((item) => {
+    const key = normalizeTypeKey(item && item.key);
+    if (!key) return;
+    const styles = Array.isArray(item.styles) ? item.styles : [];
+    const styleMap = {};
+    styles.forEach((s) => {
+      const styleKey = String(s.style_key || "").trim();
+      if (!styleKey) return;
+      styleMap[styleKey] = {
+        styleKey,
+        styleName: String(s.style_name || styleKey),
+        badgeLabel: String(s.badge_label || ""),
+        showBadge: s.show_badge !== false,
+        showAvatarCluster: s.show_avatar_cluster !== false,
+        largeCardBgImageUrl: String(s.large_card_bg_image_url || ""),
+        smallCardBgImageUrl: String(s.small_card_bg_image_url || ""),
+        bgVideoUrl: s.bg_video_url ? String(s.bg_video_url) : ""
+      };
+    });
+    const defaultStyleKey = String(item.default_style_key || "").trim();
+    const fallbackStyleKey = defaultStyleKey && styleMap[defaultStyleKey]
+      ? defaultStyleKey
+      : (Object.keys(styleMap)[0] || "");
+    map[key] = {
+      key,
+      displayName: String(item.display_name || key),
+      defaultStyleKey: fallbackStyleKey,
+      styleMap
+    };
+  });
+  if (!map[DEFAULT_ACTIVITY_TYPE_KEY]) {
+    map[DEFAULT_ACTIVITY_TYPE_KEY] = {
+      key: DEFAULT_ACTIVITY_TYPE_KEY,
+      displayName: "其它",
+      defaultStyleKey: "",
+      styleMap: {}
+    };
+  }
+  return map;
+}
+
+function normalizeActivityTypeByMap(rawType, typeStyleMap) {
+  const key = normalizeTypeKey(rawType);
+  if (key && typeStyleMap[key]) return key;
+  return DEFAULT_ACTIVITY_TYPE_KEY;
+}
+
+function resolveStyleByTypeAndKey(typeKey, styleKey, typeStyleMap) {
+  const typeEntry = typeStyleMap[typeKey] || typeStyleMap[DEFAULT_ACTIVITY_TYPE_KEY];
+  if (!typeEntry) return null;
+  const styleMap = typeEntry.styleMap || {};
+  const normalizedStyleKey = String(styleKey || "").trim();
+  if (normalizedStyleKey && styleMap[normalizedStyleKey]) return styleMap[normalizedStyleKey];
+  if (typeEntry.defaultStyleKey && styleMap[typeEntry.defaultStyleKey]) return styleMap[typeEntry.defaultStyleKey];
+  const firstKey = Object.keys(styleMap)[0];
+  return firstKey ? styleMap[firstKey] : null;
+}
+
+// Gesture tuning presets for card swipe vs page vertical scroll.
+const GESTURE_PRESETS = {
+  // Prefer page vertical scroll; horizontal swipe requires clearer intent.
+  verticalFirst: {
+    directionStartPx: 6,
+    verticalDominanceRatio: 1.35,
+    quickFlickDurationMs: 260,
+    quickFlickDistancePx: 18
+  },
+  // Balanced default between horizontal card swipe and vertical page scroll.
+  balanced: {
+    directionStartPx: 4,
+    verticalDominanceRatio: 1.6,
+    quickFlickDurationMs: 280,
+    quickFlickDistancePx: 16
+  },
+  // Prefer horizontal card swipe; easier to trigger card movement.
+  horizontalFirst: {
+    directionStartPx: 3,
+    verticalDominanceRatio: 2.0,
+    quickFlickDurationMs: 300,
+    quickFlickDistancePx: 15
+  }
+};
+const ACTIVE_GESTURE_PRESET = "verticalFirst";
+const GESTURE_TUNING = GESTURE_PRESETS[ACTIVE_GESTURE_PRESET];
+// Keep a checkpoint of prior smoothness settings for quick rollback.
+const SWIPE_MOVE_SMOOTHING = {
+  // checkpoint-1: { updateIntervalMs: 16, minStepPx: 1, maxStepPxPerFrame: Infinity }
+  // checkpoint-2: { updateIntervalMs: 8, minStepPx: 2, maxStepPxPerFrame: Infinity }
+  updateIntervalMs: 8,
+  minStepPx: 2,
+  maxStepPxPerFrame: Infinity
+};
 
 function agentLog(payload) {
   // #region agent log
@@ -175,6 +335,7 @@ function adaptActivity(item) {
     locationLongitude: item.location_longitude,
     signupEnabled: item.signup_enabled !== false,
     activityType: rawType || "other",
+    activityStyleKey: item.activity_style_key || "",
     _rawActivityType: rawType
   };
 }
@@ -190,6 +351,7 @@ Page({
     focusedCardIndex: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
     groupUseTransition: false,
     mainScrollEnabled: true,
+    isGroupSwiping: false,
     showEditModal: false,
     showDetailModal: false,
     currentActivity: null,
@@ -218,8 +380,9 @@ Page({
       // 报名人数上限
       limitEnabled: false,
       maxParticipants: null,
-      // 活动类型：badminton / boardgame / other
-      activityType: ""
+      // 活动类型：backend-driven key
+      activityType: DEFAULT_ACTIVITY_TYPE_KEY,
+      activityStyleKey: ""
     },
     myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
     myNickname: "", // 当前用户昵称（userId 为空时的回退，兼容旧数据）
@@ -230,7 +393,14 @@ Page({
     isAdmin: false,
     isGuest: true,
     searchKeyword: "",
-    selectedFilter: "我参与的"
+    selectedFilter: "我参与的",
+    activityTypeStyles: DEFAULT_ACTIVITY_TYPE_STYLES,
+    activityTypeOptionLabels: DEFAULT_ACTIVITY_TYPE_STYLES.map((item) => item.display_name || item.key),
+    activityTypeOptionValues: DEFAULT_ACTIVITY_TYPE_STYLES.map((item) => item.key),
+    editActivityTypeIndex: 0,
+    activityStyleOptionLabels: [],
+    activityStyleOptionValues: [],
+    editActivityStyleIndex: 0
   },
 
   onLoad(options) {
@@ -261,7 +431,9 @@ Page({
       const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
       const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
       this.setData({ isAdmin, myUserId, myNickname });
-      this.loadActivityList();
+      this.loadActivityTypeStyles().finally(() => {
+        this.loadActivityList();
+      });
       app.checkProfileCompleteness();
     }
     // 同步 isAdmin 到自定义 tabBar 组件
@@ -363,13 +535,14 @@ Page({
       }
     });
 
+    const prevVideoIndex = this.data.focusedCardIndex[group];
     meta.index = nextIndex;
     meta.lastLeft = nextLeft;
     this.setData({
       groupUseTransition: true,
       [`groupOffset.${group}`]: nextLeft,
       [`focusedCardIndex.${group}`]: nextIndex
-    });
+    }, () => { this._syncVideoFocus(group, prevVideoIndex, nextIndex); });
 
     // #region agent log
     debugLog({sessionId:'7cc68d',runId:'post-fix',hypothesisId:'H7',location:'activity_list.js:applyGroupSnap',message:'group snapped',data:{source,group,currentLeft,prevLeft,delta,step,rawSteps,moveSteps,dir,nextIndex,nextLeft,peekLeft},timestamp:Date.now()});
@@ -378,6 +551,20 @@ Page({
 
   onGroupScrollEnd(e) {
     // Deprecated by gesture-driven paging.
+  },
+
+  _syncVideoFocus(group, oldIndex, newIndex) {
+    if (oldIndex === newIndex) return;
+    // 停止旧卡片视频，reset 到开头
+    try {
+      wx.createVideoContext(`vid-${group}-${oldIndex}`, this).stop();
+    } catch (e) {}
+    // 播放新卡片视频
+    try {
+      const ctx = wx.createVideoContext(`vid-${group}-${newIndex}`, this);
+      ctx.seek(0);
+      ctx.play();
+    } catch (e) {}
   },
 
   onGroupTouchStart(e) {
@@ -397,7 +584,11 @@ Page({
     meta.touchStartTime = Date.now();
     meta.touchStartOffset = this.data.groupOffset[group] || 0;
     meta.touchMoveThrottleTs = 0;
+    meta.renderedOffset = Math.round(meta.touchStartOffset);
     meta.gestureDirection = null;
+    if (this.data.isGroupSwiping) {
+      this.setData({ isGroupSwiping: false });
+    }
     // #region agent log
     agentLog({
       hypothesisId: "G1",
@@ -422,24 +613,90 @@ Page({
     if (meta.gestureDirection == null) {
       const dx = Math.abs(currentX - meta.touchStartX);
       const dy = currentY != null && meta.touchStartY != null ? Math.abs(currentY - meta.touchStartY) : 0;
-      if (dx > 3 || dy > 3) {
-        meta.gestureDirection = dy > dx * 2 ? "vertical" : "horizontal";
+      if (dx > GESTURE_TUNING.directionStartPx || dy > GESTURE_TUNING.directionStartPx) {
+        meta.gestureDirection = dy > dx * GESTURE_TUNING.verticalDominanceRatio ? "vertical" : "horizontal";
         if (meta.gestureDirection === "horizontal") {
-          this.setData({ groupUseTransition: false, mainScrollEnabled: false });
+          // Rebase at lock point to avoid a first-frame jump.
+          meta.touchStartX = currentX;
+          meta.touchStartOffset = this.data.groupOffset[group] || 0;
+          meta.renderedOffset = Math.round(meta.touchStartOffset);
+          this.setData({ groupUseTransition: false, mainScrollEnabled: false, isGroupSwiping: true });
         }
+        // #region agent log
+        agentLog({
+          hypothesisId: "T1",
+          runId: "gesture-tuning",
+          location: "activity_list.js:onGroupTouchMove",
+          message: "gesture direction resolved",
+          data: {
+            preset: ACTIVE_GESTURE_PRESET,
+            directionStartPx: GESTURE_TUNING.directionStartPx,
+            verticalDominanceRatio: GESTURE_TUNING.verticalDominanceRatio,
+            dx,
+            dy,
+            gestureDirection: meta.gestureDirection
+          }
+        });
+        // #endregion
       }
     }
 
     if (meta.gestureDirection !== "horizontal") return;
 
     const now = Date.now();
-    if (now - (meta.touchMoveThrottleTs || 0) < 16) return;
+    if (now - (meta.touchMoveThrottleTs || 0) < SWIPE_MOVE_SMOOTHING.updateIntervalMs) return;
     meta.touchMoveThrottleTs = now;
     const deltaX = currentX - meta.touchStartX;
     const baseOffset = meta.touchStartOffset || 0;
     const maxOffset = Math.max(0, meta.maxIndex * (meta.step || 1));
     const newOffset = Math.max(0, Math.min(maxOffset, baseOffset - deltaX));
-    this.setData({ [`groupOffset.${group}`]: newOffset });
+    const roundedOffset = Math.round(newOffset);
+    const prevOffset = typeof meta.lastMoveOffset === "number" ? meta.lastMoveOffset : roundedOffset;
+    const offsetDelta = roundedOffset - prevOffset;
+    const prevAt = typeof meta.lastMoveAt === "number" ? meta.lastMoveAt : now;
+    const frameInterval = now - prevAt;
+    meta.lastMoveOffset = roundedOffset;
+    meta.lastMoveAt = now;
+    if (meta.renderedOffset == null) {
+      meta.renderedOffset = roundedOffset;
+    }
+    let nextOffset = roundedOffset;
+    const frameDiff = nextOffset - meta.renderedOffset;
+    if (Math.abs(frameDiff) > SWIPE_MOVE_SMOOTHING.maxStepPxPerFrame) {
+      nextOffset = meta.renderedOffset + (frameDiff > 0 ? SWIPE_MOVE_SMOOTHING.maxStepPxPerFrame : -SWIPE_MOVE_SMOOTHING.maxStepPxPerFrame);
+    }
+    if (Math.abs(nextOffset - meta.renderedOffset) < SWIPE_MOVE_SMOOTHING.minStepPx) {
+      return;
+    }
+    meta.renderedOffset = nextOffset;
+    this.setData({ [`groupOffset.${group}`]: nextOffset });
+
+    // #region agent log
+    if (!meta.lastMoveLogAt || now - meta.lastMoveLogAt >= 120) {
+      meta.lastMoveLogAt = now;
+      agentLog({
+        hypothesisId: "J1",
+        runId: "gesture-jitter",
+        location: "activity_list.js:onGroupTouchMove",
+        message: "horizontal move sample",
+        data: {
+          group,
+          preset: ACTIVE_GESTURE_PRESET,
+          dx: deltaX,
+          baseOffset,
+          rawOffset: newOffset,
+          roundedOffset,
+          nextOffset,
+          offsetDelta,
+          frameInterval,
+          groupUseTransition: this.data.groupUseTransition,
+          updateIntervalMs: SWIPE_MOVE_SMOOTHING.updateIntervalMs,
+          minStepPx: SWIPE_MOVE_SMOOTHING.minStepPx,
+          maxStepPxPerFrame: SWIPE_MOVE_SMOOTHING.maxStepPxPerFrame
+        }
+      });
+    }
+    // #endregion
   },
 
   onGroupTouchEnd(e) {
@@ -449,6 +706,9 @@ Page({
 
     if (meta.gestureDirection !== "horizontal") {
       meta.gestureDirection = null;
+      if (this.data.isGroupSwiping) {
+        this.setData({ isGroupSwiping: false });
+      }
       if (!this.data.mainScrollEnabled) {
         this.setData({ mainScrollEnabled: true });
       }
@@ -465,7 +725,9 @@ Page({
     const step = meta.step || 1;
 
     let targetIndex;
-    const isQuickFlick = touchDuration < 300 && Math.abs(deltaX) > 15;
+    const isQuickFlick =
+      touchDuration < GESTURE_TUNING.quickFlickDurationMs &&
+      Math.abs(deltaX) > GESTURE_TUNING.quickFlickDistancePx;
 
     if (isQuickFlick) {
       const dir = deltaX < 0 ? 1 : -1;
@@ -478,14 +740,16 @@ Page({
     const peekLeft = (targetIndex > 0 && targetIndex < meta.maxIndex) ? 10 : 0;
     const targetOffset = Math.max(0, Math.round(targetIndex * step - peekLeft));
 
+    const prevVideoIndex = this.data.focusedCardIndex[group];
     meta.index = targetIndex;
     meta.lastLeft = targetOffset;
     this.setData({
       groupUseTransition: true,
       mainScrollEnabled: true,
+      isGroupSwiping: false,
       [`groupOffset.${group}`]: targetOffset,
       [`focusedCardIndex.${group}`]: targetIndex
-    });
+    }, () => { this._syncVideoFocus(group, prevVideoIndex, targetIndex); });
 
     // #region agent log
     agentLog({
@@ -493,7 +757,21 @@ Page({
       runId: "gesture-v4",
       location: "activity_list.js:onGroupTouchEnd",
       message: "card snapped",
-      data: { group, startX, endX, deltaX, touchDuration, isQuickFlick, currentOffset, targetIndex, targetOffset, step }
+      data: {
+        group,
+        startX,
+        endX,
+        deltaX,
+        touchDuration,
+        isQuickFlick,
+        currentOffset,
+        targetIndex,
+        targetOffset,
+        step,
+        preset: ACTIVE_GESTURE_PRESET,
+        quickFlickDurationMs: GESTURE_TUNING.quickFlickDurationMs,
+        quickFlickDistancePx: GESTURE_TUNING.quickFlickDistancePx
+      }
     });
     // #endregion
   },
@@ -614,7 +892,7 @@ Page({
     const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
     this.setData({ isAdmin: app.globalData.userRole === "admin", myUserId, myNickname });
 
-    const p = this.loadActivityList();
+    const p = Promise.all([this.loadActivityTypeStyles(), this.loadActivityList()]);
     if (p && typeof p.finally === "function") {
       p.finally(() => {
         wx.stopPullDownRefresh();
@@ -632,6 +910,71 @@ Page({
     this.setData({ isGuest });
 
     return isGuest;
+  },
+
+  loadActivityTypeStyles() {
+    return activityService
+      .listActivityTypeStyles()
+      .then((res) => {
+        const styles = Array.isArray(res) && res.length > 0 ? res : DEFAULT_ACTIVITY_TYPE_STYLES;
+        const optionValues = styles.map((item) => normalizeTypeKey(item.key)).filter(Boolean);
+        const optionLabels = styles.map((item) => String(item.display_name || item.key || ""));
+        const currentType = this.data.editForm && this.data.editForm.activityType
+          ? normalizeTypeKey(this.data.editForm.activityType)
+          : DEFAULT_ACTIVITY_TYPE_KEY;
+        let editIndex = optionValues.indexOf(currentType);
+        if (editIndex < 0) editIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
+        if (editIndex < 0) editIndex = 0;
+        const typeStyleMap = buildTypeStyleMap(styles);
+        const selectedType = optionValues[editIndex] || DEFAULT_ACTIVITY_TYPE_KEY;
+        const styleOptions = this._buildStyleOptionsForType(selectedType, typeStyleMap);
+        const desiredStyleKey = this.data.editForm && this.data.editForm.activityStyleKey
+          ? String(this.data.editForm.activityStyleKey)
+          : "";
+        let styleIndex = styleOptions.values.indexOf(desiredStyleKey);
+        if (styleIndex < 0) styleIndex = 0;
+        this.setData({
+          activityTypeStyles: styles,
+          activityTypeOptionValues: optionValues,
+          activityTypeOptionLabels: optionLabels,
+          editActivityTypeIndex: editIndex,
+          activityStyleOptionValues: styleOptions.values,
+          activityStyleOptionLabels: styleOptions.labels,
+          editActivityStyleIndex: styleIndex,
+          "editForm.activityStyleKey": styleOptions.values[styleIndex] || ""
+        });
+      })
+      .catch(() => {
+        // Silent fallback to built-in defaults for compatibility.
+        const styles = DEFAULT_ACTIVITY_TYPE_STYLES;
+        const optionValues = styles.map((item) => normalizeTypeKey(item.key)).filter(Boolean);
+        const optionLabels = styles.map((item) => String(item.display_name || item.key || ""));
+        let editIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
+        if (editIndex < 0) editIndex = 0;
+        const typeStyleMap = buildTypeStyleMap(styles);
+        const selectedType = optionValues[editIndex] || DEFAULT_ACTIVITY_TYPE_KEY;
+        const styleOptions = this._buildStyleOptionsForType(selectedType, typeStyleMap);
+        this.setData({
+          activityTypeStyles: styles,
+          activityTypeOptionValues: optionValues,
+          activityTypeOptionLabels: optionLabels,
+          editActivityTypeIndex: editIndex,
+          activityStyleOptionValues: styleOptions.values,
+          activityStyleOptionLabels: styleOptions.labels,
+          editActivityStyleIndex: 0,
+          "editForm.activityStyleKey": styleOptions.values[0] || ""
+        });
+      });
+  },
+
+  _buildStyleOptionsForType(typeKey, typeStyleMapInput) {
+    const typeStyleMap = typeStyleMapInput || buildTypeStyleMap(this.data.activityTypeStyles);
+    const normalizedType = normalizeTypeKey(typeKey) || DEFAULT_ACTIVITY_TYPE_KEY;
+    const typeEntry = typeStyleMap[normalizedType] || typeStyleMap[DEFAULT_ACTIVITY_TYPE_KEY];
+    const styleMap = (typeEntry && typeEntry.styleMap) || {};
+    const values = Object.keys(styleMap);
+    const labels = values.map((k) => styleMap[k].styleName || k);
+    return { values, labels };
   },
 
   loadActivityList() {
@@ -716,20 +1059,22 @@ Page({
   processActivityList(resData, now) {
     const myUserId = this.data.myUserId;
     const myNickname = (this.data.myNickname || "").trim();
+    const typeStyleMap = buildTypeStyleMap(this.data.activityTypeStyles);
 
     const list = (resData || []).map(rawItem => {
       const activity = adaptActivity(rawItem);
 
       const rawType = activity._rawActivityType;
-      const normalizedType = (() => {
-        const t = (rawType == null ? "" : String(rawType)).trim().toLowerCase();
-        if (!t) return "other";
-        if (t === "badminton" || t === "羽毛球") return "badminton";
-        if (t === "boardgame" || t === "桌游" || t === "board game") return "boardgame";
-        if (t === "other" || t === "其它" || t === "其他") return "other";
-        return "other";
-      })();
+      const normalizedType = normalizeActivityTypeByMap(rawType, typeStyleMap);
       activity.activityType = normalizedType;
+      const selectedStyle = resolveStyleByTypeAndKey(activity.activityType, activity.activityStyleKey, typeStyleMap);
+      activity.activityStyleKey = selectedStyle ? selectedStyle.styleKey : "";
+      activity.typeBadgeLabel = selectedStyle ? selectedStyle.badgeLabel : "";
+      activity.showTypeBadge = selectedStyle ? (!!selectedStyle.showBadge && !!selectedStyle.badgeLabel) : false;
+      activity.showAvatarCluster = selectedStyle ? !!selectedStyle.showAvatarCluster : false;
+      activity.bgVideoUrl = selectedStyle ? (selectedStyle.bgVideoUrl || "") : "";
+      activity.largeCardBgImageUrl = selectedStyle ? (selectedStyle.largeCardBgImageUrl || "") : "";
+      activity.smallCardBgImageUrl = selectedStyle ? (selectedStyle.smallCardBgImageUrl || "") : "";
 
       if (!this._seenTypeDebugIds) this._seenTypeDebugIds = {};
       if (!this._seenTypeDebugIds[activity._id]) {
@@ -960,10 +1305,20 @@ Page({
     const deadlineDate = `${deadlineDateTime.getFullYear()}-${pad(deadlineDateTime.getMonth() + 1)}-${pad(deadlineDateTime.getDate())}`;
     const deadlineTime = `${pad(deadlineDateTime.getHours())}:${pad(deadlineDateTime.getMinutes())}`;
 
+    const defaultType = DEFAULT_ACTIVITY_TYPE_KEY;
+    const optionValues = this.data.activityTypeOptionValues || [];
+    let editTypeIndex = optionValues.indexOf(defaultType);
+    if (editTypeIndex < 0) editTypeIndex = 0;
+    const styleOptions = this._buildStyleOptionsForType(defaultType);
+    const styleIndex = 0;
     this.setData({
       showEditModal: true,
       currentActivity: null,
       locationDisabled: false,
+      editActivityTypeIndex: editTypeIndex,
+      activityStyleOptionValues: styleOptions.values,
+      activityStyleOptionLabels: styleOptions.labels,
+      editActivityStyleIndex: styleIndex,
       editForm: {
         name: "",
         status: "未开始",
@@ -981,7 +1336,8 @@ Page({
         signupEnabled: true,
         limitEnabled: false,
         maxParticipants: null,
-        activityType: ""
+        activityType: defaultType,
+        activityStyleKey: styleOptions.values[styleIndex] || ""
       }
     });
   },
@@ -1036,10 +1392,23 @@ Page({
 
     const maxParticipants = activity.maxParticipants == null ? null : activity.maxParticipants;
 
+    const optionValues = this.data.activityTypeOptionValues || [];
+    const normalizedType = normalizeTypeKey(activity.activityType || DEFAULT_ACTIVITY_TYPE_KEY) || DEFAULT_ACTIVITY_TYPE_KEY;
+    let editTypeIndex = optionValues.indexOf(normalizedType);
+    if (editTypeIndex < 0) editTypeIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
+    if (editTypeIndex < 0) editTypeIndex = 0;
+    const styleOptions = this._buildStyleOptionsForType(normalizedType);
+    let styleIndex = styleOptions.values.indexOf(String(activity.activityStyleKey || ""));
+    if (styleIndex < 0) styleIndex = 0;
+
     this.setData({
       showEditModal: true,
       currentActivity: activity,
       locationDisabled: hasCheckedIn,
+      editActivityTypeIndex: editTypeIndex,
+      activityStyleOptionValues: styleOptions.values,
+      activityStyleOptionLabels: styleOptions.labels,
+      editActivityStyleIndex: styleIndex,
       editForm: {
         name: activity.name,
         status: activity.status,
@@ -1057,7 +1426,8 @@ Page({
         signupEnabled: activity.signupEnabled !== false,
         limitEnabled: maxParticipants != null,
         maxParticipants: maxParticipants,
-        activityType: activity.activityType || ""
+        activityType: normalizedType,
+        activityStyleKey: styleOptions.values[styleIndex] || ""
       }
     });
   },
@@ -1093,9 +1463,27 @@ Page({
 
   // 活动类型选择
   onActivityTypeChange(e) {
-    const types = ["badminton", "boardgame", "other"];
     const index = Number(e.detail.value);
-    this.setData({ "editForm.activityType": types[index] || "" });
+    const values = this.data.activityTypeOptionValues || [];
+    const nextType = values[index] || DEFAULT_ACTIVITY_TYPE_KEY;
+    const styleOptions = this._buildStyleOptionsForType(nextType);
+    this.setData({
+      editActivityTypeIndex: index,
+      activityStyleOptionValues: styleOptions.values,
+      activityStyleOptionLabels: styleOptions.labels,
+      editActivityStyleIndex: 0,
+      "editForm.activityType": nextType,
+      "editForm.activityStyleKey": styleOptions.values[0] || ""
+    });
+  },
+
+  onActivityStyleChange(e) {
+    const index = Number(e.detail.value);
+    const values = this.data.activityStyleOptionValues || [];
+    this.setData({
+      editActivityStyleIndex: index,
+      "editForm.activityStyleKey": values[index] || ""
+    });
   },
 
   // 详情弹窗内打开编辑（仅管理员）
@@ -1277,6 +1665,8 @@ Page({
       max_participants: maxParticipants,
       signup_enabled: form.signupEnabled,
       activity_type: form.activityType || null
+      ,
+      activity_style_key: form.activityStyleKey || null
     };
 
     if (isEdit) {
@@ -1311,9 +1701,16 @@ Page({
   },
 
   closeEditModal() {
+    const optionValues = this.data.activityTypeOptionValues || [];
+    let editTypeIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
+    if (editTypeIndex < 0) editTypeIndex = 0;
     this.setData({
       showEditModal: false,
       currentActivity: null,
+      editActivityTypeIndex: editTypeIndex,
+      activityStyleOptionValues: [],
+      activityStyleOptionLabels: [],
+      editActivityStyleIndex: 0,
       editForm: {
         name: "",
         status: "进行中",
@@ -1328,7 +1725,8 @@ Page({
         locationAddress: "",
         locationLatitude: null,
         locationLongitude: null,
-        activityType: ""
+        activityType: DEFAULT_ACTIVITY_TYPE_KEY,
+        activityStyleKey: ""
       }
     });
   },

@@ -7,7 +7,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-VALID_ACTIVITY_TYPES = {"badminton", "boardgame", "other"}
+from app.services.activity_type_style_service import get_allowed_activity_types
 
 
 def _normalize_activity_type(value: Optional[str]) -> Optional[str]:
@@ -16,8 +16,9 @@ def _normalize_activity_type(value: Optional[str]) -> Optional[str]:
     normalized = value.strip()
     if not normalized:
         return None
-    if normalized not in VALID_ACTIVITY_TYPES:
-        raise ValueError("activity_type must be one of: badminton, boardgame, other")
+    allowed = get_allowed_activity_types()
+    if normalized not in allowed:
+        raise ValueError(f"activity_type must be one of: {', '.join(sorted(allowed))}")
     return normalized
 
 
@@ -51,6 +52,7 @@ class ActivityResponse(BaseModel):
     signup_deadline: Optional[datetime]
     signup_enabled: bool
     activity_type: Optional[str]
+    activity_style_key: Optional[str]
     location_name: str
     location_address: str
     location_latitude: Optional[float]
@@ -79,6 +81,7 @@ class ActivityCreateRequest(BaseModel):
     signup_deadline: Optional[datetime] = None
     signup_enabled: bool = Field(default=True)
     activity_type: Optional[str] = Field(default=None, max_length=32)
+    activity_style_key: Optional[str] = Field(default=None, max_length=64)
     location_name: str = Field(default="", max_length=255)
     location_address: str = Field(default="", max_length=255)
     location_latitude: Optional[float] = None
@@ -118,6 +121,7 @@ class ActivityUpdateRequest(BaseModel):
     signup_deadline: Optional[datetime] = None
     signup_enabled: Optional[bool] = None
     activity_type: Optional[str] = Field(default=None, max_length=32)
+    activity_style_key: Optional[str] = Field(default=None, max_length=64)
     location_name: Optional[str] = Field(default=None, max_length=255)
     location_address: Optional[str] = Field(default=None, max_length=255)
     location_latitude: Optional[float] = None
@@ -142,3 +146,22 @@ class ActivityCheckinRequest(BaseModel):
 
     lat: float
     lng: float
+
+
+class ActivityTypeStyleResponse(BaseModel):
+    """Activity type style payload."""
+
+    class StyleVariant(BaseModel):
+        style_key: str
+        style_name: str
+        badge_label: str
+        show_badge: bool
+        show_avatar_cluster: bool
+        large_card_bg_image_url: str
+        small_card_bg_image_url: str
+        bg_video_url: Optional[str]
+
+    key: str
+    display_name: str
+    default_style_key: str
+    styles: list[StyleVariant]

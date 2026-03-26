@@ -11,8 +11,10 @@ from app.schemas.activity import (
     ActivityCreateRequest,
     ActivityResponse,
     ActivitySignupResponse,
+    ActivityTypeStyleResponse,
     ActivityUpdateRequest,
 )
+from app.services.activity_type_style_service import list_activity_type_styles
 from app.services.activity_service import (
     admin_cancel_checkin_participant,
     admin_checkin_participant,
@@ -37,6 +39,13 @@ def get_activities(db: Session = Depends(get_db), _: User = Depends(get_current_
 
     activities = list_activities(db)
     return [ActivityResponse.model_validate(activity, from_attributes=True) for activity in activities]
+
+
+@router.get("/type-styles", response_model=list[ActivityTypeStyleResponse], summary="List activity type styles")
+def get_activity_type_styles(_: User = Depends(get_current_user)) -> list[ActivityTypeStyleResponse]:
+    """Return backend-driven activity type/style config for the client."""
+
+    return [ActivityTypeStyleResponse.model_validate(item) for item in list_activity_type_styles()]
 
 
 @router.get("/{activity_id}", response_model=ActivityResponse, summary="Get activity detail")

@@ -4,6 +4,10 @@ function listActivities() {
   return request({ url: "/activities" });
 }
 
+function listActivityTypeStyles() {
+  return request({ url: "/activities/type-styles" });
+}
+
 function getActivity(activityId) {
   return request({ url: `/activities/${activityId}` });
 }
@@ -76,6 +80,7 @@ function adminCancelCheckinParticipant(activityId, participantId) {
 
 module.exports = {
   listActivities,
+  listActivityTypeStyles,
   getActivity,
   createActivity,
   updateActivity,
