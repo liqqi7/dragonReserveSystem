@@ -1,63 +1,70 @@
 <!-- 页面容器 -->
 <view class="page-wrap">
+  <scroll-view
+    class="main-scroll"
+    scroll-y="{{mainScrollEnabled}}"
+    show-scrollbar="false"
+    bindscroll="onMainScroll"
+    style="height: calc(100vh - 90px)"
+  >
+    <!-- 背景水印（随内容滚动） -->
+    <image class="page-watermark" src="https://dragon.liqqihome.top/media/images/activity-home-logo.png" mode="aspectFit" />
 
-  <!-- 自定义透明顶部栏 -->
-  <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px">
-    <image class="navbar-logo-watermark" src="https://dragon.liqqihome.top/media/images/activity-home-logo.png" mode="aspectFit" />
-    <view class="navbar-inner">
-      <text class="navbar-title">龙城预约系统</text>
+    <!-- 自定义透明顶部栏（随页面滚动） -->
+    <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px">
+      <view class="navbar-inner">
+        <text class="navbar-title">龙城预约系统</text>
+      </view>
     </view>
-  </view>
 
-  <!-- 游客缺省态 -->
-  <view wx:if="{{isGuest}}" class="guest-empty-state" style="margin-top: {{navBarHeight}}px">
-    <image class="guest-empty-icon" src="/images/activity-empty-icon.gif" mode="aspectFit" />
-    <text class="guest-empty-text">未查询到您的冒险者工会归属</text>
-    <text class="guest-empty-text">请前往「我的」进行登录</text>
-  </view>
+    <!-- 游客缺省态 -->
+    <view wx:if="{{isGuest}}" class="guest-empty-state">
+      <image class="guest-empty-icon" src="/images/activity-empty-icon.gif" mode="aspectFit" />
+      <text class="guest-empty-text">未查询到您的冒险者工会归属</text>
+      <text class="guest-empty-text">请前往「我的」进行登录</text>
+    </view>
 
-  <!-- 已授权用户内容 -->
-  <block wx:else>
-    <scroll-view
-      class="main-scroll"
-      scroll-y="true"
-      style="margin-top: {{navBarHeight}}px; height: calc(100vh - {{navBarHeight}}px - 90px)"
-    >
+    <!-- 已授权用户内容 -->
+    <block wx:else>
 
       <!-- ── 我参与的 ── -->
-      <view class="group-section">
+      <view wx:if="{{groupedActivities.joined.length > 0}}" class="group-section">
         <view class="group-header">
           <text class="group-title">我参与的</text>
         </view>
-        <view wx:if="{{groupedActivities.joined.length === 0}}" class="group-empty">
-          <text class="group-empty-text">暂无参与的活动</text>
-        </view>
-        <scroll-view
-          wx:else
-          scroll-x="true"
-          class="cards-scroll-h"
-          enhanced="true"
-          show-scrollbar="false"
+        <view
+          class="cards-carousel"
+          data-group="joined"
+          bindtouchstart="onGroupTouchStart"
+          bindtouchmove="onGroupTouchMove"
+          bindtouchend="onGroupTouchEnd"
         >
-          <view class="large-cards-row">
+          <view class="large-cards-row" style="transform:translateX(-{{groupOffset.joined}}px);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
             <view
               wx:for="{{groupedActivities.joined}}"
               wx:key="_id"
               class="large-card-wrap"
-              hover-class="card-press"
+              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
               hover-stay-time="80"
               bindtap="showDetail"
               data-activity="{{item}}"
             >
-              <text class="card-datetime-label">{{item.startTime}}</text>
+              <text class="card-datetime-label">{{item.cardDateTimeLabel || item.startTime}}</text>
               <!-- 大卡片 -->
-              <view class="large-card {{item.activityType === 'badminton' ? 'card-bg-badminton' : (item.activityType === 'boardgame' ? 'card-bg-boardgame' : 'card-bg-other')}}">
+              <view class="large-card">
+                <image
+                  wx:if="{{item.largeCardBgImageUrl}}"
+                  class="card-image-bg"
+                  src="{{item.largeCardBgImageUrl}}"
+                  mode="aspectFill"
+                />
                 <video
-                  wx:if="{{item.activityType === 'other'}}"
+                  wx:if="{{item.bgVideoUrl}}"
+                  id="vid-joined-{{index}}"
                   class="card-video-bg"
-                  src="https://dragon.liqqihome.top/media/media/card-bg-other.mp4"
+                  src="{{item.bgVideoUrl}}"
                   objectFit="cover"
-                  autoplay="{{true}}"
+                  autoplay="{{focusedCardIndex.joined === index}}"
                   loop="{{true}}"
                   muted="{{true}}"
                   controls="{{false}}"
@@ -66,10 +73,9 @@
                   enable-progress-gesture="{{false}}"
                 />
                 <!-- 类型角标 -->
-                <text wx:if="{{item.activityType === 'badminton'}}" class="card-type-label">Badminton</text>
-                <text wx:elif="{{item.activityType === 'boardgame'}}" class="card-type-label">Boardgame</text>
+                <text wx:if="{{item.showTypeBadge}}" class="card-type-label">{{item.typeBadgeLabel}}</text>
                 <!-- 头像群（最近 3 人，从下往上递减：TL > TR > Middle） -->
-                <view wx:if="{{item.activityType !== 'other'}}" class="avatar-cluster-large">
+                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-large">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl">
                     <image
                       class="cluster-avatar"
@@ -101,14 +107,14 @@
                   <text wx:if="{{item.remark}}" class="glass-remark">{{item.remark}}</text>
                   <view class="glass-meta-row">
                     <view wx:if="{{item.locationName}}" class="glass-meta-item">
-                      <text class="glass-meta-icon">📍</text>
+                      <image class="glass-meta-icon-img" src="/images/icon-location.png" mode="aspectFit" />
                       <text class="glass-meta-text">{{item.locationName}}</text>
                     </view>
                     <view class="glass-meta-item">
-                      <text class="glass-meta-icon">👥</text>
-                      <text class="glass-meta-text" wx:if="{{item.maxParticipants != null}}">{{item.participants.length}}/{{item.maxParticipants}}</text>
-                      <text class="glass-meta-text" wx:elif="{{item.participants.length > 0}}">{{item.participants.length}}</text>
-                      <text class="glass-meta-text" wx:else>0</text>
+                      <image class="glass-meta-icon-img" src="/images/icon-people.png" mode="aspectFit" />
+                      <text class="glass-meta-text" wx:if="{{item.maxParticipants != null}}">{{item.participants.length}}/{{item.maxParticipants}} 人</text>
+                      <text class="glass-meta-text" wx:elif="{{item.participants.length > 0}}">{{item.participants.length}} 人</text>
+                      <text class="glass-meta-text" wx:else>0 人</text>
                     </view>
                   </view>
                 </view>
@@ -117,41 +123,45 @@
             <!-- 末尾留白 -->
             <view class="cards-row-end-spacer"></view>
           </view>
-        </scroll-view>
+        </view>
       </view>
 
       <!-- ── 接受报名 ── -->
-      <view class="group-section">
+      <view wx:if="{{groupedActivities.accepting.length > 0}}" class="group-section">
         <view class="group-header">
           <text class="group-title">接受报名</text>
         </view>
-        <view wx:if="{{groupedActivities.accepting.length === 0}}" class="group-empty">
-          <text class="group-empty-text">暂无接受报名的活动</text>
-        </view>
-        <scroll-view
-          wx:else
-          scroll-x="true"
-          class="cards-scroll-h"
-          enhanced="true"
-          show-scrollbar="false"
+        <view
+          class="cards-carousel"
+          data-group="accepting"
+          bindtouchstart="onGroupTouchStart"
+          bindtouchmove="onGroupTouchMove"
+          bindtouchend="onGroupTouchEnd"
         >
-          <view class="small-cards-row">
+          <view class="small-cards-row" style="transform:translateX(-{{groupOffset.accepting}}px);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
             <view
               wx:for="{{groupedActivities.accepting}}"
               wx:key="_id"
               class="small-card-wrap"
-              hover-class="card-press"
+              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
               hover-stay-time="80"
               bindtap="showDetail"
               data-activity="{{item}}"
             >
-              <view class="small-card {{item.activityType === 'badminton' ? 'card-bg-badminton' : (item.activityType === 'boardgame' ? 'card-bg-boardgame' : 'card-bg-other')}}">
+              <view class="small-card">
+                <image
+                  wx:if="{{item.smallCardBgImageUrl}}"
+                  class="card-image-bg"
+                  src="{{item.smallCardBgImageUrl}}"
+                  mode="aspectFill"
+                />
                 <video
-                  wx:if="{{item.activityType === 'other'}}"
+                  wx:if="{{item.bgVideoUrl}}"
+                  id="vid-accepting-{{index}}"
                   class="card-video-bg"
-                  src="https://dragon.liqqihome.top/media/media/card-bg-other.mp4"
+                  src="{{item.bgVideoUrl}}"
                   objectFit="cover"
-                  autoplay="{{true}}"
+                  autoplay="{{focusedCardIndex.accepting === index}}"
                   loop="{{true}}"
                   muted="{{true}}"
                   controls="{{false}}"
@@ -159,7 +169,9 @@
                   show-play-btn="{{false}}"
                   enable-progress-gesture="{{false}}"
                 />
-                <view wx:if="{{item.activityType !== 'other'}}" class="avatar-cluster-small">
+                <!-- 小卡类型角标（仅羽毛球/桌游） -->
+                <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
+                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
                   </view>
@@ -173,46 +185,50 @@
               </view>
               <view class="small-card-info">
                 <text class="small-card-name">{{item.name}}</text>
-                <text class="small-card-time">{{item.startTime}}</text>
+                <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
               </view>
             </view>
             <view class="cards-row-end-spacer"></view>
           </view>
-        </scroll-view>
+        </view>
       </view>
 
       <!-- ── 未开始 ── -->
-      <view class="group-section">
+      <view wx:if="{{groupedActivities.notStarted.length > 0}}" class="group-section">
         <view class="group-header">
           <text class="group-title">未开始</text>
         </view>
-        <view wx:if="{{groupedActivities.notStarted.length === 0}}" class="group-empty">
-          <text class="group-empty-text">暂无未开始的活动</text>
-        </view>
-        <scroll-view
-          wx:else
-          scroll-x="true"
-          class="cards-scroll-h"
-          enhanced="true"
-          show-scrollbar="false"
+        <view
+          class="cards-carousel"
+          data-group="notStarted"
+          bindtouchstart="onGroupTouchStart"
+          bindtouchmove="onGroupTouchMove"
+          bindtouchend="onGroupTouchEnd"
         >
-          <view class="small-cards-row">
+          <view class="small-cards-row" style="transform:translateX(-{{groupOffset.notStarted}}px);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
             <view
               wx:for="{{groupedActivities.notStarted}}"
               wx:key="_id"
               class="small-card-wrap"
-              hover-class="card-press"
+              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
               hover-stay-time="80"
               bindtap="showDetail"
               data-activity="{{item}}"
             >
-              <view class="small-card {{item.activityType === 'badminton' ? 'card-bg-badminton' : (item.activityType === 'boardgame' ? 'card-bg-boardgame' : 'card-bg-other')}}">
+              <view class="small-card">
+                <image
+                  wx:if="{{item.smallCardBgImageUrl}}"
+                  class="card-image-bg"
+                  src="{{item.smallCardBgImageUrl}}"
+                  mode="aspectFill"
+                />
                 <video
-                  wx:if="{{item.activityType === 'other'}}"
+                  wx:if="{{item.bgVideoUrl}}"
+                  id="vid-notStarted-{{index}}"
                   class="card-video-bg"
-                  src="https://dragon.liqqihome.top/media/media/card-bg-other.mp4"
+                  src="{{item.bgVideoUrl}}"
                   objectFit="cover"
-                  autoplay="{{true}}"
+                  autoplay="{{focusedCardIndex.notStarted === index}}"
                   loop="{{true}}"
                   muted="{{true}}"
                   controls="{{false}}"
@@ -220,7 +236,9 @@
                   show-play-btn="{{false}}"
                   enable-progress-gesture="{{false}}"
                 />
-                <view wx:if="{{item.activityType !== 'other'}}" class="avatar-cluster-small">
+                <!-- 小卡类型角标（仅羽毛球/桌游） -->
+                <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
+                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
                   </view>
@@ -234,41 +252,60 @@
               </view>
               <view class="small-card-info">
                 <text class="small-card-name">{{item.name}}</text>
-                <text class="small-card-time">{{item.startTime}}</text>
+                <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
               </view>
             </view>
             <view class="cards-row-end-spacer"></view>
           </view>
-        </scroll-view>
+        </view>
       </view>
 
       <!-- ── 已结束 ── -->
-      <view class="group-section">
+      <view wx:if="{{groupedActivities.ended.length > 0}}" class="group-section ended-section">
         <view class="group-header">
           <text class="group-title">已结束</text>
         </view>
-        <view wx:if="{{groupedActivities.ended.length === 0}}" class="group-empty">
-          <text class="group-empty-text">暂无已结束的活动</text>
-        </view>
-        <scroll-view
-          wx:else
-          scroll-x="true"
-          class="cards-scroll-h"
-          enhanced="true"
-          show-scrollbar="false"
+        <view
+          class="cards-carousel"
+          data-group="ended"
+          bindtouchstart="onGroupTouchStart"
+          bindtouchmove="onGroupTouchMove"
+          bindtouchend="onGroupTouchEnd"
         >
-          <view class="small-cards-row">
+          <view class="small-cards-row" style="transform:translateX(-{{groupOffset.ended}}px);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
             <view
               wx:for="{{groupedActivities.ended}}"
               wx:key="_id"
               class="small-card-wrap"
-              hover-class="card-press"
+              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
               hover-stay-time="80"
               bindtap="showDetail"
               data-activity="{{item}}"
             >
-              <view class="small-card card-bg-ended">
-                <view class="avatar-cluster-small">
+              <view class="small-card">
+                <image
+                  wx:if="{{item.smallCardBgImageUrl}}"
+                  class="card-image-bg"
+                  src="{{item.smallCardBgImageUrl}}"
+                  mode="aspectFill"
+                />
+                <video
+                  wx:if="{{item.bgVideoUrl}}"
+                  id="vid-ended-{{index}}"
+                  class="card-video-bg"
+                  src="{{item.bgVideoUrl}}"
+                  objectFit="cover"
+                  autoplay="{{focusedCardIndex.ended === index}}"
+                  loop="{{true}}"
+                  muted="{{true}}"
+                  controls="{{false}}"
+                  show-center-play-btn="{{false}}"
+                  show-play-btn="{{false}}"
+                  enable-progress-gesture="{{false}}"
+                />
+                <!-- 小卡类型角标（仅羽毛球/桌游） -->
+                <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
+                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
                   </view>
@@ -282,18 +319,20 @@
               </view>
               <view class="small-card-info">
                 <text class="small-card-name">{{item.name}}</text>
-                <text class="small-card-time">{{item.startTime}}</text>
+                <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
               </view>
             </view>
             <view class="cards-row-end-spacer"></view>
           </view>
-        </scroll-view>
+        </view>
       </view>
 
       <!-- 底部占位（避免被 Tab 遮挡） -->
       <view style="height: 40rpx"></view>
-    </scroll-view>
+    </block>
+  </scroll-view>
 
+  <block wx:if="{{!isGuest}}">
     <!-- ── 编辑/创建弹窗 ── -->
     <view wx:if="{{showEditModal}}" class="edit-modal-container">
       <view class="edit-modal-bg" catchtouchmove="stopPropagation" bindtap="closeEditModal"></view>
@@ -346,12 +385,25 @@
             <view class="label">活动类型：</view>
             <picker
               mode="selector"
-              range="{{['羽毛球', '桌游', '其它']}}"
-              value="{{editForm.activityType === 'badminton' ? 0 : (editForm.activityType === 'boardgame' ? 1 : (editForm.activityType === 'other' ? 2 : -1))}}"
+              range="{{activityTypeOptionLabels}}"
+              value="{{editActivityTypeIndex}}"
               bindchange="onActivityTypeChange"
             >
               <view class="picker">
-                {{editForm.activityType === 'badminton' ? '羽毛球' : (editForm.activityType === 'boardgame' ? '桌游' : (editForm.activityType === 'other' ? '其它' : '请选择类型'))}}
+                {{activityTypeOptionLabels[editActivityTypeIndex] || '请选择类型'}}
+              </view>
+            </picker>
+          </view>
+          <view class="form-item">
+            <view class="label">卡片样式：</view>
+            <picker
+              mode="selector"
+              range="{{activityStyleOptionLabels}}"
+              value="{{editActivityStyleIndex}}"
+              bindchange="onActivityStyleChange"
+            >
+              <view class="picker">
+                {{activityStyleOptionLabels[editActivityStyleIndex] || '请选择样式'}}
               </view>
             </picker>
           </view>

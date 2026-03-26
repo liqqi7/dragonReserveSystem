@@ -13,6 +13,7 @@ from app.schemas.activity import (
     ActivityCreateRequest,
     ActivityUpdateRequest,
 )
+from app.services.activity_type_style_service import normalize_activity_style_key
 from app.utils.geo import haversine_distance_meters
 
 
@@ -50,6 +51,8 @@ def list_activities(db: Session) -> list[Activity]:
 def create_activity(db: Session, payload: ActivityCreateRequest, created_by: User) -> Activity:
     """Create a new activity."""
 
+    activity_type = payload.activity_type or "other"
+    activity_style_key = normalize_activity_style_key(activity_type, payload.activity_style_key)
     activity = Activity(
         name=payload.name,
         status=payload.status,
@@ -59,7 +62,8 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
         end_time=payload.end_time,
         signup_deadline=payload.signup_deadline,
         signup_enabled=payload.signup_enabled,
-        activity_type=payload.activity_type,
+        activity_type=activity_type,
+        activity_style_key=activity_style_key,
         location_name=payload.location_name,
         location_address=payload.location_address,
         location_latitude=payload.location_latitude,
@@ -89,6 +93,13 @@ def update_activity(db: Session, activity: Activity, payload: ActivityUpdateRequ
     data = payload.model_dump(exclude_unset=True)
     for key, value in data.items():
         setattr(activity, key, value)
+
+    if "activity_type" in data or "activity_style_key" in data:
+        activity.activity_type = activity.activity_type or "other"
+        activity.activity_style_key = normalize_activity_style_key(
+            activity.activity_type,
+            activity.activity_style_key,
+        )
 
     if activity.end_time <= activity.start_time:
         raise ValidationAppError("end_time must be later than start_time")

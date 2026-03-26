@@ -1,5 +1,6 @@
 const app = getApp();
 const activityService = require("../../services/activity");
+const { getApiBaseUrl } = require("../../services/config");
 
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 
@@ -13,8 +14,286 @@ function getWeekdayLabel(dateTimeString) {
   return WEEKDAY_LABELS[d.getDay()];
 }
 
-// 默认头像 data URI，避免网络请求失败，CSS ::before 显示阴影人像
-const DEFAULT_AVATAR = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InRyYW5zcGFyZW50Ii8+PC9zdmc+";
+function debugLog(payload) {
+  try {
+    wx.request({
+      url: "http://127.0.0.1:7559/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94",
+      method: "POST",
+      header: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "7cc68d"
+      },
+      data: payload,
+      fail: (err) => {
+        try {
+          // #region agent log
+          console.warn("[agent-debugLog] request failed", {
+            errMsg: err && err.errMsg,
+            hypothesisId: payload && payload.hypothesisId,
+            location: payload && payload.location,
+            runId: payload && payload.runId
+          });
+          // #endregion
+        } catch (e) {}
+      }
+    });
+  } catch (e) {}
+}
+
+const DEFAULT_AVATAR = "/images/default-avatar.svg";
+const MEDIA_BASE_URL = String(getApiBaseUrl() || "").replace(/\/api\/v\d+\/?$/, "");
+const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
+const DEFAULT_ACTIVITY_TYPE_KEY = "other";
+const DEFAULT_ACTIVITY_TYPE_STYLES = [
+  {
+    key: "badminton",
+    display_name: "羽毛球",
+    default_style_key: "badminton-default",
+    styles: [
+      {
+        style_key: "badminton-default",
+        style_name: "默认粉黄",
+        badge_label: "Badminton",
+        show_badge: true,
+        show_avatar_cluster: true,
+        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png",
+        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg",
+        bg_video_url: null
+      }
+    ]
+  },
+  {
+    key: "boardgame",
+    display_name: "桌游",
+    default_style_key: "boardgame-default",
+    styles: [
+      {
+        style_key: "boardgame-default",
+        style_name: "默认蓝色",
+        badge_label: "Boardgame",
+        show_badge: true,
+        show_avatar_cluster: true,
+        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png",
+        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png",
+        bg_video_url: null
+      }
+    ]
+  },
+  {
+    key: "other",
+    display_name: "其它",
+    default_style_key: "other-video",
+    styles: [
+      {
+        style_key: "other-video",
+        style_name: "默认视频",
+        badge_label: "",
+        show_badge: false,
+        show_avatar_cluster: false,
+        large_card_bg_image_url: "",
+        small_card_bg_image_url: "",
+        bg_video_url: "https://dragon.liqqihome.top/media/media/card-bg-other.mp4"
+      }
+    ]
+  }
+];
+
+function normalizeTypeKey(value) {
+  if (value == null) return "";
+  const t = String(value).trim().toLowerCase();
+  if (!t) return "";
+  if (t === "羽毛球") return "badminton";
+  if (t === "桌游" || t === "board game") return "boardgame";
+  if (t === "其它" || t === "其他") return "other";
+  return t;
+}
+
+function buildTypeStyleMap(typeStyles) {
+  const source = Array.isArray(typeStyles) && typeStyles.length > 0 ? typeStyles : DEFAULT_ACTIVITY_TYPE_STYLES;
+  const map = {};
+  source.forEach((item) => {
+    const key = normalizeTypeKey(item && item.key);
+    if (!key) return;
+    const styles = Array.isArray(item.styles) ? item.styles : [];
+    const styleMap = {};
+    styles.forEach((s) => {
+      const styleKey = String(s.style_key || "").trim();
+      if (!styleKey) return;
+      styleMap[styleKey] = {
+        styleKey,
+        styleName: String(s.style_name || styleKey),
+        badgeLabel: String(s.badge_label || ""),
+        showBadge: s.show_badge !== false,
+        showAvatarCluster: s.show_avatar_cluster !== false,
+        largeCardBgImageUrl: String(s.large_card_bg_image_url || ""),
+        smallCardBgImageUrl: String(s.small_card_bg_image_url || ""),
+        bgVideoUrl: s.bg_video_url ? String(s.bg_video_url) : ""
+      };
+    });
+    const defaultStyleKey = String(item.default_style_key || "").trim();
+    const fallbackStyleKey = defaultStyleKey && styleMap[defaultStyleKey]
+      ? defaultStyleKey
+      : (Object.keys(styleMap)[0] || "");
+    map[key] = {
+      key,
+      displayName: String(item.display_name || key),
+      defaultStyleKey: fallbackStyleKey,
+      styleMap
+    };
+  });
+  if (!map[DEFAULT_ACTIVITY_TYPE_KEY]) {
+    map[DEFAULT_ACTIVITY_TYPE_KEY] = {
+      key: DEFAULT_ACTIVITY_TYPE_KEY,
+      displayName: "其它",
+      defaultStyleKey: "",
+      styleMap: {}
+    };
+  }
+  return map;
+}
+
+function normalizeActivityTypeByMap(rawType, typeStyleMap) {
+  const key = normalizeTypeKey(rawType);
+  if (key && typeStyleMap[key]) return key;
+  return DEFAULT_ACTIVITY_TYPE_KEY;
+}
+
+function resolveStyleByTypeAndKey(typeKey, styleKey, typeStyleMap) {
+  const typeEntry = typeStyleMap[typeKey] || typeStyleMap[DEFAULT_ACTIVITY_TYPE_KEY];
+  if (!typeEntry) return null;
+  const styleMap = typeEntry.styleMap || {};
+  const normalizedStyleKey = String(styleKey || "").trim();
+  if (normalizedStyleKey && styleMap[normalizedStyleKey]) return styleMap[normalizedStyleKey];
+  if (typeEntry.defaultStyleKey && styleMap[typeEntry.defaultStyleKey]) return styleMap[typeEntry.defaultStyleKey];
+  const firstKey = Object.keys(styleMap)[0];
+  return firstKey ? styleMap[firstKey] : null;
+}
+
+// Gesture tuning presets for card swipe vs page vertical scroll.
+const GESTURE_PRESETS = {
+  // Prefer page vertical scroll; horizontal swipe requires clearer intent.
+  verticalFirst: {
+    directionStartPx: 6,
+    verticalDominanceRatio: 1.35,
+    quickFlickDurationMs: 260,
+    quickFlickDistancePx: 18
+  },
+  // Balanced default between horizontal card swipe and vertical page scroll.
+  balanced: {
+    directionStartPx: 4,
+    verticalDominanceRatio: 1.6,
+    quickFlickDurationMs: 280,
+    quickFlickDistancePx: 16
+  },
+  // Prefer horizontal card swipe; easier to trigger card movement.
+  horizontalFirst: {
+    directionStartPx: 3,
+    verticalDominanceRatio: 2.0,
+    quickFlickDurationMs: 300,
+    quickFlickDistancePx: 15
+  }
+};
+const ACTIVE_GESTURE_PRESET = "verticalFirst";
+const GESTURE_TUNING = GESTURE_PRESETS[ACTIVE_GESTURE_PRESET];
+// Keep a checkpoint of prior smoothness settings for quick rollback.
+const SWIPE_MOVE_SMOOTHING = {
+  // checkpoint-1: { updateIntervalMs: 16, minStepPx: 1, maxStepPxPerFrame: Infinity }
+  // checkpoint-2: { updateIntervalMs: 8, minStepPx: 2, maxStepPxPerFrame: Infinity }
+  updateIntervalMs: 8,
+  minStepPx: 2,
+  maxStepPxPerFrame: Infinity
+};
+
+function agentLog(payload) {
+  // #region agent log
+  try {
+    const event = {
+      sessionId: "fd2fb3",
+      runId: "avatar-debug-1",
+      timestamp: Date.now(),
+      ...payload
+    };
+    wx.request({
+      url: "http://127.0.0.1:7559/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94",
+      method: "POST",
+      header: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "fd2fb3"
+      },
+      data: event,
+      fail: (err) => {
+        try {
+          console.warn("[agentLog-fail]", {
+            errMsg: err && err.errMsg,
+            sessionId: event.sessionId,
+            runId: event.runId,
+            hypothesisId: event.hypothesisId,
+            location: event.location
+          });
+        } catch (e) {}
+      }
+    });
+  } catch (e) {}
+  // #endregion
+}
+
+function normalizeAvatarUrl(url) {
+  const value = (url && String(url).trim()) || "";
+  if (!value) {
+    agentLog({
+      hypothesisId: "H2",
+      location: "activity_list.js:normalizeAvatarUrl",
+      message: "empty avatar url fallback",
+      data: { input: value, output: DEFAULT_AVATAR }
+    });
+    return DEFAULT_AVATAR;
+  }
+
+  const lower = value.toLowerCase();
+  // 测试造数和示例域名经常是占位地址，直接回退默认头像，避免 404
+  if (lower.includes("example.com/")) {
+    agentLog({
+      hypothesisId: "H1",
+      location: "activity_list.js:normalizeAvatarUrl",
+      message: "example.com fallback",
+      data: { input: value, output: DEFAULT_AVATAR }
+    });
+    return DEFAULT_AVATAR;
+  }
+  if (value.startsWith("/media/")) {
+    const m = value.match(/test-avatar-(\d{2})\.svg$/i);
+    const output = m ? `${LOCAL_TEST_AVATAR_PREFIX}/test-avatar-${m[1]}.svg` : DEFAULT_AVATAR;
+    agentLog({
+      hypothesisId: "H1",
+      location: "activity_list.js:normalizeAvatarUrl",
+      message: "media url mapped to local avatar",
+      data: { input: value, output }
+    });
+    return output;
+  }
+  if (value.startsWith("media/")) {
+    const m = value.match(/test-avatar-(\d{2})\.svg$/i);
+    const output = m ? `${LOCAL_TEST_AVATAR_PREFIX}/test-avatar-${m[1]}.svg` : DEFAULT_AVATAR;
+    agentLog({
+      hypothesisId: "H1",
+      location: "activity_list.js:normalizeAvatarUrl",
+      message: "media relative url mapped to local avatar",
+      data: { input: value, output }
+    });
+    return output;
+  }
+  if (lower.startsWith("http://")) {
+    agentLog({
+      hypothesisId: "H1",
+      location: "activity_list.js:normalizeAvatarUrl",
+      message: "http avatar blocked by wechat, fallback local",
+      data: { input: value, output: DEFAULT_AVATAR }
+    });
+    return DEFAULT_AVATAR;
+  }
+
+  return value;
+}
 
 function formatDateTime(value) {
   if (!value) return "";
@@ -28,7 +307,7 @@ function adaptParticipant(participant) {
     id: participant.id,
     name: participant.nickname_snapshot || "",
     userId: participant.user_id != null ? String(participant.user_id) : null,
-    avatarUrl: participant.avatar_url_snapshot || DEFAULT_AVATAR,
+    avatarUrl: normalizeAvatarUrl(participant.avatar_url_snapshot),
     checkedInAt: formatDateTime(participant.checked_in_at),
     checkinLat: participant.checkin_lat,
     checkinLng: participant.checkin_lng
@@ -38,6 +317,7 @@ function adaptParticipant(participant) {
 function adaptActivity(item) {
   const participants = (item.participants || []).map(adaptParticipant);
   const startTime = formatDateTime(item.start_time);
+  const rawType = item.activity_type;
   return {
     _id: String(item.id),
     date: startTime.split(" ")[0] || "",
@@ -54,7 +334,9 @@ function adaptActivity(item) {
     locationLatitude: item.location_latitude,
     locationLongitude: item.location_longitude,
     signupEnabled: item.signup_enabled !== false,
-    activityType: item.activity_type || "other"
+    activityType: rawType || "other",
+    activityStyleKey: item.activity_style_key || "",
+    _rawActivityType: rawType
   };
 }
 
@@ -65,7 +347,11 @@ Page({
     groupedActivities: { joined: [], accepting: [], notStarted: [], ended: [] },
     statusBarHeight: 0,
     navBarHeight: 0,
-    groupScrollLeft: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
+    groupOffset: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
+    focusedCardIndex: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
+    groupUseTransition: false,
+    mainScrollEnabled: true,
+    isGroupSwiping: false,
     showEditModal: false,
     showDetailModal: false,
     currentActivity: null,
@@ -94,8 +380,9 @@ Page({
       // 报名人数上限
       limitEnabled: false,
       maxParticipants: null,
-      // 活动类型：badminton / boardgame / other
-      activityType: ""
+      // 活动类型：backend-driven key
+      activityType: DEFAULT_ACTIVITY_TYPE_KEY,
+      activityStyleKey: ""
     },
     myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
     myNickname: "", // 当前用户昵称（userId 为空时的回退，兼容旧数据）
@@ -106,7 +393,14 @@ Page({
     isAdmin: false,
     isGuest: true,
     searchKeyword: "",
-    selectedFilter: "我参与的"
+    selectedFilter: "我参与的",
+    activityTypeStyles: DEFAULT_ACTIVITY_TYPE_STYLES,
+    activityTypeOptionLabels: DEFAULT_ACTIVITY_TYPE_STYLES.map((item) => item.display_name || item.key),
+    activityTypeOptionValues: DEFAULT_ACTIVITY_TYPE_STYLES.map((item) => item.key),
+    editActivityTypeIndex: 0,
+    activityStyleOptionLabels: [],
+    activityStyleOptionValues: [],
+    editActivityStyleIndex: 0
   },
 
   onLoad(options) {
@@ -124,6 +418,10 @@ Page({
     } catch (e) {
       this.setData({ statusBarHeight: 20, navBarHeight: 64 });
     }
+
+    // #region agent log
+    debugLog({sessionId:'7cc68d',runId:'post-fix',hypothesisId:'H0',location:'activity_list.js:onLoad',message:'navbar sizing',data:{statusBarHeight:this.data.statusBarHeight,navBarHeight:this.data.navBarHeight},timestamp:Date.now()});
+    // #endregion
   },
 
   onShow() {
@@ -133,13 +431,454 @@ Page({
       const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
       const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
       this.setData({ isAdmin, myUserId, myNickname });
-      this.loadActivityList();
+      this.loadActivityTypeStyles().finally(() => {
+        this.loadActivityList();
+      });
       app.checkProfileCompleteness();
     }
     // 同步 isAdmin 到自定义 tabBar 组件
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ isAdmin: app.globalData.userRole === "admin" });
     }
+  },
+
+  ensureGroupSnapMetrics() {
+    if (this._groupSnapMetricsReady) return;
+    const q = wx.createSelectorQuery();
+    q.selectAll(".large-cards-row .large-card-wrap").boundingClientRect();
+    q.selectAll(".small-cards-row .small-card-wrap").boundingClientRect();
+    q.exec((res) => {
+      const large = (res && res[0]) || [];
+      const small = (res && res[1]) || [];
+
+      const calcStep = (rects, fallback) => {
+        if (!Array.isArray(rects) || rects.length < 2) return fallback;
+        const lefts = rects
+          .map((r) => (r && typeof r.left === "number" ? Math.round(r.left * 100) / 100 : null))
+          .filter((v) => v != null);
+        const unique = Array.from(new Set(lefts)).sort((a, b) => a - b);
+        if (unique.length < 2) return fallback;
+        let minPositive = null;
+        for (let i = 1; i < unique.length; i += 1) {
+          const d = unique[i] - unique[i - 1];
+          if (d > 1 && (minPositive == null || d < minPositive)) {
+            minPositive = d;
+          }
+        }
+        return minPositive != null ? minPositive : fallback;
+      };
+
+      const largeStep = calcStep(large, 287);
+      const smallStep = calcStep(small, 190);
+
+      this._snapMeta = {
+        joined: { step: largeStep, index: 0, lastLeft: 0, maxIndex: Math.max(0, (this.data.groupedActivities.joined || []).length - 1) },
+        accepting: { step: smallStep, index: 0, lastLeft: 0, maxIndex: Math.max(0, (this.data.groupedActivities.accepting || []).length - 1) },
+        notStarted: { step: smallStep, index: 0, lastLeft: 0, maxIndex: Math.max(0, (this.data.groupedActivities.notStarted || []).length - 1) },
+        ended: { step: smallStep, index: 0, lastLeft: 0, maxIndex: Math.max(0, (this.data.groupedActivities.ended || []).length - 1) }
+      };
+      this._groupSnapMetricsReady = true;
+      // #region agent log
+      debugLog({sessionId:'7cc68d',runId:'post-fix',hypothesisId:'H7',location:'activity_list.js:ensureGroupSnapMetrics',message:'snap metrics measured',data:{largeStep,smallStep},timestamp:Date.now()});
+      // #endregion
+    });
+  },
+
+  onGroupScroll(e) {
+    // Kept for compatibility; gesture-driven paging no longer relies on scroll events.
+  },
+
+  applyGroupSnap(group, source, fallbackLeft) {
+    if (!group) return;
+    if (!this._snapMeta || !this._snapMeta[group]) this.ensureGroupSnapMetrics();
+    const meta = this._snapMeta && this._snapMeta[group];
+    if (!meta) return;
+
+    const currentLeft =
+      (typeof fallbackLeft === "number")
+        ? fallbackLeft
+        : (typeof meta.liveLeft === "number" ? meta.liveLeft : 0);
+    const prevLeft = typeof meta.lastLeft === "number" ? meta.lastLeft : 0;
+    const delta = currentLeft - prevLeft;
+    const step = meta.step || 1;
+    const rawSteps = Math.abs(delta) / step;
+
+    // 每次滑动仅切 1-2 张（delta 很小时不切）
+    let moveSteps = 0;
+    if (rawSteps >= 0.1) {
+      moveSteps = rawSteps >= 1.5 ? 2 : 1;
+    }
+    const dir = delta > 0 ? 1 : (delta < 0 ? -1 : 0);
+    let nextIndex = meta.index + dir * moveSteps;
+    if (nextIndex < 0) nextIndex = 0;
+    if (nextIndex > meta.maxIndex) nextIndex = meta.maxIndex;
+
+    const peekLeft = nextIndex > 0 && nextIndex < meta.maxIndex ? 10 : 0;
+    const nextLeft = Math.max(0, Math.round(nextIndex * step - peekLeft));
+
+    agentLog({
+      hypothesisId: "S2",
+      location: "activity_list.js:applyGroupSnap",
+      message: "snap calculated",
+      data: {
+        group,
+        source,
+        currentLeft,
+        prevLeft,
+        delta,
+        step,
+        rawSteps,
+        moveSteps,
+        dir,
+        nextIndex,
+        nextLeft
+      }
+    });
+
+    const prevVideoIndex = this.data.focusedCardIndex[group];
+    meta.index = nextIndex;
+    meta.lastLeft = nextLeft;
+    this.setData({
+      groupUseTransition: true,
+      [`groupOffset.${group}`]: nextLeft,
+      [`focusedCardIndex.${group}`]: nextIndex
+    }, () => { this._syncVideoFocus(group, prevVideoIndex, nextIndex); });
+
+    // #region agent log
+    debugLog({sessionId:'7cc68d',runId:'post-fix',hypothesisId:'H7',location:'activity_list.js:applyGroupSnap',message:'group snapped',data:{source,group,currentLeft,prevLeft,delta,step,rawSteps,moveSteps,dir,nextIndex,nextLeft,peekLeft},timestamp:Date.now()});
+    // #endregion
+  },
+
+  onGroupScrollEnd(e) {
+    // Deprecated by gesture-driven paging.
+  },
+
+  _syncVideoFocus(group, oldIndex, newIndex) {
+    if (oldIndex === newIndex) return;
+    // 停止旧卡片视频，reset 到开头
+    try {
+      wx.createVideoContext(`vid-${group}-${oldIndex}`, this).stop();
+    } catch (e) {}
+    // 播放新卡片视频
+    try {
+      const ctx = wx.createVideoContext(`vid-${group}-${newIndex}`, this);
+      ctx.seek(0);
+      ctx.play();
+    } catch (e) {}
+  },
+
+  onGroupTouchStart(e) {
+    const group = e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.group : "";
+    if (!group) return;
+    if (!this._snapMeta || !this._snapMeta[group]) {
+      this.ensureGroupSnapMetrics();
+      return;
+    }
+    const t = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+    const startX = t && typeof t.clientX === "number" ? t.clientX : null;
+    const startY = t && typeof t.clientY === "number" ? t.clientY : null;
+    const meta = this._snapMeta[group];
+    meta.touchStartX = startX;
+    meta.touchStartY = startY;
+    meta.touchLastX = startX;
+    meta.touchStartTime = Date.now();
+    meta.touchStartOffset = this.data.groupOffset[group] || 0;
+    meta.touchMoveThrottleTs = 0;
+    meta.renderedOffset = Math.round(meta.touchStartOffset);
+    meta.gestureDirection = null;
+    if (this.data.isGroupSwiping) {
+      this.setData({ isGroupSwiping: false });
+    }
+    // #region agent log
+    agentLog({
+      hypothesisId: "G1",
+      runId: "gesture-v5",
+      location: "activity_list.js:onGroupTouchStart",
+      message: "touchstart",
+      data: { group, startX, startY, currentIndex: meta.index, startOffset: meta.touchStartOffset }
+    });
+    // #endregion
+  },
+
+  onGroupTouchMove(e) {
+    const group = e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.group : "";
+    const meta = group && this._snapMeta ? this._snapMeta[group] : null;
+    if (!meta || meta.touchStartX == null) return;
+    const t = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+    const currentX = t && typeof t.clientX === "number" ? t.clientX : null;
+    const currentY = t && typeof t.clientY === "number" ? t.clientY : null;
+    if (currentX == null) return;
+    meta.touchLastX = currentX;
+
+    if (meta.gestureDirection == null) {
+      const dx = Math.abs(currentX - meta.touchStartX);
+      const dy = currentY != null && meta.touchStartY != null ? Math.abs(currentY - meta.touchStartY) : 0;
+      if (dx > GESTURE_TUNING.directionStartPx || dy > GESTURE_TUNING.directionStartPx) {
+        meta.gestureDirection = dy > dx * GESTURE_TUNING.verticalDominanceRatio ? "vertical" : "horizontal";
+        if (meta.gestureDirection === "horizontal") {
+          // Rebase at lock point to avoid a first-frame jump.
+          meta.touchStartX = currentX;
+          meta.touchStartOffset = this.data.groupOffset[group] || 0;
+          meta.renderedOffset = Math.round(meta.touchStartOffset);
+          this.setData({ groupUseTransition: false, mainScrollEnabled: false, isGroupSwiping: true });
+        }
+        // #region agent log
+        agentLog({
+          hypothesisId: "T1",
+          runId: "gesture-tuning",
+          location: "activity_list.js:onGroupTouchMove",
+          message: "gesture direction resolved",
+          data: {
+            preset: ACTIVE_GESTURE_PRESET,
+            directionStartPx: GESTURE_TUNING.directionStartPx,
+            verticalDominanceRatio: GESTURE_TUNING.verticalDominanceRatio,
+            dx,
+            dy,
+            gestureDirection: meta.gestureDirection
+          }
+        });
+        // #endregion
+      }
+    }
+
+    if (meta.gestureDirection !== "horizontal") return;
+
+    const now = Date.now();
+    if (now - (meta.touchMoveThrottleTs || 0) < SWIPE_MOVE_SMOOTHING.updateIntervalMs) return;
+    meta.touchMoveThrottleTs = now;
+    const deltaX = currentX - meta.touchStartX;
+    const baseOffset = meta.touchStartOffset || 0;
+    const maxOffset = Math.max(0, meta.maxIndex * (meta.step || 1));
+    const newOffset = Math.max(0, Math.min(maxOffset, baseOffset - deltaX));
+    const roundedOffset = Math.round(newOffset);
+    const prevOffset = typeof meta.lastMoveOffset === "number" ? meta.lastMoveOffset : roundedOffset;
+    const offsetDelta = roundedOffset - prevOffset;
+    const prevAt = typeof meta.lastMoveAt === "number" ? meta.lastMoveAt : now;
+    const frameInterval = now - prevAt;
+    meta.lastMoveOffset = roundedOffset;
+    meta.lastMoveAt = now;
+    if (meta.renderedOffset == null) {
+      meta.renderedOffset = roundedOffset;
+    }
+    let nextOffset = roundedOffset;
+    const frameDiff = nextOffset - meta.renderedOffset;
+    if (Math.abs(frameDiff) > SWIPE_MOVE_SMOOTHING.maxStepPxPerFrame) {
+      nextOffset = meta.renderedOffset + (frameDiff > 0 ? SWIPE_MOVE_SMOOTHING.maxStepPxPerFrame : -SWIPE_MOVE_SMOOTHING.maxStepPxPerFrame);
+    }
+    if (Math.abs(nextOffset - meta.renderedOffset) < SWIPE_MOVE_SMOOTHING.minStepPx) {
+      return;
+    }
+    meta.renderedOffset = nextOffset;
+    this.setData({ [`groupOffset.${group}`]: nextOffset });
+
+    // #region agent log
+    if (!meta.lastMoveLogAt || now - meta.lastMoveLogAt >= 120) {
+      meta.lastMoveLogAt = now;
+      agentLog({
+        hypothesisId: "J1",
+        runId: "gesture-jitter",
+        location: "activity_list.js:onGroupTouchMove",
+        message: "horizontal move sample",
+        data: {
+          group,
+          preset: ACTIVE_GESTURE_PRESET,
+          dx: deltaX,
+          baseOffset,
+          rawOffset: newOffset,
+          roundedOffset,
+          nextOffset,
+          offsetDelta,
+          frameInterval,
+          groupUseTransition: this.data.groupUseTransition,
+          updateIntervalMs: SWIPE_MOVE_SMOOTHING.updateIntervalMs,
+          minStepPx: SWIPE_MOVE_SMOOTHING.minStepPx,
+          maxStepPxPerFrame: SWIPE_MOVE_SMOOTHING.maxStepPxPerFrame
+        }
+      });
+    }
+    // #endregion
+  },
+
+  onGroupTouchEnd(e) {
+    const group = e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.group : "";
+    const meta = group && this._snapMeta ? this._snapMeta[group] : null;
+    if (!meta) return;
+
+    if (meta.gestureDirection !== "horizontal") {
+      meta.gestureDirection = null;
+      if (this.data.isGroupSwiping) {
+        this.setData({ isGroupSwiping: false });
+      }
+      if (!this.data.mainScrollEnabled) {
+        this.setData({ mainScrollEnabled: true });
+      }
+      return;
+    }
+    meta.gestureDirection = null;
+
+    const t = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]);
+    const endX = t && typeof t.clientX === "number" ? t.clientX : (meta.touchLastX != null ? meta.touchLastX : null);
+    const startX = meta.touchStartX;
+    const touchDuration = Date.now() - (meta.touchStartTime || Date.now());
+    const deltaX = startX != null && endX != null ? endX - startX : 0;
+    const currentOffset = this.data.groupOffset[group] || 0;
+    const step = meta.step || 1;
+
+    let targetIndex;
+    const isQuickFlick =
+      touchDuration < GESTURE_TUNING.quickFlickDurationMs &&
+      Math.abs(deltaX) > GESTURE_TUNING.quickFlickDistancePx;
+
+    if (isQuickFlick) {
+      const dir = deltaX < 0 ? 1 : -1;
+      targetIndex = Math.max(0, Math.min(meta.maxIndex, (meta.index || 0) + dir));
+    } else {
+      targetIndex = Math.round(currentOffset / step);
+      targetIndex = Math.max(0, Math.min(meta.maxIndex, targetIndex));
+    }
+
+    const peekLeft = (targetIndex > 0 && targetIndex < meta.maxIndex) ? 10 : 0;
+    const targetOffset = Math.max(0, Math.round(targetIndex * step - peekLeft));
+
+    const prevVideoIndex = this.data.focusedCardIndex[group];
+    meta.index = targetIndex;
+    meta.lastLeft = targetOffset;
+    this.setData({
+      groupUseTransition: true,
+      mainScrollEnabled: true,
+      isGroupSwiping: false,
+      [`groupOffset.${group}`]: targetOffset,
+      [`focusedCardIndex.${group}`]: targetIndex
+    }, () => { this._syncVideoFocus(group, prevVideoIndex, targetIndex); });
+
+    // #region agent log
+    agentLog({
+      hypothesisId: "G1",
+      runId: "gesture-v4",
+      location: "activity_list.js:onGroupTouchEnd",
+      message: "card snapped",
+      data: {
+        group,
+        startX,
+        endX,
+        deltaX,
+        touchDuration,
+        isQuickFlick,
+        currentOffset,
+        targetIndex,
+        targetOffset,
+        step,
+        preset: ACTIVE_GESTURE_PRESET,
+        quickFlickDurationMs: GESTURE_TUNING.quickFlickDurationMs,
+        quickFlickDistancePx: GESTURE_TUNING.quickFlickDistancePx
+      }
+    });
+    // #endregion
+  },
+
+  onMainScroll(e) {
+    const scrollTop = (e && e.detail && typeof e.detail.scrollTop === "number") ? e.detail.scrollTop : null;
+
+    // 节流：避免日志刷屏
+    const now = Date.now();
+    if (this._lastScrollLogAt && now - this._lastScrollLogAt < 350) return;
+    this._lastScrollLogAt = now;
+
+    // #region agent log
+    debugLog({sessionId:'7cc68d',runId:'post-fix',hypothesisId:'H1',location:'activity_list.js:onMainScroll',message:'main scroll position',data:{scrollTop},timestamp:Date.now()});
+    // #endregion
+
+    if (this._didMeasureAtScrollTop0 == null && (scrollTop === 0 || (scrollTop != null && scrollTop < 2))) {
+      this._didMeasureAtScrollTop0 = true;
+    }
+
+    // 在滚动接近 0 / 50 / 120 这些点采样一次布局，用于判断“顶部是否跟随滚动”和 Logo 层级
+    const shouldMeasure =
+      this._lastMeasuredBucket == null ||
+      (scrollTop != null && Math.abs(scrollTop - (this._lastMeasuredScrollTop || 0)) > 60);
+    if (!shouldMeasure) return;
+    this._lastMeasuredScrollTop = scrollTop || 0;
+    this._lastMeasuredBucket = Math.round((scrollTop || 0) / 60);
+
+    const q = wx.createSelectorQuery();
+    q.select(".custom-navbar").boundingClientRect();
+    q.select(".page-watermark").boundingClientRect();
+    q.select(".group-section").boundingClientRect();
+    q.select(".group-section .group-header").boundingClientRect();
+    q.select(".navbar-inner").boundingClientRect();
+    q.select(".navbar-title").boundingClientRect();
+    q.select(".large-card").boundingClientRect();
+    q.select(".small-card").boundingClientRect();
+    q.selectAll(".group-section").boundingClientRect();
+    q.selectAll("video.card-video-bg").boundingClientRect();
+    q.selectAll(".card-type-label-sm").boundingClientRect();
+    q.selectAll(".glass-meta-icon-img").boundingClientRect();
+    q.select(".group-section .group-header").boundingClientRect();
+    q.select(".group-section .card-datetime-label").boundingClientRect();
+    q.select(".large-card").boundingClientRect();
+    q.select(".avatar-tl").boundingClientRect();
+    q.select(".avatar-tr").boundingClientRect();
+    q.select(".avatar-mid").boundingClientRect();
+    q.select(".small-card").boundingClientRect();
+    q.select(".avatar-tl-sm").boundingClientRect();
+    q.select(".avatar-tr-sm").boundingClientRect();
+    q.select(".avatar-mid-sm").boundingClientRect();
+    q.exec((res) => {
+      const navbarRect = res && res[0] ? res[0] : null;
+      const logoRect = res && res[1] ? res[1] : null;
+      const firstGroupRect = res && res[2] ? res[2] : null;
+      const firstGroupHeaderRect = res && res[3] ? res[3] : null;
+      const navbarInnerRect = res && res[4] ? res[4] : null;
+      const navbarTitleRect = res && res[5] ? res[5] : null;
+      const largeCardRect = res && res[6] ? res[6] : null;
+      const smallCardRect = res && res[7] ? res[7] : null;
+      const allGroupRects = res && res[8] ? res[8] : null;
+      const allVideoRects = res && res[9] ? res[9] : null;
+      const allSmallTypeLabelRects = res && res[10] ? res[10] : null;
+      const allGlassMetaIconRects = res && res[11] ? res[11] : null;
+      const firstGroupHeaderRect2 = res && res[12] ? res[12] : null;
+      const firstCardDateLabelRect = res && res[13] ? res[13] : null;
+      const largeCardRect2 = res && res[14] ? res[14] : null;
+      const avatarTlRect = res && res[15] ? res[15] : null;
+      const avatarTrRect = res && res[16] ? res[16] : null;
+      const avatarMidRect = res && res[17] ? res[17] : null;
+      const smallCardRect2 = res && res[18] ? res[18] : null;
+      const avatarTlSmRect = res && res[19] ? res[19] : null;
+      const avatarTrSmRect = res && res[20] ? res[20] : null;
+      const avatarMidSmRect = res && res[21] ? res[21] : null;
+
+      const gapNavbarToFirstGroup = (navbarRect && firstGroupRect)
+        ? (firstGroupRect.top - navbarRect.bottom)
+        : null;
+      const gapNavbarToFirstGroupHeader = (navbarRect && firstGroupHeaderRect)
+        ? (firstGroupHeaderRect.top - navbarRect.bottom)
+        : null;
+
+      // #region agent log
+      const navbarTitleLeftPadding = (navbarInnerRect && navbarTitleRect) ? (navbarTitleRect.left - navbarInnerRect.left) : null;
+      const groupGaps = Array.isArray(allGroupRects)
+        ? allGroupRects.slice(0, 5).map((r, i, arr) => {
+          if (i === 0) return null;
+          const prev = arr[i - 1];
+          return (prev && r) ? (r.top - prev.bottom) : null;
+        })
+        : null;
+      const renderedVideoCount = Array.isArray(allVideoRects) ? allVideoRects.length : 0;
+      const smallTypeLabelCount = Array.isArray(allSmallTypeLabelRects) ? allSmallTypeLabelRects.length : 0;
+      const glassMetaIconCount = Array.isArray(allGlassMetaIconRects) ? allGlassMetaIconRects.length : 0;
+      const gapTitleToCardTime = (firstGroupHeaderRect2 && firstCardDateLabelRect)
+        ? (firstCardDateLabelRect.top - firstGroupHeaderRect2.bottom)
+        : null;
+
+      debugLog({sessionId:'7cc68d',runId:'post-fix',hypothesisId:'H2',location:'activity_list.js:onMainScroll:measure',message:'layout rect sampling',data:{scrollTop,navbarRect,logoRect,firstGroupRect,firstGroupHeaderRect,gapNavbarToFirstGroup,gapNavbarToFirstGroupHeader,navbarInnerRect,navbarTitleRect,navbarTitleLeftPadding,largeCardRect,smallCardRect,groupGaps,renderedVideoCount,smallTypeLabelCount,glassMetaIconCount,gapTitleToCardTime,firstGroupHeaderRect2,firstCardDateLabelRect,largeCardRect2,avatarTlRect,avatarTrRect,avatarMidRect,smallCardRect2,avatarTlSmRect,avatarTrSmRect,avatarMidSmRect},timestamp:Date.now()});
+      // #endregion
+
+      // #region agent log
+      try {
+        console.info("[agent-gap]", { scrollTop, gapNavbarToFirstGroup, gapNavbarToFirstGroupHeader });
+      } catch (e) {}
+      // #endregion
+    });
   },
 
   // 下拉刷新：仅已获得权限的用户触发，刷新活动列表
@@ -153,7 +892,7 @@ Page({
     const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
     this.setData({ isAdmin: app.globalData.userRole === "admin", myUserId, myNickname });
 
-    const p = this.loadActivityList();
+    const p = Promise.all([this.loadActivityTypeStyles(), this.loadActivityList()]);
     if (p && typeof p.finally === "function") {
       p.finally(() => {
         wx.stopPullDownRefresh();
@@ -173,6 +912,71 @@ Page({
     return isGuest;
   },
 
+  loadActivityTypeStyles() {
+    return activityService
+      .listActivityTypeStyles()
+      .then((res) => {
+        const styles = Array.isArray(res) && res.length > 0 ? res : DEFAULT_ACTIVITY_TYPE_STYLES;
+        const optionValues = styles.map((item) => normalizeTypeKey(item.key)).filter(Boolean);
+        const optionLabels = styles.map((item) => String(item.display_name || item.key || ""));
+        const currentType = this.data.editForm && this.data.editForm.activityType
+          ? normalizeTypeKey(this.data.editForm.activityType)
+          : DEFAULT_ACTIVITY_TYPE_KEY;
+        let editIndex = optionValues.indexOf(currentType);
+        if (editIndex < 0) editIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
+        if (editIndex < 0) editIndex = 0;
+        const typeStyleMap = buildTypeStyleMap(styles);
+        const selectedType = optionValues[editIndex] || DEFAULT_ACTIVITY_TYPE_KEY;
+        const styleOptions = this._buildStyleOptionsForType(selectedType, typeStyleMap);
+        const desiredStyleKey = this.data.editForm && this.data.editForm.activityStyleKey
+          ? String(this.data.editForm.activityStyleKey)
+          : "";
+        let styleIndex = styleOptions.values.indexOf(desiredStyleKey);
+        if (styleIndex < 0) styleIndex = 0;
+        this.setData({
+          activityTypeStyles: styles,
+          activityTypeOptionValues: optionValues,
+          activityTypeOptionLabels: optionLabels,
+          editActivityTypeIndex: editIndex,
+          activityStyleOptionValues: styleOptions.values,
+          activityStyleOptionLabels: styleOptions.labels,
+          editActivityStyleIndex: styleIndex,
+          "editForm.activityStyleKey": styleOptions.values[styleIndex] || ""
+        });
+      })
+      .catch(() => {
+        // Silent fallback to built-in defaults for compatibility.
+        const styles = DEFAULT_ACTIVITY_TYPE_STYLES;
+        const optionValues = styles.map((item) => normalizeTypeKey(item.key)).filter(Boolean);
+        const optionLabels = styles.map((item) => String(item.display_name || item.key || ""));
+        let editIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
+        if (editIndex < 0) editIndex = 0;
+        const typeStyleMap = buildTypeStyleMap(styles);
+        const selectedType = optionValues[editIndex] || DEFAULT_ACTIVITY_TYPE_KEY;
+        const styleOptions = this._buildStyleOptionsForType(selectedType, typeStyleMap);
+        this.setData({
+          activityTypeStyles: styles,
+          activityTypeOptionValues: optionValues,
+          activityTypeOptionLabels: optionLabels,
+          editActivityTypeIndex: editIndex,
+          activityStyleOptionValues: styleOptions.values,
+          activityStyleOptionLabels: styleOptions.labels,
+          editActivityStyleIndex: 0,
+          "editForm.activityStyleKey": styleOptions.values[0] || ""
+        });
+      });
+  },
+
+  _buildStyleOptionsForType(typeKey, typeStyleMapInput) {
+    const typeStyleMap = typeStyleMapInput || buildTypeStyleMap(this.data.activityTypeStyles);
+    const normalizedType = normalizeTypeKey(typeKey) || DEFAULT_ACTIVITY_TYPE_KEY;
+    const typeEntry = typeStyleMap[normalizedType] || typeStyleMap[DEFAULT_ACTIVITY_TYPE_KEY];
+    const styleMap = (typeEntry && typeEntry.styleMap) || {};
+    const values = Object.keys(styleMap);
+    const labels = values.map((k) => styleMap[k].styleName || k);
+    return { values, labels };
+  },
+
   loadActivityList() {
     wx.showLoading({ title: "加载中..." });
     return activityService
@@ -184,7 +988,16 @@ Page({
           const { selectedFilter, searchKeyword } = this.data;
           const filtered = this.computeFilteredList(list, selectedFilter, searchKeyword);
           const groupedActivities = this.computeGroupedActivities(list);
-          this.setData({ activityList: list, filteredList: filtered, groupedActivities });
+          this.setData({
+            activityList: list,
+            filteredList: filtered,
+            groupedActivities,
+            groupOffset: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
+            focusedCardIndex: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
+            groupUseTransition: false
+          });
+          this._groupSnapMetricsReady = false;
+          this.ensureGroupSnapMetrics();
 
           // 若详情弹窗正打开，同步更新 detailActivity（如刚报名成功）
           if (this.data.showDetailModal && this.data.detailActivity) {
@@ -231,6 +1044,14 @@ Page({
       .catch(err => {
         console.error(err);
         wx.hideLoading();
+        // 测试环境切换后常见：本地缓存 token 对应的用户不在当前库中
+        if (err && err.statusCode === 404 && String(err.message || "").includes("User not found")) {
+          app.logout();
+          this.syncGuestState();
+          wx.showToast({ title: "测试环境用户不存在，请重新登录", icon: "none", duration: 2500 });
+          wx.switchTab({ url: "/pages/profile/profile" });
+          return;
+        }
         wx.showToast({ title: "加载失败", icon: "none" });
       });
   },
@@ -238,9 +1059,31 @@ Page({
   processActivityList(resData, now) {
     const myUserId = this.data.myUserId;
     const myNickname = (this.data.myNickname || "").trim();
+    const typeStyleMap = buildTypeStyleMap(this.data.activityTypeStyles);
 
     const list = (resData || []).map(rawItem => {
       const activity = adaptActivity(rawItem);
+
+      const rawType = activity._rawActivityType;
+      const normalizedType = normalizeActivityTypeByMap(rawType, typeStyleMap);
+      activity.activityType = normalizedType;
+      const selectedStyle = resolveStyleByTypeAndKey(activity.activityType, activity.activityStyleKey, typeStyleMap);
+      activity.activityStyleKey = selectedStyle ? selectedStyle.styleKey : "";
+      activity.typeBadgeLabel = selectedStyle ? selectedStyle.badgeLabel : "";
+      activity.showTypeBadge = selectedStyle ? (!!selectedStyle.showBadge && !!selectedStyle.badgeLabel) : false;
+      activity.showAvatarCluster = selectedStyle ? !!selectedStyle.showAvatarCluster : false;
+      activity.bgVideoUrl = selectedStyle ? (selectedStyle.bgVideoUrl || "") : "";
+      activity.largeCardBgImageUrl = selectedStyle ? (selectedStyle.largeCardBgImageUrl || "") : "";
+      activity.smallCardBgImageUrl = selectedStyle ? (selectedStyle.smallCardBgImageUrl || "") : "";
+
+      if (!this._seenTypeDebugIds) this._seenTypeDebugIds = {};
+      if (!this._seenTypeDebugIds[activity._id]) {
+        this._seenTypeDebugIds[activity._id] = true;
+        // #region agent log
+        debugLog({sessionId:'7cc68d',runId:'post-fix',hypothesisId:'H5',location:'activity_list.js:processActivityList:type',message:'activity type normalization',data:{id:activity._id,rawType,normalizedType},timestamp:Date.now()});
+        // #endregion
+      }
+
       let signupDeadline = activity.signupDeadline;
       if (!signupDeadline && activity.startTime) {
         const base = new Date(activity.startTime.replace(" ", "T") + ":00");
@@ -254,6 +1097,24 @@ Page({
       // 计算开始时间与报名截止时间对应的周几标签，用于前端展示
       activity.startWeekdayLabel = getWeekdayLabel(activity.startTime || activity.date);
       activity.signupDeadlineWeekdayLabel = getWeekdayLabel(signupDeadline);
+
+      // 大卡顶部时间：MM-DD 周几 HH:mm-HH:mm
+      const formatRangeLabel = () => {
+        const start = activity.startTime;
+        if (!start) return "";
+        const s = String(start);
+        const datePart = s.split(" ")[0] || "";
+        const timePart = s.split(" ")[1] || "";
+        const mmdd = datePart ? datePart.slice(5) : "";
+        const weekday = activity.startWeekdayLabel || "";
+        const startHm = timePart ? timePart.slice(0, 5) : "";
+        const end = activity.endTime ? String(activity.endTime) : "";
+        const endHm = end.split(" ")[1] ? end.split(" ")[1].slice(0, 5) : "";
+        if (!mmdd || !startHm) return "";
+        return `${mmdd} ${weekday} ${startHm}${endHm ? `-${endHm}` : ""}`;
+      };
+      activity.cardDateTimeLabel = formatRangeLabel();
+      activity.smallCardTimeLabel = formatRangeLabel();
 
       let hasSignedUp = false;
       let hasCheckedIn = false;
@@ -269,7 +1130,7 @@ Page({
           if (checkedIn) {
             checkinCount += 1;
           }
-          const avatarUrl = (p.avatarUrl && String(p.avatarUrl).trim()) || DEFAULT_AVATAR;
+          const avatarUrl = normalizeAvatarUrl(p.avatarUrl);
           const hasCustomAvatar = avatarUrl !== DEFAULT_AVATAR;
           avatarList.push({
             url: avatarUrl,
@@ -444,10 +1305,20 @@ Page({
     const deadlineDate = `${deadlineDateTime.getFullYear()}-${pad(deadlineDateTime.getMonth() + 1)}-${pad(deadlineDateTime.getDate())}`;
     const deadlineTime = `${pad(deadlineDateTime.getHours())}:${pad(deadlineDateTime.getMinutes())}`;
 
+    const defaultType = DEFAULT_ACTIVITY_TYPE_KEY;
+    const optionValues = this.data.activityTypeOptionValues || [];
+    let editTypeIndex = optionValues.indexOf(defaultType);
+    if (editTypeIndex < 0) editTypeIndex = 0;
+    const styleOptions = this._buildStyleOptionsForType(defaultType);
+    const styleIndex = 0;
     this.setData({
       showEditModal: true,
       currentActivity: null,
       locationDisabled: false,
+      editActivityTypeIndex: editTypeIndex,
+      activityStyleOptionValues: styleOptions.values,
+      activityStyleOptionLabels: styleOptions.labels,
+      editActivityStyleIndex: styleIndex,
       editForm: {
         name: "",
         status: "未开始",
@@ -465,7 +1336,8 @@ Page({
         signupEnabled: true,
         limitEnabled: false,
         maxParticipants: null,
-        activityType: ""
+        activityType: defaultType,
+        activityStyleKey: styleOptions.values[styleIndex] || ""
       }
     });
   },
@@ -520,10 +1392,23 @@ Page({
 
     const maxParticipants = activity.maxParticipants == null ? null : activity.maxParticipants;
 
+    const optionValues = this.data.activityTypeOptionValues || [];
+    const normalizedType = normalizeTypeKey(activity.activityType || DEFAULT_ACTIVITY_TYPE_KEY) || DEFAULT_ACTIVITY_TYPE_KEY;
+    let editTypeIndex = optionValues.indexOf(normalizedType);
+    if (editTypeIndex < 0) editTypeIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
+    if (editTypeIndex < 0) editTypeIndex = 0;
+    const styleOptions = this._buildStyleOptionsForType(normalizedType);
+    let styleIndex = styleOptions.values.indexOf(String(activity.activityStyleKey || ""));
+    if (styleIndex < 0) styleIndex = 0;
+
     this.setData({
       showEditModal: true,
       currentActivity: activity,
       locationDisabled: hasCheckedIn,
+      editActivityTypeIndex: editTypeIndex,
+      activityStyleOptionValues: styleOptions.values,
+      activityStyleOptionLabels: styleOptions.labels,
+      editActivityStyleIndex: styleIndex,
       editForm: {
         name: activity.name,
         status: activity.status,
@@ -541,7 +1426,8 @@ Page({
         signupEnabled: activity.signupEnabled !== false,
         limitEnabled: maxParticipants != null,
         maxParticipants: maxParticipants,
-        activityType: activity.activityType || ""
+        activityType: normalizedType,
+        activityStyleKey: styleOptions.values[styleIndex] || ""
       }
     });
   },
@@ -577,9 +1463,27 @@ Page({
 
   // 活动类型选择
   onActivityTypeChange(e) {
-    const types = ["badminton", "boardgame", "other"];
     const index = Number(e.detail.value);
-    this.setData({ "editForm.activityType": types[index] || "" });
+    const values = this.data.activityTypeOptionValues || [];
+    const nextType = values[index] || DEFAULT_ACTIVITY_TYPE_KEY;
+    const styleOptions = this._buildStyleOptionsForType(nextType);
+    this.setData({
+      editActivityTypeIndex: index,
+      activityStyleOptionValues: styleOptions.values,
+      activityStyleOptionLabels: styleOptions.labels,
+      editActivityStyleIndex: 0,
+      "editForm.activityType": nextType,
+      "editForm.activityStyleKey": styleOptions.values[0] || ""
+    });
+  },
+
+  onActivityStyleChange(e) {
+    const index = Number(e.detail.value);
+    const values = this.data.activityStyleOptionValues || [];
+    this.setData({
+      editActivityStyleIndex: index,
+      "editForm.activityStyleKey": values[index] || ""
+    });
   },
 
   // 详情弹窗内打开编辑（仅管理员）
@@ -761,6 +1665,8 @@ Page({
       max_participants: maxParticipants,
       signup_enabled: form.signupEnabled,
       activity_type: form.activityType || null
+      ,
+      activity_style_key: form.activityStyleKey || null
     };
 
     if (isEdit) {
@@ -795,9 +1701,16 @@ Page({
   },
 
   closeEditModal() {
+    const optionValues = this.data.activityTypeOptionValues || [];
+    let editTypeIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
+    if (editTypeIndex < 0) editTypeIndex = 0;
     this.setData({
       showEditModal: false,
       currentActivity: null,
+      editActivityTypeIndex: editTypeIndex,
+      activityStyleOptionValues: [],
+      activityStyleOptionLabels: [],
+      editActivityStyleIndex: 0,
       editForm: {
         name: "",
         status: "进行中",
@@ -812,7 +1725,8 @@ Page({
         locationAddress: "",
         locationLatitude: null,
         locationLongitude: null,
-        activityType: ""
+        activityType: DEFAULT_ACTIVITY_TYPE_KEY,
+        activityStyleKey: ""
       }
     });
   },
@@ -1041,7 +1955,7 @@ Page({
         id: p.id || null,
         name: p.name || "",
         userId: p.userId != null ? String(p.userId) : null,
-        avatarUrl: p.avatarUrl || DEFAULT_AVATAR,
+        avatarUrl: normalizeAvatarUrl(p.avatarUrl),
         checkedInAt: p.checkedInAt || null
       };
     });
@@ -1213,6 +2127,12 @@ Page({
 
   onAvatarError(e) {
     const { index, activityId } = e.currentTarget.dataset;
+    agentLog({
+      hypothesisId: "H3",
+      location: "activity_list.js:onAvatarError",
+      message: "activity avatar image load failed",
+      data: { index, activityId }
+    });
     const activityList = this.data.activityList || [];
     const activity = activityList.find((item) => item._id === activityId);
     if (activity && activity.avatarList && activity.avatarList[index]) {

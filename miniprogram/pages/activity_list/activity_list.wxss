@@ -730,36 +730,53 @@ button.create-btn-fixed.create-btn-hover {
 /* ── 页面根容器 ── */
 page {
   background-color: #ffffff;
+  overflow-x: hidden;
 }
 
 .page-wrap {
   min-height: 100vh;
   background-color: #FFFFFF;
   position: relative;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* 背景水印（底层） */
+.page-watermark {
+  position: absolute;
+  left: 175px;
+  top: -29px;
+  width: 323px;
+  height: 211px;
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* ── 自定义透明顶部栏 ── */
 .custom-navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 200;
+  position: relative;
+  z-index: 2;
   background-color: transparent;
   overflow: visible;
+}
+
+.custom-navbar + .group-section {
+  margin-top: 12px;
 }
 
 .navbar-inner {
   height: 44px;
   display: flex;
   align-items: center;
-  padding: 0 24rpx;
+  padding: 0 20px;
   position: relative;
   z-index: 2;
 }
 
 .navbar-title {
-  font-size: 48rpx;
+  font-size: 24px;
   font-weight: 600;
   line-height: 1;
   color: #0a0a0a;
@@ -768,20 +785,14 @@ page {
   transform: translateY(-1px);
 }
 
-.navbar-logo-watermark {
-  position: absolute;
-  right: -42px;
-  top: -6px;
-  width: 323px;
-  height: 211px;
-  opacity: 0.5;
-  pointer-events: none;
-  z-index: 1;
-}
-
 /* ── 主滚动区 ── */
 .main-scroll {
-  background-color: #FFFFFF;
+  background-color: transparent;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 /* ── 分组区块 ── */
@@ -790,18 +801,19 @@ page {
 }
 
 .group-section {
-  margin-bottom: 24rpx;
+  /* 列表行底部已有 20px 内边距，这里补 16px => 列表到底下一个标题约 36px */
+  margin-bottom: 16px;
 }
 
 .group-header {
-  height: 56rpx;
+  height: 30px;
   display: flex;
   align-items: center;
-  padding: 0 24rpx;
+  padding: 0 20px;
 }
 
 .group-title {
-  font-size: 40rpx;
+  font-size: 20px;
   font-weight: 700;
   color: #0a0a0a;
 }
@@ -823,11 +835,18 @@ page {
   overflow: visible;
 }
 
+.cards-carousel {
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
 /* ── 大卡片行（我参与的） ── */
 .large-cards-row {
   display: inline-flex;
   align-items: flex-start;
-  padding: 0 24rpx;
+  /* scroll-view 会裁剪超出边界的阴影：通过 padding 把阴影包进可视区域 */
+  padding: 4px 20px 20px;
   gap: 20rpx;
 }
 
@@ -853,20 +872,26 @@ page {
 
 /* 大卡片主体 */
 .large-card {
-  width: 520rpx;
-  height: 700rpx;
-  border-radius: 40rpx;
+  width: 276px;
+  height: 368px;
+  border-radius: 20px;
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
 }
 
 /* 小卡片行 */
 .small-cards-row {
   display: inline-flex;
   align-items: flex-start;
-  padding: 0 24rpx;
-  gap: 20rpx;
+  /* 同上：预留阴影空间，避免被 scroll-view 裁剪 */
+  padding: 14px 20px 20px;
+  gap: 10px;
+}
+
+.ended-section .small-cards-row {
+  gap: 10px;
 }
 
 .small-card-wrap {
@@ -875,18 +900,18 @@ page {
   align-items: flex-start;
   gap: 14rpx;
   flex-shrink: 0;
-  width: 300rpx;
+  width: 180px;
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 /* 小卡片主体 */
 .small-card {
-  width: 300rpx;
-  height: 300rpx;
-  border-radius: 12rpx;
+  width: 180px;
+  height: 180px;
+  border-radius: 6px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 }
 
 .small-card-info {
@@ -895,9 +920,9 @@ page {
 
 .small-card-name {
   display: block;
-  font-size: 24rpx;
+  font-size: 12px;
   font-weight: 500;
-  color: #0a0a0a;
+  color: #000000;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -906,9 +931,10 @@ page {
 
 .small-card-time {
   display: block;
-  font-size: 22rpx;
+  font-size: 12px;
+  font-weight: 500;
   color: #8a8a8e;
-  margin-top: 4rpx;
+  margin-top: 0;
   white-space: nowrap;
 }
 
@@ -923,7 +949,7 @@ page {
 /* 羽毛球 / 桌游：改用设计切图 */
 .large-card.card-bg-badminton {
   background-color: #f7a37b;
-  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png');
+  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -931,7 +957,7 @@ page {
 
 .small-card.card-bg-badminton {
   background-color: #f7a37b;
-  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png');
+  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -939,7 +965,7 @@ page {
 
 .large-card.card-bg-boardgame {
   background-color: #1e55c8;
-  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png');
+  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -947,7 +973,7 @@ page {
 
 .small-card.card-bg-boardgame {
   background-color: #1e55c8;
-  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg');
+  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -965,6 +991,15 @@ page {
 
 /* ── 其它类型卡片背景图 ── */
 .card-video-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.card-image-bg {
   position: absolute;
   top: 0;
   left: 0;
@@ -1010,40 +1045,43 @@ page {
 /* 左上大头像 */
 .avatar-tl {
   position: absolute;
-  top: 28rpx;
-  left: 28rpx;
-  width: 300rpx;
-  height: 300rpx;
-  border-radius: 150rpx;
+  top: 16px;
+  left: 16px;
+  width: 165px;
+  height: 165px;
+  border-radius: 82.5px;
   overflow: hidden;
   background-color: rgba(255,255,255,0.3);
-  border: 4rpx solid rgba(255,255,255,0.9);
+  border: none;
+  box-shadow: none;
 }
 
 /* 右上中头像 */
 .avatar-tr {
   position: absolute;
-  top: 238rpx;
-  left: 298rpx;
-  width: 172rpx;
-  height: 172rpx;
-  border-radius: 86rpx;
+  top: 134px;
+  left: 166px;
+  width: 94px;
+  height: 94px;
+  border-radius: 47px;
   overflow: hidden;
   background-color: rgba(255,255,255,0.3);
-  border: 4rpx solid rgba(255,255,255,0.9);
+  border: none;
+  box-shadow: none;
 }
 
 /* 中部小头像 */
 .avatar-mid {
   position: absolute;
-  top: 330rpx;
-  left: 148rpx;
-  width: 150rpx;
-  height: 150rpx;
-  border-radius: 75rpx;
+  top: 186px;
+  left: 86px;
+  width: 82px;
+  height: 82px;
+  border-radius: 41px;
   overflow: hidden;
   background-color: rgba(255,255,255,0.3);
-  border: 4rpx solid rgba(255,255,255,0.9);
+  border: none;
+  box-shadow: none;
 }
 
 /* ── 小卡片头像群 ── */
@@ -1058,38 +1096,48 @@ page {
 
 .avatar-tl-sm {
   position: absolute;
-  top: 18rpx;
-  left: 18rpx;
-  width: 170rpx;
-  height: 170rpx;
-  border-radius: 85rpx;
+  top: 12px;
+  left: 14px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50px;
   overflow: hidden;
   background-color: rgba(255,255,255,0.3);
-  border: 3rpx solid rgba(255,255,255,0.85);
+  border: none;
+  box-shadow: none;
 }
 
 .avatar-tr-sm {
   position: absolute;
-  top: 136rpx;
-  left: 178rpx;
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 50rpx;
+  top: 87px;
+  left: 108px;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
   overflow: hidden;
   background-color: rgba(255,255,255,0.3);
-  border: 3rpx solid rgba(255,255,255,0.85);
+  border: none;
+  box-shadow: none;
 }
 
 .avatar-mid-sm {
   position: absolute;
-  top: 192rpx;
-  left: 90rpx;
-  width: 84rpx;
-  height: 84rpx;
-  border-radius: 42rpx;
+  top: 120px;
+  left: 54px;
+  width: 52px;
+  height: 52px;
+  border-radius: 26px;
   overflow: hidden;
   background-color: rgba(255,255,255,0.3);
-  border: 3rpx solid rgba(255,255,255,0.85);
+  border: none;
+  box-shadow: none;
+}
+
+.glass-meta-icon-img {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  display: block;
 }
 
 .cluster-avatar {
@@ -1106,9 +1154,9 @@ page {
   left: 0;
   right: 0;
   padding: 24rpx;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.12), rgba(0,0,0,0.42));
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
+  background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 100%);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
   z-index: 3;
   border-bottom-left-radius: 24rpx;
   border-bottom-right-radius: 24rpx;
@@ -1116,35 +1164,37 @@ page {
 
 .glass-name {
   display: block;
-  font-size: 32rpx;
+  font-size: 16px;
   font-weight: 700;
   color: #ffffff;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-bottom: 8rpx;
+  margin-bottom: 6px;
 }
 
 .glass-remark {
   display: block;
-  font-size: 22rpx;
+  font-size: 12px;
+  font-weight: 400;
   color: rgba(255,255,255,0.85);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-bottom: 10rpx;
+  margin-bottom: 6px;
 }
 
 .glass-meta-row {
   display: flex;
   align-items: center;
   gap: 24rpx;
+  margin-top: 6px;
 }
 
 .glass-meta-item {
   display: flex;
   align-items: center;
-  gap: 6rpx;
+  gap: 6px;
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -1155,7 +1205,8 @@ page {
 }
 
 .glass-meta-text {
-  font-size: 22rpx;
+  font-size: 12px;
+  font-weight: 400;
   color: rgba(255,255,255,0.85);
   white-space: nowrap;
   overflow: hidden;

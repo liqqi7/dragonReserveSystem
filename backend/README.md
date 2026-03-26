@@ -221,6 +221,96 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start_backend_prod.ps1
 
 当前后端还会拒绝将明显的临时头像路径直接写入 `avatar_url`，避免脏数据再次入库。
 
+## 线上库排查与“手工修头像”踩坑记录
+
+下面这些坑都来自真实线上排障，目的是让你在最短时间内定位“为什么小程序还在加载 `cloud://...` / 为什么头像 500 / 为什么我改了 `users.avatar_url` 还是不生效”。
+
+### 1) 生产环境不再使用微信云，但历史数据可能仍是 `cloud://...`
+
+虽然当前架构已经完全切到 MySQL + 本地落盘头像（`/media/avatars/...`），但历史用户数据里可能仍残留旧的 `cloud://...` 头像 URL。
+
+典型现象：
+
+- 小程序渲染层报：`Failed to load local image resource ... cloud://... (HTTP 500)`
+
+此时需要在 MySQL 里查清楚这串 `cloud://...` 究竟写在哪个字段/哪张表里，而不是只盯 `users.avatar_url`。
+
+### 2) 只更新 `users.avatar_url` 不够：活动列表用的是参与者快照缓存
+
+活动参与者表 `activity_participants` 存了快照字段：
+
+- `nickname_snapshot`
+- `avatar_url_snapshot`
+
+活动列表/详情展示参与者信息时会直接使用这些快照（这是为了“报名时刻的昵称/头像”可追溯）。
+
+因此：
+
+- 你更新了 `users.avatar_url` 之后，**历史活动**里仍可能继续展示旧的 `avatar_url_snapshot`（包括 `cloud://...`）
+- 需要同步更新 `activity_participants.avatar_url_snapshot`（按 `user_id` 批量更新最稳）
+
+### 3) 线上 MySQL 最稳的查询方式：用 stdin 管道喂给 `mysql`
+
+从 Windows/PowerShell 远程执行 `mysql -e "..."` 很容易被多层引号转义坑到。
+更稳的方式是把 SQL 走 stdin 管道传给服务器上的 `mysql`：
+
+```powershell
+'SELECT id,nickname,avatar_url FROM users WHERE avatar_url LIKE ''%needle%'' LIMIT 1;' |
+  ssh ubuntu@<server> 'sudo mysql -N -D dragon_reserve'
+```
+
+同样方式可用于更新并回读验证：
+
+```powershell
+@'
+UPDATE users SET avatar_url='https://example.com/media/avatars/xxx.jpg' WHERE id=123 LIMIT 1;
+UPDATE activity_participants SET avatar_url_snapshot='https://example.com/media/avatars/xxx.jpg' WHERE user_id=123;
+SELECT id,nickname,avatar_url FROM users WHERE id=123;
+SELECT id,nickname_snapshot,avatar_url_snapshot FROM activity_participants WHERE user_id=123 LIMIT 5;
+'@ | ssh ubuntu@<server> 'sudo mysql -N -D dragon_reserve'
+```
+
+### 3.1) 为什么“刚开始死活连不上”，后面又能连上？
+
+这是两件事叠加导致的：
+
+- **连的不是同一个库**：一开始走的是 `scripts/start_backend_test.ps1` + `backend/.env.test`，它指向的是测试库（例如 `dragon_reserve_test`，并通过 SSH 本地转发到 `127.0.0.1:3307`）。这套数据量可能很小，也不一定包含生产用户/头像数据。
+- **Windows 远程执行的引号转义问题**：在 PowerShell → `ssh` → 远端 `bash` → `mysql -e "..."` 这条链路里，引号/反斜杠非常容易被吃掉，表现为远端 `mysql` 误解析参数然后只打印 usage、或 SQL 被截断。
+
+后面能连上，是因为改成了更稳的方式：
+
+- **直接在生产服务器执行 `sudo mysql`**（生产机本地 socket/权限/默认配置齐全）
+- **通过 stdin 管道传 SQL**（避免 `-e` + 多层引号转义）
+
+### 4) “文件扩展名”和“实际图片格式”必须一致
+
+如果你手工上传头像文件到 `backend/storage/avatars/`，要注意：
+
+- 文件名扩展名（`.png`/`.jpg`）应与实际内容一致
+- 否则某些客户端（尤其是小程序 WebView/渲染层）可能出现“加载失败/解码失败/缓存异常”
+
+建议：要么上传前就统一转码，要么在落盘时用后端统一生成的文件名与扩展名（推荐走正式接口 `POST /api/v1/users/me/avatar`）。
+
+### 5) 小程序端头像联调新增踩坑（本次）
+
+这次测试库批量写头像时，踩到的坑主要在“小程序图片加载约束”和“测试数据写入方式”：
+
+- 小程序里不能用 `fetch` 做日志上报或网络请求，统一使用 `wx.request`
+- 微信 `<image>` 对 HTTP 地址会直接拦截（例如 `http://127.0.0.1:8001/media/...`），报“请升级到 HTTPS”
+- 因为上条限制，本地联调时不要把头像渲染 URL 直接拼成 HTTP 后端地址
+- 测试头像建议走小程序本地静态资源（例如 `/images/avatars/test-avatar-xx.svg`）或正式 HTTPS 域名
+- 批量修头像时要同时更新：
+  - `users.avatar_url`
+  - `activity_participants.avatar_url_snapshot`
+  否则活动列表仍会显示旧头像快照
+- 如果测试库通过 SSH 隧道连接，先确认 `127.0.0.1:3307` 可用，再执行批量脚本；隧道断开会导致“写到一半失败”
+
+本次新增的测试数据脚本（便于复用）：
+
+- `backend/scripts/seed_test_activities.py`：批量造活动和参与者
+- `backend/scripts/fix_test_avatar_urls.py`：批量替换无效头像 URL（如 `example.com`）
+- `backend/scripts/assign_test_avatars.py`：生成/分配测试头像
+
 ## 环境建设
 
 当前仓库已经补齐本地开发所需的基础环境文件：

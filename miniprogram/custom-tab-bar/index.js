@@ -22,7 +22,8 @@ Component({
       const currentPage = pages[pages.length - 1];
       const route = currentPage ? currentPage.route : '';
       const idx = ROUTES.indexOf(route);
-      this.setData({ selected: idx >= 0 ? idx : 0 });
+      const isAdmin = getApp().globalData.userRole === 'admin';
+      this.setData({ selected: idx >= 0 ? idx : 0, isAdmin });
     },
   },
 
