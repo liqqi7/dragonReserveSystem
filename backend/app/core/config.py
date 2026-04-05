@@ -1,9 +1,23 @@
 """Application configuration."""
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# backend/ — load .env then .env.test when present so WECHAT_* work without relying on
+# uvicorn injecting --env-file into os.environ (unreliable on Windows + --reload).
+_BACKEND_DIR = Path(__file__).resolve().parents[2]
+
+
+def _env_files() -> tuple[Path | str, ...]:
+    paths: list[Path] = []
+    for name in (".env", ".env.test"):
+        p = _BACKEND_DIR / name
+        if p.is_file():
+            paths.append(p)
+    return tuple(paths) if paths else (_BACKEND_DIR / ".env",)
 
 
 class Settings(BaseSettings):
@@ -38,7 +52,7 @@ class Settings(BaseSettings):
     cors_origins: list[str] = Field(default_factory=lambda: ["*"])
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_env_files(),
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -49,4 +63,12 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Return cached application settings."""
 
-    return Settings()
+    s = Settings()
+    env_test = _BACKEND_DIR / ".env.test"
+    if env_test.is_file() and env_test.stat().st_size == 0:
+        import logging
+
+        logging.getLogger("dragon.reserve").warning(
+            "backend/.env.test exists but is empty (0 bytes). Save the file in your editor or WECHAT_* will stay unset."
+        )
+    return s

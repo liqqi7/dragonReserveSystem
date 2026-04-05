@@ -23,6 +23,7 @@ backend/.alembic_cache/
 .DS_Store
 .idea/
 .vscode/
+.cursor/debug-*.log
 
 # Project-local artifacts
 backend/.coverage

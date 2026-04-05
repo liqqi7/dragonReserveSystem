@@ -1,6 +1,7 @@
 const app = getApp();
 const activityService = require("../../services/activity");
 const { createTraceId, logInfo, logError, summarizeError } = require("../../services/logger");
+const { enrichSingleActivity } = require("../../utils/activityEnrich");
 
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 
@@ -288,29 +289,6 @@ const SWIPE_MOVE_SMOOTHING = {
   minStepPx: 0,
   maxStepPxPerFrame: Infinity
 };
-const SHARE_PREVIEW_CANVAS_ID = "activitySharePreviewCanvas";
-const SHARE_PREVIEW_LAYOUT_VERSION = "v14";
-const SHARE_PREVIEW_WIDTH = 275;
-const SHARE_PREVIEW_HEIGHT = 220;
-const SHARE_PREVIEW_EXPORT_RETRY_DELAYS = [80, 180, 320];
-const SHARE_PREVIEW_STATUS_POLL_DELAY_MS = 800;
-const SHARE_PREVIEW_STATUS_MAX_POLLS = 6;
-const SHARE_PREVIEW_DOWNLOAD_TIMEOUT_MS = 60000;
-const SHARE_PREVIEW_REQUEST_RETRY_DELAYS = [800, 1800];
-const SHARE_PREVIEW_DOWNLOAD_RETRY_DELAYS = [800, 1800];
-const SHARE_PREVIEW_STALL_TIMEOUT_MS = 25000;
-const SHARE_PREVIEW_INFO_HEIGHT = 31;
-const SHARE_PREVIEW_INFO_TOP = SHARE_PREVIEW_HEIGHT - SHARE_PREVIEW_INFO_HEIGHT;
-const SHARE_PREVIEW_ART_HEIGHT = SHARE_PREVIEW_INFO_TOP;
-const SHARE_PREVIEW_PADDING_X = 16;
-const SHARE_PREVIEW_AVATAR_LAYOUT = [
-  { top: 6, left: 36, size: 108 },
-  { top: 56, left: 161, size: 84 },
-  { top: 120, left: 105, size: 64 }
-];
-const SHARE_PREVIEW_DIR = "activity-share-previews";
-const SHARE_LOCATION_ICON_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAACE4AAAhOAFFljFgAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAA61JREFUeAG9WTtSG0EQ7VU5RRfgApYPADnCsQtyLB9AOJYhpoxjMLFgcz6xgRyZXJCjC8AB5G7Ui9+25re7Eq+qS1s7M91ve7p7PsqoAabT6Sr/bLJ0WNZY2iwr2vzC8sQyYRmxXGdZNqGayKgimJwQ2VaCa9VG05jllAlfUEVUIsoku/yzz7JKzSCePapCOImoevEXS9fRfMdyo8bFY8/6XsJAPqij49YdYy+UcDQkokQ1DnMqe1Hib0izaXyhBKieHs3CZgWahOROjGxWg+Q1yyCVoEdnXwlXIutVyHLL8gjylRYE1tU3um/1IyorOjGKtmjBEJ3GRt5UQZ+WBNbdS5m1zDHQxuU5x84PihuUmiq1ta2vpNiPeOwoYewJ/a8oUjU2bA58cIxbA5IS3McUNiJ9D8lT/Lk9JVEGLLc0qwbyoT1rt+UYtAvP5yEDTEJq5BWFVyj5kEvu+9HXgW2IF4fwqmf7tIxh9KbgIkBS+v2mck28U4MiY3gvXsojWX2G/ZXLG+zUY+NdZLrE82j4gPujsddE4Z89ICtjBi5l4lXuPwIO8vsW33bqcZm7pjA24fnIklTjp9IGr7Z0OfYBbZZCxRJtw/MDeaDTggZDmwv5AMzgUDzjDH7CBksUv+KZ0jAJhYgmCupqkx8Y16V4bgUGpa7lKwl9kFyqA0poUT1gWMxlKMIRJt6QooC3LVGcwljdwxXn0FV6YDEoMI5UErv9e8MHB9HCYGwnI9mcQ1+pk5K1ReZKBekZ46cRnR14fsIG61EM5s8UgK7hWHqKjXGu0jckU44e6x4uc0RLdSxS84TssSHrw4H29YJtSXziUeeGfETVS0W2y8DoHlQJbLCcU9kLMnVDmu2EzigOJDmJ7rr4y/Zgb3hJ7wRzmvhp213lCQO+o0fkpUJPD5i8c2EyR1TLB7p9PxarC0B0a+kr+LjDKbJ5KWAn2F2YM+mcRPWLMAR2QxvfuoCjc4Ghb0HIAkok6yWZ8Fjype553qFfwukqVb93rddl0obAPi0O36k85YNGTjDl6lFjqhFEx1KO43IxsKjLCB67bXSlLAbJt3k2XgUSTw9UAXpqxUUk+c4paT+q8bpD5a1XXqUSKMm8DsnKEGMs9zBtf1PIOsbdK/HlwUO2G+jffXeSAbLOyy3HBVhtkpX/bECyNLspscvfH5ptFb+xIHl5JzE5phqoTVQwdd9Iu9A4ceqeQl+hhm01sBAPNs7uRh5F6CIgu6wiBuXCbBQ7gqTiH4VmkOXCcuNDAAAAAElFTkSuQmCC";
-const SHARE_PEOPLE_ICON_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAACXBIWXMAACE4AAAhOAFFljFgAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAtRJREFUeAHtWDtSG0EQ7SU3F9gLWD6AOIDs2CVymdwlO6ZwjpQjO7ZMLnAO5FofQDjHF5APIPdjG9y05rdiNgD0qroYr9/0PGame7oh2uKFoqANsVqtSv5Ryj8XRVH8pRbRSKiIO2DbZ3tl/nvBNmXBZ4G5P9mWbBXbCXP/UG6hvBAEfnIItMDiAyuC5w9lvsaEeSeUgJ0UEi+CBY6MSBz1XEwDO3cqO6iBnbY7OBTfjwc76rP9VnbO1jWcEjtmeKcef122K8Pt0mNhnH6NcDtGQD/A/aZ4VxTBTmTht/Q/snFsxyE+3zcElL5z+wH6IdXXByhjuxq7o3ryPDFKf+j5LMAZfOwL0f9dfepRADGhHTU+owSIgGv1qQzQU3lpUb8Blmq8m4EXFXqjxq8pHaVHzKa8qFB9NO8oARIUdwKWfBWuA3TtswrwokL1vURg9CiOsRpf+EiSurS/SwogKFQCY6pF+HIjohu5kR4e58TDxa5/UZ9msYwSfevZKS75uRGAY5pRnVuRfvZovVBB0TExvpCXUTPotOesDRoLlQVu32+KpJCISJzE2PCSRAJJ6UkcDajexRDuFnYduU0/8PU+tdRrXDjL7uIIcXw4ajyDSGOXvGgVmdsXwbO2C+0tng1S0hPuIe7lLjVD1obPK1SSMtoEVFCxPskHRDQejAtfdEsngLXwik19AVk4JkLUZ7YPlA8Q+dG+++gIqH5MNCD2OEUoJnbM5xtab8xieEPrJzHQOyav3ojqdKdRMW/gc3zbbZqeZ+ToJpMhjaHuuX65/ElzODJrH/mcloY4pAwQv1rsOMC1nez9L6Wf0AM1nnuewcaQIDpUn3qBPgpr6mDqu4TuqXEWkUpApQTgXoY6Tt3F3t9dLVS3GgvKD+2zccPnrJ5aKhiSGjkp1td4bXWh2bEVmhtaaGV+5kblGYe4bp78NW7TAiQKSf5JL13bWrZ4MvgHiNDPxWv2XvkAAAAASUVORK5CYII=";
 
 function normalizeAvatarUrl(url) {
   const value = (url && String(url).trim()) || "";
@@ -399,64 +377,6 @@ function pickCardMediaMetaFromDataset(dataset, mediaType) {
   };
 }
 
-function buildSharePreviewCacheKey(activity) {
-  if (!activity || !activity._id) return "";
-  const participantFingerprint = Array.isArray(activity.participants)
-    ? activity.participants
-      .map((participant) => participant.id || participant.userId || participant.name || "")
-      .join(",")
-    : "";
-  return [
-    SHARE_PREVIEW_LAYOUT_VERSION,
-    activity._id,
-    activity.activityStyleKey || "",
-    activity.largeCardBgImageUrl || "",
-    activity.smallCardBgImageUrl || "",
-    activity.showAvatarCluster ? "1" : "0",
-    activity.bgVideoUrl || "",
-    activity.name || "",
-    activity.locationName || "",
-    participantFingerprint,
-    Array.isArray(activity.participants) ? activity.participants.length : 0,
-    activity.maxParticipants == null ? "" : activity.maxParticipants
-  ].join("|");
-}
-
-function getShareParticipantText(activity) {
-  const count = Array.isArray(activity && activity.participants) ? activity.participants.length : 0;
-  if (activity && activity.maxParticipants != null) {
-    return `${count}/${activity.maxParticipants} \u4eba`;
-  }
-  if (count > 0) {
-    return `${count} \u4eba`;
-  }
-  return "0 \u4eba";
-}
-
-function truncateCanvasText(ctx, text, maxWidth) {
-  const value = String(text || "");
-  if (!value || !ctx || typeof ctx.measureText !== "function") return value;
-  if (ctx.measureText(value).width <= maxWidth) return value;
-  let result = value;
-  while (result.length > 0 && ctx.measureText(`${result}...`).width > maxWidth) {
-    result = result.slice(0, -1);
-  }
-  return result ? `${result}...` : "";
-}
-
-function hashString(value) {
-  const source = String(value || "");
-  let hash = 0;
-  for (let i = 0; i < source.length; i += 1) {
-    hash = ((hash << 5) - hash) + source.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
-
-function wait(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 Page({
   data: {
@@ -471,7 +391,6 @@ Page({
     mainScrollEnabled: true,
     isGroupSwiping: false,
     showEditModal: false,
-    showDetailModal: false,
     currentActivity: null,
     editForm: {
       // 活动名称
@@ -504,14 +423,6 @@ Page({
     },
     myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
     myNickname: "", // 当前用户昵称（userId 为空时的回退，兼容旧数据）
-    detailActivity: null,
-    shareActivityId: "",   // 用于分享小程序卡片时带上活动 id
-    shareActivityName: "", // 分享卡片标题
-    shareImageUrl: "",
-    shareImageCacheKey: "",
-    shareImagePending: false,
-    shareNeedsCustomPreview: false,
-    shareImageError: false,
     locationDisabled: false,
     isAdmin: false,
     isGuest: true,
@@ -527,16 +438,14 @@ Page({
   },
 
   onLoad(options) {
-    this._sharePreviewCache = {};
-    this._sharePreviewPromises = {};
-    this._sharePreviewIcons = null;
-    this._sharePreviewIconPromise = null;
-    this._sharePreviewDirReadyPromise = null;
-    this._activeSharePreviewKey = "";
-    this._sharePreviewPollTimer = null;
+    const aid = options && options.activityId;
+    if (aid) {
+      wx.redirectTo({
+        url: `/pages/activity_detail/activity_detail?id=${encodeURIComponent(String(aid))}`
+      });
+      return;
+    }
     this.syncGuestState();
-    this._openActivityIdFromShare = (options && options.activityId) || "";
-    this._fromShare = !!(options && options.from === "share");
     // 计算自定义导航栏高度
     try {
       const windowInfo = wx.getWindowInfo();
@@ -554,6 +463,14 @@ Page({
   onShow() {
     const isGuest = this.syncGuestState();
     if (!isGuest) {
+      let pendingEdit = "";
+      try {
+        pendingEdit = wx.getStorageSync("pendingEditActivityId") || "";
+        if (pendingEdit) wx.removeStorageSync("pendingEditActivityId");
+      } catch (e) {
+        console.error(e);
+      }
+      if (pendingEdit) this._pendingEditActivityId = String(pendingEdit);
       const isAdmin = app.globalData.userRole === "admin";
       const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
       const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
@@ -572,15 +489,11 @@ Page({
 
   onHide() {
     this._clearCardMediaDiagnostics();
-    this._clearSharePreviewPolling();
-    this._activeSharePreviewKey = "";
     this._setTabBarHidden(false);
   },
 
   onUnload() {
     this._clearCardMediaDiagnostics();
-    this._clearSharePreviewPolling();
-    this._activeSharePreviewKey = "";
     this._setTabBarHidden(false);
   },
 
@@ -592,546 +505,9 @@ Page({
   },
 
   _syncTabBarVisibility() {
-    this._setTabBarHidden(!!(this.data.showEditModal || this.data.showDetailModal));
+    this._setTabBarHidden(!!this.data.showEditModal);
   },
 
-  _clearSharePreviewPolling() {
-    if (this._sharePreviewPollTimer) {
-      clearTimeout(this._sharePreviewPollTimer);
-      this._sharePreviewPollTimer = null;
-    }
-    if (this._sharePreviewStallTimer) {
-      clearTimeout(this._sharePreviewStallTimer);
-      this._sharePreviewStallTimer = null;
-    }
-  },
-
-  _armSharePreviewStallGuard(cacheKey) {
-    if (!cacheKey) return;
-    if (this._sharePreviewStallTimer) {
-      clearTimeout(this._sharePreviewStallTimer);
-    }
-    this._sharePreviewStallTimer = setTimeout(() => {
-      if (this._activeSharePreviewKey !== cacheKey) return;
-      delete this._sharePreviewPromises[cacheKey];
-      this.setData({
-        shareImagePending: false,
-        shareImageError: true
-      });
-      this._sharePreviewStallTimer = null;
-    }, SHARE_PREVIEW_STALL_TIMEOUT_MS);
-  },
-
-  _prepareSharePreviewForActivity(activity, options = {}) {
-    const cacheKey = buildSharePreviewCacheKey(activity);
-    const canGenerate = !!(activity && activity.smallCardBgImageUrl && !activity.bgVideoUrl);
-    this._activeSharePreviewKey = cacheKey || "";
-    const pollAttempt = Number(options.pollAttempt || 0);
-    const requestAttempt = Number(options.requestAttempt || 0);
-
-    if (!canGenerate || !cacheKey) {
-      this._clearSharePreviewPolling();
-      if (this.data.shareImageUrl || this.data.shareImageCacheKey || this.data.shareImagePending || this.data.shareNeedsCustomPreview) {
-        this.setData({
-          shareImageUrl: "",
-          shareImageCacheKey: "",
-          shareImagePending: false,
-          shareNeedsCustomPreview: false,
-          shareImageError: false
-        });
-      }
-      return Promise.resolve("");
-    }
-
-    if (pollAttempt === 0 || options.force || this.data.shareImageCacheKey !== cacheKey || this.data.shareImageUrl || !this.data.shareImagePending || !this.data.shareNeedsCustomPreview || this.data.shareImageError) {
-      this.setData({
-        shareImageUrl: "",
-        shareImageCacheKey: cacheKey,
-        shareImagePending: true,
-        shareNeedsCustomPreview: true,
-        shareImageError: false
-      });
-    }
-    this._armSharePreviewStallGuard(cacheKey);
-
-    if (this._sharePreviewPromises[cacheKey]) {
-      return this._sharePreviewPromises[cacheKey];
-    }
-
-    const promise = Promise.resolve()
-      .then(() => {
-        const cachedUrl = !options.force ? (this._sharePreviewCache[cacheKey] || "") : "";
-        if (!cachedUrl || options.force) return "";
-        if (cachedUrl.startsWith(wx.env.USER_DATA_PATH || "")) {
-          return this._getExistingSharePreviewPersistedPath(cacheKey, activity)
-            .then((existingPath) => existingPath || "");
-        }
-        return cachedUrl;
-      })
-      .then((cachedUrl) => {
-        if (cachedUrl && !options.force) {
-          this._clearSharePreviewPolling();
-          if (this.data.shareImageUrl !== cachedUrl || this.data.shareImageCacheKey !== cacheKey || this.data.shareImagePending || !this.data.shareNeedsCustomPreview || this.data.shareImageError) {
-            this.setData({
-              shareImageUrl: cachedUrl,
-              shareImageCacheKey: cacheKey,
-              shareImagePending: false,
-              shareNeedsCustomPreview: true,
-              shareImageError: false
-            });
-          }
-          return cachedUrl;
-        }
-        return activityService.getActivitySharePreview(activity._id);
-      })
-      .then((result) => {
-        if (typeof result === "string") {
-          return result;
-        }
-        const status = String(result && result.status || "").trim();
-        const imageUrl = String(result && result.image_url || "").trim();
-        if (status === "ready" && imageUrl) {
-          return this._downloadSharePreviewToLocal(cacheKey, imageUrl, activity)
-            .then((localPath) => {
-              if (!localPath) {
-                throw new Error("share preview local path missing");
-              }
-              this._clearSharePreviewPolling();
-              this._sharePreviewCache[cacheKey] = localPath;
-              if (this._activeSharePreviewKey === cacheKey) {
-                this.setData({
-                  shareImageUrl: localPath,
-                  shareImageCacheKey: cacheKey,
-                  shareImagePending: false,
-                  shareNeedsCustomPreview: true,
-                  shareImageError: false
-                });
-              }
-              return localPath;
-            });
-        }
-
-        if (status === "pending" && this._activeSharePreviewKey === cacheKey && pollAttempt < SHARE_PREVIEW_STATUS_MAX_POLLS - 1) {
-          this.setData({
-            shareImageUrl: "",
-            shareImageCacheKey: cacheKey,
-            shareImagePending: true,
-            shareNeedsCustomPreview: true,
-            shareImageError: false
-          });
-          this._clearSharePreviewPolling();
-          this._sharePreviewPollTimer = setTimeout(() => {
-            this._prepareSharePreviewForActivity(activity, { pollAttempt: pollAttempt + 1 });
-          }, SHARE_PREVIEW_STATUS_POLL_DELAY_MS);
-          return "";
-        }
-
-        this._clearSharePreviewPolling();
-        if (this._activeSharePreviewKey === cacheKey) {
-          this.setData({
-            shareImageUrl: "",
-            shareImageCacheKey: cacheKey,
-            shareImagePending: false,
-            shareNeedsCustomPreview: true,
-            shareImageError: true
-          });
-        }
-        return "";
-      })
-      .catch((err) => {
-        if (requestAttempt < SHARE_PREVIEW_REQUEST_RETRY_DELAYS.length && this._activeSharePreviewKey === cacheKey) {
-          delete this._sharePreviewPromises[cacheKey];
-          return wait(SHARE_PREVIEW_REQUEST_RETRY_DELAYS[requestAttempt]).then(() =>
-            this._prepareSharePreviewForActivity(activity, {
-              ...options,
-              requestAttempt: requestAttempt + 1,
-              pollAttempt
-            })
-          );
-        }
-        this._clearSharePreviewPolling();
-        if (this._activeSharePreviewKey === cacheKey) {
-          this.setData({
-            shareImageUrl: "",
-            shareImageCacheKey: cacheKey,
-            shareImagePending: false,
-            shareNeedsCustomPreview: true,
-            shareImageError: true
-          });
-        }
-        return "";
-      })
-      .finally(() => {
-        delete this._sharePreviewPromises[cacheKey];
-      });
-
-    this._sharePreviewPromises[cacheKey] = promise;
-    return promise;
-  },
-
-  _generateSharePreviewImage(activity) {
-    if (!activity || !activity.smallCardBgImageUrl || activity.bgVideoUrl) {
-      return Promise.resolve("");
-    }
-
-    const avatarCandidates = [];
-    if (activity.showAvatarCluster && Array.isArray(activity.cardAvatars)) {
-      const avatars = activity.cardAvatars;
-      if (avatars.length >= 1) avatarCandidates.push(avatars[avatars.length - 1]);
-      if (avatars.length >= 2) avatarCandidates.push(avatars[avatars.length - 2]);
-      if (avatars.length >= 3) avatarCandidates.push(avatars[avatars.length - 3]);
-    }
-
-    return this._loadShareImageSource(activity.smallCardBgImageUrl)
-      .then((backgroundImage) => Promise.all([
-        Promise.resolve(backgroundImage),
-        Promise.all(avatarCandidates.map((avatar) => this._loadShareImageSource(avatar && avatar.url).catch(() => null))),
-        this._loadSharePreviewIcons().catch(() => ({}))
-      ]))
-      .then(([backgroundImage, avatarImages, icons]) => new Promise((resolve, reject) => {
-        const ctx = wx.createCanvasContext(SHARE_PREVIEW_CANVAS_ID, this);
-        ctx.clearRect(0, 0, SHARE_PREVIEW_WIDTH, SHARE_PREVIEW_HEIGHT);
-        ctx.setFillStyle("#111827");
-        ctx.fillRect(0, 0, SHARE_PREVIEW_WIDTH, SHARE_PREVIEW_HEIGHT);
-
-        this._drawSharePreviewBackground(ctx, backgroundImage);
-        this._drawSharePreviewInfoBackdrop(ctx, backgroundImage);
-        if (activity.showAvatarCluster) {
-          this._drawSharePreviewAvatarCluster(ctx, avatarImages.filter(Boolean));
-        }
-        this._drawSharePreviewInfo(ctx, activity, icons || {});
-
-        ctx.draw(false, () => {
-          this._exportSharePreviewCanvas(0)
-            .then(resolve)
-            .catch(reject);
-        });
-      }));
-  },
-
-  _exportSharePreviewCanvas(attemptIndex = 0) {
-    const delay = SHARE_PREVIEW_EXPORT_RETRY_DELAYS[attemptIndex] || 0;
-    return wait(delay).then(() => new Promise((resolve, reject) => {
-      wx.canvasToTempFilePath({
-        canvasId: SHARE_PREVIEW_CANVAS_ID,
-        width: SHARE_PREVIEW_WIDTH,
-        height: SHARE_PREVIEW_HEIGHT,
-        destWidth: SHARE_PREVIEW_WIDTH * 2,
-        destHeight: SHARE_PREVIEW_HEIGHT * 2,
-        fileType: "png",
-        success: (res) => resolve(res.tempFilePath || ""),
-        fail: (err) => {
-          if (attemptIndex < SHARE_PREVIEW_EXPORT_RETRY_DELAYS.length - 1) {
-            this._exportSharePreviewCanvas(attemptIndex + 1).then(resolve).catch(reject);
-            return;
-          }
-          reject(err);
-        }
-      }, this);
-    }));
-  },
-
-  _loadShareImageSource(url) {
-    const source = String(url || "").trim();
-    if (!source) return Promise.reject(new Error("missing share image source"));
-    return new Promise((resolve, reject) => {
-      wx.getImageInfo({
-        src: source,
-        success: resolve,
-        fail: reject
-      });
-    });
-  },
-
-  _loadSharePreviewIcons() {
-    if (this._sharePreviewIcons) {
-      return Promise.resolve(this._sharePreviewIcons);
-    }
-    if (this._sharePreviewIconPromise) {
-      return this._sharePreviewIconPromise;
-    }
-    this._sharePreviewIconPromise = this._ensureSharePreviewDir()
-      .then((dirPath) => Promise.all([
-        this._ensureSharePreviewIconFile(`${dirPath}/icon-location.png`, SHARE_LOCATION_ICON_BASE64)
-          .then((filePath) => this._loadShareImageSource(filePath))
-          .catch(() => null),
-        this._ensureSharePreviewIconFile(`${dirPath}/icon-people.png`, SHARE_PEOPLE_ICON_BASE64)
-          .then((filePath) => this._loadShareImageSource(filePath))
-          .catch(() => null)
-      ]))
-      .then(([locationIcon, peopleIcon]) => {
-        this._sharePreviewIcons = { locationIcon, peopleIcon };
-        return this._sharePreviewIcons;
-      })
-      .finally(() => {
-        this._sharePreviewIconPromise = null;
-      });
-    return this._sharePreviewIconPromise;
-  },
-
-  _ensureSharePreviewIconFile(filePath, base64Content) {
-    if (!filePath || !base64Content) {
-      return Promise.reject(new Error("share preview icon source missing"));
-    }
-    return new Promise((resolve, reject) => {
-      const fs = wx.getFileSystemManager();
-      fs.access({
-        path: filePath,
-        success: () => resolve(filePath),
-        fail: () => {
-          fs.writeFile({
-            filePath,
-            data: base64Content,
-            encoding: "base64",
-            success: () => resolve(filePath),
-            fail: reject
-          });
-        }
-      });
-    });
-  },
-
-  _ensureSharePreviewDir() {
-    if (this._sharePreviewDirReadyPromise) {
-      return this._sharePreviewDirReadyPromise;
-    }
-    const fs = wx.getFileSystemManager();
-    const userDataPath = wx.env && wx.env.USER_DATA_PATH;
-    if (!fs || !userDataPath) {
-      return Promise.reject(new Error("share preview fs unavailable"));
-    }
-    const dirPath = `${userDataPath}/${SHARE_PREVIEW_DIR}`;
-    this._sharePreviewDirReadyPromise = new Promise((resolve, reject) => {
-      fs.access({
-        path: dirPath,
-        success: () => resolve(dirPath),
-        fail: () => {
-          fs.mkdir({
-            dirPath,
-            recursive: true,
-            success: () => resolve(dirPath),
-            fail: reject
-          });
-        }
-      });
-    }).catch((err) => {
-      this._sharePreviewDirReadyPromise = null;
-      throw err;
-    });
-    return this._sharePreviewDirReadyPromise;
-  },
-
-  _persistSharePreviewFile(cacheKey, tempFilePath, activity) {
-    if (!tempFilePath) return Promise.resolve("");
-    return this._ensureSharePreviewDir()
-      .then((dirPath) => new Promise((resolve) => {
-        const fs = wx.getFileSystemManager();
-        const fileName = `activity-${activity && activity._id ? activity._id : "preview"}-${hashString(cacheKey)}.png`;
-        const targetPath = `${dirPath}/${fileName}`;
-        fs.copyFile({
-          srcPath: tempFilePath,
-          destPath: targetPath,
-          success: () => resolve(targetPath),
-          fail: () => {
-            fs.unlink({
-              filePath: targetPath,
-              success: () => {
-                fs.copyFile({
-                  srcPath: tempFilePath,
-                  destPath: targetPath,
-                  success: () => resolve(targetPath),
-                  fail: () => resolve(tempFilePath)
-                });
-              },
-              fail: () => resolve(tempFilePath)
-            });
-          }
-        });
-      }))
-      .catch(() => tempFilePath);
-  },
-
-  _getSharePreviewPersistedPath(cacheKey, activity) {
-    const userDataPath = wx.env && wx.env.USER_DATA_PATH;
-    if (!userDataPath || !cacheKey) return "";
-    const fileName = `activity-${activity && activity._id ? activity._id : "preview"}-${hashString(cacheKey)}.png`;
-    return `${userDataPath}/${SHARE_PREVIEW_DIR}/${fileName}`;
-  },
-
-  _getExistingSharePreviewPersistedPath(cacheKey, activity) {
-    const persistedPath = this._getSharePreviewPersistedPath(cacheKey, activity);
-    if (!persistedPath) return Promise.resolve("");
-    return new Promise((resolve) => {
-      const fs = wx.getFileSystemManager();
-      if (!fs || typeof fs.access !== "function") {
-        resolve("");
-        return;
-      }
-      fs.access({
-        path: persistedPath,
-        success: () => resolve(persistedPath),
-        fail: () => resolve("")
-      });
-    });
-  },
-
-  _downloadSharePreviewToLocal(cacheKey, remoteUrl, activity, attempt = 0) {
-    if (!cacheKey || !remoteUrl) return Promise.resolve("");
-    return this._getExistingSharePreviewPersistedPath(cacheKey, activity)
-      .then((existingPath) => {
-        if (existingPath) {
-          return existingPath;
-        }
-        return new Promise((resolve, reject) => {
-          wx.downloadFile({
-            url: remoteUrl,
-            timeout: SHARE_PREVIEW_DOWNLOAD_TIMEOUT_MS,
-            success: (res) => {
-              if (res.statusCode >= 200 && res.statusCode < 300 && res.tempFilePath) {
-                this._persistSharePreviewFile(cacheKey, res.tempFilePath, activity)
-                  .then((localPath) => {
-                    const finalPath = localPath || res.tempFilePath;
-                    resolve(finalPath);
-                  })
-                  .catch(reject);
-                return;
-              }
-              reject(new Error(`share preview download failed: ${res.statusCode || "unknown"}`));
-            },
-            fail: reject
-          });
-        });
-      })
-      .catch((err) => {
-        if (attempt < SHARE_PREVIEW_DOWNLOAD_RETRY_DELAYS.length) {
-          return wait(SHARE_PREVIEW_DOWNLOAD_RETRY_DELAYS[attempt]).then(() =>
-            this._downloadSharePreviewToLocal(cacheKey, remoteUrl, activity, attempt + 1)
-          );
-        }
-        throw err;
-      });
-  },
-
-  _getSharePreviewBackgroundLayout(imageInfo) {
-    if (!imageInfo || !imageInfo.path || !imageInfo.width || !imageInfo.height) return null;
-    const scale = Math.max(
-      SHARE_PREVIEW_WIDTH / imageInfo.width,
-      SHARE_PREVIEW_HEIGHT / imageInfo.height
-    );
-    const drawWidth = imageInfo.width * scale;
-    const drawHeight = imageInfo.height * scale;
-    const drawX = (SHARE_PREVIEW_WIDTH - drawWidth) / 2;
-    const drawY = (SHARE_PREVIEW_HEIGHT - drawHeight) / 2;
-    return { drawX, drawY, drawWidth, drawHeight };
-  },
-
-  _drawSharePreviewBackground(ctx, imageInfo) {
-    if (!ctx) return;
-    const layout = this._getSharePreviewBackgroundLayout(imageInfo);
-    if (!layout || !imageInfo || !imageInfo.path) return;
-    const { drawX, drawY, drawWidth, drawHeight } = layout;
-    ctx.drawImage(imageInfo.path, drawX, drawY, drawWidth, drawHeight);
-  },
-
-  _drawSharePreviewAvatarCluster(ctx, avatarImages) {
-    if (!ctx || !Array.isArray(avatarImages) || !avatarImages.length) return;
-
-    avatarImages.slice(0, SHARE_PREVIEW_AVATAR_LAYOUT.length).forEach((imageInfo, index) => {
-      const layout = SHARE_PREVIEW_AVATAR_LAYOUT[index];
-      if (!layout || !imageInfo || !imageInfo.path) return;
-      const radius = layout.size / 2;
-      const centerX = layout.left + radius;
-      const centerY = layout.top + radius;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2, false);
-      ctx.clip();
-      ctx.drawImage(imageInfo.path, layout.left, layout.top, layout.size, layout.size);
-      ctx.restore();
-    });
-  },
-
-  _drawSharePreviewInfoBackdrop(ctx, backgroundImage) {
-    if (!ctx) return;
-    const layout = this._getSharePreviewBackgroundLayout(backgroundImage);
-    if (layout && backgroundImage && backgroundImage.path) {
-      const blurPasses = [
-        { dx: 0, dy: 0, alpha: 0.26 },
-        { dx: -2, dy: 0, alpha: 0.08 },
-        { dx: 2, dy: 0, alpha: 0.08 },
-        { dx: 0, dy: -2, alpha: 0.08 },
-        { dx: 0, dy: 2, alpha: 0.08 },
-        { dx: -4, dy: 0, alpha: 0.04 },
-        { dx: 4, dy: 0, alpha: 0.04 },
-        { dx: 0, dy: -4, alpha: 0.04 },
-        { dx: 0, dy: 4, alpha: 0.04 }
-      ];
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(0, SHARE_PREVIEW_INFO_TOP, SHARE_PREVIEW_WIDTH, SHARE_PREVIEW_INFO_HEIGHT);
-      ctx.clip();
-      blurPasses.forEach((pass) => {
-        ctx.setGlobalAlpha(pass.alpha);
-        ctx.drawImage(
-          backgroundImage.path,
-          layout.drawX + pass.dx,
-          layout.drawY + pass.dy,
-          layout.drawWidth,
-          layout.drawHeight
-        );
-      });
-      ctx.restore();
-      ctx.setGlobalAlpha(1);
-    }
-
-    const gradient = ctx.createLinearGradient(0, SHARE_PREVIEW_INFO_TOP, 0, SHARE_PREVIEW_HEIGHT);
-    gradient.addColorStop(0, "rgba(0, 0, 0, 0.20)");
-    gradient.addColorStop(1, "rgba(0, 0, 0, 0.40)");
-    ctx.setFillStyle(gradient);
-    ctx.fillRect(0, SHARE_PREVIEW_INFO_TOP, SHARE_PREVIEW_WIDTH, SHARE_PREVIEW_INFO_HEIGHT);
-  },
-
-  _drawSharePreviewInfo(ctx, activity, icons) {
-    if (!ctx || !activity) return;
-
-    ctx.setTextBaseline("middle");
-    ctx.setFontSize(12);
-    ctx.setFillStyle("rgba(255, 255, 255, 0.88)");
-    const rowY = SHARE_PREVIEW_INFO_TOP + SHARE_PREVIEW_INFO_HEIGHT / 2;
-    const iconSize = 10;
-    const gap = 6;
-    const sectionGap = 16;
-    const locationIcon = icons && icons.locationIcon;
-    const peopleIcon = icons && icons.peopleIcon;
-    const participantText = truncateCanvasText(
-      ctx,
-      getShareParticipantText(activity),
-      72
-    );
-    const peopleSectionWidth = iconSize + gap + Math.min(ctx.measureText(participantText).width, 72);
-    const locationMaxWidth = Math.max(
-      0,
-      SHARE_PREVIEW_WIDTH - SHARE_PREVIEW_PADDING_X * 2 - peopleSectionWidth - sectionGap - iconSize - gap
-    );
-    const locationText = truncateCanvasText(ctx, activity.locationName || "", locationMaxWidth);
-    let cursorX = SHARE_PREVIEW_PADDING_X;
-
-    if (locationText) {
-      if (locationIcon && locationIcon.path) {
-        ctx.drawImage(locationIcon.path, cursorX, rowY - iconSize / 2, iconSize, iconSize);
-      }
-      cursorX += iconSize + gap;
-      ctx.fillText(locationText, cursorX, rowY);
-      cursorX += Math.min(ctx.measureText(locationText).width, locationMaxWidth) + sectionGap;
-    }
-
-    if (peopleIcon && peopleIcon.path) {
-      ctx.drawImage(peopleIcon.path, cursorX, rowY - iconSize / 2, iconSize, iconSize);
-    }
-    cursorX += iconSize + gap;
-    ctx.fillText(participantText, cursorX, rowY);
-  },
 
   _clearCardMediaDiagnostics() {
     if (this._cardMediaDiagWarnTimer) {
@@ -1801,55 +1177,13 @@ Page({
             this.ensureGroupSnapMetrics();
           });
 
-          // 若详情弹窗正打开，同步更新 detailActivity（如刚报名成功）
-          if (this.data.showDetailModal && this.data.detailActivity) {
-            const id = this.data.detailActivity._id;
-            const updated = list.find(a => a._id === id);
-            if (updated) {
-              const participants = this.normalizeParticipants(updated.participants);
-              const checkinCount = participants.filter(p => !!p.checkedInAt).length;
-              const startTime = updated.startTime || (updated.date ? `${updated.date} 00:00` : "");
-              const signupDeadline = updated.signupDeadline || startTime;
-              const activityStarted = startTime ? new Date(startTime.replace(" ", "T") + ":00").getTime() <= Date.now() : false;
-              const signupDeadlinePassed = signupDeadline ? new Date(signupDeadline.replace(" ", "T") + ":00").getTime() <= Date.now() : false;
-              this.setData({
-                detailActivity: { ...updated, participants, checkinCount, activityStarted, signupDeadline, signupDeadlinePassed }
-              }, () => {
-                this._prepareSharePreviewForActivity(this.data.detailActivity);
-              });
-            }
-          }
-
-          // 从分享链接进入时自动打开对应活动详情
-          if (this._openActivityIdFromShare && this._fromShare && list) {
-            const activity = list.find(a => a._id === this._openActivityIdFromShare);
-            if (activity) {
-              const aid = this._openActivityIdFromShare;
-              this._openActivityIdFromShare = "";
-              this._fromShare = false;
-              const participants = this.normalizeParticipants(activity.participants);
-              const checkinCount = participants.filter(p => !!p.checkedInAt).length;
-              const startTime = activity.startTime || (activity.date ? `${activity.date} 00:00` : "");
-              const signupDeadline = activity.signupDeadline || startTime;
-              const activityStarted = startTime ? new Date(startTime.replace(" ", "T") + ":00").getTime() <= Date.now() : false;
-              const signupDeadlinePassed = signupDeadline ? new Date(signupDeadline.replace(" ", "T") + ":00").getTime() <= Date.now() : false;
-              this.setData({
-                showDetailModal: true,
-                detailActivity: { ...activity, participants, checkinCount, activityStarted, signupDeadline, signupDeadlinePassed },
-                shareActivityId: aid,
-                shareActivityName: (activity.name || "\u6d3b\u52a8").trim() || "\u6d3b\u52a8",
-                shareImageUrl: "",
-                shareImageCacheKey: buildSharePreviewCacheKey(activity),
-                shareImagePending: !!(activity.smallCardBgImageUrl && !activity.bgVideoUrl),
-                shareNeedsCustomPreview: !!(activity.smallCardBgImageUrl && !activity.bgVideoUrl),
-                shareImageError: false
-              }, () => {
-                this._prepareSharePreviewForActivity(this.data.detailActivity);
-              });
-            }
-          }
-
           wx.hideLoading();
+
+          const peid = this._pendingEditActivityId;
+          if (peid) {
+            this._pendingEditActivityId = "";
+            this._openEditForActivityId(peid);
+          }
         }
       })
       .catch(err => {
@@ -2290,12 +1624,21 @@ Page({
     });
   },
 
-  // 详情弹窗内打开编辑（仅管理员）
-  detailShowEditModal() {
-    const activity = this.data.detailActivity;
-    if (!activity) return;
-    this.closeDetailModal();
-    this.showEditModal({ currentTarget: { dataset: { activity } } });
+  _openEditForActivityId(activityId) {
+    if (!activityId) return;
+    const styles = this.data.activityTypeStyles || [];
+    const myUserId = this.data.myUserId || "";
+    const myNickname = (this.data.myNickname || "").trim();
+    activityService
+      .getActivity(activityId)
+      .then((raw) => {
+        const activity = enrichSingleActivity(raw, styles, myUserId, myNickname);
+        this.showEditModal({ currentTarget: { dataset: { activity } } });
+      })
+      .catch((err) => {
+        console.error(err);
+        wx.showToast({ title: (err && err.message) || "加载活动失败", icon: "none" });
+      });
   },
 
   // 已由 custom-tab-bar 组件统一处理导航，这两个方法保留兼容性
@@ -2643,359 +1986,19 @@ Page({
     });
   },
 
-  cancelSignup(e) {
-    const activity = e.currentTarget.dataset.activity;
-    if (!activity || !activity._id) return;
-
-    wx.showModal({
-      title: "确认取消报名",
-      content: `确定要取消活动"${activity.name}"的报名吗？`,
-      success: (res) => {
-        if (!res.confirm) return;
-        wx.showLoading({ title: "处理中..." });
-        activityService
-          .cancelSignup(activity._id)
-          .then(() => {
-            wx.hideLoading();
-            wx.showToast({ title: "已取消报名", icon: "success" });
-            this.loadActivityList();
-          })
-          .catch((err) => {
-            console.error(err);
-            wx.hideLoading();
-            wx.showToast({ title: (err && err.message) || "取消失败", icon: "none" });
-          });
-      }
-    });
-  },
-
-  // 用户：直接报名（不显示弹窗）
-  directSignup(e) {
-    const activity = e.currentTarget.dataset.activity;
-    if (activity.status === "已结束" || activity.status === "已取消") {
-      wx.showToast({ title: "该活动已结束或已取消", icon: "none" });
-      return;
-    }
-    if (activity.signupEnabled === false) {
-      wx.showToast({ title: "活动报名暂未开放", icon: "none" });
-      return;
-    }
-    // 报名截止校验
-    if (activity.signupDeadline) {
-      const deadline = new Date(activity.signupDeadline.replace(" ", "T") + ":00");
-      if (!isNaN(deadline.getTime()) && Date.now() >= deadline.getTime()) {
-        wx.showToast({ title: "报名已截止", icon: "none" });
-        return;
-      }
-    }
-    // 校验是否已在「我的」页面完成公会登记并有昵称
-    if (!app.globalData.userId || !app.globalData.userProfile) {
-      wx.showModal({
-        title: "尚未登记",
-        content: "请前往\"我的\"页面完成公会登记后再报名。",
-        confirmText: "去我的",
-        success: (res) => {
-          if (res.confirm) {
-            wx.switchTab({ url: "/pages/profile/profile" });
-          }
-        }
-      });
-      return;
-    }
-    
-    // 检查是否有昵称
-    const nickname = app.globalData.userProfile?.nickname?.trim();
-    if (!nickname) {
-      wx.showModal({
-        title: "提示",
-        content: "请前往'我的'页面完善昵称后再报名活动",
-        showCancel: false,
-        success: () => {
-          wx.switchTab({
-            url: '/pages/profile/profile'
-          });
-        }
-      });
-      return;
-    }
-
-    const participants = activity.participants || [];
-    const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
-
-    // 按 userId 校验：同一用户不能重复报名，允许不同用户重名
-    if (myUserId && participants.some(p => typeof p === "object" && p.userId && p.userId === myUserId)) {
-      wx.showToast({ title: "您已报名", icon: "none" });
-      return;
-    }
-
-    wx.showLoading({ title: "报名中..." });
-
-    activityService
-      .signupActivity(activity._id)
-      .then(() => {
-        wx.hideLoading();
-        wx.showToast({ title: "报名成功", icon: "success" });
-        const detailActivity = this.data.detailActivity;
-        if (this.data.showDetailModal && detailActivity && detailActivity._id === activity._id) {
-          this.closeDetailModal();
-        }
-        this.loadActivityList();
-      })
-      .catch(err => {
-        console.error(err);
-        wx.hideLoading();
-        const msg = (err && err.message) || "";
-        if (msg.includes("disabled") || msg.includes("未开放")) {
-          wx.showToast({ title: "活动报名暂未开盖", icon: "none" });
-        } else {
-          wx.showToast({ title: msg || "报名失败", icon: "none" });
-        }
-      });
-  },
-
-  // 规范化参与者（兼容 string 与 {name, userId, checkedInAt}）
-  normalizeParticipants(raw) {
-    const arr = raw || [];
-    return arr.map(p => {
-      if (typeof p === "string") {
-        return { id: null, name: p, userId: null, avatarUrl: DEFAULT_AVATAR, checkedInAt: null };
-      }
-      return {
-        id: p.id || null,
-        name: p.name || "",
-        userId: p.userId != null ? String(p.userId) : null,
-        avatarUrl: normalizeAvatarUrl(p.avatarUrl),
-        checkedInAt: p.checkedInAt || null
-      };
-    });
-  },
-
-  // 查看详情
   showDetail(e) {
     const activity = e.currentTarget.dataset.activity;
-    const participants = this.normalizeParticipants(activity.participants);
-    const checkinCount = participants.filter(p => !!p.checkedInAt).length;
-    const startTime = activity.startTime || (activity.date ? `${activity.date} 00:00` : "");
-    const signupDeadline = activity.signupDeadline || startTime;
-    const activityStarted = startTime ? new Date(startTime.replace(" ", "T") + ":00").getTime() <= Date.now() : false;
-    const signupDeadlinePassed = signupDeadline ? new Date(signupDeadline.replace(" ", "T") + ":00").getTime() <= Date.now() : false;
-    this.setData({
-      showDetailModal: true,
-      detailActivity: { ...activity, participants, checkinCount, activityStarted, signupDeadline, signupDeadlinePassed },
-      shareActivityId: activity._id || "",
-      shareActivityName: (activity.name || "\u6d3b\u52a8").trim() || "\u6d3b\u52a8",
-      shareImageUrl: "",
-      shareImageCacheKey: buildSharePreviewCacheKey(activity),
-      shareImagePending: !!(activity.smallCardBgImageUrl && !activity.bgVideoUrl),
-      shareNeedsCustomPreview: !!(activity.smallCardBgImageUrl && !activity.bgVideoUrl),
-      shareImageError: false
-    }, () => {
-      this._prepareSharePreviewForActivity(this.data.detailActivity);
-      this._setTabBarHidden(true);
+    if (!activity || !activity._id) return;
+    wx.navigateTo({
+      url: `/pages/activity_detail/activity_detail?id=${activity._id}`
     });
   },
 
-  closeDetailModal() {
-    this._clearSharePreviewPolling();
-    this._activeSharePreviewKey = "";
-    this.setData({
-      showDetailModal: false,
-      detailActivity: null,
-      shareActivityId: "",
-      shareActivityName: "",
-      shareImageUrl: "",
-      shareImageCacheKey: "",
-      shareImagePending: false,
-      shareNeedsCustomPreview: false,
-      shareImageError: false
-    });
-    this._syncTabBarVisibility();
-  },
-
-  prepareDetailShare() {
-    const activity = this.data.detailActivity;
-    if (!activity || this.data.shareImagePending) return;
-    const cacheKey = buildSharePreviewCacheKey(activity);
-    delete this._sharePreviewCache[cacheKey];
-    this.setData({
-      shareImageUrl: "",
-      shareImageCacheKey: cacheKey,
-      shareImagePending: true,
-      shareNeedsCustomPreview: true,
-      shareImageError: false
-    });
-    wx.showLoading({
-      title: "生成中...",
-      mask: true
-    });
-    this._prepareSharePreviewForActivity(activity, { force: true })
-      .then((previewPath) => {
-        wx.hideLoading();
-        if (previewPath) {
-          wx.showToast({
-            title: "分享图已生成",
-            icon: "success",
-            duration: 1200
-          });
-          return;
-        }
-        wx.showToast({
-          title: "生成失败，请重试",
-          icon: "none",
-          duration: 1800
-        });
-      })
-      .catch(() => {
-        wx.hideLoading();
-        wx.showToast({
-          title: "生成失败，请重试",
-          icon: "none",
-          duration: 1800
-        });
-      });
-  },
-
-  // 详情弹窗内：报名（复用 directSignup 逻辑）
-  detailSignup() {
-    const activity = this.data.detailActivity;
-    if (!activity) return;
-    this.directSignup({ currentTarget: { dataset: { activity } } });
-  },
-
-  // 详情弹窗内：签到（复用 checkinActivity 逻辑，成功后刷新详情）
-  detailCheckin() {
-    const activity = this.data.detailActivity;
-    if (!activity) return;
-    this.checkinActivity({ currentTarget: { dataset: { activity } } });
-  },
-
-  detailCancelSignup() {
-    const activity = this.data.detailActivity;
-    if (!activity) return;
-    this.cancelSignup({ currentTarget: { dataset: { activity } } });
-  },
-
-  // 小程序卡片分享：分享当前活动（在活动详情打开时由分享按钮触发）
   onShareAppMessage() {
-    const id = this.data.shareActivityId;
-    const title = this.data.shareActivityName || "\u4ff1\u4e50\u90e8\u6d3b\u52a8";
-    const path = id
-      ? `/pages/activity_list/activity_list?from=share&activityId=${id}`
-      : "/pages/activity_list/activity_list";
-    const payload = { title, path };
-    const cacheKey = this.data.shareImageCacheKey;
-    const cachedUrl = (cacheKey && this._sharePreviewCache && this._sharePreviewCache[cacheKey]) || "";
-    const shareImageUrl = this.data.shareImageUrl || cachedUrl;
-    if (shareImageUrl) {
-      payload.imageUrl = shareImageUrl;
-    }
-    return payload;
-  },
-
-  // 删除已报名人员
-  removeParticipant(e) {
-    const participantId = e.currentTarget.dataset.id;
-    const name = e.currentTarget.dataset.name;
-    const isSelf = !!e.currentTarget.dataset.self;
-    const activity = this.data.detailActivity;
-
-    wx.showModal({
-      title: isSelf ? "确认取消报名" : "确认删除",
-      content: isSelf
-        ? `确定要取消活动"${activity.name}"的报名吗？`
-        : `确定要删除"${name}"吗？如果该成员在记账明细中，相关记录也会被删除。`,
-      success: (res) => {
-        if (res.confirm) {
-          this.doRemoveParticipant(participantId, name, activity, isSelf);
-        }
-      }
-    });
-  },
-
-  adminRetroCheckin(e) {
-    const participantId = e.currentTarget.dataset.id;
-    const name = e.currentTarget.dataset.name;
-    const activity = this.data.detailActivity;
-    if (!activity || !activity._id || !participantId) return;
-
-    wx.showModal({
-      title: "确认补签",
-      content: `确认将「${name}」标记为已签到吗？`,
-      success: (res) => {
-        if (!res.confirm) return;
-        wx.showLoading({ title: "处理中..." });
-        activityService
-          .adminCheckinParticipant(activity._id, participantId)
-          .then(() => {
-            wx.hideLoading();
-            wx.showToast({ title: "补签成功", icon: "success" });
-            this.loadActivityList();
-          })
-          .catch(err => {
-            console.error(err);
-            wx.hideLoading();
-            wx.showToast({ title: (err && err.message) || "补签失败", icon: "none" });
-          });
-      }
-    });
-  },
-
-  adminCancelCheckin(e) {
-    const participantId = e.currentTarget.dataset.id;
-    const name = e.currentTarget.dataset.name;
-    const activity = this.data.detailActivity;
-    if (!activity || !activity._id || !participantId) return;
-
-    wx.showModal({
-      title: "确认取消签到",
-      content: `确认将「${name}」的签到记录撤销吗？`,
-      success: (res) => {
-        if (!res.confirm) return;
-        wx.showLoading({ title: "处理中..." });
-        activityService
-          .adminCancelCheckinParticipant(activity._id, participantId)
-          .then(() => {
-            wx.hideLoading();
-            wx.showToast({ title: "已取消签到", icon: "success" });
-            this.loadActivityList();
-          })
-          .catch(err => {
-            console.error(err);
-            wx.hideLoading();
-            wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
-          });
-      }
-    });
-  },
-
-  doRemoveParticipant(participantId, name, activity, isSelf = false) {
-    wx.showLoading({ title: "处理中..." });
-
-    activityService
-      .removeParticipant(activity._id, participantId)
-      .then(() => {
-        wx.hideLoading();
-        wx.showToast({ title: isSelf ? "已取消报名" : "删除成功", icon: "success" });
-        // 刷新活动列表和详情
-        this.loadActivityList();
-        // 更新详情显示：重新计算 participants 和 checkinCount
-        const getParticipantName = p => typeof p === "string" ? p : (p && p.name);
-        const newParticipants = this.normalizeParticipants((activity.participants || []).filter(p => getParticipantName(p) !== name));
-        const checkinCount = newParticipants.filter(p => !!p.checkedInAt).length;
-        const updatedActivity = {
-          ...activity,
-          participants: newParticipants,
-          checkinCount,
-          hasSignedUp: isSelf ? false : activity.hasSignedUp,
-          hasCheckedIn: isSelf ? false : activity.hasCheckedIn
-        };
-        this.setData({ detailActivity: updatedActivity });
-      })
-      .catch(err => {
-        console.error(err);
-        wx.hideLoading();
-        wx.showToast({ title: (err && err.message) || (isSelf ? "取消失败" : "删除失败"), icon: "none", duration: 3000 });
-      });
+    return {
+      title: "龙城预约系统",
+      path: "/pages/activity_list/activity_list"
+    };
   },
 
   stopPropagation() {},
@@ -3040,51 +2043,6 @@ Page({
       activityId: meta.activityId,
       activityName: meta.activityName,
       url: meta.url
-    });
-  },
-
-  checkinActivity(e) {
-    const activity = e.currentTarget.dataset.activity;
-    if (!activity) {
-      wx.showToast({ title: "活动信息有误", icon: "none" });
-      return;
-    }
-
-    if (activity.status !== "进行中" && activity.status !== "未开始") {
-      wx.showToast({ title: "仅未开始或进行中的活动可以签到", icon: "none" });
-      return;
-    }
-
-    if (!activity.locationLatitude || !activity.locationLongitude) {
-      wx.showToast({ title: "活动未设置地点，无法签到", icon: "none" });
-      return;
-    }
-
-    if (!activity.hasSignedUp) {
-      wx.showToast({ title: "请先报名后再签到", icon: "none" });
-      return;
-    }
-
-    const nickname =
-      (app.globalData.userProfile && app.globalData.userProfile.nickname && app.globalData.userProfile.nickname.trim()) ||
-      this.data.myNickname ||
-      "";
-
-    if (!nickname) {
-      wx.showToast({ title: "请先在“我的”页面完善昵称", icon: "none" });
-      return;
-    }
-
-    wx.navigateTo({
-      url: "/pages/checkin_map/checkin_map",
-      success: (res) => {
-        if (res && res.eventChannel) {
-          res.eventChannel.emit("initCheckin", {
-            activity,
-            nickname
-          });
-        }
-      }
     });
   }
 });

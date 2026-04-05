@@ -2,6 +2,7 @@
   "lazyCodeLoading": "requiredComponents",
   "pages": [
     "pages/activity_list/activity_list",
+    "pages/activity_detail/activity_detail",
     "pages/welcome/welcome",
     "pages/accounting/accounting",
     "pages/history/history",

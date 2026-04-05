@@ -1,0 +1,446 @@
+<view class="page-wrap">
+  <scroll-view
+    class="main-scroll"
+    scroll-y="true"
+    show-scrollbar="false"
+    enhanced="true"
+    style="height: calc(100vh - {{bottomBarHeight}}px)"
+  >
+    <image class="page-watermark" src="https://dragon.liqqihome.top/media/images/activity-home-logo.png" mode="aspectFit" />
+
+    <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px">
+      <view class="navbar-inner">
+        <view class="nav-back" hover-class="nav-back-hover" hover-stay-time="80" bindtap="onTapBack">
+          <text class="nav-back-icon">‹</text>
+        </view>
+        <text class="navbar-title">龙城预约系统</text>
+        <view class="nav-placeholder"></view>
+      </view>
+    </view>
+
+    <view wx:if="{{loading}}" class="state-block">
+      <text class="state-text">加载中…</text>
+    </view>
+    <view wx:elif="{{loadError}}" class="state-block">
+      <text class="state-text">{{loadError}}</text>
+      <button class="retry-btn" bindtap="refreshDetail">重试</button>
+    </view>
+
+    <block wx:elif="{{activity}}">
+      <view class="detail-body">
+        <view class="hero-wrap">
+          <view class="hero-media">
+            <image
+              wx:if="{{activity.largeCardBgImageUrl && !activity.bgVideoUrl}}"
+              class="hero-img"
+              src="{{activity.largeCardBgImageUrl}}"
+              mode="aspectFill"
+            />
+            <video
+              wx:if="{{activity.bgVideoUrl}}"
+              class="hero-video"
+              src="{{activity.bgVideoUrl}}"
+              objectFit="cover"
+              autoplay="{{true}}"
+              loop="{{true}}"
+              muted="{{true}}"
+              controls="{{false}}"
+              show-center-play-btn="{{false}}"
+              show-play-btn="{{false}}"
+            />
+            <view wx:if="{{!activity.largeCardBgImageUrl && !activity.bgVideoUrl}}" class="hero-placeholder"></view>
+          </view>
+        </view>
+
+        <view class="tag-row">
+          <view class="tag tag-type">{{activity.typeDisplayName}}</view>
+          <view class="tag tag-status">{{activity.detailStatusTag}}</view>
+        </view>
+
+        <text class="detail-title">{{activity.name}}</text>
+
+        <view
+          wx:if="{{activity.status === '已结束'}}"
+          class="pigeon-card"
+          hover-class="pigeon-card-hover"
+          hover-stay-time="80"
+          bindtap="openPigeonDrawer"
+        >
+          <view class="pigeon-card-head">
+            <view class="pigeon-head-main">
+              <text class="pigeon-card-title">鸽子名单</text>
+              <view class="pigeon-count-pill">未打卡{{pigeonList.length}}人</view>
+            </view>
+            <view wx:if="{{pigeonList.length}}" class="pigeon-head-arrow">›</view>
+          </view>
+          <block wx:if="{{pigeonList.length}}">
+            <scroll-view
+              class="pigeon-strip"
+              scroll-x="{{true}}"
+              enhanced="{{true}}"
+              show-scrollbar="{{false}}"
+              enable-flex="{{true}}"
+            >
+              <view class="pigeon-strip-inner">
+                <view
+                  wx:for="{{pigeonPreviewList}}"
+                  wx:key="pigeonKey"
+                  wx:for-item="pItem"
+                  class="pigeon-cell"
+                >
+                  <view class="pigeon-avatar-wrap">
+                    <image class="pigeon-avatar-lg" src="{{pItem.avatarUrl}}" mode="aspectFill" />
+                    <view class="pigeon-ribbon">小鸽子</view>
+                  </view>
+                  <text class="pigeon-cell-name">{{pItem.name}}</text>
+                </view>
+              </view>
+            </scroll-view>
+          </block>
+          <text wx:else class="pigeon-empty">全员已签到</text>
+        </view>
+
+        <view wx:if="{{countdownVisible}}" class="countdown-card">
+          <text class="countdown-label">报名仅剩</text>
+          <view class="countdown-digits">
+            <view class="cd-num-box"><text class="cd-num">{{cdDays}}</text></view>
+            <text class="cd-unit-suffix">天</text>
+            <text class="cd-colon">:</text>
+            <view class="cd-num-box"><text class="cd-num">{{cdHoursPad}}</text></view>
+            <text class="cd-colon">:</text>
+            <view class="cd-num-box"><text class="cd-num">{{cdMinutesPad}}</text></view>
+            <text class="cd-colon">:</text>
+            <view class="cd-num-box"><text class="cd-num">{{cdSecondsPad}}</text></view>
+          </view>
+        </view>
+
+        <view class="info-card">
+          <view class="info-row">
+            <image class="info-icon" src="/images/icon-detail-time.png" mode="aspectFit" />
+            <text class="info-label">活动时间</text>
+            <text class="info-value">{{timeRangeText}}</text>
+          </view>
+          <view class="info-row">
+            <image class="info-icon" src="/images/icon-detail-location.png" mode="aspectFit" />
+            <text class="info-label">活动地点</text>
+            <text class="info-value">{{locationText}}</text>
+          </view>
+          <view class="info-row info-row-tap" bindtap="openParticipantsDrawer">
+            <image class="info-icon" src="/images/icon-detail-people.png" mode="aspectFit" />
+            <text class="info-label">参与人</text>
+            <view class="participant-preview">
+              <view class="avatar-stack">
+                <image
+                  wx:for="{{participantPreview}}"
+                  wx:key="pKey"
+                  class="stack-avatar {{index > 0 ? 'stack-avatar-overlap' : ''}}"
+                  style="z-index: {{15 - index}};"
+                  src="{{item.url}}"
+                  mode="{{item.pKey === 'more' ? 'aspectFit' : 'aspectFill'}}"
+                />
+              </view>
+            </view>
+            <view class="participant-row-tail">
+              <text class="participant-count">{{participantCountText}}</text>
+              <text class="chevron">›</text>
+            </view>
+          </view>
+          <view wx:if="{{activity.remark}}" class="info-row info-row-top">
+            <image class="info-icon" src="/images/icon-detail-intro.png" mode="aspectFit" />
+            <text class="info-label">活动简介</text>
+            <text class="info-value info-remark">{{activity.remark}}</text>
+          </view>
+        </view>
+
+        <view class="scroll-bottom-spacer"></view>
+      </view>
+    </block>
+  </scroll-view>
+
+  <view wx:if="{{activity}}" class="bottom-bar" style="padding-bottom: {{safeBottom}}px">
+    <view class="bottom-inner">
+      <button
+        type="default"
+        class="bottom-secondary bottom-secondary-share"
+        open-type="share"
+        hover-class="bottom-secondary-hover"
+      >分享</button>
+      <button
+        wx:if="{{isAdmin && activity.status !== '已取消'}}"
+        class="bottom-secondary"
+        hover-class="bottom-secondary-hover"
+        bindtap="openAdminEdit"
+      >编辑</button>
+      <view class="bottom-cta-wrap">
+        <block wx:if="{{activity.status === '未开始' || activity.status === '进行中'}}">
+          <button
+            wx:if="{{!activity.hasSignedUp && !activity.signupDeadlinePassed}}"
+            class="bottom-primary"
+            hover-class="bottom-primary-hover"
+            bindtap="onTapSignup"
+          >立即报名</button>
+          <button
+            wx:elif="{{!activity.hasSignedUp && activity.signupDeadlinePassed}}"
+            class="bottom-primary bottom-primary-disabled"
+            disabled="true"
+          >报名已截止</button>
+          <button
+            wx:elif="{{activity.hasSignedUp && !activity.hasCheckedIn}}"
+            class="bottom-primary"
+            hover-class="bottom-primary-hover"
+            bindtap="onTapCheckin"
+          >签到</button>
+          <button
+            wx:elif="{{activity.hasSignedUp && activity.hasCheckedIn}}"
+            class="bottom-primary bottom-primary-disabled"
+            disabled="true"
+          >已签到</button>
+        </block>
+        <button
+          wx:else
+          class="bottom-primary bottom-primary-disabled"
+          disabled="true"
+        >{{activity.status === '已取消' ? '已取消' : '已结束'}}</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{showEditModal && isAdmin}}" class="edit-modal-container">
+    <view class="edit-modal-bg" catchtouchmove="stopPropagation" bindtap="closeEditModal"></view>
+    <view class="edit-modal-panel" catchtap="stopPropagation" catchtouchmove="stopPropagation">
+      <view class="modal-header edit-modal-header">
+        <text>编辑活动</text>
+        <text class="close-btn" bindtap="closeEditModal">×</text>
+      </view>
+
+      <view class="edit-modal-body-wrapper">
+        <scroll-view scroll-y="{{true}}" class="edit-modal-body">
+          <view class="form-item">
+            <view class="label">开始时间：</view>
+            <view class="datetime-picker-wrapper">
+              <picker mode="date" value="{{editForm.startDate}}" bindchange="onStartDateChange">
+                <view class="picker datetime-date">{{editForm.startDate || '请选择日期'}}</view>
+              </picker>
+              <picker mode="time" value="{{editForm.startTime}}" bindchange="onStartTimeChange">
+                <view class="picker datetime-time">{{editForm.startTime || '请选择时间'}}</view>
+              </picker>
+            </view>
+          </view>
+
+          <view class="form-item">
+            <view class="label">结束时间：</view>
+            <view class="datetime-picker-wrapper">
+              <picker mode="date" value="{{editForm.endDate}}" bindchange="onEndDateChange">
+                <view class="picker datetime-date">{{editForm.endDate || '请选择日期'}}</view>
+              </picker>
+              <picker mode="time" value="{{editForm.endTime}}" bindchange="onEndTimeChange">
+                <view class="picker datetime-time">{{editForm.endTime || '请选择时间'}}</view>
+              </picker>
+            </view>
+          </view>
+
+          <view class="form-item">
+            <view class="label">报名截止：</view>
+            <view class="datetime-picker-wrapper">
+              <picker mode="date" value="{{editForm.signupDeadlineDate}}" bindchange="onSignupDeadlineDateChange">
+                <view class="picker datetime-date">{{editForm.signupDeadlineDate || '请选择日期'}}</view>
+              </picker>
+              <picker mode="time" value="{{editForm.signupDeadlineTime}}" bindchange="onSignupDeadlineTimeChange">
+                <view class="picker datetime-time">{{editForm.signupDeadlineTime || '请选择时间'}}</view>
+              </picker>
+            </view>
+          </view>
+
+          <view class="form-item">
+            <view class="label">活动类型：</view>
+            <picker
+              mode="selector"
+              range="{{activityTypeOptionLabels}}"
+              value="{{editActivityTypeIndex}}"
+              bindchange="onActivityTypeChange"
+            >
+              <view class="picker">
+                {{activityTypeOptionLabels[editActivityTypeIndex] || '请选择类型'}}
+              </view>
+            </picker>
+          </view>
+          <view class="form-item">
+            <view class="label">卡片样式：</view>
+            <picker
+              mode="selector"
+              range="{{activityStyleOptionLabels}}"
+              value="{{editActivityStyleIndex}}"
+              bindchange="onActivityStyleChange"
+            >
+              <view class="picker">
+                {{activityStyleOptionLabels[editActivityStyleIndex] || '请选择样式'}}
+              </view>
+            </picker>
+          </view>
+
+          <view wx:if="{{isAdmin}}" class="form-item">
+            <view class="label">限制报名人数：</view>
+            <switch
+              checked="{{editForm.limitEnabled}}"
+              bindchange="onEditFormChange"
+              data-field="limitEnabled"
+            />
+          </view>
+          <view wx:if="{{isAdmin && editForm.limitEnabled}}" class="form-item">
+            <view class="label">人数上限：</view>
+            <input
+              class="input"
+              type="number"
+              placeholder="请输入人数上限（1-999）"
+              value="{{editForm.maxParticipants}}"
+              bindinput="onEditFormChange"
+              data-field="maxParticipants"
+              adjust-position="{{false}}"
+            />
+          </view>
+
+          <view wx:if="{{isAdmin && currentActivity}}" class="form-item">
+            <view class="label">允许报名：</view>
+            <switch
+              checked="{{editForm.signupEnabled}}"
+              bindchange="onEditFormChange"
+              data-field="signupEnabled"
+            />
+          </view>
+
+          <view class="form-item">
+            <view class="label">活动名称：</view>
+            <input
+              class="input"
+              placeholder="请输入活动名称"
+              value="{{editForm.name}}"
+              bindinput="onEditFormChange"
+              data-field="name"
+              adjust-position="{{false}}"
+            />
+          </view>
+
+          <view class="form-item">
+            <view class="label">活动地点：</view>
+            <view class="picker {{locationDisabled ? 'picker-disabled' : ''}}" bindtap="onChooseLocation">
+              {{editForm.locationName || '请选择活动位置'}}
+            </view>
+          </view>
+
+          <view class="form-item">
+            <view class="label">活动备注：</view>
+            <textarea
+              class="textarea"
+              placeholder="请输入备注（可选）"
+              value="{{editForm.remark}}"
+              bindinput="onEditFormChange"
+              data-field="remark"
+              adjust-position="{{true}}"
+              cursor-spacing="120"
+            />
+          </view>
+          <view style="height:24rpx"></view>
+        </scroll-view>
+      </view>
+
+      <view class="modal-footer edit-modal-footer">
+        <button wx:if="{{currentActivity && currentActivity.status !== '已取消'}}" class="btn danger" hover-class="btn-hover" hover-stay-time="80" bindtap="cancelActivity">取消活动</button>
+        <button class="btn primary" hover-class="btn-hover" hover-stay-time="80" bindtap="saveActivity">保存</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{showParticipantsDrawer && activity}}" class="participants-drawer-root">
+    <view class="participants-drawer-mask" catchtouchmove="stopPropagation" bindtap="closeParticipantsDrawer"></view>
+    <view
+      class="participants-drawer-sheet"
+      catchtap="stopPropagation"
+      catchtouchmove="stopPropagation"
+      style="padding-bottom: {{safeBottom}}px"
+    >
+      <view class="participants-drawer-header">
+        <view class="participants-drawer-title-block">
+          <text class="participants-drawer-title">参与人</text>
+          <text class="participants-drawer-sub">已报名 {{activity.participants.length}}，已签到 {{activity.checkinCount || 0}}</text>
+        </view>
+        <text class="close-btn" bindtap="closeParticipantsDrawer">×</text>
+      </view>
+      <scroll-view scroll-y="{{true}}" class="participants-drawer-body">
+        <view wx:if="{{participantDrawerList.length === 0}}" class="empty-participants">暂无报名人员</view>
+        <view
+          wx:for="{{participantDrawerList}}"
+          wx:key="rowKey"
+          wx:for-item="row"
+          class="participant-drawer-row"
+        >
+          <image class="participant-drawer-avatar" src="{{row.avatarUrl}}" mode="aspectFill" />
+          <view class="participant-drawer-main">
+            <text class="participant-drawer-name">{{row.name}}</text>
+            <text wx:if="{{row.checkedInAt}}" class="participant-drawer-status participant-drawer-status-in">已签到</text>
+            <text wx:elif="{{activity.status === '已结束'}}" class="participant-drawer-status participant-drawer-status-pigeon">鸽子</text>
+          </view>
+          <view class="participant-drawer-actions">
+            <text
+              wx:if="{{isAdmin && !row.checkedInAt && activity.status === '已结束'}}"
+              class="participant-retro-checkin"
+              hover-class="participant-btn-hover"
+              hover-stay-time="80"
+              bindtap="adminRetroCheckin"
+              data-id="{{row.id}}"
+              data-name="{{row.name}}"
+            >补签</text>
+            <text
+              wx:elif="{{isAdmin && row.checkedInAt}}"
+              class="participant-retro-checkin"
+              hover-class="participant-btn-hover"
+              hover-stay-time="80"
+              bindtap="adminCancelCheckin"
+              data-id="{{row.id}}"
+              data-name="{{row.name}}"
+            >取消签到</text>
+            <text
+              wx:if="{{isAdmin || (!activity.signupDeadlinePassed && ((row.userId && row.userId === myUserId) || (!row.userId && row.name === myNickname)))}}"
+              class="participant-delete"
+              hover-class="participant-btn-hover"
+              hover-stay-time="80"
+              bindtap="removeParticipant"
+              data-id="{{row.id}}"
+              data-name="{{row.name}}"
+              data-self="{{(!isAdmin && ((row.userId && row.userId === myUserId) || (!row.userId && row.name === myNickname))) ? '1' : ''}}"
+            >{{(!isAdmin && ((row.userId && row.userId === myUserId) || (!row.userId && row.name === myNickname))) ? '取消' : '删除'}}</text>
+          </view>
+        </view>
+        <view class="participants-drawer-body-pad"></view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <view wx:if="{{showPigeonDrawer}}" class="participants-drawer-root pigeon-drawer-layer">
+    <view class="participants-drawer-mask" catchtouchmove="stopPropagation" bindtap="closePigeonDrawer"></view>
+    <view
+      class="participants-drawer-sheet"
+      catchtap="stopPropagation"
+      catchtouchmove="stopPropagation"
+      style="padding-bottom: {{safeBottom}}px"
+    >
+      <view class="participants-drawer-header">
+        <view class="participants-drawer-title-block">
+          <text class="participants-drawer-title">未打卡名单</text>
+        </view>
+        <text class="close-btn" bindtap="closePigeonDrawer">×</text>
+      </view>
+      <scroll-view scroll-y="{{true}}" class="participants-drawer-body">
+        <view
+          wx:for="{{pigeonList}}"
+          wx:key="pigeonKey"
+          wx:for-item="pItem"
+          class="pigeon-modal-row"
+        >
+          <image class="pigeon-modal-avatar" src="{{pItem.avatarUrl}}" mode="aspectFill" />
+          <text class="pigeon-modal-name">{{pItem.name}}</text>
+        </view>
+        <view class="participants-drawer-body-pad"></view>
+      </scroll-view>
+    </view>
+  </view>
+</view>

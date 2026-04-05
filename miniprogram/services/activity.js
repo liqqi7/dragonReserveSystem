@@ -12,6 +12,10 @@ function getActivity(activityId) {
   return request({ url: `/activities/${activityId}` });
 }
 
+function getActivitySharePreview(activityId) {
+  return request({ url: `/activities/${activityId}/share-preview`, timeout: 20000 });
+}
+
 function createActivity(payload) {
   return request({
     url: "/activities",
@@ -82,6 +86,7 @@ module.exports = {
   listActivities,
   listActivityTypeStyles,
   getActivity,
+  getActivitySharePreview,
   createActivity,
   updateActivity,
   deleteActivity,

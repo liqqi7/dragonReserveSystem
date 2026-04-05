@@ -4,10 +4,10 @@ import argparse
 import os
 import random
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
@@ -63,6 +63,30 @@ def pick_activity_name(index: int, activity_type: str) -> str:
     return f"{random.choice(prefixes)}{random.choice(suffixes[activity_type])}{index + 1:02d}"
 
 
+# 第 10 条测试活动固定名称；novusluna 在该活动中默认已签到
+DEMO_BADMINTON_ACTIVITY_INDEX = 9
+DEMO_BADMINTON_ACTIVITY_NAME = "轻松羽球双打10"
+
+
+def ensure_novusluna_user(db):
+    from app.models import User
+
+    existing = db.scalar(select(User).where(func.lower(User.username) == "novusluna"))
+    if existing is not None:
+        return existing
+    user = User(
+        username="novusluna",
+        wechat_openid="seed_openid_novusluna",
+        password_hash=None,
+        nickname="NovusLuna",
+        avatar_url="/images/default-avatar.svg",
+        role="user",
+    )
+    db.add(user)
+    db.flush()
+    return user
+
+
 def create_activities(count: int, participants_per_activity: int):
     from app.core.database import SessionLocal
     from app.models import Activity, ActivityParticipant
@@ -72,9 +96,14 @@ def create_activities(count: int, participants_per_activity: int):
 
     with SessionLocal() as db:
         users = ensure_seed_users(db, min_count=max(30, participants_per_activity + 5))
+        ensure_novusluna_user(db)
+        db.commit()
+        users = list(db.scalars(select(User).order_by(User.id)).all())
         user_ids = [u.id for u in users]
         user_by_id = {u.id: u for u in users}
         creator_id = users[0].id
+        novus_user = db.scalar(select(User).where(func.lower(User.username) == "novusluna"))
+        assert novus_user is not None
 
         created = []
         for i in range(count):
@@ -82,7 +111,12 @@ def create_activities(count: int, participants_per_activity: int):
             start_hour = random.randint(8, 21)
             start_minute = random.choice([0, 15, 30, 45])
             duration_hours = random.choice([2, 2, 2, 3, 4])
-            activity_type = random.choice(activity_types)
+            if i == DEMO_BADMINTON_ACTIVITY_INDEX:
+                activity_type = "badminton"
+                activity_name = DEMO_BADMINTON_ACTIVITY_NAME
+            else:
+                activity_type = random.choice(activity_types)
+                activity_name = pick_activity_name(i, activity_type)
 
             start_time = (now + timedelta(days=day_offset)).replace(
                 hour=start_hour,
@@ -94,7 +128,7 @@ def create_activities(count: int, participants_per_activity: int):
             signup_deadline = start_time - timedelta(hours=random.choice([6, 8, 12, 24]))
 
             activity = Activity(
-                name=pick_activity_name(i, activity_type),
+                name=activity_name,
                 status="进行中",
                 remark="自动生成测试活动",
                 max_participants=20,
@@ -112,16 +146,26 @@ def create_activities(count: int, participants_per_activity: int):
             db.add(activity)
             db.flush()
 
-            chosen_ids = random.sample(user_ids, participants_per_activity)
-            participants = [
-                ActivityParticipant(
-                    activity_id=activity.id,
-                    user_id=uid,
-                    nickname_snapshot=user_by_id[uid].nickname,
-                    avatar_url_snapshot=user_by_id[uid].avatar_url,
-                )
-                for uid in chosen_ids
-            ]
+            if i == DEMO_BADMINTON_ACTIVITY_INDEX and novus_user.id in user_ids:
+                others = [uid for uid in user_ids if uid != novus_user.id]
+                need = max(0, participants_per_activity - 1)
+                base = random.sample(others, min(need, len(others)))
+                chosen_ids = base + [novus_user.id]
+            else:
+                chosen_ids = random.sample(user_ids, participants_per_activity)
+
+            checked_in_at_utc = datetime.now(timezone.utc)
+            participants = []
+            for uid in chosen_ids:
+                kwargs = {
+                    "activity_id": activity.id,
+                    "user_id": uid,
+                    "nickname_snapshot": user_by_id[uid].nickname,
+                    "avatar_url_snapshot": user_by_id[uid].avatar_url,
+                }
+                if i == DEMO_BADMINTON_ACTIVITY_INDEX and uid == novus_user.id:
+                    kwargs["checked_in_at"] = checked_in_at_utc
+                participants.append(ActivityParticipant(**kwargs))
             db.add_all(participants)
             created.append((activity.id, activity.name, start_time, activity_type))
 

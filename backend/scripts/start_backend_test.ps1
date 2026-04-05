@@ -116,13 +116,14 @@ $sshRemotePort = [int]$sshRemotePortText
 $sshLocalPort = [int]$sshLocalPortText
 
 $tunnelProcess = $null
-$appProcess = $null
 
 try {
     # Switch WeChat miniprogram config to local backend for this test session
     if (Test-Path $MpConfigFile) {
-        $localConfig = @"
-const API_BASE_URL = "http://${AppHost}:${AppPort}/api/v1";
+        # Use a literal single-quoted here-string for JS so PowerShell never parses `function` / `Try`-like tokens.
+        # Closing '@ must start at column 0.
+        $apiUrl = "http://$($AppHost):$AppPort/api/v1"
+        $localConfig = "const API_BASE_URL = `"$apiUrl`";" + @'
 
 function getApiBaseUrl() {
   return API_BASE_URL;
@@ -132,7 +133,7 @@ module.exports = {
   API_BASE_URL,
   getApiBaseUrl
 };
-"@
+'@
         Set-Content -Path $MpConfigFile -Value $localConfig -Encoding UTF8 -NoNewline:$false
     }
 
@@ -165,30 +166,23 @@ module.exports = {
 
     Write-Host "Starting backend on http://${AppHost}:${AppPort} using ${EnvFile}"
 
-    $uvicornArgs = @(
-        "-m", "uvicorn",
-        "app.main:app",
-        "--host", $AppHost,
-        "--port", [string]$AppPort,
-        "--env-file", "`"$EnvFile`""
-    )
-
-    if ($AppReload -eq 1) {
-        $uvicornArgs += "--reload"
-    }
-
+    # Start-Process -ArgumentList does not reliably quote argv on Windows, so paths with
+    # spaces (e.g. D:\VibeCoding Project\...) split into multiple tokens and uvicorn sees
+    # --env-file D:\VibeCoding only. Use call operator & so $EnvFile is one argument.
     Push-Location $RootDir
     try {
-        $appProcess = Start-Process -FilePath "`"$VenvPython`"" -ArgumentList $uvicornArgs -PassThru -NoNewWindow -Wait
+        if ($AppReload -eq 1) {
+            & $VenvPython -m uvicorn app.main:app --host $AppHost --port $AppPort --env-file $EnvFile --reload
+        }
+        else {
+            & $VenvPython -m uvicorn app.main:app --host $AppHost --port $AppPort --env-file $EnvFile
+        }
     }
     finally {
         Pop-Location
     }
 }
 finally {
-    if ($appProcess -and -not $appProcess.HasExited) {
-        Stop-Process -Id $appProcess.Id -Force -ErrorAction SilentlyContinue
-    }
     if ($tunnelProcess -and -not $tunnelProcess.HasExited) {
         Write-Host "Stopping SSH tunnel (pid=$($tunnelProcess.Id))"
         Stop-Process -Id $tunnelProcess.Id -Force -ErrorAction SilentlyContinue

@@ -58,15 +58,17 @@ def register_user(db: Session, payload: RegisterRequest) -> User:
 def exchange_wechat_code(code: str) -> dict:
     """Exchange a wx.login code for openid/session data."""
 
-    if not settings.wechat_app_id or not settings.wechat_app_secret:
+    s = get_settings()
+
+    if not s.wechat_app_id or not s.wechat_app_secret:
         raise ValidationAppError("WeChat login is not configured")
 
     try:
         response = httpx.get(
-            settings.wechat_code2session_url,
+            s.wechat_code2session_url,
             params={
-                "appid": settings.wechat_app_id,
-                "secret": settings.wechat_app_secret,
+                "appid": s.wechat_app_id,
+                "secret": s.wechat_app_secret,
                 "js_code": code,
                 "grant_type": "authorization_code",
             },
