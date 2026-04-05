@@ -1,0 +1,615 @@
+<!-- 页面容器 -->
+<view class="page-wrap">
+  <scroll-view
+    class="main-scroll"
+    scroll-y="{{mainScrollEnabled}}"
+    show-scrollbar="false"
+    bindscroll="onMainScroll"
+    style="height: calc(100vh - 90px)"
+  >
+    <!-- 背景水印（随内容滚动） -->
+    <image class="page-watermark" src="https://dragon.liqqihome.top/media/images/activity-home-logo.png" mode="aspectFit" />
+
+    <!-- 自定义透明顶部栏（随页面滚动） -->
+    <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px">
+      <view class="navbar-inner">
+        <text class="navbar-title">龙城预约系统</text>
+      </view>
+    </view>
+
+    <!-- 游客缺省态 -->
+    <view wx:if="{{isGuest}}" class="guest-empty-state">
+      <image class="guest-empty-icon" src="/images/activity-empty-icon.gif" mode="aspectFit" />
+      <text class="guest-empty-text">未查询到您的冒险者工会归属</text>
+      <text class="guest-empty-text">请前往「我的」进行登录</text>
+    </view>
+
+    <!-- 已授权用户内容 -->
+    <block wx:else>
+
+      <!-- ── 我参与的 ── -->
+      <view wx:if="{{groupedActivities.joined.length > 0}}" class="group-section">
+        <view class="group-header">
+          <text class="group-title">我参与的</text>
+        </view>
+        <view
+          class="cards-carousel"
+          data-group="joined"
+          bindtouchstart="onGroupTouchStart"
+          bindtouchmove="onGroupTouchMove"
+          bindtouchend="onGroupTouchEnd"
+        >
+          <view class="large-cards-row" style="transform:translateX(-{{groupOffset.joined}}px);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
+            <view
+              wx:for="{{groupedActivities.joined}}"
+              wx:key="_id"
+              class="large-card-wrap"
+              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
+              hover-stay-time="80"
+              bindtap="showDetail"
+              data-activity="{{item}}"
+            >
+              <text class="card-datetime-label">{{item.cardDateTimeLabel || item.startTime}}</text>
+              <!-- 大卡片 -->
+              <view class="large-card">
+                <image
+                  wx:if="{{item.largeCardBgImageUrl}}"
+                  class="card-image-bg"
+                  src="{{item.largeCardBgImageUrl}}"
+                  mode="aspectFill"
+                />
+                <video
+                  wx:if="{{item.bgVideoUrl}}"
+                  id="vid-joined-{{index}}"
+                  class="card-video-bg"
+                  src="{{item.bgVideoUrl}}"
+                  objectFit="cover"
+                  autoplay="{{focusedCardIndex.joined === index}}"
+                  loop="{{true}}"
+                  muted="{{true}}"
+                  controls="{{false}}"
+                  show-center-play-btn="{{false}}"
+                  show-play-btn="{{false}}"
+                  enable-progress-gesture="{{false}}"
+                />
+                <!-- 类型角标 -->
+                <text wx:if="{{item.showTypeBadge}}" class="card-type-label">{{item.typeBadgeLabel}}</text>
+                <!-- 头像群（最近 3 人，从下往上递减：TL > TR > Middle） -->
+                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-large">
+                  <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl">
+                    <image
+                      class="cluster-avatar"
+                      src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}"
+                      mode="aspectFill"
+                      binderror="onAvatarError"
+                      data-index="{{item.cardAvatars.length - 1}}"
+                      data-activity-id="{{item._id}}"
+                    />
+                  </view>
+                  <view wx:if="{{item.cardAvatars.length >= 2}}" class="avatar-tr">
+                    <image
+                      class="cluster-avatar"
+                      src="{{item.cardAvatars[item.cardAvatars.length - 2].url}}"
+                      mode="aspectFill"
+                    />
+                  </view>
+                  <view wx:if="{{item.cardAvatars.length >= 3}}" class="avatar-mid">
+                    <image
+                      class="cluster-avatar"
+                      src="{{item.cardAvatars[item.cardAvatars.length - 3].url}}"
+                      mode="aspectFill"
+                    />
+                  </view>
+                </view>
+                <!-- 毛玻璃底部信息 -->
+                <view class="glass-bottom">
+                  <text class="glass-name">{{item.name}}</text>
+                  <text wx:if="{{item.remark}}" class="glass-remark">{{item.remark}}</text>
+                  <view class="glass-meta-row">
+                    <view wx:if="{{item.locationName}}" class="glass-meta-item">
+                      <image class="glass-meta-icon-img" src="/images/icon-location.png" mode="aspectFit" />
+                      <text class="glass-meta-text">{{item.locationName}}</text>
+                    </view>
+                    <view class="glass-meta-item">
+                      <image class="glass-meta-icon-img" src="/images/icon-people.png" mode="aspectFit" />
+                      <text class="glass-meta-text" wx:if="{{item.maxParticipants != null}}">{{item.participants.length}}/{{item.maxParticipants}} 人</text>
+                      <text class="glass-meta-text" wx:elif="{{item.participants.length > 0}}">{{item.participants.length}} 人</text>
+                      <text class="glass-meta-text" wx:else>0 人</text>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+            <!-- 末尾留白 -->
+            <view class="cards-row-end-spacer"></view>
+          </view>
+        </view>
+      </view>
+
+      <!-- ── 接受报名 ── -->
+      <view wx:if="{{groupedActivities.accepting.length > 0}}" class="group-section">
+        <view class="group-header">
+          <text class="group-title">接受报名</text>
+        </view>
+        <view
+          class="cards-carousel"
+          data-group="accepting"
+          bindtouchstart="onGroupTouchStart"
+          bindtouchmove="onGroupTouchMove"
+          bindtouchend="onGroupTouchEnd"
+        >
+          <view class="small-cards-row" style="transform:translateX(-{{groupOffset.accepting}}px);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
+            <view
+              wx:for="{{groupedActivities.accepting}}"
+              wx:key="_id"
+              class="small-card-wrap"
+              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
+              hover-stay-time="80"
+              bindtap="showDetail"
+              data-activity="{{item}}"
+            >
+              <view class="small-card">
+                <image
+                  wx:if="{{item.smallCardBgImageUrl}}"
+                  class="card-image-bg"
+                  src="{{item.smallCardBgImageUrl}}"
+                  mode="aspectFill"
+                />
+                <video
+                  wx:if="{{item.bgVideoUrl}}"
+                  id="vid-accepting-{{index}}"
+                  class="card-video-bg"
+                  src="{{item.bgVideoUrl}}"
+                  objectFit="cover"
+                  autoplay="{{focusedCardIndex.accepting === index}}"
+                  loop="{{true}}"
+                  muted="{{true}}"
+                  controls="{{false}}"
+                  show-center-play-btn="{{false}}"
+                  show-play-btn="{{false}}"
+                  enable-progress-gesture="{{false}}"
+                />
+                <!-- 小卡类型角标（仅羽毛球/桌游） -->
+                <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
+                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
+                  <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
+                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
+                  </view>
+                  <view wx:if="{{item.cardAvatars.length >= 2}}" class="avatar-tr-sm">
+                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 2].url}}" mode="aspectFill" />
+                  </view>
+                  <view wx:if="{{item.cardAvatars.length >= 3}}" class="avatar-mid-sm">
+                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 3].url}}" mode="aspectFill" />
+                  </view>
+                </view>
+              </view>
+              <view class="small-card-info">
+                <text class="small-card-name">{{item.name}}</text>
+                <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
+              </view>
+            </view>
+            <view class="cards-row-end-spacer"></view>
+          </view>
+        </view>
+      </view>
+
+      <!-- ── 未开始 ── -->
+      <view wx:if="{{groupedActivities.notStarted.length > 0}}" class="group-section">
+        <view class="group-header">
+          <text class="group-title">未开始</text>
+        </view>
+        <view
+          class="cards-carousel"
+          data-group="notStarted"
+          bindtouchstart="onGroupTouchStart"
+          bindtouchmove="onGroupTouchMove"
+          bindtouchend="onGroupTouchEnd"
+        >
+          <view class="small-cards-row" style="transform:translateX(-{{groupOffset.notStarted}}px);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
+            <view
+              wx:for="{{groupedActivities.notStarted}}"
+              wx:key="_id"
+              class="small-card-wrap"
+              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
+              hover-stay-time="80"
+              bindtap="showDetail"
+              data-activity="{{item}}"
+            >
+              <view class="small-card">
+                <image
+                  wx:if="{{item.smallCardBgImageUrl}}"
+                  class="card-image-bg"
+                  src="{{item.smallCardBgImageUrl}}"
+                  mode="aspectFill"
+                />
+                <video
+                  wx:if="{{item.bgVideoUrl}}"
+                  id="vid-notStarted-{{index}}"
+                  class="card-video-bg"
+                  src="{{item.bgVideoUrl}}"
+                  objectFit="cover"
+                  autoplay="{{focusedCardIndex.notStarted === index}}"
+                  loop="{{true}}"
+                  muted="{{true}}"
+                  controls="{{false}}"
+                  show-center-play-btn="{{false}}"
+                  show-play-btn="{{false}}"
+                  enable-progress-gesture="{{false}}"
+                />
+                <!-- 小卡类型角标（仅羽毛球/桌游） -->
+                <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
+                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
+                  <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
+                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
+                  </view>
+                  <view wx:if="{{item.cardAvatars.length >= 2}}" class="avatar-tr-sm">
+                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 2].url}}" mode="aspectFill" />
+                  </view>
+                  <view wx:if="{{item.cardAvatars.length >= 3}}" class="avatar-mid-sm">
+                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 3].url}}" mode="aspectFill" />
+                  </view>
+                </view>
+              </view>
+              <view class="small-card-info">
+                <text class="small-card-name">{{item.name}}</text>
+                <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
+              </view>
+            </view>
+            <view class="cards-row-end-spacer"></view>
+          </view>
+        </view>
+      </view>
+
+      <!-- ── 已结束 ── -->
+      <view wx:if="{{groupedActivities.ended.length > 0}}" class="group-section ended-section">
+        <view class="group-header">
+          <text class="group-title">已结束</text>
+        </view>
+        <view
+          class="cards-carousel"
+          data-group="ended"
+          bindtouchstart="onGroupTouchStart"
+          bindtouchmove="onGroupTouchMove"
+          bindtouchend="onGroupTouchEnd"
+        >
+          <view class="small-cards-row" style="transform:translateX(-{{groupOffset.ended}}px);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
+            <view
+              wx:for="{{groupedActivities.ended}}"
+              wx:key="_id"
+              class="small-card-wrap"
+              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
+              hover-stay-time="80"
+              bindtap="showDetail"
+              data-activity="{{item}}"
+            >
+              <view class="small-card">
+                <image
+                  wx:if="{{item.smallCardBgImageUrl}}"
+                  class="card-image-bg"
+                  src="{{item.smallCardBgImageUrl}}"
+                  mode="aspectFill"
+                />
+                <video
+                  wx:if="{{item.bgVideoUrl}}"
+                  id="vid-ended-{{index}}"
+                  class="card-video-bg"
+                  src="{{item.bgVideoUrl}}"
+                  objectFit="cover"
+                  autoplay="{{focusedCardIndex.ended === index}}"
+                  loop="{{true}}"
+                  muted="{{true}}"
+                  controls="{{false}}"
+                  show-center-play-btn="{{false}}"
+                  show-play-btn="{{false}}"
+                  enable-progress-gesture="{{false}}"
+                />
+                <!-- 小卡类型角标（仅羽毛球/桌游） -->
+                <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
+                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
+                  <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
+                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
+                  </view>
+                  <view wx:if="{{item.cardAvatars.length >= 2}}" class="avatar-tr-sm">
+                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 2].url}}" mode="aspectFill" />
+                  </view>
+                  <view wx:if="{{item.cardAvatars.length >= 3}}" class="avatar-mid-sm">
+                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 3].url}}" mode="aspectFill" />
+                  </view>
+                </view>
+              </view>
+              <view class="small-card-info">
+                <text class="small-card-name">{{item.name}}</text>
+                <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
+              </view>
+            </view>
+            <view class="cards-row-end-spacer"></view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 底部占位（避免被 Tab 遮挡） -->
+      <view style="height: 40rpx"></view>
+    </block>
+  </scroll-view>
+
+  <block wx:if="{{!isGuest}}">
+    <!-- ── 编辑/创建弹窗 ── -->
+    <view wx:if="{{showEditModal}}" class="edit-modal-container">
+      <view class="edit-modal-bg" catchtouchmove="stopPropagation" bindtap="closeEditModal"></view>
+      <view class="edit-modal-panel" catchtap="stopPropagation" catchtouchmove="stopPropagation">
+        <view class="modal-header edit-modal-header">
+          <text>{{currentActivity ? '编辑活动' : '新建活动'}}</text>
+          <text class="close-btn" bindtap="closeEditModal">×</text>
+        </view>
+
+        <view class="edit-modal-body-wrapper">
+        <scroll-view scroll-y="{{true}}" class="edit-modal-body">
+          <view class="form-item">
+            <view class="label">开始时间：</view>
+            <view class="datetime-picker-wrapper">
+              <picker mode="date" value="{{editForm.startDate}}" bindchange="onStartDateChange">
+                <view class="picker datetime-date">{{editForm.startDate || '请选择日期'}}</view>
+              </picker>
+              <picker mode="time" value="{{editForm.startTime}}" bindchange="onStartTimeChange">
+                <view class="picker datetime-time">{{editForm.startTime || '请选择时间'}}</view>
+              </picker>
+            </view>
+          </view>
+
+          <view class="form-item">
+            <view class="label">结束时间：</view>
+            <view class="datetime-picker-wrapper">
+              <picker mode="date" value="{{editForm.endDate}}" bindchange="onEndDateChange">
+                <view class="picker datetime-date">{{editForm.endDate || '请选择日期'}}</view>
+              </picker>
+              <picker mode="time" value="{{editForm.endTime}}" bindchange="onEndTimeChange">
+                <view class="picker datetime-time">{{editForm.endTime || '请选择时间'}}</view>
+              </picker>
+            </view>
+          </view>
+
+          <view class="form-item">
+            <view class="label">报名截止：</view>
+            <view class="datetime-picker-wrapper">
+              <picker mode="date" value="{{editForm.signupDeadlineDate}}" bindchange="onSignupDeadlineDateChange">
+                <view class="picker datetime-date">{{editForm.signupDeadlineDate || '请选择日期'}}</view>
+              </picker>
+              <picker mode="time" value="{{editForm.signupDeadlineTime}}" bindchange="onSignupDeadlineTimeChange">
+                <view class="picker datetime-time">{{editForm.signupDeadlineTime || '请选择时间'}}</view>
+              </picker>
+            </view>
+          </view>
+
+          <!-- 活动类型（新增） -->
+          <view class="form-item">
+            <view class="label">活动类型：</view>
+            <picker
+              mode="selector"
+              range="{{activityTypeOptionLabels}}"
+              value="{{editActivityTypeIndex}}"
+              bindchange="onActivityTypeChange"
+            >
+              <view class="picker">
+                {{activityTypeOptionLabels[editActivityTypeIndex] || '请选择类型'}}
+              </view>
+            </picker>
+          </view>
+          <view class="form-item">
+            <view class="label">卡片样式：</view>
+            <picker
+              mode="selector"
+              range="{{activityStyleOptionLabels}}"
+              value="{{editActivityStyleIndex}}"
+              bindchange="onActivityStyleChange"
+            >
+              <view class="picker">
+                {{activityStyleOptionLabels[editActivityStyleIndex] || '请选择样式'}}
+              </view>
+            </picker>
+          </view>
+
+          <!-- 报名人数上限 -->
+          <view wx:if="{{isAdmin}}" class="form-item">
+            <view class="label">限制报名人数：</view>
+            <switch
+              checked="{{editForm.limitEnabled}}"
+              bindchange="onEditFormChange"
+              data-field="limitEnabled"
+            />
+          </view>
+          <view wx:if="{{isAdmin && editForm.limitEnabled}}" class="form-item">
+            <view class="label">人数上限：</view>
+            <input
+              class="input"
+              type="number"
+              placeholder="请输入人数上限（1-999）"
+              value="{{editForm.maxParticipants}}"
+              bindinput="onEditFormChange"
+              data-field="maxParticipants"
+              adjust-position="{{false}}"
+            />
+          </view>
+
+          <!-- 仅编辑时展示报名开关 -->
+          <view wx:if="{{isAdmin && currentActivity}}" class="form-item">
+            <view class="label">允许报名：</view>
+            <switch
+              checked="{{editForm.signupEnabled}}"
+              bindchange="onEditFormChange"
+              data-field="signupEnabled"
+            />
+          </view>
+
+          <view class="form-item">
+            <view class="label">活动名称：</view>
+            <input
+              class="input"
+              placeholder="请输入活动名称"
+              value="{{editForm.name}}"
+              bindinput="onEditFormChange"
+              data-field="name"
+              adjust-position="{{false}}"
+            />
+          </view>
+
+          <view class="form-item">
+            <view class="label">活动地点：</view>
+            <view class="picker {{locationDisabled ? 'picker-disabled' : ''}}" bindtap="onChooseLocation">
+              {{editForm.locationName || '请选择活动位置'}}
+            </view>
+          </view>
+
+          <view class="form-item">
+            <view class="label">活动备注：</view>
+            <textarea
+              class="textarea"
+              placeholder="请输入备注（可选）"
+              value="{{editForm.remark}}"
+              bindinput="onEditFormChange"
+              data-field="remark"
+              adjust-position="{{true}}"
+              cursor-spacing="120"
+            />
+          </view>
+          <view style="height:24rpx"></view>
+        </scroll-view>
+        </view>
+
+        <view class="modal-footer edit-modal-footer">
+          <button wx:if="{{isAdmin && currentActivity && currentActivity.status !== '已取消'}}" class="btn danger" hover-class="btn-hover" hover-stay-time="80" bindtap="cancelActivity">取消活动</button>
+          <button class="btn primary" hover-class="btn-hover" hover-stay-time="80" bindtap="saveActivity">保存</button>
+        </view>
+      </view>
+    </view>
+
+    <!-- ── 详情弹窗 ── -->
+    <view wx:if="{{showDetailModal}}" class="modal-overlay" bindtap="closeDetailModal" catchtouchmove="stopPropagation">
+      <view class="modal-content" catchtap="stopPropagation">
+        <view class="modal-header">
+          <text>活动详情</text>
+          <text class="close-btn" bindtap="closeDetailModal">×</text>
+        </view>
+
+        <scroll-view class="modal-body detail-modal-body" scroll-y="true" enable-flex="true">
+          <view class="detail-item">
+            <text class="label">活动名称：</text>
+            <text>{{detailActivity.name}}</text>
+          </view>
+          <view class="detail-item">
+            <text class="label">开始时间：</text>
+            <text>{{detailActivity.startTime || detailActivity.date + ' 00:00'}}</text>
+          </view>
+          <view class="detail-item">
+            <text class="label">结束时间：</text>
+            <text>{{detailActivity.endTime || detailActivity.date + ' 01:00'}}</text>
+          </view>
+          <view class="detail-item">
+            <text class="label">报名截止：</text>
+            <text>{{detailActivity.signupDeadline}}</text>
+          </view>
+          <view class="detail-item">
+            <text class="label">活动状态：</text>
+            <text>{{detailActivity.status}}</text>
+          </view>
+          <view wx:if="{{detailActivity.remark}}" class="detail-item">
+            <text class="label">活动备注：</text>
+            <text>{{detailActivity.remark}}</text>
+          </view>
+          <view wx:if="{{detailActivity.locationName || detailActivity.locationAddress}}" class="detail-item">
+            <text class="label">活动地点：</text>
+            <text>{{detailActivity.locationName}} {{detailActivity.locationAddress}}</text>
+          </view>
+
+          <view class="divider"></view>
+
+          <view class="detail-item">
+            <text class="label">已报名人员（{{detailActivity.participants.length}} 人，已签到 {{detailActivity.checkinCount || 0}} 人）：</text>
+          </view>
+          <view wx:if="{{detailActivity.participants.length === 0}}" class="empty-text">暂无报名人员</view>
+          <scroll-view wx:else scroll-y="true" class="participant-scroll">
+            <view
+              wx:for="{{detailActivity.participants}}"
+              wx:key="index"
+              wx:for-item="participant"
+              class="participant-item"
+            >
+              <text class="participant-name">{{participant.name}}<text wx:if="{{participant.checkedInAt}}" class="participant-checkin">（已签到）</text><text wx:elif="{{detailActivity.activityStarted}}" class="participant-pigeon">（鸽子🐦！）</text></text>
+              <view class="participant-actions">
+                <text
+                  wx:if="{{isAdmin && !participant.checkedInAt && detailActivity.status === '已结束'}}"
+                  class="participant-retro-checkin"
+                  hover-class="participant-btn-hover"
+                  hover-stay-time="80"
+                  bindtap="adminRetroCheckin"
+                  data-id="{{participant.id}}"
+                  data-name="{{participant.name}}"
+                >补签</text>
+                <text
+                  wx:elif="{{isAdmin && participant.checkedInAt}}"
+                  class="participant-retro-checkin"
+                  hover-class="participant-btn-hover"
+                  hover-stay-time="80"
+                  bindtap="adminCancelCheckin"
+                  data-id="{{participant.id}}"
+                  data-name="{{participant.name}}"
+                >取消签到</text>
+                <text
+                  wx:if="{{isAdmin || (!detailActivity.signupDeadlinePassed && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname)))}}"
+                  class="participant-delete"
+                  hover-class="participant-btn-hover"
+                  hover-stay-time="80"
+                  bindtap="removeParticipant"
+                  data-id="{{participant.id}}"
+                  data-name="{{participant.name}}"
+                  data-self="{{(!isAdmin && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname))) ? '1' : ''}}"
+                >{{(!isAdmin && ((participant.userId && participant.userId === myUserId) || (!participant.userId && participant.name === myNickname))) ? '取消' : '删除'}}</text>
+              </view>
+            </view>
+            <view style="height:64rpx"></view>
+          </scroll-view>
+        </scroll-view>
+
+        <view class="modal-footer detail-footer">
+          <!-- 管理员编辑按钮 -->
+          <button
+            wx:if="{{isAdmin && detailActivity.status !== '已取消'}}"
+            class="btn default"
+            hover-class="btn-hover"
+            hover-stay-time="80"
+            bindtap="detailShowEditModal"
+          >编辑</button>
+          <block wx:if="{{detailActivity.status === '未开始' || detailActivity.status === '进行中'}}">
+            <button
+              wx:if="{{!detailActivity.hasSignedUp && !detailActivity.signupDeadlinePassed}}"
+              class="btn primary"
+              hover-class="btn-hover"
+              hover-stay-time="80"
+              bindtap="detailSignup"
+            >报名</button>
+            <button
+              wx:elif="{{!detailActivity.hasSignedUp && detailActivity.signupDeadlinePassed}}"
+              class="btn default"
+              disabled="true"
+            >报名已截止</button>
+            <button
+              wx:elif="{{detailActivity.hasSignedUp && !detailActivity.hasCheckedIn}}"
+              class="btn primary"
+              hover-class="btn-hover"
+              hover-stay-time="80"
+              bindtap="detailCheckin"
+            >签到</button>
+            <button
+              wx:elif="{{detailActivity.hasSignedUp && detailActivity.hasCheckedIn}}"
+              class="btn default"
+              disabled="true"
+            >已签到</button>
+          </block>
+          <button class="btn {{detailActivity.status !== '未开始' && detailActivity.status !== '进行中' ? 'primary' : 'default'}}" hover-class="btn-hover" hover-stay-time="80" open-type="share">分享</button>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 底部 Tab 由 custom-tab-bar 组件统一渲染，此处无需内联 -->
+
+</view>

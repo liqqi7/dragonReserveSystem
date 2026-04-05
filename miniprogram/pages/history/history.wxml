@@ -1,0 +1,190 @@
+<view class="container {{isGuest ? 'guest-mode' : ''}}">
+  <!-- 游客缺省态 -->
+  <view wx:if="{{isGuest}}" class="guest-empty-state">
+    <image class="guest-empty-icon" src="/images/empty-state-icon.gif" mode="aspectFit" />
+    <text class="guest-empty-text">未查询到您的冒险者工会归属</text>
+    <text class="guest-empty-text">请前往「我的」进行登录</text>
+  </view>
+
+  <!-- 已授权用户内容 -->
+  <block wx:else>
+  <!-- Tab切换 -->
+  <view class="tab-bar">
+    <view
+      class="tab-item {{activeTab === 'activity' ? 'active' : ''}}"
+      data-tab="activity"
+      bindtap="switchTab"
+    >
+      活动
+    </view>
+    <view
+      class="tab-item {{activeTab === 'bill' ? 'active' : ''}}"
+      data-tab="bill"
+      bindtap="switchTab"
+    >
+      账单
+    </view>
+  </view>
+
+  <!-- 活动Tab：鸽子榜 -->
+  <view wx:if="{{activeTab === 'activity'}}" class="tab-content">
+    <view class="section-header">
+      <text class="section-title">鸽子榜🐦</text>
+      <text class="section-subtitle">共 {{endedActivityCount}} 场已结束活动</text>
+    </view>
+
+    <view wx:if="{{pigeonStats.length === 0}}" class="empty-state">
+      <text class="empty-icon">🐦</text>
+      <text class="empty-text">暂无鸽子数据</text>
+    </view>
+
+    <view wx:else class="member-list">
+      <view
+        wx:for="{{pigeonStats}}"
+        wx:key="name"
+        class="member-card"
+      >
+        <view class="member-header">
+          <view class="member-name">{{item.name}}</view>
+          <view class="member-rank">#{{index + 1}}</view>
+        </view>
+        <view class="member-stats">
+          <view class="stat-item">
+            <text class="stat-label">活动报名数</text>
+            <text class="stat-value">{{item.signupCount}} 场</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">活动签到数</text>
+            <text class="stat-value">{{item.checkinCount}} 场</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">鸽子率</text>
+            <text class="stat-value">{{item.pigeonRate}}%</text>
+          </view>
+        </view>
+        <view class="progress-bar">
+          <view class="progress-fill pigeon-fill" style="width: {{item.pigeonRate}}%"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 账单Tab：活动账单统计 -->
+  <view wx:if="{{activeTab === 'bill'}}" class="tab-content">
+    <view wx:if="{{activityBillStats.length === 0}}" class="empty-state">
+      <text class="empty-icon">💰</text>
+      <text class="empty-text">暂无账单数据</text>
+    </view>
+
+    <view wx:else class="bill-list">
+      <view
+        wx:for="{{activityBillStats}}"
+        wx:key="activityId"
+        class="bill-card"
+        bindtap="showActivityBillDetail"
+        data-activity="{{item}}"
+      >
+        <view class="bill-header">
+          <view class="bill-title">{{item.activityName}}</view>
+          <view class="bill-date">{{item.date}}</view>
+        </view>
+        <view class="bill-stats">
+          <view class="bill-stat-item">
+            <text class="bill-stat-label">总支出</text>
+            <text class="bill-stat-value">¥{{item.totalAmount}}</text>
+          </view>
+          <view class="bill-stat-item">
+            <text class="bill-stat-label">人均支出</text>
+            <text class="bill-stat-value">¥{{item.avgAmount}}</text>
+          </view>
+          <view class="bill-stat-item">
+            <text class="bill-stat-label">参与人数</text>
+            <text class="bill-stat-value">{{item.participantCount}} 人</text>
+          </view>
+        </view>
+        <view class="bill-footer">
+          <text class="bill-detail-hint">点击查看明细 →</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 账单明细弹窗 -->
+  <view wx:if="{{showBillDetail && selectedActivityBills}}" class="modal-overlay" bindtap="closeBillDetail">
+    <view class="modal-content" catchtap="stopPropagation">
+      <view class="modal-header">
+        <text>账单明细 - {{selectedActivityBills.activityName}}</text>
+        <text class="close-btn" bindtap="closeBillDetail">×</text>
+      </view>
+
+      <view class="modal-body">
+        <view class="detail-summary">
+          <view class="summary-item">
+            <text class="summary-label">活动日期：</text>
+            <text class="summary-value">{{selectedActivityBills.date}}</text>
+          </view>
+          <view class="summary-item">
+            <text class="summary-label">总支出：</text>
+            <text class="summary-value">¥{{selectedActivityBills.totalAmount}}</text>
+          </view>
+          <view class="summary-item">
+            <text class="summary-label">人均支出：</text>
+            <text class="summary-value">¥{{selectedActivityBills.avgAmount}}</text>
+          </view>
+        </view>
+
+        <view class="divider"></view>
+
+        <!-- 结算结果 -->
+        <view class="settlement-section">
+          <view class="detail-section-title">结算结果</view>
+          <view wx:if="{{selectedActivityBills.settlements && selectedActivityBills.settlements.length === 0}}" class="empty-settlement">
+            <text class="empty-text">无需结算</text>
+          </view>
+          <view wx:else class="settlement-list">
+            <view
+              wx:for="{{selectedActivityBills.settlements}}"
+              wx:key="index"
+              class="settlement-item"
+            >
+              <text class="settlement-text">{{item.from}} → {{item.to}}：¥{{item.amount}}</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="divider"></view>
+
+        <view class="bill-detail-list">
+          <view class="detail-section-title">记账明细（{{selectedActivityBills.bills.length}} 笔）</view>
+          <view
+            wx:for="{{selectedActivityBills.bills}}"
+            wx:key="_id"
+            class="bill-detail-item"
+          >
+            <view class="detail-item-header">
+              <view class="detail-item-left">
+                <text class="detail-item-name">{{item.item}}</text>
+                <text class="detail-item-amount">¥{{item.totalAmount}}</text>
+              </view>
+              <text class="delete-btn" bindtap="deleteBill" data-bill-id="{{item._id}}">删除</text>
+            </view>
+            <view class="detail-item-info">
+              <text class="detail-info-text">付款人：{{item.payer}}</text>
+            </view>
+            <view class="detail-item-info">
+              <text class="detail-info-text">参与人：{{item.participantsText || (item.participants && item.participants.join('、')) || '无'}}</text>
+            </view>
+            <view class="detail-item-info">
+              <text class="detail-info-text">人均：¥{{item.perShare}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="modal-footer">
+        <button class="btn primary" bindtap="closeBillDetail">关闭</button>
+      </view>
+    </view>
+  </view>
+  </block>
+</view>

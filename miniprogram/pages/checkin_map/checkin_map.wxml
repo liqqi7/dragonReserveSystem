@@ -1,0 +1,22 @@
+<view class="container">
+  <view class="info-panel">
+    <view class="title">{{activityName}}</view>
+    <view class="subtitle">{{activityAddress}}</view>
+    <view wx:if="{{distanceText}}" class="distance">{{distanceText}}</view>
+  </view>
+
+  <map
+    class="map"
+    latitude="{{mapLatitude}}"
+    longitude="{{mapLongitude}}"
+    scale="{{scale}}"
+    markers="{{markers}}"
+    circles="{{circles}}"
+    show-location="true"
+  />
+
+  <view class="footer">
+    <button class="btn default" bindtap="cancel">取消</button>
+    <button class="btn primary" bindtap="confirmCheckin">确认签到</button>
+  </view>
+</view>

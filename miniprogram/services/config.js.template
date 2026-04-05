@@ -1,0 +1,10 @@
+const API_BASE_URL = "https://dragon.liqqihome.top/api/v1";
+
+function getApiBaseUrl() {
+  return API_BASE_URL;
+}
+
+module.exports = {
+  API_BASE_URL,
+  getApiBaseUrl
+};

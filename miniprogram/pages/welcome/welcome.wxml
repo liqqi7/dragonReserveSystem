@@ -1,0 +1,15 @@
+<view class="container">
+  <view class="card auth-card">
+    <view class="title">龙城冒险者工会预约系统</view>
+    <view class="subtitle">使用微信账号登录</view>
+
+    <view class="form-item">
+      <view class="label">登录说明</view>
+      <view class="helper-text">点击下方按钮后，将通过微信小程序登录并同步当前账号到本地后端。</view>
+    </view>
+
+    <button class="btn primary" bindtap="onWechatLogin" disabled="{{submitting}}">
+      {{submitting ? '登录中...' : '微信登录进入'}}
+    </button>
+  </view>
+</view>

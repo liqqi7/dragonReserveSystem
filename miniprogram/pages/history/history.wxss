@@ -1,0 +1,412 @@
+page {
+  background-color: #f5f5f5;
+}
+
+.container {
+  padding: 0;
+  background-color: #ffffff;
+}
+
+/* Tab切换栏 */
+.tab-bar {
+  display: flex;
+  background-color: #ffffff;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx 0;
+  font-size: 30rpx;
+  color: #666;
+  position: relative;
+}
+
+.tab-item.active {
+  color: #007aff;
+  font-weight: 600;
+}
+
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60rpx;
+  height: 4rpx;
+  background-color: #007aff;
+  border-radius: 2rpx;
+}
+
+.tab-content {
+  padding: 24rpx;
+}
+
+/* 活动Tab样式 */
+.section-header {
+  margin-bottom: 24rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.section-subtitle {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.member-card {
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.member-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.member-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.member-rank {
+  font-size: 24rpx;
+  color: #999;
+  padding: 4rpx 12rpx;
+  background-color: #f5f5f5;
+  border-radius: 12rpx;
+}
+
+.member-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20rpx;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 8rpx;
+}
+
+.stat-value {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8rpx;
+  background-color: #f0f0f0;
+  border-radius: 4rpx;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #007aff;
+  border-radius: 4rpx;
+  transition: width 0.3s;
+}
+
+.progress-fill.pigeon-fill {
+  background-color: #ff9500;
+}
+
+/* 账单Tab样式 */
+.bill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.bill-card {
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  border-left: 4rpx solid #007aff;
+}
+
+.bill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20rpx;
+}
+
+.bill-title {
+  flex: 1;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-right: 16rpx;
+}
+
+.bill-date {
+  font-size: 24rpx;
+  color: #999;
+  white-space: nowrap;
+}
+
+.bill-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 16rpx;
+}
+
+.bill-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bill-stat-label {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 8rpx;
+}
+
+.bill-stat-value {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #007aff;
+}
+
+.bill-footer {
+  padding-top: 16rpx;
+  border-top: 1rpx solid #f0f0f0;
+  text-align: right;
+}
+
+.bill-detail-hint {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 弹窗样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  width: 90%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx;
+  border-bottom: 1rpx solid #eee;
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.close-btn {
+  font-size: 48rpx;
+  color: #999;
+  line-height: 1;
+}
+
+.modal-body {
+  padding: 24rpx;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.detail-summary {
+  margin-bottom: 24rpx;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+  font-size: 28rpx;
+}
+
+.summary-label {
+  color: #999;
+}
+
+.summary-value {
+  color: #333;
+  font-weight: 600;
+}
+
+.divider {
+  height: 1rpx;
+  background-color: #eee;
+  margin: 24rpx 0;
+}
+
+.detail-section-title {
+  font-size: 26rpx;
+  color: #666;
+  margin-bottom: 16rpx;
+  font-weight: 600;
+}
+
+.bill-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.bill-detail-item {
+  padding: 20rpx;
+  background-color: #f5f5f5;
+  border-radius: 12rpx;
+}
+
+.detail-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.detail-item-left {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.delete-btn {
+  font-size: 24rpx;
+  color: #fa5151;
+  padding: 8rpx 16rpx;
+  background-color: #fff5f5;
+  border-radius: 8rpx;
+  margin-left: 16rpx;
+}
+
+.settlement-section {
+  margin-bottom: 24rpx;
+}
+
+.settlement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.settlement-item {
+  padding: 16rpx;
+  background-color: #e6f3ff;
+  border-radius: 12rpx;
+  border-left: 4rpx solid #007aff;
+}
+
+.settlement-text {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.empty-settlement {
+  text-align: center;
+  padding: 24rpx;
+  color: #999;
+  font-size: 24rpx;
+}
+
+.detail-item-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.detail-item-amount {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #007aff;
+}
+
+.detail-item-info {
+  margin-bottom: 8rpx;
+}
+
+.detail-info-text {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.modal-footer {
+  padding: 24rpx;
+  border-top: 1rpx solid #eee;
+}
+
+.btn {
+  width: 100%;
+  padding: 18rpx 0;
+  font-size: 30rpx;
+  border-radius: 999rpx;
+  border: none;
+}
+
+.btn.primary {
+  background-color: #007aff;
+  color: #ffffff;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 24rpx;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 24rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999;
+}
