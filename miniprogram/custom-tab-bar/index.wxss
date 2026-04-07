@@ -13,6 +13,21 @@
   pointer-events: none;
 }
 
+.tab-bottom-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(48px + env(safe-area-inset-bottom));
+  /* 与设计稿一致：Linear，0% #fff 0%，100% #fff 60%（竖直方向由上到下） */
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.6) 100%
+  );
+  pointer-events: none;
+}
+
 .tab-items-wrap {
   position: relative;
   display: flex;

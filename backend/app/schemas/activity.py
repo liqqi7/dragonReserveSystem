@@ -172,3 +172,10 @@ class ActivitySharePreviewResponse(BaseModel):
 
     status: str
     image_url: Optional[str] = None
+
+
+class ActivityStyleSignatureResponse(BaseModel):
+    """Global signature for style-related resource invalidation."""
+
+    signature: str
+    activity_count: int

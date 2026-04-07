@@ -311,6 +311,7 @@ function adaptActivity(item) {
  */
 function enrichSingleActivity(rawItem, typeStyles, myUserId, myNickname, now) {
   const nowDate = now || new Date();
+  const myIdStr = String(myUserId || "").trim();
   const typeStyleMap = buildTypeStyleMap(typeStyles);
   const activity = adaptActivity(rawItem);
 
@@ -348,16 +349,17 @@ function enrichSingleActivity(rawItem, typeStyles, myUserId, myNickname, now) {
   rawParticipants.forEach((p) => {
     if (typeof p === "object" && p !== null) {
       const uid = p.userId;
-      const name = p.name;
+      const name = (p.name || "").trim();
       const checkedIn = !!p.checkedInAt;
       if (checkedIn) checkinCount += 1;
       const avatarUrl = normalizeAvatarUrl(p.avatarUrl);
       const hasCustomAvatar = avatarUrl !== DEFAULT_AVATAR;
       avatarList.push({ url: avatarUrl, isDefault: !hasCustomAvatar });
-      if (myUserId && uid && uid === myUserId) {
+      const uidStr = uid != null ? String(uid) : "";
+      if (myIdStr && uidStr && uidStr === myIdStr) {
         hasSignedUp = true;
         if (checkedIn) hasCheckedIn = true;
-      } else if (!myUserId && myNickname && name === myNickname) {
+      } else if (myNickname && name === myNickname) {
         hasSignedUp = true;
         if (checkedIn) hasCheckedIn = true;
       }

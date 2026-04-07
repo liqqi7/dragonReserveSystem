@@ -289,6 +289,34 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start_backend_prod.ps1
 - 前端不要拼本地文件路径替代线上 URL（避免环境切换后失效）
 - 活动创建时一旦确定 `activity_style_key`，后续应按业务要求保持不变（除非显式编辑）
 
+### 小程序资源缓存刷新策略（无需发版）
+
+为避免“每次进入都重拉卡片资源”，当前支持后端可控的两级触发策略：
+
+1. 手动全量刷新（运维触发）
+   - 配置项：`CLIENT_CACHE_VERSION`（见 `app/core/config.py`）
+   - 客户端会读取 `GET /api/v1/client-config` 返回的 `cache_version`
+   - 当版本号变化时，仅清理业务缓存并重拉资源（不清登录态）
+
+2. 样式变更刷新（业务触发）
+   - 接口：`GET /api/v1/activities/style-signature`
+   - 后端基于活动样式相关字段生成全局签名（`activity_type`、`activity_style_key`、样式资源 URL 等）
+   - 签名变化时，客户端触发资源刷新；签名不变时继续使用本地缓存
+
+> 设计目标：默认不按时间自动过期（无 TTL 驱动重拉），除非你手动升版本，或活动样式确实发生变化。
+
+#### 登录态保护约束
+
+缓存清理仅作用于业务数据（如活动列表、类型样式、详情衍生缓存），不会清理：
+
+- `accessToken`
+- `userId`
+- `userRole`
+- `isAuthenticated`
+- `hasWeChatAuth`
+- `userNickname`
+- `userAvatarUrl`
+
 ### 故障排查速查
 
 - 资源 404：先检查文件是否真实存在于 `backend/storage/<子目录>/`

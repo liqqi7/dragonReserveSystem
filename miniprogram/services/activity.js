@@ -8,6 +8,14 @@ function listActivityTypeStyles() {
   return request({ url: "/activities/type-styles" });
 }
 
+function getActivityStyleSignature() {
+  return request({ url: "/activities/style-signature" });
+}
+
+function getClientConfig() {
+  return request({ url: "/client-config" });
+}
+
 function getActivity(activityId) {
   return request({ url: `/activities/${activityId}` });
 }
@@ -85,6 +93,8 @@ function adminCancelCheckinParticipant(activityId, participantId) {
 module.exports = {
   listActivities,
   listActivityTypeStyles,
+  getActivityStyleSignature,
+  getClientConfig,
   getActivity,
   getActivitySharePreview,
   createActivity,

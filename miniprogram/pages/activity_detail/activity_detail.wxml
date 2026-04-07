@@ -48,6 +48,29 @@
               show-center-play-btn="{{false}}"
               show-play-btn="{{false}}"
             />
+            <view wx:if="{{activity.showAvatarCluster}}" class="hero-avatar-cluster">
+              <view wx:if="{{heroCardAvatars.length >= 1}}" class="hero-avatar-tl">
+                <image
+                  class="hero-cluster-avatar"
+                  src="{{heroCardAvatars[heroCardAvatars.length - 1].url}}"
+                  mode="aspectFill"
+                />
+              </view>
+              <view wx:if="{{heroCardAvatars.length >= 2}}" class="hero-avatar-tr">
+                <image
+                  class="hero-cluster-avatar"
+                  src="{{heroCardAvatars[heroCardAvatars.length - 2].url}}"
+                  mode="aspectFill"
+                />
+              </view>
+              <view wx:if="{{heroCardAvatars.length >= 3}}" class="hero-avatar-mid">
+                <image
+                  class="hero-cluster-avatar"
+                  src="{{heroCardAvatars[heroCardAvatars.length - 3].url}}"
+                  mode="aspectFill"
+                />
+              </view>
+            </view>
             <view wx:if="{{!activity.largeCardBgImageUrl && !activity.bgVideoUrl}}" class="hero-placeholder"></view>
           </view>
         </view>
@@ -60,7 +83,7 @@
         <text class="detail-title">{{activity.name}}</text>
 
         <view
-          wx:if="{{activity.status === '已结束'}}"
+          wx:if="{{activity.status === '已结束' && pigeonList.length > 0}}"
           class="pigeon-card"
           hover-class="pigeon-card-hover"
           hover-stay-time="80"
@@ -185,7 +208,13 @@
             disabled="true"
           >报名已截止</button>
           <button
-            wx:elif="{{activity.hasSignedUp && !activity.hasCheckedIn}}"
+            wx:elif="{{activity.hasSignedUp && !activity.hasCheckedIn && !isCheckinWindowOpen}}"
+            class="bottom-primary"
+            hover-class="bottom-primary-hover"
+            bindtap="onTapCancelSignup"
+          >取消报名</button>
+          <button
+            wx:elif="{{activity.hasSignedUp && !activity.hasCheckedIn && isCheckinWindowOpen}}"
             class="bottom-primary"
             hover-class="bottom-primary-hover"
             bindtap="onTapCheckin"
@@ -249,33 +278,6 @@
                 <view class="picker datetime-time">{{editForm.signupDeadlineTime || '请选择时间'}}</view>
               </picker>
             </view>
-          </view>
-
-          <view class="form-item">
-            <view class="label">活动类型：</view>
-            <picker
-              mode="selector"
-              range="{{activityTypeOptionLabels}}"
-              value="{{editActivityTypeIndex}}"
-              bindchange="onActivityTypeChange"
-            >
-              <view class="picker">
-                {{activityTypeOptionLabels[editActivityTypeIndex] || '请选择类型'}}
-              </view>
-            </picker>
-          </view>
-          <view class="form-item">
-            <view class="label">卡片样式：</view>
-            <picker
-              mode="selector"
-              range="{{activityStyleOptionLabels}}"
-              value="{{editActivityStyleIndex}}"
-              bindchange="onActivityStyleChange"
-            >
-              <view class="picker">
-                {{activityStyleOptionLabels[editActivityStyleIndex] || '请选择样式'}}
-              </view>
-            </picker>
           </view>
 
           <view wx:if="{{isAdmin}}" class="form-item">
@@ -441,6 +443,47 @@
         </view>
         <view class="participants-drawer-body-pad"></view>
       </scroll-view>
+    </view>
+  </view>
+
+  <!-- 报名前资料完善：本页弹窗，不跳转「我的」 -->
+  <view wx:if="{{showSignupProfileModal}}" class="signup-profile-overlay" catchtouchmove="stopPropagation">
+    <view class="signup-profile-modal-bg" bindtap="closeSignupProfileModal"></view>
+    <view class="signup-profile-modal-sheet" catchtap="stopPropagation" catchtouchmove="stopPropagation">
+      <view class="signup-profile-modal-header">
+        <text class="signup-profile-modal-title">修改个人资料</text>
+        <text class="signup-profile-close-btn" bindtap="closeSignupProfileModal">×</text>
+      </view>
+      <view class="signup-profile-modal-body">
+        <view class="signup-profile-hint">{{signupProfileHint}}</view>
+        <view class="signup-profile-form-row">
+          <view class="signup-profile-label">头像</view>
+          <view class="signup-profile-avatar-wrap">
+            <button class="signup-profile-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onSignupProfileChooseAvatar">
+              <image wx:if="{{signupProfileAvatarUrl}}" class="signup-profile-avatar-img" src="{{signupProfileAvatarUrl}}" mode="aspectFill" />
+              <view wx:else class="signup-profile-avatar-placeholder">选择头像</view>
+            </button>
+          </view>
+        </view>
+        <view class="signup-profile-form-item">
+          <view class="signup-profile-label">昵称</view>
+          <input
+            type="text"
+            class="signup-profile-input"
+            placeholder="请输入昵称"
+            value="{{signupProfileNickname}}"
+            bindinput="onSignupProfileNicknameInput"
+          />
+        </view>
+      </view>
+      <view class="signup-profile-modal-footer">
+        <button class="signup-profile-btn signup-profile-btn-default" bindtap="closeSignupProfileModal">取消</button>
+        <button
+          class="signup-profile-btn signup-profile-btn-primary {{!signupProfileCanSubmit ? 'signup-profile-btn-disabled' : ''}}"
+          bindtap="saveSignupProfile"
+          disabled="{{!signupProfileCanSubmit}}"
+        >保存</button>
+      </view>
     </view>
   </view>
 </view>
