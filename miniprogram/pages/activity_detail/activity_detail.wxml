@@ -183,6 +183,13 @@
   <view wx:if="{{activity}}" class="bottom-bar" style="padding-bottom: {{safeBottom}}px">
     <view class="bottom-inner">
       <button
+        wx:if="{{sharePreviewLoading}}"
+        type="default"
+        class="bottom-secondary bottom-secondary-share bottom-secondary-share-pending"
+        disabled="{{true}}"
+      >生成中…</button>
+      <button
+        wx:else
         type="default"
         class="bottom-secondary bottom-secondary-share"
         open-type="share"

@@ -14,6 +14,7 @@ const {
 } = require("../../utils/activityEnrich");
 const { buildActivityShareAppMessageOptions } = require("../../utils/shareActivity");
 const { isDefaultNickname, isDefaultAvatar } = require("../../utils/profileUtils");
+const { orderParticipantsForDrawerRecentFirst } = require("../../utils/participantSort");
 
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
 const PROFILE_EDIT_DEFAULT_AVATAR = "/images/default-avatar.svg";
@@ -82,6 +83,7 @@ Page({
     pigeonPreviewList: [],
     showPigeonDrawer: false,
     sharePreviewImageUrl: "",
+    sharePreviewLoading: false,
     showEditModal: false,
     currentActivity: null,
     locationDisabled: false,
@@ -122,6 +124,7 @@ Page({
   _countdownTimer: null,
   _activityTypeStyles: [],
   _hasShownOnce: false,
+  _sharePreviewGen: 0,
 
   onLoad(options) {
     const id = (options && options.id) || "";
@@ -142,7 +145,12 @@ Page({
     }
 
     if (!id) {
-      this.setData({ loading: false, loadError: "缺少活动 id", sharePreviewImageUrl: "" });
+      this.setData({
+        loading: false,
+        loadError: "缺少活动 id",
+        sharePreviewImageUrl: "",
+        sharePreviewLoading: false
+      });
       return;
     }
 
@@ -280,6 +288,7 @@ Page({
 
   bootstrap() {
     this.setData({ loading: true, loadError: "" });
+    this.refreshSharePreview(this.data.activityId);
     activityService
       .listActivityTypeStyles()
       .catch(() => [])
@@ -304,7 +313,8 @@ Page({
         this.setData({
           loading: false,
           loadError: (err && err.message) || "加载失败",
-          sharePreviewImageUrl: ""
+          sharePreviewImageUrl: "",
+          sharePreviewLoading: false
         });
       });
   },
@@ -371,7 +381,7 @@ Page({
       }
     }
 
-    const rawParts = activity.participants || [];
+    const rawParts = orderParticipantsForDrawerRecentFirst(activity.participants || []);
     const participantDrawerList = rawParts.map((p, i) => {
       if (typeof p === "string") {
         return {
@@ -439,12 +449,15 @@ Page({
 
   refreshSharePreview(activityId) {
     if (!activityId) {
-      this.setData({ sharePreviewImageUrl: "" });
+      this.setData({ sharePreviewImageUrl: "", sharePreviewLoading: false });
       return;
     }
+    const gen = (this._sharePreviewGen = (this._sharePreviewGen || 0) + 1);
+    this.setData({ sharePreviewLoading: true });
     activityService
       .getActivitySharePreview(activityId)
       .then((res) => {
+        if (gen !== this._sharePreviewGen) return;
         const url = res && (res.image_url || res.imageUrl);
         const ok =
           res &&
@@ -452,11 +465,16 @@ Page({
           url &&
           /^https:\/\//i.test(String(url).trim());
         this.setData({
-          sharePreviewImageUrl: ok ? String(url).trim() : ""
+          sharePreviewImageUrl: ok ? String(url).trim() : "",
+          sharePreviewLoading: false
         });
       })
       .catch(() => {
-        this.setData({ sharePreviewImageUrl: "" });
+        if (gen !== this._sharePreviewGen) return;
+        this.setData({
+          sharePreviewImageUrl: "",
+          sharePreviewLoading: false
+        });
       });
   },
 
@@ -792,6 +810,10 @@ Page({
   },
 
   saveActivity() {
+    wx.nextTick(() => this._saveActivityRun());
+  },
+
+  _saveActivityRun() {
     const form = this.data.editForm;
     if (!form.name.trim()) {
       wx.showToast({ title: "请输入活动名称", icon: "none" });

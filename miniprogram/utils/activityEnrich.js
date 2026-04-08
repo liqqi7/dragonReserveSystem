@@ -5,6 +5,8 @@
 
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 
+const { parseCreatedAtMs, orderParticipantsForRecentAvatarSlice } = require("./participantSort");
+
 const DEFAULT_AVATAR = "/images/default-avatar.svg";
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
 const DEFAULT_ACTIVITY_TYPE_KEY = "other";
@@ -265,14 +267,16 @@ function formatDateTime(value) {
 }
 
 function adaptParticipant(participant) {
+  const name = participant.nickname_snapshot || "";
   return {
     id: participant.id,
-    name: participant.nickname_snapshot || "",
+    name,
     userId: participant.user_id != null ? String(participant.user_id) : null,
     avatarUrl: normalizeAvatarUrl(participant.avatar_url_snapshot),
     checkedInAt: formatDateTime(participant.checked_in_at),
     checkinLat: participant.checkin_lat,
-    checkinLng: participant.checkin_lng
+    checkinLng: participant.checkin_lng,
+    signedUpAtMs: parseCreatedAtMs(participant.created_at)
   };
 }
 
@@ -343,7 +347,7 @@ function enrichSingleActivity(rawItem, typeStyles, myUserId, myNickname, now) {
   let hasSignedUp = false;
   let hasCheckedIn = false;
   let checkinCount = 0;
-  const rawParticipants = activity.participants || [];
+  const rawParticipants = orderParticipantsForRecentAvatarSlice(activity.participants || []);
   const avatarList = [];
 
   rawParticipants.forEach((p) => {
@@ -374,6 +378,7 @@ function enrichSingleActivity(rawItem, typeStyles, myUserId, myNickname, now) {
   activity.hasCheckedIn = hasCheckedIn;
   activity.checkinCount = checkinCount;
   activity.avatarList = avatarList;
+  // 与列表/详情 WXML 一致：avatarList 按报名时间升序，slice(-3) 为最近 3 人 → TL 最大=最新
   activity.cardAvatars = avatarList.slice(-3);
 
   const max = activity.maxParticipants;
