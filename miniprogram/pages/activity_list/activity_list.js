@@ -79,16 +79,16 @@ const DEFAULT_ACTIVITY_TYPE_STYLES = [
   {
     key: "eating",
     display_name: "吃饭",
-    default_style_key: "eating-default",
+    default_style_key: "image-clean",
     styles: [
       {
-        style_key: "eating-default",
-        style_name: "聚餐静图",
+        style_key: "image-clean",
+        style_name: "静态图无头像",
         badge_label: "Eating",
         show_badge: true,
-        show_avatar_cluster: true,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/movie-image-clean-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/movie-image-clean-sm.png",
+        show_avatar_cluster: false,
+        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/eating-image-clean-lg.png",
+        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/eating-image-clean-sm.png",
         bg_video_url: null
       }
     ]

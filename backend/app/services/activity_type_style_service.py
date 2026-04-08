@@ -62,16 +62,16 @@ DEFAULT_ACTIVITY_TYPE_STYLES: list[dict[str, object]] = [
     {
         "key": "eating",
         "display_name": "吃饭",
-        "default_style_key": "eating-default",
+        "default_style_key": "image-clean",
         "styles": [
             {
-                "style_key": "eating-default",
-                "style_name": "聚餐静图",
+                "style_key": "image-clean",
+                "style_name": "静态图无头像",
                 "badge_label": "Eating",
                 "show_badge": True,
-                "show_avatar_cluster": True,
-                "large_card_bg_image_url": "https://dragon.liqqihome.top/media/images/movie-image-clean-lg.png",
-                "small_card_bg_image_url": "https://dragon.liqqihome.top/media/images/movie-image-clean-sm.png",
+                "show_avatar_cluster": False,
+                "large_card_bg_image_url": "https://dragon.liqqihome.top/media/images/eating-image-clean-lg.png",
+                "small_card_bg_image_url": "https://dragon.liqqihome.top/media/images/eating-image-clean-sm.png",
                 "bg_video_url": None,
             },
         ],
