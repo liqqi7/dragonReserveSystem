@@ -794,6 +794,13 @@ button.bottom-secondary {
   border: 2rpx solid #ff0000 !important;
 }
 
+/* 分享图生成中：置灰不可点 */
+button.bottom-secondary-share-pending {
+  background-color: #f3f4f6 !important;
+  color: #9ca3af !important;
+  border-color: #e5e7eb !important;
+}
+
 .bottom-cta-wrap {
   flex: 1 1 0%;
   min-width: 0;

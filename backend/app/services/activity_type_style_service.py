@@ -236,56 +236,6 @@ def _available_styles(item: dict[str, object]) -> list[dict[str, object]]:
     return [s for s in styles if isinstance(s, dict) and _is_style_assets_ready(s)]
 
 
-def _style_mode(style: dict[str, object]) -> str:
-    bg_video_url = str(style.get("bg_video_url", "") or "").strip()
-    has_images = bool(
-        str(style.get("large_card_bg_image_url", "") or "").strip()
-        and str(style.get("small_card_bg_image_url", "") or "").strip()
-    )
-    show_avatar_cluster = bool(style.get("show_avatar_cluster", False))
-    if bg_video_url:
-        return "video"
-    if has_images and show_avatar_cluster:
-        return "image-avatar"
-    if has_images:
-        return "image-only"
-    return "unknown"
-
-
-def list_selectable_styles_by_rule(activity_type: str) -> list[dict[str, object]]:
-    """Return selectable styles in rule priority order for type.
-
-    Rules:
-    - boardgame / badminton / eating: prefer image+avatar styles
-    - movie / outing: prefer image-only styles
-    - other: prefer video styles
-    If preferred bucket is empty, fallback to all available styles.
-    """
-
-    type_key = normalize_activity_type_key(activity_type)
-    if not type_key:
-        return []
-
-    for item in DEFAULT_ACTIVITY_TYPE_STYLES:
-        if str(item.get("key", "")).strip() != type_key:
-            continue
-
-        styles = _available_styles(item)
-        if not styles:
-            return []
-
-        preferred_mode_by_type = {
-            "other": "video",
-            "movie": "image-only",
-            "outing": "image-only",
-        }
-        preferred_mode = preferred_mode_by_type.get(type_key, "image-avatar")
-        preferred = [s for s in styles if _style_mode(s) == preferred_mode]
-        return preferred or styles
-
-    return []
-
-
 def list_activity_type_styles() -> list[dict[str, object]]:
     """Return deep-copied style config for API responses."""
 

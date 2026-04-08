@@ -2,6 +2,7 @@ const app = getApp();
 const activityService = require("../../services/activity");
 const { createTraceId, logInfo, logError, summarizeError } = require("../../services/logger");
 const { enrichSingleActivity } = require("../../utils/activityEnrich");
+const { parseCreatedAtMs, orderParticipantsForRecentAvatarSlice } = require("../../utils/participantSort");
 const cacheManager = require("../../services/cacheManager");
 
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
@@ -21,6 +22,8 @@ const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
 const DEFAULT_ACTIVITY_TYPE_KEY = "other";
 const CARD_MEDIA_DIAG_WARN_MS = 8000;
 const CARD_MEDIA_DIAG_ERROR_MS = 15000;
+/** 须与 wxml 中 refresher-threshold 一致 */
+const MAIN_REFRESH_THRESHOLD_PX = 80;
 const DEFAULT_ACTIVITY_TYPE_STYLES = [
   {
     key: "badminton",
@@ -319,14 +322,16 @@ function formatDateTime(value) {
 }
 
 function adaptParticipant(participant) {
+  const name = participant.nickname_snapshot || "";
   return {
     id: participant.id,
-    name: participant.nickname_snapshot || "",
+    name,
     userId: participant.user_id != null ? String(participant.user_id) : null,
     avatarUrl: normalizeAvatarUrl(participant.avatar_url_snapshot),
     checkedInAt: formatDateTime(participant.checked_in_at),
     checkinLat: participant.checkin_lat,
-    checkinLng: participant.checkin_lng
+    checkinLng: participant.checkin_lng,
+    signedUpAtMs: parseCreatedAtMs(participant.created_at)
   };
 }
 
@@ -423,6 +428,8 @@ Page({
     focusedCardIndex: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
     groupUseTransition: false,
     mainScrollEnabled: true,
+    mainRefresherTriggered: false,
+    mainRefresherHint: "下拉刷新",
     isGroupSwiping: false,
     showEditModal: false,
     currentActivity: null,
@@ -1119,28 +1126,43 @@ Page({
     });
   },
 
-  // 下拉刷新：仅已获得权限的用户触发，刷新活动列表
-  onPullDownRefresh() {
-    const isGuest = this.syncGuestState();
-    if (isGuest) {
-      wx.stopPullDownRefresh();
-      return;
-    }
+  /** 首页列表强制走网络刷新（scroll-view 内须用 refresher；游客态同样可下拉拉新） */
+  runListPullRefresh() {
+    this.syncGuestState();
     const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
     const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
     this.setData({ isAdmin: app.globalData.userRole === "admin", myUserId, myNickname });
-
-    const p = Promise.all([
+    return Promise.all([
       this.loadActivityTypeStyles({ forceNetwork: true }),
-      this.loadActivityList({ forceNetwork: true })
+      this.loadActivityList({ forceNetwork: true, skipPullOverlayLoading: true })
     ]);
-    if (p && typeof p.finally === "function") {
-      p.finally(() => {
-        wx.stopPullDownRefresh();
-      });
-    } else {
-      wx.stopPullDownRefresh();
+  },
+
+  onMainRefresherPulling(e) {
+    const dy = e.detail && typeof e.detail.dy === "number" ? e.detail.dy : 0;
+    if (this.data.mainRefresherTriggered) return;
+    const hint = dy >= MAIN_REFRESH_THRESHOLD_PX ? "松手刷新" : "下拉刷新";
+    if (hint !== this.data.mainRefresherHint) {
+      this.setData({ mainRefresherHint: hint });
     }
+  },
+
+  onMainRefresherRestore() {
+    if (!this.data.mainRefresherTriggered && this.data.mainRefresherHint !== "下拉刷新") {
+      this.setData({ mainRefresherHint: "下拉刷新" });
+    }
+  },
+
+  onMainRefresherRefresh() {
+    this.setData({ mainRefresherTriggered: true, mainRefresherHint: "刷新中…" });
+    this.runListPullRefresh().finally(() => {
+      this.setData({ mainRefresherTriggered: false, mainRefresherHint: "下拉刷新" });
+    });
+  },
+
+  // 保留：若将来去掉外层 scroll-view 可再打开页面级下拉
+  onPullDownRefresh() {
+    this.runListPullRefresh().finally(() => wx.stopPullDownRefresh());
   },
 
   syncGuestState() {
@@ -1165,11 +1187,22 @@ Page({
     const typeStyleMap = buildTypeStyleMap(styles);
     const selectedType = optionValues[editIndex] || DEFAULT_ACTIVITY_TYPE_KEY;
     const styleOptions = this._buildStyleOptionsForType(selectedType, typeStyleMap);
-    const desiredStyleKey = this.data.editForm && this.data.editForm.activityStyleKey
-      ? String(this.data.editForm.activityStyleKey)
-      : "";
-    let styleIndex = styleOptions.values.indexOf(desiredStyleKey);
-    if (styleIndex < 0) styleIndex = 0;
+    const creating = this.data.showEditModal && !this.data.currentActivity;
+    let styleIndex;
+    let nextStyleKey;
+    if (creating) {
+      const defKey = this._defaultStyleKeyForType(selectedType, typeStyleMap);
+      styleIndex = styleOptions.values.indexOf(defKey);
+      if (styleIndex < 0) styleIndex = 0;
+      nextStyleKey = styleOptions.values[styleIndex] || "";
+    } else {
+      const desiredStyleKey = this.data.editForm && this.data.editForm.activityStyleKey
+        ? String(this.data.editForm.activityStyleKey)
+        : "";
+      styleIndex = styleOptions.values.indexOf(desiredStyleKey);
+      if (styleIndex < 0) styleIndex = 0;
+      nextStyleKey = styleOptions.values[styleIndex] || "";
+    }
     this.setData({
       activityTypeStyles: styles,
       activityTypeOptionValues: optionValues,
@@ -1178,7 +1211,7 @@ Page({
       activityStyleOptionValues: styleOptions.values,
       activityStyleOptionLabels: styleOptions.labels,
       editActivityStyleIndex: styleIndex,
-      "editForm.activityStyleKey": styleOptions.values[styleIndex] || ""
+      "editForm.activityStyleKey": nextStyleKey
     });
   },
 
@@ -1216,6 +1249,18 @@ Page({
     return { values, labels };
   },
 
+  /** 与后端/缓存中活动类型配置的 default_style_key 一致；无配置时取该类型下第一个样式 */
+  _defaultStyleKeyForType(typeKey, typeStyleMapInput) {
+    const typeStyleMap = typeStyleMapInput || buildTypeStyleMap(this.data.activityTypeStyles);
+    const normalizedType = normalizeTypeKey(typeKey) || DEFAULT_ACTIVITY_TYPE_KEY;
+    const typeEntry = typeStyleMap[normalizedType] || typeStyleMap[DEFAULT_ACTIVITY_TYPE_KEY];
+    if (!typeEntry || !typeEntry.styleMap) return "";
+    const dk = typeEntry.defaultStyleKey;
+    if (dk && typeEntry.styleMap[dk]) return dk;
+    const first = Object.keys(typeEntry.styleMap)[0];
+    return first || "";
+  },
+
   loadActivityListFromCache() {
     const cached = cacheManager.getCachedActivityList();
     const list = cached && Array.isArray(cached.list) ? cached.list : [];
@@ -1251,7 +1296,7 @@ Page({
 
   loadActivityList(options = {}) {
     this._clearCardMediaDiagnostics();
-    if (options.forceNetwork) {
+    if (options.forceNetwork && !options.skipPullOverlayLoading) {
       wx.showLoading({ title: "加载中..." });
     }
     return activityService
@@ -1280,7 +1325,7 @@ Page({
           });
           cacheManager.setCachedActivityList(list, this.data.myUserId || "");
 
-          if (options.forceNetwork) wx.hideLoading();
+          if (options.forceNetwork && !options.skipPullOverlayLoading) wx.hideLoading();
 
           const peid = this._pendingEditActivityId;
           if (peid) {
@@ -1291,7 +1336,7 @@ Page({
       })
       .catch(err => {
         console.error(err);
-        if (options.forceNetwork) wx.hideLoading();
+        if (options.forceNetwork && !options.skipPullOverlayLoading) wx.hideLoading();
         // 测试环境切换后常见：本地缓存 token 对应的用户不在当前库中
         if (err && err.statusCode === 404 && String(err.message || "").includes("User not found")) {
           app.logout();
@@ -1358,7 +1403,7 @@ Page({
       let hasSignedUp = false;
       let hasCheckedIn = false;
       let checkinCount = 0;
-      const rawParticipants = activity.participants || [];
+      const rawParticipants = orderParticipantsForRecentAvatarSlice(activity.participants || []);
       const avatarList = [];
 
       rawParticipants.forEach(p => {
@@ -1400,7 +1445,7 @@ Page({
       activity.hasCheckedIn = hasCheckedIn;
       activity.checkinCount = checkinCount;
       activity.avatarList = avatarList;
-      // 卡片头像：取最近报名的 3 人（avatarList 末尾），从下往上递减排列
+      // 卡片头像：按 created_at 升序生成 avatarList 后取末尾 3 人 = 最近报名；与大卡 TL>TR>Mid 索引一致
       activity.cardAvatars = avatarList.slice(-3);
 
       // 是否已满员（仅在设置了人数上限时生效）
@@ -1554,7 +1599,10 @@ Page({
     let editTypeIndex = optionValues.indexOf(defaultType);
     if (editTypeIndex < 0) editTypeIndex = 0;
     const styleOptions = this._buildStyleOptionsForType(defaultType);
-    const styleIndex = 0;
+    const defaultStyleKey = this._defaultStyleKeyForType(defaultType);
+    let styleIndex = styleOptions.values.indexOf(defaultStyleKey);
+    if (styleIndex < 0) styleIndex = 0;
+    const resolvedStyleKey = styleOptions.values[styleIndex] || "";
     this.setData({
       showEditModal: true,
       currentActivity: null,
@@ -1581,7 +1629,7 @@ Page({
         limitEnabled: false,
         maxParticipants: null,
         activityType: defaultType,
-        activityStyleKey: styleOptions.values[styleIndex] || ""
+        activityStyleKey: resolvedStyleKey
       }
     });
     this._setTabBarHidden(true);
@@ -1713,13 +1761,17 @@ Page({
     const values = this.data.activityTypeOptionValues || [];
     const nextType = values[index] || DEFAULT_ACTIVITY_TYPE_KEY;
     const styleOptions = this._buildStyleOptionsForType(nextType);
+    const defaultStyleKey = this._defaultStyleKeyForType(nextType);
+    let styleIndex = styleOptions.values.indexOf(defaultStyleKey);
+    if (styleIndex < 0) styleIndex = 0;
+    const resolvedStyleKey = styleOptions.values[styleIndex] || "";
     this.setData({
       editActivityTypeIndex: index,
       activityStyleOptionValues: styleOptions.values,
       activityStyleOptionLabels: styleOptions.labels,
-      editActivityStyleIndex: 0,
+      editActivityStyleIndex: styleIndex,
       "editForm.activityType": nextType,
-      "editForm.activityStyleKey": styleOptions.values[0] || ""
+      "editForm.activityStyleKey": resolvedStyleKey
     });
   },
 
@@ -1819,6 +1871,11 @@ Page({
   },
 
   saveActivity() {
+    // picker / input 的 setData 为异步，立即点「保存」会读到旧 editForm；延后到下一渲染周期再校验与提交
+    wx.nextTick(() => this._saveActivityRun());
+  },
+
+  _saveActivityRun() {
     const form = this.data.editForm;
     if (!form.name.trim()) {
       wx.showToast({ title: "请输入活动名称", icon: "none" });

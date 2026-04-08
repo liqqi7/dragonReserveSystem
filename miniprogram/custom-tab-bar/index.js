@@ -14,6 +14,8 @@ Component({
   data: {
     selected: 0,
     isAdmin: false,
+    /** 由当前页 getTabBar().setData({ hidden }) 控制（如活动编辑弹窗打开时隐藏） */
+    hidden: false,
   },
 
   pageLifetimes: {

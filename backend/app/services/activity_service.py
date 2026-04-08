@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import hashlib
 import json
 
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.config import get_settings
@@ -17,7 +17,6 @@ from app.schemas.activity import (
 )
 from app.services.activity_type_style_service import (
     get_activity_style,
-    list_selectable_styles_by_rule,
     normalize_activity_style_key,
 )
 from app.utils.geo import haversine_distance_meters
@@ -85,13 +84,9 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
     """Create a new activity."""
 
     activity_type = payload.activity_type or "other"
-    selectable_styles = list_selectable_styles_by_rule(activity_type)
-    if selectable_styles:
-        created_count = db.scalar(select(func.count(Activity.id)).where(Activity.activity_type == activity_type)) or 0
-        picked = selectable_styles[int(created_count) % len(selectable_styles)]
-        activity_style_key = str(picked.get("style_key", "")).strip() or None
-    else:
-        activity_style_key = normalize_activity_style_key(activity_type, None)
+    # 使用客户端传入的 activity_style_key（经校验）；未传则使用该类型配置的 default_style_key。
+    # 不再按「同类型已创建数量」轮换样式，否则吃饭等类型会固定落到 image-avatar 桶（如 eating-default），与前端默认静图不一致。
+    activity_style_key = normalize_activity_style_key(activity_type, payload.activity_style_key)
     activity = Activity(
         name=payload.name,
         status=payload.status,
@@ -133,18 +128,15 @@ def update_activity(db: Session, activity: Activity, payload: ActivityUpdateRequ
     for key, value in data.items():
         setattr(activity, key, value)
 
-    if "activity_type" in data:
+    if "activity_type" in data or "activity_style_key" in data:
         activity.activity_type = activity.activity_type or "other"
-        selectable_styles = list_selectable_styles_by_rule(activity.activity_type)
-        if selectable_styles:
-            created_count = db.scalar(select(func.count(Activity.id)).where(Activity.activity_type == activity.activity_type)) or 0
-            picked = selectable_styles[int(created_count) % len(selectable_styles)]
-            activity.activity_style_key = str(picked.get("style_key", "")).strip() or None
+        if "activity_style_key" in data:
+            activity.activity_style_key = normalize_activity_style_key(
+                activity.activity_type,
+                data["activity_style_key"],
+            )
         else:
             activity.activity_style_key = normalize_activity_style_key(activity.activity_type, None)
-    elif "activity_style_key" in data:
-        activity.activity_type = activity.activity_type or "other"
-        activity.activity_style_key = normalize_activity_style_key(activity.activity_type, None)
 
     if activity.end_time <= activity.start_time:
         raise ValidationAppError("end_time must be later than start_time")

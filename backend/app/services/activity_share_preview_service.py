@@ -22,7 +22,7 @@ from app.services.activity_type_style_service import get_activity_style
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
-SHARE_PREVIEW_LAYOUT_VERSION = "v14"
+SHARE_PREVIEW_LAYOUT_VERSION = "v16"
 SHARE_PREVIEW_WIDTH = 550
 SHARE_PREVIEW_HEIGHT = 440
 SHARE_PREVIEW_INFO_HEIGHT = 62
@@ -237,12 +237,19 @@ def _get_participant_text(activity: Activity) -> str:
 
 
 def _select_share_avatars(activity: Activity) -> list[Image.Image]:
-    snapshots = [participant for participant in _participant_snapshots(activity) if str(participant.avatar_url_snapshot or "").strip()]
+    """最近报名的 3 人（按 created_at），绘制顺序为 TL=最新；头像仅使用库内 avatar_url_snapshot。"""
+
+    snapshots = _participant_snapshots(activity)
+    if not snapshots:
+        return []
     selected = list(reversed(snapshots[-3:]))
     images: list[Image.Image] = []
     for participant in selected:
+        url = str(participant.avatar_url_snapshot or "").strip()
+        if not url:
+            continue
         try:
-            images.append(_load_image(participant.avatar_url_snapshot, timeout=SHARE_PREVIEW_REMOTE_AVATAR_TIMEOUT))
+            images.append(_load_image(url, timeout=SHARE_PREVIEW_REMOTE_AVATAR_TIMEOUT))
         except Exception as exc:
             logger.warning(
                 "activity_share_preview_avatar_skipped activity_id=%s participant_id=%s summary=%s",
@@ -250,7 +257,6 @@ def _select_share_avatars(activity: Activity) -> list[Image.Image]:
                 participant.id,
                 str(exc) or exc.__class__.__name__,
             )
-            continue
     return images
 
 
