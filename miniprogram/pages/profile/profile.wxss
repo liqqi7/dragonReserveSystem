@@ -232,6 +232,20 @@ page {
   margin: 0;
 }
 
+.btn-disabled {
+  opacity: 0.45;
+}
+
+.force-profile-hint {
+  margin-bottom: 18rpx;
+  padding: 16rpx 18rpx;
+  border-radius: 12rpx;
+  background: #fff1f2;
+  color: #b42318;
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
 .form-item {
   margin-bottom: 24rpx;
 }

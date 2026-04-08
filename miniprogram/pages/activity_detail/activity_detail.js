@@ -1,5 +1,7 @@
 const app = getApp();
 const activityService = require("../../services/activity");
+const authService = require("../../services/auth");
+const userService = require("../../services/user");
 const {
   enrichSingleActivity,
   formatDetailTimeRange,
@@ -11,6 +13,37 @@ const {
   DEFAULT_AVATAR
 } = require("../../utils/activityEnrich");
 const { buildActivityShareAppMessageOptions } = require("../../utils/shareActivity");
+const { isDefaultNickname, isDefaultAvatar } = require("../../utils/profileUtils");
+
+const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
+const PROFILE_EDIT_DEFAULT_AVATAR = "/images/default-avatar.svg";
+
+function isTemporaryAvatarUrl(url) {
+  if (!url) return false;
+  const normalized = String(url).trim().toLowerCase();
+  return (
+    normalized.startsWith("http://tmp/") ||
+    normalized.startsWith("https://tmp/") ||
+    normalized.startsWith("wxfile://") ||
+    normalized.startsWith("tmp/")
+  );
+}
+
+function normalizeProfileAvatarForModal(url) {
+  const value = (url && String(url).trim()) || "";
+  if (!value) return "";
+  if (value.toLowerCase().includes("example.com/")) return PROFILE_EDIT_DEFAULT_AVATAR;
+  if (value.startsWith("/media/")) {
+    const m = value.match(/test-avatar-(\d{2})\.svg$/i);
+    return m ? `${LOCAL_TEST_AVATAR_PREFIX}/test-avatar-${m[1]}.svg` : PROFILE_EDIT_DEFAULT_AVATAR;
+  }
+  if (value.startsWith("media/")) {
+    const m = value.match(/test-avatar-(\d{2})\.svg$/i);
+    return m ? `${LOCAL_TEST_AVATAR_PREFIX}/test-avatar-${m[1]}.svg` : PROFILE_EDIT_DEFAULT_AVATAR;
+  }
+  if (value.toLowerCase().startsWith("http://")) return PROFILE_EDIT_DEFAULT_AVATAR;
+  return value;
+}
 
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 const PARTICIPANT_PREVIEW_MAX = 14;
@@ -31,8 +64,10 @@ Page({
     myNickname: "",
     showParticipantsDrawer: false,
     participantPreview: [],
+    heroCardAvatars: [],
     participantDrawerList: [],
     participantCountText: "",
+    isCheckinWindowOpen: false,
     timeRangeText: "",
     locationText: "",
     countdownVisible: false,
@@ -57,6 +92,11 @@ Page({
     activityStyleOptionLabels: [],
     activityStyleOptionValues: [],
     editActivityStyleIndex: 0,
+    showSignupProfileModal: false,
+    signupProfileNickname: "",
+    signupProfileAvatarUrl: "",
+    signupProfileHint: "请修改昵称和头像后再进行报名",
+    signupProfileCanSubmit: false,
     editForm: {
       name: "",
       status: "进行中",
@@ -133,6 +173,109 @@ Page({
     const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
     const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
     this.setData({ isAdmin, myUserId, myNickname });
+    return { isAdmin, myUserId, myNickname };
+  },
+
+  openSignupProfileModal() {
+    const profile = app.globalData.userProfile || {};
+    const nick = profile.nickname || "";
+    const avatarRaw = profile.avatarUrl || "";
+    this.setData(
+      {
+        showSignupProfileModal: true,
+        signupProfileNickname: nick,
+        signupProfileAvatarUrl: normalizeProfileAvatarForModal(avatarRaw),
+        signupProfileHint: "请修改昵称和头像后再进行报名"
+      },
+      () => this.updateSignupProfileValidation()
+    );
+  },
+
+  closeSignupProfileModal() {
+    this.setData({
+      showSignupProfileModal: false,
+      signupProfileCanSubmit: false
+    });
+  },
+
+  onSignupProfileNicknameInput(e) {
+    this.setData({ signupProfileNickname: e.detail.value || "" }, () =>
+      this.updateSignupProfileValidation()
+    );
+  },
+
+  onSignupProfileChooseAvatar(e) {
+    const avatarUrl = e.detail && e.detail.avatarUrl;
+    if (!avatarUrl) {
+      wx.showToast({ title: "未选择头像", icon: "none" });
+      return;
+    }
+    this.setData({ signupProfileAvatarUrl: avatarUrl }, () =>
+      this.updateSignupProfileValidation()
+    );
+    wx.showToast({ title: "已选择微信头像", icon: "success" });
+  },
+
+  updateSignupProfileValidation() {
+    const nickname = (this.data.signupProfileNickname || "").trim();
+    const avatarUrl = (this.data.signupProfileAvatarUrl || "").trim();
+    const canSubmit = !isDefaultNickname(nickname) && !isDefaultAvatar(avatarUrl);
+    this.setData({ signupProfileCanSubmit: canSubmit });
+  },
+
+  saveSignupProfile() {
+    const nickname = (this.data.signupProfileNickname || "").trim();
+    const avatarUrl = (this.data.signupProfileAvatarUrl || "").trim();
+    const currentAvatarUrl = (
+      (app.globalData.userProfile && app.globalData.userProfile.avatarUrl) ||
+      ""
+    ).trim();
+
+    if (!nickname) {
+      wx.showToast({ title: "请输入昵称", icon: "none" });
+      return;
+    }
+    if (!this.data.signupProfileCanSubmit) {
+      wx.showToast({ title: "请修改昵称和头像后再进行报名", icon: "none" });
+      return;
+    }
+    const userId = app.globalData.userId || wx.getStorageSync("userId") || "";
+    if (!userId) {
+      wx.showToast({ title: "用户信息异常", icon: "none" });
+      return;
+    }
+
+    wx.showLoading({ title: "保存中...", mask: true });
+
+    const avatarTask =
+      avatarUrl && isTemporaryAvatarUrl(avatarUrl)
+        ? userService.uploadAvatar(avatarUrl).then((res) => res.avatar_url)
+        : Promise.resolve(avatarUrl || currentAvatarUrl);
+
+    avatarTask
+      .then((resolvedAvatarUrl) =>
+        userService.updateMe({
+          nickname,
+          avatar_url: resolvedAvatarUrl || ""
+        })
+      )
+      .then((user) => {
+        app.applyCurrentUser(user);
+        this.syncUser();
+        this.setData({
+          showSignupProfileModal: false,
+          signupProfileAvatarUrl: user.avatar_url || ""
+        });
+        wx.hideLoading();
+        wx.showToast({ title: "保存成功", icon: "success" });
+        const act = this.data.activity;
+        if (act) this.directSignup(act);
+      })
+      .catch((err) => {
+        console.error(err);
+        wx.hideLoading();
+        wx.showToast({ title: (err && err.message) || "保存失败", icon: "none" });
+      });
   },
 
   bootstrap() {
@@ -145,11 +288,13 @@ Page({
         return activityService.getActivity(this.data.activityId);
       })
       .then((raw) => {
+        const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
+        const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
         const activity = enrichSingleActivity(
           raw,
           this._activityTypeStyles,
-          this.data.myUserId,
-          this.data.myNickname
+          myUserId,
+          myNickname
         );
         this.applyActivity(activity);
         this.setData({ loading: false, loadError: "" });
@@ -178,11 +323,13 @@ Page({
         if (Array.isArray(styles) && styles.length > 0) {
           this._activityTypeStyles = styles;
         }
+        const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
+        const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
         const activity = enrichSingleActivity(
           raw,
           this._activityTypeStyles,
-          this.data.myUserId,
-          this.data.myNickname
+          myUserId,
+          myNickname
         );
         this.applyActivity(activity);
       })
@@ -198,7 +345,7 @@ Page({
   },
 
   applyActivity(activity) {
-    const rawAvatars = (activity.avatarList || []).map((a, i) => ({
+    const rawAvatars = (activity.avatarList || []).slice().reverse().map((a, i) => ({
       url: (a && a.url) || DEFAULT_AVATAR,
       pKey: `av-${i}`
     }));
@@ -216,6 +363,13 @@ Page({
     const n = (activity.participants || []).length;
     const participantCountText =
       max != null ? `${n}/${max}` : n > 0 ? `${n}` : "0";
+    let isCheckinWindowOpen = false;
+    if (activity && activity.startTime) {
+      const startAt = new Date(String(activity.startTime).replace(" ", "T") + ":00");
+      if (!isNaN(startAt.getTime())) {
+        isCheckinWindowOpen = Date.now() >= startAt.getTime() - 60 * 60 * 1000;
+      }
+    }
 
     const rawParts = activity.participants || [];
     const participantDrawerList = rawParts.map((p, i) => {
@@ -262,40 +416,17 @@ Page({
 
     const pigeonPreviewList =
       pigeonList.length > 0 ? pigeonList.slice(0, 24) : [];
-
-    // #region agent log
-    try {
-      const last = list.length ? list[list.length - 1] : null;
-      wx.request({
-        url: "http://127.0.0.1:7559/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94",
-        method: "POST",
-        header: {
-          "Content-Type": "application/json",
-          "X-Debug-Session-Id": "e0f92a"
-        },
-        data: JSON.stringify({
-          sessionId: "e0f92a",
-          runId: "verify-ui",
-          hypothesisId: "H1",
-          location: "activity_detail.js:applyActivity",
-          message: "participantPreview built",
-          data: {
-            previewLen: list.length,
-            rawAvatarLen: rawAvatars.length,
-            lastPKey: last ? last.pKey : null,
-            lastIsMore: !!(last && last.pKey === "more")
-          },
-          timestamp: Date.now()
-        })
-      });
-    } catch (_e) {}
-    // #endregion
+    const heroCardAvatars = Array.isArray(activity.cardAvatars)
+      ? activity.cardAvatars.slice(-3)
+      : [];
 
     this.setData({
       activity,
+      heroCardAvatars,
       participantPreview: list,
       participantDrawerList,
       participantCountText,
+      isCheckinWindowOpen,
       timeRangeText: formatDetailTimeRange(activity) || "—",
       locationText: formatLocationLine(activity),
       pigeonList,
@@ -739,9 +870,7 @@ Page({
       location_latitude: form.locationLatitude,
       location_longitude: form.locationLongitude,
       max_participants: maxParticipants,
-      signup_enabled: form.signupEnabled,
-      activity_type: form.activityType || null,
-      activity_style_key: form.activityStyleKey || null
+      signup_enabled: form.signupEnabled
     };
 
     activityService
@@ -832,6 +961,31 @@ Page({
     this.checkinActivity(activity);
   },
 
+  onTapCancelSignup() {
+    const activity = this.data.activity;
+    if (!activity || !activity.hasSignedUp || activity.hasCheckedIn) return;
+    const myUserId = this.data.myUserId || wx.getStorageSync("userId") || "";
+    const myNickname = (this.data.myNickname || "").trim();
+    const rows = this.data.participantDrawerList || [];
+    const mine = rows.find((row) => {
+      if (!row) return false;
+      if (myUserId && row.userId && String(row.userId) === String(myUserId)) return true;
+      return !myUserId && myNickname && row.name === myNickname;
+    });
+    if (!mine || !mine.id) {
+      wx.showToast({ title: "未找到你的报名记录", icon: "none" });
+      return;
+    }
+    wx.showModal({
+      title: "确认取消报名",
+      content: `确定要取消活动「${activity.name}」的报名吗？`,
+      success: (res) => {
+        if (!res.confirm) return;
+        this.doRemoveParticipant(mine.id, mine.name || "我", activity, true);
+      }
+    });
+  },
+
   directSignup(activity) {
     if (activity.status === "已结束" || activity.status === "已取消") {
       wx.showToast({ title: "该活动已结束或已取消", icon: "none" });
@@ -848,31 +1002,64 @@ Page({
         return;
       }
     }
-    if (!app.globalData.userId || !app.globalData.userProfile) {
+    const accessToken = app.globalData.accessToken || wx.getStorageSync("accessToken") || "";
+    const userId = app.globalData.userId || wx.getStorageSync("userId") || "";
+    const profile = app.globalData.userProfile || null;
+    if (!accessToken || !userId || !profile) {
       wx.showModal({
-        title: "尚未登记",
-        content: "请前往「我的」页面完成公会登记后再报名。",
-        confirmText: "去我的",
+        title: "提示",
+        content: "当前尚未登录，请登录后重试",
+        cancelText: "取消",
+        confirmText: "去登录",
         success: (res) => {
-          if (res.confirm) wx.switchTab({ url: "/pages/profile/profile" });
+          if (!res.confirm) return;
+          wx.showLoading({ title: "登录中...", mask: true });
+          authService
+            .loginWithWechat(app)
+            .then(() => {
+              wx.hideLoading();
+              const userInfo = this.syncUser();
+              // 登录成功后先刷新当前详情，再在当前触发点继续执行报名逻辑
+              this.refreshDetail({ silent: true }).finally(() => {
+                this.directSignup(this.data.activity || activity);
+              });
+            })
+            .catch((err) => {
+              wx.hideLoading();
+              wx.showToast({
+                title: (err && err.message) || "微信登录失败",
+                icon: "none",
+                duration: 3000
+              });
+            });
         }
       });
       return;
     }
     const nickname = app.globalData.userProfile?.nickname?.trim();
-    if (!nickname) {
+    const avatarUrl = (app.globalData.userProfile && app.globalData.userProfile.avatarUrl) || "";
+    if (isDefaultNickname(nickname) || isDefaultAvatar(avatarUrl)) {
       wx.showModal({
         title: "提示",
-        content: "请前往「我的」页面完善昵称后再报名活动",
+        content: "请修改昵称和头像后再进行报名",
         showCancel: false,
-        success: () => wx.switchTab({ url: "/pages/profile/profile" })
+        confirmText: "去修改",
+        success: () => {
+          this.openSignupProfileModal();
+        }
       });
       return;
     }
     const participants = activity.participants || [];
     const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
-    if (myUserId && participants.some((p) => typeof p === "object" && p.userId && p.userId === myUserId)) {
+    if (
+      myUserId &&
+      participants.some(
+        (p) => typeof p === "object" && p.userId != null && String(p.userId) === String(myUserId)
+      )
+    ) {
       wx.showToast({ title: "您已报名", icon: "none" });
+      this.refreshDetail({ silent: true });
       return;
     }
     wx.showLoading({ title: "报名中..." });
@@ -889,6 +1076,9 @@ Page({
         const msg = (err && err.message) || "";
         if (msg.includes("disabled") || msg.includes("未开放")) {
           wx.showToast({ title: "活动报名暂未开放", icon: "none" });
+        } else if (msg.includes("已报名") || msg.toLowerCase().includes("already")) {
+          wx.showToast({ title: "您已报名", icon: "none" });
+          this.refreshDetail({ silent: true });
         } else {
           wx.showToast({ title: msg || "报名失败", icon: "none" });
         }

@@ -2,6 +2,7 @@ const app = getApp();
 const activityService = require("../../services/activity");
 const { createTraceId, logInfo, logError, summarizeError } = require("../../services/logger");
 const { enrichSingleActivity } = require("../../utils/activityEnrich");
+const cacheManager = require("../../services/cacheManager");
 
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 
@@ -329,6 +330,34 @@ function adaptParticipant(participant) {
   };
 }
 
+/** 按当前用户重算 hasSignedUp / hasCheckedIn（修复缓存是在旧登录态下写入导致报名态错误） */
+function reapplyListParticipationFlags(list, myUserId, myNickname) {
+  const myIdStr = String(myUserId || "").trim();
+  const nn = String(myNickname || "").trim();
+  return (list || []).map((activity) => {
+    const rawParticipants = activity.participants || [];
+    let hasSignedUp = false;
+    let hasCheckedIn = false;
+    rawParticipants.forEach((p) => {
+      if (typeof p === "object" && p !== null) {
+        const uidStr = p.userId != null ? String(p.userId) : "";
+        const name = (p.name || "").trim();
+        const checkedIn = !!p.checkedInAt;
+        if (myIdStr && uidStr && uidStr === myIdStr) {
+          hasSignedUp = true;
+          if (checkedIn) hasCheckedIn = true;
+        } else if (nn && name === nn) {
+          hasSignedUp = true;
+          if (checkedIn) hasCheckedIn = true;
+        }
+      } else if (typeof p === "string" && nn && p === nn) {
+        hasSignedUp = true;
+      }
+    });
+    return { ...activity, hasSignedUp, hasCheckedIn };
+  });
+}
+
 function adaptActivity(item) {
   const participants = (item.participants || []).map(adaptParticipant);
   const startTime = formatDateTime(item.start_time);
@@ -356,22 +385,27 @@ function adaptActivity(item) {
 }
 
 function buildCardMediaKey(meta) {
+  const aid =
+    meta.activityId != null && meta.activityId !== ""
+      ? String(meta.activityId)
+      : "unknown";
   return [
     meta.mediaType || "unknown",
     meta.group || "unknown",
     meta.cardSize || "unknown",
-    meta.activityId || "unknown",
+    aid,
     meta.url || ""
   ].join("|");
 }
 
 function pickCardMediaMetaFromDataset(dataset, mediaType) {
   const safeDataset = dataset || {};
+  const rawId = safeDataset.activityId;
   return {
     mediaType,
     group: safeDataset.group || "unknown",
     cardSize: safeDataset.cardSize || "unknown",
-    activityId: safeDataset.activityId || "",
+    activityId: rawId != null && rawId !== "" ? String(rawId) : "",
     activityName: safeDataset.activityName || "",
     url: safeDataset.url || safeDataset.src || ""
   };
@@ -461,30 +495,65 @@ Page({
   },
 
   onShow() {
-    const isGuest = this.syncGuestState();
-    if (!isGuest) {
-      let pendingEdit = "";
-      try {
-        pendingEdit = wx.getStorageSync("pendingEditActivityId") || "";
-        if (pendingEdit) wx.removeStorageSync("pendingEditActivityId");
-      } catch (e) {
-        console.error(e);
-      }
-      if (pendingEdit) this._pendingEditActivityId = String(pendingEdit);
-      const isAdmin = app.globalData.userRole === "admin";
-      const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
-      const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
-      this.setData({ isAdmin, myUserId, myNickname });
-      this.loadActivityTypeStyles().finally(() => {
-        this.loadActivityList();
-      });
-      app.checkProfileCompleteness();
+    this.syncGuestState();
+    let pendingEdit = "";
+    try {
+      pendingEdit = wx.getStorageSync("pendingEditActivityId") || "";
+      if (pendingEdit) wx.removeStorageSync("pendingEditActivityId");
+    } catch (e) {
+      console.error(e);
     }
+    if (pendingEdit) this._pendingEditActivityId = String(pendingEdit);
+    const isAdmin = app.globalData.userRole === "admin";
+    const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
+    const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
+    this.setData({ isAdmin, myUserId, myNickname }, () => {
+      this.loadActivityListByCachePolicy();
+    });
     // 同步 isAdmin 到自定义 tabBar 组件
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ isAdmin: app.globalData.userRole === "admin" });
     }
     this._syncTabBarVisibility();
+  },
+
+  loadActivityListByCachePolicy() {
+    return Promise.all([activityService.getClientConfig(), activityService.getActivityStyleSignature()])
+      .then(([cfg, sigRes]) => {
+        const serverVersion = String((cfg && cfg.cache_version) || "1");
+        const serverSignature = String((sigRes && sigRes.signature) || "");
+        const localVersion = cacheManager.getClientCacheVersion();
+        const localSignature = cacheManager.getActivityStyleSignature();
+        const shouldRefresh = !localVersion || !localSignature ||
+          localVersion !== serverVersion || localSignature !== serverSignature;
+
+        if (shouldRefresh) {
+          cacheManager.clearBusinessCaches();
+          cacheManager.setClientCacheVersion(serverVersion);
+          cacheManager.setActivityStyleSignature(serverSignature);
+          return this.loadActivityTypeStyles({ forceNetwork: true })
+            .then(() => this.loadActivityList({ forceNetwork: true }));
+        }
+
+        const usedCachedStyles = this.loadActivityTypeStylesFromCache();
+        const usedCachedList = this.loadActivityListFromCache();
+        if (usedCachedStyles && usedCachedList) {
+          // 用户报名状态可能在其它入口变更，命中缓存后静默拉新一次，避免分组滞后。
+          // 不再重启卡片媒体诊断：静默拉新后 DOM 常不重建，bindload 不会二次触发，会误报 activity_card_media_stalled。
+          this.loadActivityList({ forceNetwork: false, skipCardMediaDiagnostics: true });
+          return Promise.resolve();
+        }
+        return this.loadActivityTypeStyles({ forceNetwork: true })
+          .then(() => this.loadActivityList({ forceNetwork: true }));
+      })
+      .catch((err) => {
+        console.error(err);
+        const usedCachedStyles = this.loadActivityTypeStylesFromCache();
+        const usedCachedList = this.loadActivityListFromCache();
+        if (usedCachedStyles && usedCachedList) return;
+        return this.loadActivityTypeStyles({ forceNetwork: true })
+          .then(() => this.loadActivityList({ forceNetwork: true }));
+      });
   },
 
   onHide() {
@@ -537,14 +606,14 @@ Page({
     return session.items[key];
   },
 
-  _shouldTrackVideoForGroup(group, index) {
-    const focusedMap = this.data.focusedCardIndex || {};
-    const focusedIndex = typeof focusedMap[group] === "number" ? focusedMap[group] : 0;
-    return index === focusedIndex;
-  },
-
-  _startCardMediaDiagnostics(list, groupedActivities) {
+  _startCardMediaDiagnostics(list, groupedActivities, focusMap) {
     this._clearCardMediaDiagnostics();
+
+    const fm = focusMap || this.data.focusedCardIndex || {};
+    const focusedIndexFor = (group) => {
+      const v = fm[group];
+      return typeof v === "number" ? v : 0;
+    };
 
     const groups = groupedActivities || { joined: [], accepting: [], notStarted: [], ended: [] };
     const traceId = createTraceId("card-media");
@@ -599,23 +668,23 @@ Page({
         const imageUrl = cardSize === "large"
           ? activity.largeCardBgImageUrl
           : activity.smallCardBgImageUrl;
-        if (imageUrl) {
+        if (imageUrl && index === focusedIndexFor(group)) {
           registerItem({
             mediaType: "image",
             group,
             cardSize,
-            activityId: activity._id,
+            activityId: String(activity._id != null ? activity._id : ""),
             activityName: activity.name || "",
             url: imageUrl
           });
           groupSummary[group].images += 1;
         }
-        if (activity.bgVideoUrl && this._shouldTrackVideoForGroup(group, index)) {
+        if (activity.bgVideoUrl && index === focusedIndexFor(group)) {
           registerItem({
             mediaType: "video",
             group,
             cardSize,
-            activityId: activity._id,
+            activityId: String(activity._id != null ? activity._id : ""),
             activityName: activity.name || "",
             url: activity.bgVideoUrl
           });
@@ -1061,7 +1130,10 @@ Page({
     const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
     this.setData({ isAdmin: app.globalData.userRole === "admin", myUserId, myNickname });
 
-    const p = Promise.all([this.loadActivityTypeStyles(), this.loadActivityList()]);
+    const p = Promise.all([
+      this.loadActivityTypeStyles({ forceNetwork: true }),
+      this.loadActivityList({ forceNetwork: true })
+    ]);
     if (p && typeof p.finally === "function") {
       p.finally(() => {
         wx.stopPullDownRefresh();
@@ -1081,64 +1153,56 @@ Page({
     return isGuest;
   },
 
-  loadActivityTypeStyles() {
+  _applyActivityTypeStyles(styles) {
+    const optionValues = styles.map((item) => normalizeTypeKey(item.key)).filter(Boolean);
+    const optionLabels = styles.map((item) => String(item.display_name || item.key || ""));
+    const currentType = this.data.editForm && this.data.editForm.activityType
+      ? normalizeTypeKey(this.data.editForm.activityType)
+      : DEFAULT_ACTIVITY_TYPE_KEY;
+    let editIndex = optionValues.indexOf(currentType);
+    if (editIndex < 0) editIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
+    if (editIndex < 0) editIndex = 0;
+    const typeStyleMap = buildTypeStyleMap(styles);
+    const selectedType = optionValues[editIndex] || DEFAULT_ACTIVITY_TYPE_KEY;
+    const styleOptions = this._buildStyleOptionsForType(selectedType, typeStyleMap);
+    const desiredStyleKey = this.data.editForm && this.data.editForm.activityStyleKey
+      ? String(this.data.editForm.activityStyleKey)
+      : "";
+    let styleIndex = styleOptions.values.indexOf(desiredStyleKey);
+    if (styleIndex < 0) styleIndex = 0;
+    this.setData({
+      activityTypeStyles: styles,
+      activityTypeOptionValues: optionValues,
+      activityTypeOptionLabels: optionLabels,
+      editActivityTypeIndex: editIndex,
+      activityStyleOptionValues: styleOptions.values,
+      activityStyleOptionLabels: styleOptions.labels,
+      editActivityStyleIndex: styleIndex,
+      "editForm.activityStyleKey": styleOptions.values[styleIndex] || ""
+    });
+  },
+
+  loadActivityTypeStylesFromCache() {
+    const cached = cacheManager.getCachedActivityTypeStyles();
+    const styles = cached && Array.isArray(cached.styles) ? cached.styles : [];
+    if (!styles.length) return false;
+    this._applyActivityTypeStyles(styles);
+    return true;
+  },
+
+  loadActivityTypeStyles(options = {}) {
+    if (!options.forceNetwork && this.loadActivityTypeStylesFromCache()) {
+      return Promise.resolve();
+    }
     return activityService
       .listActivityTypeStyles()
       .then((res) => {
         const styles = Array.isArray(res) && res.length > 0 ? res : DEFAULT_ACTIVITY_TYPE_STYLES;
-        const badmintonType = styles.find((t) => normalizeTypeKey(t && t.key) === "badminton");
-        const badmintonDefault = ((badmintonType && badmintonType.styles) || [])
-          .find((s) => String((s && s.style_key) || "").trim() === "badminton-default");
-        const optionValues = styles.map((item) => normalizeTypeKey(item.key)).filter(Boolean);
-        const optionLabels = styles.map((item) => String(item.display_name || item.key || ""));
-        const currentType = this.data.editForm && this.data.editForm.activityType
-          ? normalizeTypeKey(this.data.editForm.activityType)
-          : DEFAULT_ACTIVITY_TYPE_KEY;
-        let editIndex = optionValues.indexOf(currentType);
-        if (editIndex < 0) editIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
-        if (editIndex < 0) editIndex = 0;
-        const typeStyleMap = buildTypeStyleMap(styles);
-        const selectedType = optionValues[editIndex] || DEFAULT_ACTIVITY_TYPE_KEY;
-        const styleOptions = this._buildStyleOptionsForType(selectedType, typeStyleMap);
-        const desiredStyleKey = this.data.editForm && this.data.editForm.activityStyleKey
-          ? String(this.data.editForm.activityStyleKey)
-          : "";
-        let styleIndex = styleOptions.values.indexOf(desiredStyleKey);
-        if (styleIndex < 0) styleIndex = 0;
-        this.setData({
-          activityTypeStyles: styles,
-          activityTypeOptionValues: optionValues,
-          activityTypeOptionLabels: optionLabels,
-          editActivityTypeIndex: editIndex,
-          activityStyleOptionValues: styleOptions.values,
-          activityStyleOptionLabels: styleOptions.labels,
-          editActivityStyleIndex: styleIndex,
-          "editForm.activityStyleKey": styleOptions.values[styleIndex] || ""
-        });
+        cacheManager.setCachedActivityTypeStyles(styles);
+        this._applyActivityTypeStyles(styles);
       })
       .catch(() => {
-        // Silent fallback to built-in defaults for compatibility.
-        const styles = DEFAULT_ACTIVITY_TYPE_STYLES;
-        const badmintonType = styles.find((t) => normalizeTypeKey(t && t.key) === "badminton");
-        const badmintonDefault = ((badmintonType && badmintonType.styles) || [])
-          .find((s) => String((s && s.style_key) || "").trim() === "badminton-default");
-        const optionValues = styles.map((item) => normalizeTypeKey(item.key)).filter(Boolean);
-        const optionLabels = styles.map((item) => String(item.display_name || item.key || ""));
-        let editIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
-        if (editIndex < 0) editIndex = 0;
-        const typeStyleMap = buildTypeStyleMap(styles);
-        const selectedType = optionValues[editIndex] || DEFAULT_ACTIVITY_TYPE_KEY;
-        const styleOptions = this._buildStyleOptionsForType(selectedType, typeStyleMap);
-        this.setData({
-          activityTypeStyles: styles,
-          activityTypeOptionValues: optionValues,
-          activityTypeOptionLabels: optionLabels,
-          editActivityTypeIndex: editIndex,
-          activityStyleOptionValues: styleOptions.values,
-          activityStyleOptionLabels: styleOptions.labels,
-          editActivityStyleIndex: 0,
-          "editForm.activityStyleKey": styleOptions.values[0] || ""
-        });
+        this._applyActivityTypeStyles(DEFAULT_ACTIVITY_TYPE_STYLES);
       });
   },
 
@@ -1152,9 +1216,44 @@ Page({
     return { values, labels };
   },
 
-  loadActivityList() {
+  loadActivityListFromCache() {
+    const cached = cacheManager.getCachedActivityList();
+    const list = cached && Array.isArray(cached.list) ? cached.list : [];
+    if (!list.length) return false;
+    const myUserId = this.data.myUserId || "";
+    const myNickname = (this.data.myNickname || "").trim();
+    const cacheUserId = String((cached && cached.userId) || "");
+    // 缓存绑定了某个用户：当前未登录（myUserId 为空）或换了账号，均丢弃缓存
+    if (cacheUserId && (!myUserId || cacheUserId !== String(myUserId))) {
+      return false;
+    }
+    const listWithFlags = reapplyListParticipationFlags(list, myUserId, myNickname);
+    cacheManager.setCachedActivityList(listWithFlags, myUserId);
+    const { selectedFilter, searchKeyword } = this.data;
+    const filtered = this.computeFilteredList(listWithFlags, selectedFilter, searchKeyword);
+    const groupedActivities = this.computeGroupedActivities(listWithFlags);
+    this._groupSnapMetricsReady = false;
+    const focusReset = { joined: 0, accepting: 0, notStarted: 0, ended: 0 };
+    // 须在 setData 回调之前创建 session，否则缓存命中的首帧 bindload 可能早于回调，导致事件丢弃并误报 stalled（H1）
+    this._startCardMediaDiagnostics(listWithFlags, groupedActivities, focusReset);
+    this.setData({
+      activityList: listWithFlags,
+      filteredList: filtered,
+      groupedActivities,
+      groupOffset: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
+      focusedCardIndex: focusReset,
+      groupUseTransition: false
+    }, () => {
+      this.ensureGroupSnapMetrics();
+    });
+    return true;
+  },
+
+  loadActivityList(options = {}) {
     this._clearCardMediaDiagnostics();
-    wx.showLoading({ title: "加载中..." });
+    if (options.forceNetwork) {
+      wx.showLoading({ title: "加载中..." });
+    }
     return activityService
       .listActivities()
       .then((res) => this.processActivityList(res || [], new Date()))
@@ -1165,19 +1264,23 @@ Page({
           const filtered = this.computeFilteredList(list, selectedFilter, searchKeyword);
           const groupedActivities = this.computeGroupedActivities(list);
           this._groupSnapMetricsReady = false;
+          const focusReset = { joined: 0, accepting: 0, notStarted: 0, ended: 0 };
+          if (!options.skipCardMediaDiagnostics) {
+            this._startCardMediaDiagnostics(list, groupedActivities, focusReset);
+          }
           this.setData({
             activityList: list,
             filteredList: filtered,
             groupedActivities,
             groupOffset: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
-            focusedCardIndex: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
+            focusedCardIndex: focusReset,
             groupUseTransition: false
           }, () => {
-            this._startCardMediaDiagnostics(list, groupedActivities);
             this.ensureGroupSnapMetrics();
           });
+          cacheManager.setCachedActivityList(list, this.data.myUserId || "");
 
-          wx.hideLoading();
+          if (options.forceNetwork) wx.hideLoading();
 
           const peid = this._pendingEditActivityId;
           if (peid) {
@@ -1188,7 +1291,7 @@ Page({
       })
       .catch(err => {
         console.error(err);
-        wx.hideLoading();
+        if (options.forceNetwork) wx.hideLoading();
         // 测试环境切换后常见：本地缓存 token 对应的用户不在当前库中
         if (err && err.statusCode === 404 && String(err.message || "").includes("User not found")) {
           app.logout();
@@ -1202,7 +1305,7 @@ Page({
   },
 
   processActivityList(resData, now) {
-    const myUserId = this.data.myUserId;
+    const myUserId = String(this.data.myUserId || "").trim();
     const myNickname = (this.data.myNickname || "").trim();
     const typeStyleMap = buildTypeStyleMap(this.data.activityTypeStyles);
 
@@ -1260,8 +1363,8 @@ Page({
 
       rawParticipants.forEach(p => {
         if (typeof p === "object" && p !== null) {
-          const uid = p.userId;
-          const name = p.name;
+          const uidStr = p.userId != null ? String(p.userId) : "";
+          const name = (p.name || "").trim();
           const checkedIn = !!p.checkedInAt;
           if (checkedIn) {
             checkinCount += 1;
@@ -1272,12 +1375,12 @@ Page({
             url: avatarUrl,
             isDefault: !hasCustomAvatar
           });
-          if (myUserId && uid && uid === myUserId) {
+          if (myUserId && uidStr && uidStr === myUserId) {
             hasSignedUp = true;
             if (checkedIn) {
               hasCheckedIn = true;
             }
-          } else if (!myUserId && myNickname && name === myNickname) {
+          } else if (myNickname && name === myNickname) {
             hasSignedUp = true;
             if (checkedIn) {
               hasCheckedIn = true;
@@ -1394,11 +1497,16 @@ Page({
     const usedIds = new Set();
     const valid = (list || []).filter(a => a.status !== "已取消" && a.status !== "已删除");
 
-    // 1. 我参与的：已报名 + 未结束
+    // 1. 我参与的：凡已报名均归入此区（含已结束），避免仅有已结束报名时整块「我参与的」被隐藏
     const joined = valid
-      .filter(a => a.hasSignedUp && a.status !== "已结束")
-      .sort(sortByStart);
-    joined.forEach(a => usedIds.add(a._id));
+      .filter((a) => a.hasSignedUp)
+      .sort((a, b) => {
+        const aEnded = a.status === "已结束";
+        const bEnded = b.status === "已结束";
+        if (aEnded !== bEnded) return aEnded ? 1 : -1;
+        return aEnded ? sortByStartDesc(a, b) : sortByStart(a, b);
+      });
+    joined.forEach((a) => usedIds.add(a._id));
 
     // 2. 接受报名：未开始 + 报名未截止 + 开关开启 + 未满员 + 未报名
     const accepting = valid

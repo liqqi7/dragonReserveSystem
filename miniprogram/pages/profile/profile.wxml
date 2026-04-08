@@ -89,6 +89,7 @@
       </view>
 
       <view class="modal-body">
+        <view wx:if="{{forceProfileForSignup}}" class="force-profile-hint">{{forceProfileHint}}</view>
         <view class="form-item avatar-form-row">
           <view class="label">头像</view>
           <view class="avatar-edit-wrap">
@@ -112,7 +113,7 @@
 
       <view class="modal-footer">
         <button class="btn default" bindtap="closeEditModal">取消</button>
-        <button class="btn primary" bindtap="saveProfile">保存</button>
+        <button class="btn primary {{forceProfileForSignup && !forceProfileCanSubmit ? 'btn-disabled' : ''}}" bindtap="saveProfile" disabled="{{forceProfileForSignup && !forceProfileCanSubmit}}">保存</button>
       </view>
     </view>
   </view>

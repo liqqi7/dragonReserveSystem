@@ -77,11 +77,12 @@ Page({
       this.getTabBar().setData({ selected: 1 });
     }
     const isGuest = this.syncGuestState();
+    this.loadEndedActivityCount();
+    this.loadPigeonStats();
     if (!isGuest) {
-      this.loadEndedActivityCount();
-      this.loadPigeonStats();
       this.loadBillList();
-      app.checkProfileCompleteness();
+    } else {
+      this.setData({ billList: [], activityBillStats: [] });
     }
   },
 

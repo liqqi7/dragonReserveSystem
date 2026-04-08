@@ -2,42 +2,10 @@ const app = getApp();
 const authService = require("../../services/auth");
 const userService = require("../../services/user");
 const { getApiBaseUrl } = require("../../services/config");
+const { isDefaultNickname, isDefaultAvatar } = require("../../utils/profileUtils");
 const DEFAULT_AVATAR = "/images/default-avatar.svg";
 const MEDIA_BASE_URL = String(getApiBaseUrl() || "").replace(/\/api\/v\d+\/?$/, "");
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
-
-function agentLog(payload) {
-  // #region agent log
-  try {
-    const event = {
-      sessionId: "fd2fb3",
-      runId: "avatar-debug-1",
-      timestamp: Date.now(),
-      ...payload
-    };
-    wx.request({
-      url: "http://127.0.0.1:7559/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94",
-      method: "POST",
-      header: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "fd2fb3"
-      },
-      data: event,
-      fail: (err) => {
-        try {
-          console.warn("[agentLog-fail]", {
-            errMsg: err && err.errMsg,
-            sessionId: event.sessionId,
-            runId: event.runId,
-            hypothesisId: event.hypothesisId,
-            location: event.location
-          });
-        } catch (e) {}
-      }
-    });
-  } catch (e) {}
-  // #endregion
-}
 
 function isTemporaryAvatarUrl(url) {
   if (!url) return false;
@@ -55,23 +23,11 @@ function normalizeAvatarUrl(url) {
   if (value.startsWith("/media/")) {
     const m = value.match(/test-avatar-(\d{2})\.svg$/i);
     const output = m ? `${LOCAL_TEST_AVATAR_PREFIX}/test-avatar-${m[1]}.svg` : DEFAULT_AVATAR;
-    agentLog({
-      hypothesisId: "H4",
-      location: "profile.js:normalizeAvatarUrl",
-      message: "profile media url mapped to local avatar",
-      data: { input: value, output }
-    });
     return output;
   }
   if (value.startsWith("media/")) {
     const m = value.match(/test-avatar-(\d{2})\.svg$/i);
     const output = m ? `${LOCAL_TEST_AVATAR_PREFIX}/test-avatar-${m[1]}.svg` : DEFAULT_AVATAR;
-    agentLog({
-      hypothesisId: "H4",
-      location: "profile.js:normalizeAvatarUrl",
-      message: "profile media relative url mapped to local avatar",
-      data: { input: value, output }
-    });
     return output;
   }
   if (value.toLowerCase().startsWith("http://")) return DEFAULT_AVATAR;
@@ -90,6 +46,9 @@ Page({
     showEditModal: false,
     editNickname: "",
     editAvatarUrl: "",
+    forceProfileForSignup: false,
+    forceProfileHint: "",
+    forceProfileCanSubmit: true,
     showPermissionModal: false,
     permissionInput: ""
   },
@@ -116,29 +75,42 @@ Page({
       this.setData({ hasUser: false });
     }
 
+    const shouldAutoLoginAndEdit = !!app.globalData._pendingAutoLoginAndEditProfile;
+    if (shouldAutoLoginAndEdit) {
+      app.globalData._pendingAutoLoginAndEditProfile = false;
+      const hasAccessToken = !!(app.globalData.accessToken || wx.getStorageSync("accessToken"));
+      if (!hasAccessToken) {
+        this.startRegister({ openEditAfterLogin: true });
+        return;
+      }
+      app.globalData._pendingOpenEditProfile = true;
+    }
+
     app.ensureUserReady(() => {
       this.loadUserProfile();
       if (app.globalData._pendingOpenEditProfile) {
         app.globalData._pendingOpenEditProfile = false;
-        this.openEditModal();
-      } else {
-        app.checkProfileCompleteness();
+        this.openEditModal({
+          forceProfileForSignup: !!app.globalData._pendingForceProfileForSignup
+        });
+        app.globalData._pendingForceProfileForSignup = false;
       }
     });
   },
 
   syncGuestState() {
-    const isGuest = !app.globalData.isAuthenticated;
+    const hasWeChatAuth = !!wx.getStorageSync("hasWeChatAuth");
+    const isGuest = !hasWeChatAuth || !app.globalData.isAuthenticated;
     this.setData({ isGuest });
   },
 
   loadUserProfile() {
     if (!app.globalData.accessToken) {
       this.setData({ hasUser: false, isGuest: !app.globalData.isAuthenticated });
-      return;
+      return Promise.resolve(null);
     }
 
-    userService.getMe()
+    return userService.getMe()
       .then((user) => {
         app.applyCurrentUser(user);
         const userId = String(user.id || "");
@@ -151,6 +123,7 @@ Page({
             avatarUrl: normalizeAvatarUrl(user.avatar_url || "")
           }
         });
+        return user;
       })
       .catch((err) => {
         console.error("查询用户失败:", err);
@@ -158,15 +131,22 @@ Page({
           hasUser: false,
           isGuest: !app.globalData.isAuthenticated
         });
+        throw err;
       });
   },
 
-  startRegister() {
+  startRegister(options = {}) {
+    const openEditAfterLogin = !!options.openEditAfterLogin;
     wx.showLoading({ title: "登录中...", mask: true });
     authService.loginWithWechat(app)
       .then(() => {
+        return this.loadUserProfile();
+      })
+      .then(() => {
+        if (openEditAfterLogin) {
+          this.openEditModal();
+        }
         wx.hideLoading();
-        this.loadUserProfile();
         wx.showToast({ title: "登录成功", icon: "success" });
       })
       .catch((err) => {
@@ -247,35 +227,48 @@ Page({
     });
   },
 
-  openEditModal() {
+  updateForceProfileValidation() {
+    if (!this.data.forceProfileForSignup) {
+      this.setData({ forceProfileCanSubmit: true });
+      return;
+    }
+    const nickname = (this.data.editNickname || "").trim();
+    const avatarUrl = (this.data.editAvatarUrl || "").trim();
+    const canSubmit = !isDefaultNickname(nickname) && !isDefaultAvatar(avatarUrl);
+    this.setData({ forceProfileCanSubmit: canSubmit });
+  },
+
+  openEditModal(options = {}) {
     const { user } = this.data;
+    const forceProfileForSignup = !!options.forceProfileForSignup;
     this.setData({
       showEditModal: true,
       editNickname: user.nickname,
-      editAvatarUrl: normalizeAvatarUrl(user.avatarUrl || "")
-    });
+      editAvatarUrl: normalizeAvatarUrl(user.avatarUrl || ""),
+      forceProfileForSignup,
+      forceProfileHint: forceProfileForSignup ? "请修改昵称和头像后再进行报名" : ""
+    }, () => this.updateForceProfileValidation());
   },
 
   closeEditModal() {
-    this.setData({ showEditModal: false });
+    this.setData({
+      showEditModal: false,
+      forceProfileForSignup: false,
+      forceProfileHint: "",
+      forceProfileCanSubmit: true
+    });
   },
 
   stopTap() {},
 
   onProfileAvatarError() {
-    agentLog({
-      hypothesisId: "H5",
-      location: "profile.js:onProfileAvatarError",
-      message: "profile avatar image load failed",
-      data: {}
-    });
     this.setData({
       "user.avatarUrl": DEFAULT_AVATAR
     });
   },
 
   onInputNickname(e) {
-    this.setData({ editNickname: e.detail.value || "" });
+    this.setData({ editNickname: e.detail.value || "" }, () => this.updateForceProfileValidation());
   },
 
   onChooseAvatar(e) {
@@ -285,7 +278,7 @@ Page({
       return;
     }
 
-    this.setData({ editAvatarUrl: avatarUrl });
+    this.setData({ editAvatarUrl: avatarUrl }, () => this.updateForceProfileValidation());
     wx.showToast({ title: "已选择微信头像", icon: "success" });
   },
 
@@ -297,6 +290,10 @@ Page({
 
     if (!nickname) {
       wx.showToast({ title: "请输入昵称", icon: "none" });
+      return;
+    }
+    if (this.data.forceProfileForSignup && !this.data.forceProfileCanSubmit) {
+      wx.showToast({ title: "请修改昵称和头像后再进行报名", icon: "none" });
       return;
     }
     if (!userId) {
@@ -325,7 +322,10 @@ Page({
             avatarUrl: user.avatar_url || ""
           },
           editAvatarUrl: user.avatar_url || "",
-          showEditModal: false
+          showEditModal: false,
+          forceProfileForSignup: false,
+          forceProfileHint: "",
+          forceProfileCanSubmit: true
         });
         wx.hideLoading();
         wx.showToast({ title: "保存成功", icon: "success" });

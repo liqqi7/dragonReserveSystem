@@ -1,6 +1,8 @@
 """Activity use cases."""
 
 from datetime import datetime, timedelta
+import hashlib
+import json
 
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session, selectinload
@@ -13,7 +15,11 @@ from app.schemas.activity import (
     ActivityCreateRequest,
     ActivityUpdateRequest,
 )
-from app.services.activity_type_style_service import normalize_activity_style_key, list_selectable_styles_by_rule
+from app.services.activity_type_style_service import (
+    get_activity_style,
+    list_selectable_styles_by_rule,
+    normalize_activity_style_key,
+)
 from app.utils.geo import haversine_distance_meters
 
 
@@ -46,6 +52,33 @@ def list_activities(db: Session) -> list[Activity]:
         .order_by(Activity.start_time.desc())
     )
     return list(db.scalars(stmt).unique().all())
+
+
+def get_activity_style_signature(db: Session) -> tuple[str, int]:
+    """Return signature for all style-related fields across non-deleted activities."""
+
+    rows = db.execute(
+        select(Activity.id, Activity.activity_type, Activity.activity_style_key)
+        .where(Activity.status != "已删除")
+        .order_by(Activity.id.asc())
+    ).all()
+    signature_items: list[dict[str, object]] = []
+    for activity_id, activity_type, activity_style_key in rows:
+        style = get_activity_style(activity_type or "other", activity_style_key)
+        signature_items.append(
+            {
+                "id": int(activity_id),
+                "activity_type": str(activity_type or "other"),
+                "activity_style_key": str(activity_style_key or ""),
+                "large_card_bg_image_url": str((style or {}).get("large_card_bg_image_url") or ""),
+                "small_card_bg_image_url": str((style or {}).get("small_card_bg_image_url") or ""),
+                "bg_video_url": str((style or {}).get("bg_video_url") or ""),
+                "show_avatar_cluster": bool((style or {}).get("show_avatar_cluster", False)),
+            }
+        )
+    payload = json.dumps(signature_items, ensure_ascii=False, separators=(",", ":"))
+    signature = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return signature, len(signature_items)
 
 
 def create_activity(db: Session, payload: ActivityCreateRequest, created_by: User) -> Activity:

@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, Request, Response, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, require_admin
+from app.api.deps import get_current_user, get_optional_current_user, require_admin
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.logging import logger
@@ -14,6 +14,7 @@ from app.schemas.activity import (
     ActivityResponse,
     ActivitySharePreviewResponse,
     ActivitySignupResponse,
+    ActivityStyleSignatureResponse,
     ActivityTypeStyleResponse,
     ActivityUpdateRequest,
 )
@@ -27,6 +28,7 @@ from app.services.activity_service import (
     create_activity,
     delete_activity,
     get_activity_by_id,
+    get_activity_style_signature,
     list_activities,
     remove_participant,
     signup_activity,
@@ -48,7 +50,7 @@ def _absolute_media_url(request: Request, image_url: str | None) -> str | None:
 
 
 @router.get("", response_model=list[ActivityResponse], summary="List activities")
-def get_activities(db: Session = Depends(get_db), _: User = Depends(get_current_user)) -> list[ActivityResponse]:
+def get_activities(db: Session = Depends(get_db), _: User | None = Depends(get_optional_current_user)) -> list[ActivityResponse]:
     """Return all activities."""
 
     activities = list_activities(db)
@@ -56,17 +58,28 @@ def get_activities(db: Session = Depends(get_db), _: User = Depends(get_current_
 
 
 @router.get("/type-styles", response_model=list[ActivityTypeStyleResponse], summary="List activity type styles")
-def get_activity_type_styles(_: User = Depends(get_current_user)) -> list[ActivityTypeStyleResponse]:
+def get_activity_type_styles(_: User | None = Depends(get_optional_current_user)) -> list[ActivityTypeStyleResponse]:
     """Return backend-driven activity type/style config for the client."""
 
     return [ActivityTypeStyleResponse.model_validate(item) for item in list_activity_type_styles()]
+
+
+@router.get("/style-signature", response_model=ActivityStyleSignatureResponse, summary="Get activity style signature")
+def get_style_signature(
+    db: Session = Depends(get_db),
+    _: User | None = Depends(get_optional_current_user),
+) -> ActivityStyleSignatureResponse:
+    """Return global signature used by clients to decide style-resource refresh."""
+
+    signature, count = get_activity_style_signature(db)
+    return ActivityStyleSignatureResponse(signature=signature, activity_count=count)
 
 
 @router.get("/{activity_id}", response_model=ActivityResponse, summary="Get activity detail")
 def get_activity(
     activity_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User | None = Depends(get_optional_current_user),
 ) -> ActivityResponse:
     """Return a single activity."""
 
@@ -83,7 +96,7 @@ def get_activity_share_preview(
     activity_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User | None = Depends(get_optional_current_user),
 ) -> ActivitySharePreviewResponse:
     """Generate or return the activity share preview image."""
 

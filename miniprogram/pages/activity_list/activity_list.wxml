@@ -5,7 +5,7 @@
     scroll-y="{{mainScrollEnabled}}"
     show-scrollbar="false"
     bindscroll="onMainScroll"
-    style="height: calc(100vh - 90px)"
+    style="height: 100vh"
   >
     <!-- 背景水印（随内容滚动） -->
     <image class="page-watermark" src="https://dragon.liqqihome.top/media/images/activity-home-logo.png" mode="aspectFit" />
@@ -17,15 +17,7 @@
       </view>
     </view>
 
-    <!-- 游客缺省态 -->
-    <view wx:if="{{isGuest}}" class="guest-empty-state">
-      <image class="guest-empty-icon" src="/images/activity-empty-icon.gif" mode="aspectFit" />
-      <text class="guest-empty-text">未查询到您的冒险者工会归属</text>
-      <text class="guest-empty-text">请前往「我的」进行登录</text>
-    </view>
-
-    <!-- 已授权用户内容 -->
-    <block wx:else>
+    <block>
 
       <!-- ── 我参与的 ── -->
       <view wx:if="{{groupedActivities.joined.length > 0}}" class="group-section">
@@ -57,6 +49,13 @@
                   class="card-image-bg"
                   src="{{item.largeCardBgImageUrl}}"
                   mode="aspectFill"
+                  bindload="onCardBgLoaded"
+                  binderror="onCardBgError"
+                  data-group="joined"
+                  data-card-size="large"
+                  data-activity-id="{{item._id}}"
+                  data-activity-name="{{item.name}}"
+                  data-url="{{item.largeCardBgImageUrl}}"
                 />
                 <video
                   wx:if="{{item.bgVideoUrl}}"
@@ -71,6 +70,14 @@
                   show-center-play-btn="{{false}}"
                   show-play-btn="{{false}}"
                   enable-progress-gesture="{{false}}"
+                  bindloadedmetadata="onCardVideoLoaded"
+                  binderror="onCardVideoError"
+                  bindwaiting="onCardVideoWaiting"
+                  data-group="joined"
+                  data-card-size="large"
+                  data-activity-id="{{item._id}}"
+                  data-activity-name="{{item.name}}"
+                  data-url="{{item.bgVideoUrl}}"
                 />
                 <!-- 类型角标 -->
                 <text wx:if="{{item.showTypeBadge}}" class="card-type-label">{{item.typeBadgeLabel}}</text>
@@ -154,6 +161,13 @@
                   class="card-image-bg"
                   src="{{item.smallCardBgImageUrl}}"
                   mode="aspectFill"
+                  bindload="onCardBgLoaded"
+                  binderror="onCardBgError"
+                  data-group="accepting"
+                  data-card-size="small"
+                  data-activity-id="{{item._id}}"
+                  data-activity-name="{{item.name}}"
+                  data-url="{{item.smallCardBgImageUrl}}"
                 />
                 <video
                   wx:if="{{item.bgVideoUrl}}"
@@ -168,6 +182,14 @@
                   show-center-play-btn="{{false}}"
                   show-play-btn="{{false}}"
                   enable-progress-gesture="{{false}}"
+                  bindloadedmetadata="onCardVideoLoaded"
+                  binderror="onCardVideoError"
+                  bindwaiting="onCardVideoWaiting"
+                  data-group="accepting"
+                  data-card-size="small"
+                  data-activity-id="{{item._id}}"
+                  data-activity-name="{{item.name}}"
+                  data-url="{{item.bgVideoUrl}}"
                 />
                 <!-- 小卡类型角标（仅羽毛球/桌游） -->
                 <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
@@ -221,6 +243,13 @@
                   class="card-image-bg"
                   src="{{item.smallCardBgImageUrl}}"
                   mode="aspectFill"
+                  bindload="onCardBgLoaded"
+                  binderror="onCardBgError"
+                  data-group="notStarted"
+                  data-card-size="small"
+                  data-activity-id="{{item._id}}"
+                  data-activity-name="{{item.name}}"
+                  data-url="{{item.smallCardBgImageUrl}}"
                 />
                 <video
                   wx:if="{{item.bgVideoUrl}}"
@@ -235,6 +264,14 @@
                   show-center-play-btn="{{false}}"
                   show-play-btn="{{false}}"
                   enable-progress-gesture="{{false}}"
+                  bindloadedmetadata="onCardVideoLoaded"
+                  binderror="onCardVideoError"
+                  bindwaiting="onCardVideoWaiting"
+                  data-group="notStarted"
+                  data-card-size="small"
+                  data-activity-id="{{item._id}}"
+                  data-activity-name="{{item.name}}"
+                  data-url="{{item.bgVideoUrl}}"
                 />
                 <!-- 小卡类型角标（仅羽毛球/桌游） -->
                 <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
@@ -288,6 +325,13 @@
                   class="card-image-bg"
                   src="{{item.smallCardBgImageUrl}}"
                   mode="aspectFill"
+                  bindload="onCardBgLoaded"
+                  binderror="onCardBgError"
+                  data-group="ended"
+                  data-card-size="small"
+                  data-activity-id="{{item._id}}"
+                  data-activity-name="{{item.name}}"
+                  data-url="{{item.smallCardBgImageUrl}}"
                 />
                 <video
                   wx:if="{{item.bgVideoUrl}}"
@@ -302,6 +346,14 @@
                   show-center-play-btn="{{false}}"
                   show-play-btn="{{false}}"
                   enable-progress-gesture="{{false}}"
+                  bindloadedmetadata="onCardVideoLoaded"
+                  binderror="onCardVideoError"
+                  bindwaiting="onCardVideoWaiting"
+                  data-group="ended"
+                  data-card-size="small"
+                  data-activity-id="{{item._id}}"
+                  data-activity-name="{{item.name}}"
+                  data-url="{{item.bgVideoUrl}}"
                 />
                 <!-- 小卡类型角标（仅羽毛球/桌游） -->
                 <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
@@ -327,8 +379,8 @@
         </view>
       </view>
 
-      <!-- 底部占位（避免被 Tab 遮挡） -->
-      <view style="height: 40rpx"></view>
+      <!-- 底部占位（高度 = TabBar 约 74px + safe-area，避免被 Tab 遮挡） -->
+      <view style="height: calc(74px + env(safe-area-inset-bottom))"></view>
     </block>
   </scroll-view>
 

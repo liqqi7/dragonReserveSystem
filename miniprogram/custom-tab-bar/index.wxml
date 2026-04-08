@@ -1,4 +1,5 @@
 <view class="tab-bar-wrap">
+  <view class="tab-bottom-fade"></view>
   <view class="tab-items-wrap">
     <view class="tab-indicator" style="transform: translateX({{selected * 85}}px)"></view>
     <view class="tab-item" bindtap="onTabTap" data-index="0">
