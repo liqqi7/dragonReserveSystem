@@ -35,9 +35,9 @@ const DEFAULT_ACTIVITY_TYPE_STYLES = [
         style_name: "纯静态图（无头像）",
         badge_label: "Badminton",
         show_badge: true,
-        show_avatar_cluster: true,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg",
+        show_avatar_cluster: false,
+        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png",
+        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png",
         bg_video_url: null
       }
     ]
@@ -53,8 +53,8 @@ const DEFAULT_ACTIVITY_TYPE_STYLES = [
         badge_label: "Boardgame",
         show_badge: true,
         show_avatar_cluster: true,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png",
+        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png",
+        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg",
         bg_video_url: null
       }
     ]
@@ -79,26 +79,16 @@ const DEFAULT_ACTIVITY_TYPE_STYLES = [
   {
     key: "eating",
     display_name: "吃饭",
-    default_style_key: "image-clean",
+    default_style_key: "eating-default",
     styles: [
       {
         style_key: "eating-default",
-        style_name: "默认暖色",
+        style_name: "聚餐静图",
         badge_label: "Eating",
         show_badge: true,
         show_avatar_cluster: true,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg",
-        bg_video_url: null
-      },
-      {
-        style_key: "image-clean",
-        style_name: "静态图无头像",
-        badge_label: "Eating",
-        show_badge: true,
-        show_avatar_cluster: false,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/eating-image-clean-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/eating-image-clean-sm.png",
+        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/movie-image-clean-lg.png",
+        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/movie-image-clean-sm.png",
         bg_video_url: null
       }
     ]
@@ -135,16 +125,6 @@ const DEFAULT_ACTIVITY_TYPE_STYLES = [
     display_name: "电影",
     default_style_key: "image-clean",
     styles: [
-      {
-        style_key: "movie-default",
-        style_name: "默认深色",
-        badge_label: "Movie",
-        show_badge: true,
-        show_avatar_cluster: true,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png",
-        bg_video_url: null
-      },
       {
         style_key: "image-clean",
         style_name: "纯静态图",
@@ -1542,15 +1522,8 @@ Page({
     const usedIds = new Set();
     const valid = (list || []).filter(a => a.status !== "已取消" && a.status !== "已删除");
 
-    // 1. 我参与的：凡已报名均归入此区（含已结束），避免仅有已结束报名时整块「我参与的」被隐藏
-    const joined = valid
-      .filter((a) => a.hasSignedUp)
-      .sort((a, b) => {
-        const aEnded = a.status === "已结束";
-        const bEnded = b.status === "已结束";
-        if (aEnded !== bEnded) return aEnded ? 1 : -1;
-        return aEnded ? sortByStartDesc(a, b) : sortByStart(a, b);
-      });
+    // 1. 我参与的：已报名且未结束（已结束的归入下方「已结束」区，避免历史活动占大卡位）
+    const joined = valid.filter((a) => a.hasSignedUp && a.status !== "已结束").sort(sortByStart);
     joined.forEach((a) => usedIds.add(a._id));
 
     // 2. 接受报名：未开始 + 报名未截止 + 开关开启 + 未满员 + 未报名
@@ -1977,11 +1950,9 @@ Page({
       max_participants: maxParticipants,
       signup_enabled: form.signupEnabled,
       activity_type: form.activityType || null
-      ,
-      activity_style_key: form.activityStyleKey || null
     };
-
     if (isEdit) {
+      payload.activity_style_key = form.activityStyleKey || null;
       activityService
         .updateActivity(this.data.currentActivity._id, payload)
         .then(() => {
