@@ -46,4 +46,3 @@ def get_client_diagnostic_logs(
     """Return recent client diagnostic events for debugging."""
 
     return read_recent_client_diagnostic_logs(limit=limit)
-

@@ -22,9 +22,9 @@ const DEFAULT_ACTIVITY_TYPE_STYLES = [
         style_name: "纯静态图（无头像）",
         badge_label: "Badminton",
         show_badge: true,
-        show_avatar_cluster: true,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg",
+        show_avatar_cluster: false,
+        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png",
+        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png",
         bg_video_url: null
       }
     ]
@@ -40,8 +40,8 @@ const DEFAULT_ACTIVITY_TYPE_STYLES = [
         badge_label: "Boardgame",
         show_badge: true,
         show_avatar_cluster: true,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png",
+        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png",
+        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg",
         bg_video_url: null
       }
     ]
@@ -66,26 +66,16 @@ const DEFAULT_ACTIVITY_TYPE_STYLES = [
   {
     key: "eating",
     display_name: "吃饭",
-    default_style_key: "image-clean",
+    default_style_key: "eating-default",
     styles: [
       {
         style_key: "eating-default",
-        style_name: "默认暖色",
+        style_name: "聚餐静图",
         badge_label: "Eating",
         show_badge: true,
         show_avatar_cluster: true,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg",
-        bg_video_url: null
-      },
-      {
-        style_key: "image-clean",
-        style_name: "静态图无头像",
-        badge_label: "Eating",
-        show_badge: true,
-        show_avatar_cluster: false,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/eating-image-clean-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/eating-image-clean-sm.png",
+        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/movie-image-clean-lg.png",
+        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/movie-image-clean-sm.png",
         bg_video_url: null
       }
     ]
@@ -122,16 +112,6 @@ const DEFAULT_ACTIVITY_TYPE_STYLES = [
     display_name: "电影",
     default_style_key: "image-clean",
     styles: [
-      {
-        style_key: "movie-default",
-        style_name: "默认深色",
-        badge_label: "Movie",
-        show_badge: true,
-        show_avatar_cluster: true,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png",
-        bg_video_url: null
-      },
       {
         style_key: "image-clean",
         style_name: "纯静态图",

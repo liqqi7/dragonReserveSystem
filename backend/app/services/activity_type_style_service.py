@@ -23,16 +23,6 @@ DEFAULT_ACTIVITY_TYPE_STYLES: list[dict[str, object]] = [
                 "small_card_bg_image_url": "https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png",
                 "bg_video_url": None,
             },
-            {
-                "style_key": "image-clean",
-                "style_name": "纯静态图",
-                "badge_label": "Badminton",
-                "show_badge": True,
-                "show_avatar_cluster": False,
-                "large_card_bg_image_url": "",
-                "small_card_bg_image_url": "",
-                "bg_video_url": None,
-            }
         ],
     },
     {
@@ -50,16 +40,6 @@ DEFAULT_ACTIVITY_TYPE_STYLES: list[dict[str, object]] = [
                 "small_card_bg_image_url": "https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg",
                 "bg_video_url": None,
             },
-            {
-                "style_key": "image-clean",
-                "style_name": "纯静态图",
-                "badge_label": "Boardgame",
-                "show_badge": True,
-                "show_avatar_cluster": False,
-                "large_card_bg_image_url": "",
-                "small_card_bg_image_url": "",
-                "bg_video_url": None,
-            }
         ],
     },
     {
@@ -77,43 +57,23 @@ DEFAULT_ACTIVITY_TYPE_STYLES: list[dict[str, object]] = [
                 "small_card_bg_image_url": "",
                 "bg_video_url": "https://dragon.liqqihome.top/media/videos/card-bg-other.mp4",
             },
-            {
-                "style_key": "image-clean",
-                "style_name": "纯静态图",
-                "badge_label": "Other",
-                "show_badge": True,
-                "show_avatar_cluster": False,
-                "large_card_bg_image_url": "",
-                "small_card_bg_image_url": "",
-                "bg_video_url": None,
-            }
         ],
     },
     {
         "key": "eating",
         "display_name": "吃饭",
-        "default_style_key": "image-clean",
+        "default_style_key": "eating-default",
         "styles": [
             {
                 "style_key": "eating-default",
-                "style_name": "默认暖色",
+                "style_name": "聚餐静图",
                 "badge_label": "Eating",
                 "show_badge": True,
                 "show_avatar_cluster": True,
-                "large_card_bg_image_url": "https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png",
-                "small_card_bg_image_url": "https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg",
+                "large_card_bg_image_url": "https://dragon.liqqihome.top/media/images/movie-image-clean-lg.png",
+                "small_card_bg_image_url": "https://dragon.liqqihome.top/media/images/movie-image-clean-sm.png",
                 "bg_video_url": None,
             },
-            {
-                "style_key": "image-clean",
-                "style_name": "静态图无头像",
-                "badge_label": "Eating",
-                "show_badge": True,
-                "show_avatar_cluster": False,
-                "large_card_bg_image_url": "https://dragon.liqqihome.top/media/images/eating-image-clean-lg.png",
-                "small_card_bg_image_url": "https://dragon.liqqihome.top/media/images/eating-image-clean-sm.png",
-                "bg_video_url": None,
-            }
         ],
     },
     {
@@ -148,16 +108,6 @@ DEFAULT_ACTIVITY_TYPE_STYLES: list[dict[str, object]] = [
         "display_name": "电影",
         "default_style_key": "image-clean",
         "styles": [
-            {
-                "style_key": "movie-default",
-                "style_name": "默认深色",
-                "badge_label": "Movie",
-                "show_badge": True,
-                "show_avatar_cluster": True,
-                "large_card_bg_image_url": "https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png",
-                "small_card_bg_image_url": "https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png",
-                "bg_video_url": None,
-            },
             {
                 "style_key": "image-clean",
                 "style_name": "纯静态图",
@@ -234,6 +184,24 @@ def _is_style_assets_ready(style: dict[str, object]) -> bool:
 def _available_styles(item: dict[str, object]) -> list[dict[str, object]]:
     styles = item.get("styles") or []
     return [s for s in styles if isinstance(s, dict) and _is_style_assets_ready(s)]
+
+
+def list_available_style_keys_in_order(activity_type: str) -> list[str]:
+    """Return selectable style_key values for a type, in DEFAULT_ACTIVITY_TYPE_STYLES declaration order."""
+
+    type_key = normalize_activity_type_key(activity_type)
+    if not type_key:
+        return []
+    for item in DEFAULT_ACTIVITY_TYPE_STYLES:
+        if str(item.get("key", "")).strip() != type_key:
+            continue
+        out: list[str] = []
+        for style in _available_styles(item):
+            sk = str(style.get("style_key", "")).strip()
+            if sk:
+                out.append(sk)
+        return out
+    return []
 
 
 def list_activity_type_styles() -> list[dict[str, object]]:

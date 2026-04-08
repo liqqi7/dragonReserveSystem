@@ -4,7 +4,9 @@ from datetime import datetime, timedelta
 import hashlib
 import json
 
-from sqlalchemy import select
+from typing import Optional
+
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.config import get_settings
@@ -17,7 +19,9 @@ from app.schemas.activity import (
 )
 from app.services.activity_type_style_service import (
     get_activity_style,
+    list_available_style_keys_in_order,
     normalize_activity_style_key,
+    normalize_activity_type_key,
 )
 from app.utils.geo import haversine_distance_meters
 
@@ -53,6 +57,28 @@ def list_activities(db: Session) -> list[Activity]:
     return list(db.scalars(stmt).unique().all())
 
 
+def _resolve_style_key_implicit(db: Session, activity_type: str) -> Optional[str]:
+    """Pick style_key when client omits it: rotate if multiple styles, else single or default."""
+
+    type_key = normalize_activity_type_key(activity_type) or "other"
+    keys = list_available_style_keys_in_order(type_key)
+    if not keys:
+        return normalize_activity_style_key(type_key, None)
+    if len(keys) == 1:
+        return keys[0]
+    count = (
+        db.scalar(
+            select(func.count(Activity.id)).where(
+                Activity.activity_type == type_key,
+                Activity.status != "已删除",
+                Activity.status != "已取消",
+            )
+        )
+        or 0
+    )
+    return keys[count % len(keys)]
+
+
 def get_activity_style_signature(db: Session) -> tuple[str, int]:
     """Return signature for all style-related fields across non-deleted activities."""
 
@@ -84,9 +110,13 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
     """Create a new activity."""
 
     activity_type = payload.activity_type or "other"
-    # 使用客户端传入的 activity_style_key（经校验）；未传则使用该类型配置的 default_style_key。
-    # 不再按「同类型已创建数量」轮换样式，否则吃饭等类型会固定落到 image-avatar 桶（如 eating-default），与前端默认静图不一致。
-    activity_style_key = normalize_activity_style_key(activity_type, payload.activity_style_key)
+    explicit = (payload.activity_style_key or "").strip()
+    if explicit:
+        activity_style_key = normalize_activity_style_key(activity_type, payload.activity_style_key)
+    else:
+        activity_style_key = _resolve_style_key_implicit(db, activity_type)
+        if not activity_style_key:
+            activity_style_key = normalize_activity_style_key(activity_type, None)
     activity = Activity(
         name=payload.name,
         status=payload.status,
@@ -125,18 +155,33 @@ def update_activity(db: Session, activity: Activity, payload: ActivityUpdateRequ
     """Update an activity."""
 
     data = payload.model_dump(exclude_unset=True)
+    prev_type = activity.activity_type
     for key, value in data.items():
         setattr(activity, key, value)
 
     if "activity_type" in data or "activity_style_key" in data:
         activity.activity_type = activity.activity_type or "other"
+        prev_norm = normalize_activity_type_key(prev_type or "other") or "other"
+        new_norm = normalize_activity_type_key(activity.activity_type or "other") or "other"
         if "activity_style_key" in data:
             activity.activity_style_key = normalize_activity_style_key(
                 activity.activity_type,
                 data["activity_style_key"],
             )
-        else:
-            activity.activity_style_key = normalize_activity_style_key(activity.activity_type, None)
+        elif "activity_type" in data and prev_norm != new_norm:
+            resolved = _resolve_style_key_implicit(db, activity.activity_type)
+            activity.activity_style_key = resolved or normalize_activity_style_key(activity.activity_type, None)
+        elif "activity_type" in data:
+            try:
+                activity.activity_style_key = normalize_activity_style_key(
+                    activity.activity_type,
+                    activity.activity_style_key,
+                )
+            except ValueError:
+                resolved = _resolve_style_key_implicit(db, activity.activity_type)
+                activity.activity_style_key = resolved or normalize_activity_style_key(
+                    activity.activity_type, None
+                )
 
     if activity.end_time <= activity.start_time:
         raise ValidationAppError("end_time must be later than start_time")
