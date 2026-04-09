@@ -230,7 +230,7 @@ def signup_activity(db: Session, activity: Activity, user: User) -> ActivityPart
             .count()
         )
         if participant_count >= activity.max_participants:
-            raise ValidationAppError("Activity is already full")
+            raise ValidationAppError("报名失败，活动参与人数已达上限")
 
     participant = ActivityParticipant(
         activity_id=activity.id,
