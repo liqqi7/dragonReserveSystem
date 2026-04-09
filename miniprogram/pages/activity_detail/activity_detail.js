@@ -1013,16 +1013,13 @@ Page({
       wx.showToast({ title: "该活动已结束或已取消", icon: "none" });
       return;
     }
-    if (activity.signupEnabled === false) {
-      wx.showToast({ title: "活动报名暂未开放", icon: "none" });
+    if (activity.isSignupClosed) {
+      wx.showToast({ title: "活动已停止报名", icon: "none" });
       return;
     }
-    if (activity.signupDeadline) {
-      const deadline = new Date(activity.signupDeadline.replace(" ", "T") + ":00");
-      if (!isNaN(deadline.getTime()) && Date.now() >= deadline.getTime()) {
-        wx.showToast({ title: "报名已截止", icon: "none" });
-        return;
-      }
+    if (activity.isFull) {
+      wx.showToast({ title: "报名失败，活动参与人数已达上限", icon: "none" });
+      return;
     }
     const accessToken = app.globalData.accessToken || wx.getStorageSync("accessToken") || "";
     const userId = app.globalData.userId || wx.getStorageSync("userId") || "";
@@ -1096,8 +1093,14 @@ Page({
         console.error(err);
         wx.hideLoading();
         const msg = (err && err.message) || "";
-        if (msg.includes("disabled") || msg.includes("未开放")) {
-          wx.showToast({ title: "活动报名暂未开放", icon: "none" });
+        if (
+          msg.includes("disabled") ||
+          msg.includes("未开放") ||
+          msg.includes("deadline") ||
+          msg.includes("passed") ||
+          msg.includes("截止")
+        ) {
+          wx.showToast({ title: "活动已停止报名", icon: "none" });
         } else if (msg.includes("已报名") || msg.toLowerCase().includes("already")) {
           wx.showToast({ title: "您已报名", icon: "none" });
           this.refreshDetail({ silent: true });
