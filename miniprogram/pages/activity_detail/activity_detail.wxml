@@ -204,16 +204,11 @@
       <view class="bottom-cta-wrap">
         <block wx:if="{{activity.status === '未开始' || activity.status === '进行中'}}">
           <button
-            wx:if="{{!activity.hasSignedUp && !activity.signupDeadlinePassed}}"
-            class="bottom-primary"
-            hover-class="bottom-primary-hover"
+            wx:if="{{!activity.hasSignedUp}}"
+            class="bottom-primary {{activity.isSignupClosed || activity.isFull ? 'bottom-primary-disabled' : ''}}"
+            hover-class="{{activity.isSignupClosed || activity.isFull ? 'bottom-primary-disabled' : 'bottom-primary-hover'}}"
             bindtap="onTapSignup"
           >立即报名</button>
-          <button
-            wx:elif="{{!activity.hasSignedUp && activity.signupDeadlinePassed}}"
-            class="bottom-primary bottom-primary-disabled"
-            disabled="true"
-          >报名已截止</button>
           <button
             wx:elif="{{activity.hasSignedUp && !activity.hasCheckedIn && !isCheckinWindowOpen}}"
             class="bottom-primary"
