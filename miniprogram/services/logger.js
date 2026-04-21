@@ -7,17 +7,30 @@ function createTraceId(prefix = "trace") {
 let realtimeLogger;
 let realtimeLoggerReady = false;
 let cachedSystemMeta;
+let clientDiagnosticSessionId;
 const backendUploadThrottleMap = new Map();
+const wechatAnalyticsTransportThrottleMap = new Map();
+
+function getClientDiagnosticSessionId() {
+  if (!clientDiagnosticSessionId) {
+    clientDiagnosticSessionId = createTraceId("sess");
+  }
+  return clientDiagnosticSessionId;
+}
 
 function summarizeError(err) {
   if (!err) return "unknown error";
-  return (
-    err.message ||
-    err.errMsg ||
-    err.code ||
-    err.statusCode ||
-    "unknown error"
-  );
+  const msg = err.message || err.errMsg || err.code || "";
+  const parts = [];
+  if (msg) parts.push(String(msg));
+  if (err.errno !== undefined && err.errno !== "") {
+    parts.push(`errno:${err.errno}`);
+  }
+  if (err.statusCode) {
+    parts.push(`status:${err.statusCode}`);
+  }
+  if (parts.length) return parts.join(" ");
+  return err.statusCode || "unknown error";
 }
 
 function getRealtimeLogger() {
@@ -88,13 +101,19 @@ function getSystemMeta() {
     cachedSystemMeta = {
       clientVersion: info.version || "",
       baseLibVersion: info.SDKVersion || "",
-      systemType: info.platform || ""
+      systemType: info.platform || "",
+      brand: info.brand || "",
+      model: info.model || "",
+      system: info.system || ""
     };
   } catch (err) {
     cachedSystemMeta = {
       clientVersion: "",
       baseLibVersion: "",
-      systemType: ""
+      systemType: "",
+      brand: "",
+      model: "",
+      system: ""
     };
   }
   return cachedSystemMeta;
@@ -126,6 +145,123 @@ function shouldThrottleBackendUpload(event, payload) {
   return false;
 }
 
+function shouldThrottleWechatAnalyticsTransport(payload) {
+  const signature = JSON.stringify({
+    traceId: payload && payload.traceId,
+    apiPath: payload && payload.apiPath,
+    errMsg: payload && payload.errMsg,
+    networkType: payload && payload.networkType
+  });
+  const now = Date.now();
+  const prev = wechatAnalyticsTransportThrottleMap.get(signature) || 0;
+  if (now - prev < 8000) {
+    return true;
+  }
+  wechatAnalyticsTransportThrottleMap.set(signature, now);
+  if (wechatAnalyticsTransportThrottleMap.size > 200) {
+    const entries = Array.from(wechatAnalyticsTransportThrottleMap.entries()).sort((a, b) => a[1] - b[1]);
+    entries.slice(0, 50).forEach(([key]) => wechatAnalyticsTransportThrottleMap.delete(key));
+  }
+  return false;
+}
+
+/**
+ * 微信官方自定义分析：wx.request 传输层失败（如 errcode -101）。
+ * 需在小程序后台「统计 → 自定义分析」中配置同名事件 network_request_fail 及属性（或按后台要求调整）。
+ * 属性值须为字符串。
+ */
+function reportTransportFailToWechatAnalytics(payload) {
+  if (typeof wx === "undefined" || typeof wx.reportAnalytics !== "function") return;
+  if (shouldThrottleWechatAnalyticsTransport(payload || {})) return;
+  const p = payload || {};
+  try {
+    wx.reportAnalytics("network_request_fail", {
+      api_path: String(p.apiPath || "").slice(0, 200),
+      method: String(p.method || ""),
+      err_msg: String(p.errMsg || "").slice(0, 200),
+      api_host: String(p.apiHost || "").slice(0, 100),
+      trace_id: String(p.traceId || "").slice(0, 100),
+      network_type: String(p.networkType || "").slice(0, 32),
+      is_weak: p.isWeak ? "1" : "0",
+      err_no: String(p.errNo !== undefined && p.errNo !== null ? p.errNo : "").slice(0, 32)
+    });
+  } catch (err) {
+    // ignore
+  }
+}
+
+/**
+ * wx.request 传输层失败时：补全网络类型、机型、会话等后再打日志与自定义分析，便于区分「弱网 / Wi‑Fi / 蜂窝」与机型。
+ */
+function logRequestTransportFail(ctx, rawErr) {
+  const errMsg = (rawErr && rawErr.errMsg) || "";
+  const errNo = rawErr && rawErr.errno;
+  const meta = getSystemMeta();
+  const sessionId = getClientDiagnosticSessionId();
+
+  const buildPayload = (networkType, isWeak) => ({
+    url: ctx.url,
+    method: ctx.method,
+    traceId: ctx.traceId,
+    requestId: ctx.traceId,
+    duration: ctx.duration,
+    statusCode: 0,
+    sessionId,
+    networkType: networkType || "",
+    isWeak: !!isWeak,
+    errNo: errNo !== undefined && errNo !== null ? errNo : "",
+    brand: meta.brand,
+    model: meta.model,
+    system: meta.system,
+    summary: summarizeError({ errMsg, errno: errNo, message: errMsg })
+  });
+
+  const emit = (networkType, isWeak) => {
+    const payload = buildPayload(networkType, isWeak);
+    logError("request_fail", payload);
+    reportTransportFailToWechatAnalytics({
+      traceId: ctx.traceId,
+      apiPath: ctx.url,
+      method: ctx.method,
+      apiHost: ctx.apiHost,
+      errMsg,
+      networkType: payload.networkType,
+      isWeak: payload.isWeak,
+      errNo: payload.errNo
+    });
+  };
+
+  let settled = false;
+  const timer = setTimeout(() => {
+    if (settled) return;
+    settled = true;
+    emit("", false);
+  }, 3000);
+
+  try {
+    wx.getNetworkType({
+      success(res) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        emit(res.networkType, res.isWeak);
+      },
+      fail() {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        emit("", false);
+      }
+    });
+  } catch (e) {
+    if (!settled) {
+      settled = true;
+      clearTimeout(timer);
+      emit("", false);
+    }
+  }
+}
+
 function uploadBackendLog(level, event, payload) {
   if (!shouldUploadBackend(event)) return;
   if (typeof wx === "undefined" || !wx || typeof wx.request !== "function") return;
@@ -138,7 +274,7 @@ function uploadBackendLog(level, event, payload) {
     event,
     level,
     traceId: (payload && payload.traceId) || "",
-    sessionId: (payload && payload.sessionId) || "",
+    sessionId: (payload && payload.sessionId) || getClientDiagnosticSessionId(),
     page: getCurrentPageRoute(),
     clientVersion: systemMeta.clientVersion,
     baseLibVersion: systemMeta.baseLibVersion,
@@ -196,5 +332,8 @@ module.exports = {
   createTraceId,
   summarizeError,
   logInfo,
-  logError
+  logError,
+  reportTransportFailToWechatAnalytics,
+  logRequestTransportFail,
+  getClientDiagnosticSessionId
 };

@@ -1,5 +1,11 @@
 const { getApiBaseUrl } = require("./config");
-const { createTraceId, logInfo, logError, summarizeError } = require("./logger");
+const {
+  createTraceId,
+  logInfo,
+  logError,
+  summarizeError,
+  logRequestTransportFail
+} = require("./logger");
 
 const DEFAULT_REQUEST_TIMEOUT = 15000;
 
@@ -73,15 +79,24 @@ function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQ
           duration,
           api: url
         };
-        logError("request_fail", {
-          url,
-          method,
-          traceId,
-          requestId: traceId,
-          duration,
-          statusCode: 0,
-          summary: summarizeError(error)
-        });
+        let apiHost = "";
+        try {
+          apiHost = String(getApiBaseUrl() || "")
+            .replace(/^https?:\/\//, "")
+            .split("/")[0];
+        } catch (e) {
+          apiHost = "";
+        }
+        logRequestTransportFail(
+          {
+            url,
+            method,
+            traceId,
+            duration,
+            apiHost
+          },
+          err
+        );
         reject(error);
       }
     });
