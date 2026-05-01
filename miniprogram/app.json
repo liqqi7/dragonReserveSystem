@@ -1,7 +1,7 @@
 {
-  "lazyCodeLoading": "requiredComponents",
   "pages": [
     "pages/activity_list/activity_list",
+    "pages/activity_calendar/activity_calendar",
     "pages/activity_detail/activity_detail",
     "pages/welcome/welcome",
     "pages/accounting/accounting",
@@ -29,6 +29,12 @@
         "text": "活动管理",
         "iconPath": "images/tab-home.jpg",
         "selectedIconPath": "images/tab-home-active.jpg"
+      },
+      {
+        "pagePath": "pages/activity_calendar/activity_calendar",
+        "text": "日程",
+        "iconPath": "images/icon-detail-time.png",
+        "selectedIconPath": "images/icon-detail-time.png"
       },
       {
         "pagePath": "pages/history/history",

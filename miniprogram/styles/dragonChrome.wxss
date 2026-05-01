@@ -1,0 +1,22 @@
+/**
+ * 龙形水印：与 Figma「日程」帧中 image 14963（x=175 y=-29 323×211）及主页 activity_list 一致，
+ * Tab 切换时占位固定，避免 rpx 换算漂移。
+ */
+
+.dragon-watermark {
+  left: 175px;
+  top: -29px;
+  width: 323px;
+  height: 211px;
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dragon-watermark--absolute {
+  position: absolute;
+}
+
+.dragon-watermark--fixed {
+  position: fixed;
+}

@@ -30,6 +30,7 @@ from app.services.activity_service import (
     get_activity_by_id,
     get_activity_style_signature,
     list_activities,
+    list_my_activities,
     remove_participant,
     signup_activity,
     update_activity,
@@ -73,6 +74,18 @@ def get_style_signature(
 
     signature, count = get_activity_style_signature(db)
     return ActivityStyleSignatureResponse(signature=signature, activity_count=count)
+
+
+@router.get("/me/signed-up", response_model=list[ActivityResponse], summary="List my signed-up activities")
+@router.get("/mine", response_model=list[ActivityResponse], summary="List my signed-up activities")
+def get_my_activities(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[ActivityResponse]:
+    """Return activities the current user has signed up for."""
+
+    activities = list_my_activities(db, current_user)
+    return [ActivityResponse.model_validate(activity, from_attributes=True) for activity in activities]
 
 
 @router.get("/{activity_id}", response_model=ActivityResponse, summary="Get activity detail")

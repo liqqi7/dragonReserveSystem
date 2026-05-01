@@ -14,7 +14,8 @@
    ============================================================ */
 
 page {
-  background-color: #F7F7F7;
+  background-color: #ffffff;
+  overflow-x: hidden;
 }
 
 .container {
@@ -727,12 +728,9 @@ button.create-btn-fixed.create-btn-hover {
    重构新增样式 — 首页分组卡片流
    ============================================================ */
 
-/* ── 页面根容器 ── */
-page {
-  background-color: #ffffff;
-  overflow-x: hidden;
-}
+@import "../../styles/dragonChrome.wxss";
 
+/* ── 页面根容器（见上方 page 底色；此处仅占位与 .page-wrap） ── */
 .page-wrap {
   min-height: 100vh;
   background-color: #FFFFFF;
@@ -742,17 +740,7 @@ page {
   overflow-x: hidden;
 }
 
-/* 背景水印（底层） */
-.page-watermark {
-  position: absolute;
-  left: 175px;
-  top: -29px;
-  width: 323px;
-  height: 211px;
-  opacity: 0.8;
-  pointer-events: none;
-  z-index: 1;
-}
+/* 背景水印：尺寸位置见 dragonChrome.wxss（.dragon-watermark） */
 
 /* ── 自定义透明顶部栏 ── */
 .custom-navbar {
@@ -828,6 +816,7 @@ page {
   height: 30px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 20px;
 }
 
@@ -835,6 +824,29 @@ page {
   font-size: 20px;
   font-weight: 700;
   color: #0a0a0a;
+}
+
+.group-create-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  height: 56rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4rpx 14rpx rgba(0, 0, 0, 0.08);
+}
+
+.group-create-icon {
+  width: 30rpx;
+  height: 30rpx;
+}
+
+.group-create-text {
+  font-size: 24rpx;
+  line-height: 1;
+  font-weight: 600;
+  color: #191919;
 }
 
 .group-empty {
@@ -911,6 +923,27 @@ page {
 
 .ended-section .small-cards-row {
   gap: 10px;
+}
+
+/* 「已结束」横向末尾加载格（宽同 .small-card-wrap，保证横向 snap 步长一致） */
+.ended-more-strip .ended-more-card {
+  width: 100%;
+  min-height: 180px;
+  border-radius: 6px;
+  border: 1px dashed rgba(0, 0, 0, 0.12);
+  background: rgba(247, 247, 248, 0.96);
+  box-sizing: border-box;
+  padding: 12px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ended-more-strip .ended-more-text {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #8a8a8e;
+  text-align: center;
 }
 
 .small-card-wrap {
@@ -1289,23 +1322,3 @@ page {
   color: #ff001f;
 }
 
-/* 管理员创建按钮 */
-.tab-create-fab {
-  width: 124rpx;
-  height: 124rpx;
-  border-radius: 62rpx;
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: inset 0 -2rpx 4rpx rgba(0,0,0,0.12), inset 0 2rpx 2rpx #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.tab-create-icon {
-  font-size: 56rpx;
-  color: #0a0a0a;
-  line-height: 1;
-  font-weight: 300;
-}

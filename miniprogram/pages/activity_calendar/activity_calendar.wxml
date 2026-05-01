@@ -1,0 +1,128 @@
+<view class="calendar-page">
+  <image class="calendar-watermark dragon-watermark dragon-watermark--fixed" src="https://dragon.liqqihome.top/media/images/activity-home-logo.png" mode="aspectFit" />
+
+  <view class="calendar-navbar" style="padding-top: {{statusBarHeight}}px">
+    <view class="navbar-row" style="padding-right: {{navbarPaddingRightPx}}px">
+      <text class="navbar-main-title">日程</text>
+    </view>
+  </view>
+
+  <view class="week-strip" style="top: {{statusBarHeight + navBarHeight + 12}}px">
+    <swiper
+      class="week-strip-swiper"
+      data-role="week-strip"
+      circular="{{false}}"
+      current="{{weekStripSwiperIndex}}"
+      duration="{{weekStripSwiperDuration}}"
+      bindchange="onWeekStripSwiperChange"
+      bindanimationfinish="onWeekStripSwiperAnimationFinish"
+    >
+      <swiper-item wx:for="{{weekStripPages}}" wx:key="weekKey">
+        <view class="week-strip-page">
+          <view
+            wx:for="{{item.days}}"
+            wx:for-item="cell"
+            wx:key="key"
+            class="week-day-strip {{cell.isToday ? 'week-day-strip--today' : ''}}"
+            bindtap="onDateTap"
+            data-key="{{cell.key}}"
+          >
+            <text class="week-strip-label {{cell.selected ? 'week-strip-label--selected' : ''}}">{{cell.weekday}}</text>
+            <view class="strip-date-stack {{cell.showStripEventBar ? 'strip-date-stack--with-event' : ''}}">
+              <view class="strip-date-circle {{cell.selected ? 'strip-date-circle--selected' : ''}}">
+                <text class="strip-date-num {{cell.isToday && !cell.selected ? 'strip-date-num--today' : ''}}">{{cell.day}}</text>
+              </view>
+              <view wx:if="{{cell.showStripEventBar}}" class="strip-event-bar"></view>
+            </view>
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+  </view>
+
+  <view wx:if="{{isGuest}}" class="calendar-state">
+    <view class="state-title">登录后查看你的活动日程</view>
+    <view class="state-desc">日程只展示当前账号已经报名的活动</view>
+    <button class="state-btn" bindtap="goProfile">去登录</button>
+  </view>
+
+  <view wx:elif="{{loading}}" class="calendar-state">
+    <view class="state-title">正在加载日程...</view>
+  </view>
+
+  <view wx:elif="{{loadError}}" class="calendar-state">
+    <view class="state-title">{{loadError}}</view>
+    <view class="state-desc">请稍后重试</view>
+    <button class="state-btn" bindtap="onRetry">重新加载</button>
+  </view>
+
+  <view wx:else class="calendar-body" style="top: {{timelineTopPx}}px">
+    <swiper
+      class="timeline-swiper"
+      data-role="timeline"
+      circular="{{false}}"
+      current="{{timelineSwiperIndex}}"
+      duration="{{timelineSwiperDuration}}"
+      disable-touch="{{false}}"
+      bindchange="onTimelineSwiperChange"
+      bindanimationfinish="onTimelineSwiperAnimationFinish"
+    >
+      <swiper-item wx:for="{{timelineSwipePages}}" wx:for-item="page" wx:key="weekKey">
+        <view class="timeline-page">
+          <view class="calendar-header">
+            <view class="week-cell">{{page.weekNumber}}</view>
+            <view
+              wx:for="{{page.visibleDays}}"
+              wx:for-item="dayHead"
+              wx:key="key"
+              class="date-column-title {{dayHead.isToday ? 'date-column-title-today' : ''}}"
+            >
+              {{dayHead.title}}
+            </view>
+          </view>
+
+          <scroll-view class="timeline-scroll" scroll-y show-scrollbar="false">
+            <view class="timeline-grid" style="height: {{gridHeight}}px">
+              <view class="time-axis">
+                <view wx:for="{{hours}}" wx:key="*this" class="hour-row">
+                  <text class="hour-text">{{item}}</text>
+                </view>
+              </view>
+
+              <view class="day-columns">
+                <view wx:for="{{page.visibleDays}}" wx:for-item="day" wx:key="key" class="day-column {{day.isToday ? 'day-column-today' : ''}}">
+                  <view wx:for="{{hours}}" wx:for-item="hour" wx:key="*this" class="grid-hour"></view>
+                  <view
+                    wx:for="{{day.activities}}"
+                    wx:for-item="activity"
+                    wx:key="_id"
+                    class="calendar-event"
+                    style="{{activity.style}}"
+                    bindtap="onActivityTap"
+                    data-id="{{activity._id}}"
+                  >
+                    <view class="event-title">{{activity.name}}</view>
+                    <view wx:if="{{activity.locationName}}" class="event-line">
+                      <view class="event-icon event-icon-location"></view>
+                      <text class="event-text">{{activity.locationName}}</text>
+                    </view>
+                    <view class="event-line">
+                      <view class="event-icon event-icon-time"></view>
+                      <text class="event-text">{{activity.timeRange}}</text>
+                    </view>
+                    <view wx:if="{{activity.status === '已取消'}}" class="event-status">已取消</view>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+      </swiper-item>
+    </swiper>
+
+    <view wx:if="{{empty}}" class="empty-overlay">
+      <view class="state-title">本周暂无报名活动</view>
+      <view class="state-desc">报名活动后会在这里生成你的日程</view>
+    </view>
+  </view>
+</view>

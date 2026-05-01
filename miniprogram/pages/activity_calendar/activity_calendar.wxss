@@ -1,0 +1,411 @@
+@import "../../styles/dragonChrome.wxss";
+
+page {
+  background: #ffffff;
+}
+
+.calendar-page {
+  position: relative;
+  min-height: 100vh;
+  /* 仅用 hidden 会在部分端裁剪 fixed 水印，导致龙 Logo 不完整 */
+  overflow-x: hidden;
+  overflow-y: visible;
+  background: #ffffff;
+  color: #101828;
+}
+
+.calendar-navbar {
+  position: relative;
+  z-index: 3;
+  background-color: transparent;
+}
+
+.navbar-row {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+  box-sizing: border-box;
+}
+
+/* 「日程」与主页 navbar-title 同系；无副标题 */
+.navbar-main-title {
+  flex-shrink: 0;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 29px;
+  color: #0a0a0a;
+  transform: translateY(-1px);
+}
+
+.week-strip {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  /* Figma 454:6450 周条单列最高约 weekday 16.5px + gap 6 + 数字区 42px */
+  height: 137rpx;
+  padding: 0;
+  box-sizing: border-box;
+  background: transparent;
+  transform: translateZ(0);
+  overflow: visible;
+}
+
+.week-strip-swiper {
+  width: 100%;
+  height: 137rpx;
+  box-sizing: border-box;
+}
+
+/* Figma：px-[24px]、justify-between、列宽约 36px */
+.week-strip-page {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  height: 137rpx;
+  padding: 0 48rpx;
+  box-sizing: border-box;
+}
+
+.week-day-strip {
+  width: 72rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.week-day-strip--today {
+  position: relative;
+}
+
+.week-strip-label {
+  font-size: 22rpx;
+  line-height: 33rpx;
+  color: #6a7282;
+  font-weight: 500;
+  text-align: center;
+}
+
+.week-strip-label--selected {
+  color: #ff001f;
+}
+
+.strip-date-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.strip-date-stack--with-event {
+  gap: 8rpx;
+}
+
+.strip-date-circle {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 999rpx;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9rpx 0;
+}
+
+.strip-date-circle--selected {
+  background: #ff001f;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.strip-date-num {
+  font-size: 32rpx;
+  line-height: 32rpx;
+  font-weight: 500;
+  color: #101828;
+  text-align: center;
+  letter-spacing: -0.3125px;
+}
+
+.strip-date-num--today {
+  color: #ff001f;
+  font-weight: 600;
+}
+
+.strip-date-circle--selected .strip-date-num {
+  color: #ffffff;
+}
+
+.strip-event-bar {
+  width: 24rpx;
+  height: 4rpx;
+  border-radius: 24rpx;
+  background: #ff001f;
+  flex-shrink: 0;
+}
+
+.calendar-body {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-swiper {
+  flex: 1;
+  min-height: 0;
+}
+
+.timeline-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-header {
+  flex-shrink: 0;
+  height: 100rpx;
+  display: flex;
+  align-items: stretch;
+  border-top: 1rpx solid #f3f4f6;
+  border-bottom: 1rpx solid #f3f4f6;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.week-cell {
+  width: 100rpx;
+  height: 98rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1rpx solid #f3f4f6;
+  color: #6a7282;
+  font-size: 20rpx;
+  box-sizing: border-box;
+}
+
+.date-column-title {
+  flex: 1;
+  min-width: 0;
+  height: 98rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1rpx solid #f3f4f6;
+  color: #101828;
+  font-size: 24rpx;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+.date-column-title:last-child {
+  border-right: 0;
+}
+
+.date-column-title-selected {
+  color: #ff001f;
+}
+
+.date-column-title-today {
+  background: #fff3f5;
+  color: #ff001f;
+}
+
+.timeline-scroll {
+  flex: 1;
+  min-height: 0;
+  padding-bottom: calc(112rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+.timeline-grid {
+  position: relative;
+  display: flex;
+  min-height: 1440px;
+}
+
+.time-axis {
+  width: 100rpx;
+  flex-shrink: 0;
+  border-right: 1rpx solid #f3f4f6;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.hour-row {
+  position: relative;
+  height: 60px;
+  box-sizing: border-box;
+}
+
+.hour-text {
+  position: absolute;
+  top: -15rpx;
+  right: 20rpx;
+  padding: 0 4rpx;
+  background: #ffffff;
+  color: #99a1af;
+  font-size: 20rpx;
+  line-height: 30rpx;
+  font-weight: 500;
+}
+
+.day-columns {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+.day-column {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  border-right: 1rpx solid #f3f4f6;
+  box-sizing: border-box;
+}
+
+.day-column-today {
+  background: linear-gradient(180deg, rgba(255, 0, 31, 0.08) 0%, rgba(255, 0, 31, 0.03) 100%);
+}
+
+.day-column:last-child {
+  border-right: 0;
+}
+
+.grid-hour {
+  height: 60px;
+  border-top: 1rpx solid #f3f4f6;
+  box-sizing: border-box;
+}
+
+.calendar-event {
+  position: absolute;
+  left: 4rpx;
+  right: 4rpx;
+  z-index: 2;
+  border-left: 6rpx solid #ff001f;
+  border-radius: 8rpx;
+  padding: 8rpx 8rpx 8rpx 10rpx;
+  box-sizing: border-box;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.event-title {
+  font-size: 22rpx;
+  line-height: 32rpx;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-line {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4rpx;
+  min-width: 0;
+}
+
+.event-icon {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  background: currentColor;
+}
+
+.event-icon-location {
+  -webkit-mask: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.33341 4.16659C8.33341 6.247 6.0255 8.41367 5.2505 9.08284C5.1783 9.13712 5.09041 9.16648 5.00008 9.16648C4.90975 9.16648 4.82186 9.13712 4.74966 9.08284C3.97466 8.41367 1.66675 6.247 1.66675 4.16659C1.66675 3.28253 2.01794 2.43468 2.64306 1.80956C3.26818 1.18444 4.11603 0.833252 5.00008 0.833252C5.88414 0.833252 6.73198 1.18444 7.3571 1.80956C7.98223 2.43468 8.33341 3.28253 8.33341 4.16659Z' stroke='white' stroke-width='0.833333' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M5 5.41675C5.69036 5.41675 6.25 4.8571 6.25 4.16675C6.25 3.47639 5.69036 2.91675 5 2.91675C4.30964 2.91675 3.75 3.47639 3.75 4.16675C3.75 4.8571 4.30964 5.41675 5 5.41675Z' stroke='white' stroke-width='0.833333' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.33341 4.16659C8.33341 6.247 6.0255 8.41367 5.2505 9.08284C5.1783 9.13712 5.09041 9.16648 5.00008 9.16648C4.90975 9.16648 4.82186 9.13712 4.74966 9.08284C3.97466 8.41367 1.66675 6.247 1.66675 4.16659C1.66675 3.28253 2.01794 2.43468 2.64306 1.80956C3.26818 1.18444 4.11603 0.833252 5.00008 0.833252C5.88414 0.833252 6.73198 1.18444 7.3571 1.80956C7.98223 2.43468 8.33341 3.28253 8.33341 4.16659Z' stroke='white' stroke-width='0.833333' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M5 5.41675C5.69036 5.41675 6.25 4.8571 6.25 4.16675C6.25 3.47639 5.69036 2.91675 5 2.91675C4.30964 2.91675 3.75 3.47639 3.75 4.16675C3.75 4.8571 4.30964 5.41675 5 5.41675Z' stroke='white' stroke-width='0.833333' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.event-icon-time {
+  -webkit-mask: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4.99992 9.16658C7.30111 9.16658 9.16658 7.30111 9.16658 4.99992C9.16658 2.69873 7.30111 0.833252 4.99992 0.833252C2.69873 0.833252 0.833252 2.69873 0.833252 4.99992C0.833252 7.30111 2.69873 9.16658 4.99992 9.16658Z' stroke='white' stroke-width='0.833333' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M5 2.5V5L6.66667 5.83333' stroke='white' stroke-width='0.833333' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4.99992 9.16658C7.30111 9.16658 9.16658 7.30111 9.16658 4.99992C9.16658 2.69873 7.30111 0.833252 4.99992 0.833252C2.69873 0.833252 0.833252 2.69873 0.833252 4.99992C0.833252 7.30111 2.69873 9.16658 4.99992 9.16658Z' stroke='white' stroke-width='0.833333' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M5 2.5V5L6.66667 5.83333' stroke='white' stroke-width='0.833333' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.event-text {
+  min-width: 0;
+  font-size: 9px;
+  line-height: 13.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-status {
+  margin-top: 4rpx;
+  font-size: 18rpx;
+  line-height: 24rpx;
+}
+
+.calendar-state {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 96rpx;
+  box-sizing: border-box;
+  background: #ffffff;
+  text-align: center;
+}
+
+.state-title {
+  font-size: 32rpx;
+  line-height: 48rpx;
+  font-weight: 700;
+  color: #101828;
+}
+
+.state-desc {
+  margin-top: 12rpx;
+  font-size: 26rpx;
+  line-height: 40rpx;
+  color: #6a7282;
+}
+
+.state-btn {
+  margin-top: 36rpx;
+  min-width: 192rpx;
+  height: 72rpx;
+  border-radius: 999rpx;
+  background: #ff001f;
+  color: #ffffff;
+  font-size: 28rpx;
+  line-height: 72rpx;
+  padding: 0 36rpx;
+}
+
+.state-btn::after {
+  border: 0;
+}
+
+.empty-overlay {
+  position: absolute;
+  left: 100rpx;
+  right: 0;
+  top: 220rpx;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
