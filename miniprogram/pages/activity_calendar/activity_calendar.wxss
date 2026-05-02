@@ -47,6 +47,7 @@ page {
   height: 137rpx;
   padding: 0;
   box-sizing: border-box;
+  /* 与导航栏一致：不铺实底，避免压住 z-index 较低的龙形水印 */
   background: transparent;
   transform: translateZ(0);
   overflow: hidden;
@@ -54,12 +55,18 @@ page {
 
 .week-strip-slide-wrapper {
   width: 100%;
+  background: transparent;
 }
 
 .week-strip-swiper {
   width: 100%;
   height: 137rpx;
   box-sizing: border-box;
+  background: transparent;
+}
+
+.week-strip-swiper-item {
+  background: transparent;
 }
 
 /* Figma：px-[24px]、justify-between、列宽约 36px */
@@ -158,6 +165,8 @@ page {
   right: 0;
   bottom: 0;
   z-index: 2;
+  box-sizing: border-box;
+  overflow: hidden;
   background: #ffffff;
   display: flex;
   flex-direction: column;
@@ -165,9 +174,11 @@ page {
 
 .timeline-swiper {
   flex: none;
+  position: relative;
+  z-index: 1;
   min-width: 0;
   width: calc(100% - 100rpx);
-  height: 1540px;
+  height: 1440px;
 }
 
 .timeline-page {
@@ -188,24 +199,56 @@ page {
   box-sizing: border-box;
 }
 
-.date-column-title {
+.timeline-above-scroll-gap {
+  flex-shrink: 0;
   width: 100%;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+/* 固定在 scroll-view 之上（非 sticky）：Swiper/日程无法叠到标题行缝隙 */
+.timeline-fixed-header-row {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  background: #ffffff;
+  transform: translateZ(0);
+  border-bottom: 1rpx solid #f3f4f6;
+}
+
+.timeline-visible-titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.timeline-visible-title-cell {
+  flex: 1;
+  min-width: 0;
   height: 98rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0 8rpx;
   border-right: 1rpx solid #f3f4f6;
   color: #101828;
   font-size: 24rpx;
   font-weight: 600;
   box-sizing: border-box;
+  background: #ffffff;
+  text-align: center;
 }
 
-.date-column-title-selected {
-  color: #ff001f;
+.timeline-visible-title-cell:last-child {
+  border-right: 0;
 }
 
-.date-column-title-today {
+.timeline-visible-title-cell--today {
   background: #fff3f5;
   color: #ff001f;
 }
@@ -218,17 +261,18 @@ page {
   background: #ffffff;
 }
 
-.timeline-grid {
+.timeline-grid-body {
   position: relative;
+  z-index: 1;
   display: flex;
-  height: 1540px;
-  min-height: 1540px;
-  border-top: 1rpx solid #f3f4f6;
+  flex-direction: row;
+  height: 1440px;
+  min-height: 1440px;
 }
 
 .timeline-grid-page {
   width: 100%;
-  height: 1540px;
+  height: 1440px;
   display: flex;
 }
 
@@ -241,26 +285,31 @@ page {
 }
 
 .time-axis-head {
+  width: 100rpx;
+  flex-shrink: 0;
   height: 98rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1rpx solid #f3f4f6;
+  border-right: 1rpx solid #f3f4f6;
   color: #6a7282;
   font-size: 20rpx;
   box-sizing: border-box;
+  background: #ffffff;
 }
 
 .hour-row {
   position: relative;
   height: 60px;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 20rpx;
 }
 
 .hour-text {
-  position: absolute;
-  top: -15rpx;
-  right: 20rpx;
+  flex-shrink: 0;
   padding: 0 4rpx;
   background: #ffffff;
   color: #99a1af;
@@ -299,6 +348,11 @@ page {
   box-sizing: border-box;
 }
 
+/* 与吸顶标题行唯一一条 border-bottom 对齐，避免出现双线 / 竖线与横缝脱节 */
+.day-column-body > .grid-hour:first-child {
+  border-top: none;
+}
+
 .day-column-body {
   position: relative;
   height: 1440px;
@@ -307,14 +361,13 @@ page {
 .calendar-event {
   position: absolute;
   left: 4rpx;
-  right: 4rpx;
-  z-index: 2;
+  right: 0;
+  z-index: 1;
   border-left: 6rpx solid #ff001f;
   border-radius: 8rpx;
   padding: 8rpx 8rpx 8rpx 10rpx;
   box-sizing: border-box;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .event-title {

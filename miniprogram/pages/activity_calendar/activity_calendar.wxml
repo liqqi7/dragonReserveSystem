@@ -18,7 +18,7 @@
       bindchange="onWeekStripSwiperChange"
       bindanimationfinish="onWeekStripSwiperAnimationFinish"
     >
-      <swiper-item wx:for="{{weekStripPages}}" wx:key="weekKey">
+      <swiper-item wx:for="{{weekStripPages}}" wx:key="weekKey" class="week-strip-swiper-item">
         <view class="week-strip-page">
           <view
             wx:for="{{item.days}}"
@@ -59,10 +59,31 @@
   </view>
 
   <view wx:else class="calendar-body" style="top: {{timelineTopPx}}px">
-    <scroll-view class="timeline-scroll" scroll-y show-scrollbar="false">
-      <view class="timeline-grid">
-        <view class="time-axis">
-          <view class="time-axis-head">{{weekNumber}}</view>
+    <!-- 缝隙落在滚动区外：纯白占位 + 标题行固定，避免 Swiper 合成层渗入 -->
+    <view class="timeline-above-scroll-gap" style="height: {{timelineBodyGapPx}}px"></view>
+    <view class="timeline-fixed-header-row">
+      <view class="time-axis-head">{{weekNumber}}</view>
+      <view class="timeline-visible-titles">
+        <view
+          wx:for="{{visibleDays}}"
+          wx:key="key"
+          class="timeline-visible-title-cell {{item.isToday ? 'timeline-visible-title-cell--today' : ''}}"
+        >
+          {{item.title}}
+        </view>
+      </view>
+    </view>
+    <scroll-view
+      class="timeline-scroll"
+      scroll-y
+      show-scrollbar="{{false}}"
+      scroll-top="{{timelineScrollTop}}"
+      scroll-with-animation="{{false}}"
+      bindscroll="onTimelineScroll"
+    >
+      <view class="timeline-sheet-scroll">
+        <view class="timeline-grid-body">
+        <view class="time-axis time-axis--body">
           <view wx:for="{{hours}}" wx:key="*this" class="hour-row">
             <text class="hour-text">{{item}}</text>
           </view>
@@ -84,9 +105,6 @@
             <view class="timeline-grid-page">
               <view class="day-columns">
                 <view class="day-column {{day.isToday ? 'day-column-today' : ''}}">
-                  <view class="date-column-title {{day.isToday ? 'date-column-title-today' : ''}}">
-                    {{day.title}}
-                  </view>
                   <view class="day-column-body">
                     <view wx:for="{{hours}}" wx:for-item="hour" wx:key="*this" class="grid-hour"></view>
                     <view
@@ -115,6 +133,7 @@
             </view>
           </swiper-item>
         </swiper>
+        </view>
       </view>
     </scroll-view>
 

@@ -42,6 +42,15 @@ const WEEKDAY_SHORT = ["日", "一", "二", "三", "四", "五", "六"];
 const WEEKDAY_FULL = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 const HOUR_HEIGHT = 60;
 const MIN_EVENT_HEIGHT = 60;
+/** 纵向滚动默认对齐到该整点（与左侧时刻刻度一致） */
+const TIMELINE_DEFAULT_START_HOUR = 9;
+/** 吸顶行下缘与「09:00」刻度之间留白（px） */
+const TIMELINE_PADDING_BELOW_STICKY_PX = 14;
+/**
+ * scroll-view 与 sticky 组合下 scroll-top 相对理论刻度常见整体多偏约一格（60px），
+ * 导致默认停在 10:00；减去该校准后可在吸顶下方留白处对齐 9 点（真机仍偏时可微调）。
+ */
+const TIMELINE_SCROLL_TOP_CALIBRATION_PX = 60;
 const EVENT_COLORS = [
   { bg: "#fff0f0", border: "#ff001f", text: "#cc0018" },
   { bg: "#f1f8e9", border: "#7cb342", text: "#558b2f" },
@@ -212,6 +221,8 @@ Page({
     /** 与微信原生胶囊左缘对齐，避免标题与其重叠 */
     navbarPaddingRightPx: 12,
     timelineTopPx: 200,
+    /** 周条与时间轴间距（并入 calendar-body padding-top，避免 Swiper 合成层渗入缝隙） */
+    timelineBodyGapPx: 12,
     loading: true,
     loadError: "",
     isGuest: false,
@@ -227,6 +238,8 @@ Page({
     weekStripSlideAnim: {},
     timelineSwiperIndex: 1,
     timelineSwiperDuration: 300,
+    /** 时间格纵向滚动（scroll-view px）；重建后用 _applyDefaultTimelineScroll 归零再设目标 */
+    timelineScrollTop: 0,
     visibleDays: [],
     hours: [],
     gridHeight: HOUR_HEIGHT * 24,
@@ -249,16 +262,14 @@ Page({
     const navContentPx = 44;
     const gapNavToWeekPx = 12;
     const gapWeekToTimelinePx = 12;
+    // top 对齐周条底缘；原「周条与时间轴间距」改为 body 内 padding-top，避免缝隙落在 body 外被 Swiper 透出底色
     const timelineTopPx =
-      statusBarPx +
-      navContentPx +
-      gapNavToWeekPx +
-      weekStripPx +
-      gapWeekToTimelinePx;
+      statusBarPx + navContentPx + gapNavToWeekPx + weekStripPx;
     this.setData({
       statusBarHeight: statusBarPx,
       navbarPaddingRightPx,
       timelineTopPx,
+      timelineBodyGapPx: gapWeekToTimelinePx,
       selectedDateKey: dateKey(today),
       hours: Array.from({ length: 24 }, (_, i) => `${pad(i)}:00`),
     });
@@ -279,6 +290,56 @@ Page({
     const isGuest = !hasWeChatAuth || !hasToken || !app.globalData.isAuthenticated;
     this.setData({ isGuest });
     return isGuest;
+  },
+
+  /** 默认纵向滚动：标题行已在 scroll-view 外，scroll-top 仅相对「时表格体」（24×60px） */
+  _applyDefaultTimelineScroll() {
+    const target = Math.max(
+      0,
+      Math.round(
+        TIMELINE_DEFAULT_START_HOUR * HOUR_HEIGHT -
+          TIMELINE_PADDING_BELOW_STICKY_PX -
+          TIMELINE_SCROLL_TOP_CALIBRATION_PX
+      )
+    );
+    if (typeof this._timelineScrollSeq !== "number") this._timelineScrollSeq = 0;
+    this._timelineScrollSeq += 1;
+    const seq = this._timelineScrollSeq;
+    this.setData({ timelineScrollTop: 0 }, () => {
+      wx.nextTick(() => {
+        if (seq !== this._timelineScrollSeq) return;
+        this.setData({ timelineScrollTop: target }, () => {
+          this._timelineScrollTopPreserve = target;
+          this._timelineInitialScrollDone = true;
+        });
+      });
+    });
+  },
+
+  /** 切换日期重建后恢复纵向滚动（与 scroll-top 受控绑定配合） */
+  _restoreTimelineScroll(desiredTop) {
+    let top =
+      typeof desiredTop === "number" && !Number.isNaN(desiredTop)
+        ? Math.max(0, Math.round(desiredTop))
+        : typeof this.data.timelineScrollTop === "number"
+          ? Math.max(0, Math.round(this.data.timelineScrollTop))
+          : 0;
+    if (typeof this._timelineScrollSeq !== "number") this._timelineScrollSeq = 0;
+    this._timelineScrollSeq += 1;
+    const seq = this._timelineScrollSeq;
+    this.setData({ timelineScrollTop: 0 }, () => {
+      wx.nextTick(() => {
+        if (seq !== this._timelineScrollSeq) return;
+        this.setData({ timelineScrollTop: top }, () => {
+          this._timelineScrollTopPreserve = top;
+        });
+      });
+    });
+  },
+
+  onTimelineScroll(e) {
+    const d = (e && e.detail) || {};
+    if (typeof d.scrollTop === "number") this._timelineScrollTopPreserve = d.scrollTop;
   },
 
   /** 避免 setData 后 Date 序列化失真，周切换始终以这份列表分组 */
@@ -462,6 +523,15 @@ Page({
     }
 
     this.setData(patch, () => {
+      if (!this._timelineInitialScrollDone) {
+        this._applyDefaultTimelineScroll();
+      } else {
+        const top =
+          typeof this._timelineScrollTopPreserve === "number"
+            ? this._timelineScrollTopPreserve
+            : this.data.timelineScrollTop;
+        this._restoreTimelineScroll(top);
+      }
       if (!fromWeekStripSwipe) {
         this._weekStripSwipeBusy = false;
         this._timelineSwipeBusy = false;
@@ -576,15 +646,35 @@ Page({
     // 仅处理手势驱动的过渡（程序化 source="" 跳过）
     if (d.source !== "touch") return;
     const dx = Number(d.dx) || 0;
-    // dx < 0：页面左移（用户向左滑，forward），预选下一天；dx > 0 反之
     const pages = this.data.timelineSwipePages;
     const committedKey = this.data.timelineCenterDateKey;
     let candidateKey;
     if (dx < -15) candidateKey = pages[2] && pages[2].key;
     else if (dx > 15) candidateKey = pages[0] && pages[0].key;
+    else candidateKey = committedKey;
     candidateKey = candidateKey || committedKey;
-    if (!candidateKey || candidateKey === this.data.selectedDateKey) return;
-    this.setData({ selectedDateKey: candidateKey });
+
+    /** 吸顶三列标题与 swiper 可视三联对齐（随拖动切换 slice） */
+    let vd = pages.slice(1, 4);
+    if (dx < -15) vd = pages.slice(2, 5);
+    else if (dx > 15) vd = pages.slice(0, 3);
+    if (!vd || vd.length !== 3) vd = pages.slice(1, 4);
+
+    const patch = {};
+    if (candidateKey !== this.data.selectedDateKey) patch.selectedDateKey = candidateKey;
+
+    const cur = this.data.visibleDays;
+    const vdChanged =
+      vd.length === 3 &&
+      (!cur ||
+        cur.length !== 3 ||
+        cur[0].key !== vd[0].key ||
+        cur[1].key !== vd[1].key ||
+        cur[2].key !== vd[2].key);
+    if (vdChanged) patch.visibleDays = vd;
+
+    if (Object.keys(patch).length === 0) return;
+    this.setData(patch);
   },
 
   onTimelineSwiperAnimationFinish(e) {
