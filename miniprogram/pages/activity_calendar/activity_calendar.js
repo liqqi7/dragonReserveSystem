@@ -4,19 +4,6 @@ const userService = require("../../services/user");
 const myActivitiesCache = require("../../utils/myActivitiesCache");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
 
-function debugAgentIngest(payload) {
-  wx.request({
-    url: "http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94",
-    method: "POST",
-    header: {
-      "Content-Type": "application/json",
-      "X-Debug-Session-Id": "01549b"
-    },
-    data: Object.assign({ sessionId: "01549b" }, payload),
-    fail() {}
-  });
-}
-
 function ensureSessionParallel(appLocal) {
   return new Promise((resolve) => {
     if (
@@ -115,10 +102,6 @@ function getWeekNumber(date) {
   return Math.ceil((pastDays + firstDay.getDay() + 1) / 7);
 }
 
-/** scroll-into-view / 占位 id（避免 "-"）*/
-function stripElementId(dateKeyStr) {
-  return `strip${String(dateKeyStr || "").replace(/-/g, "")}`;
-}
 
 function calendarDaysBetween(a, b) {
   const A = startOfDay(a).getTime();
@@ -127,84 +110,58 @@ function calendarDaysBetween(a, b) {
 }
 
 /** 一周的 7 天（周一→周日顺序），结构与 Figma 454:6450 一致 */
-function buildWeekStripPage(monday, selectedKey, todayKey, byDate) {
+function buildWeekStripPage(monday, todayKey, byDate) {
   const m = startOfDay(monday);
   return Array.from({ length: 7 }, (_, i) => {
     const d = addDays(m, i);
     const key = dateKey(d);
     const hasActivity = (byDate.get(key) || []).length > 0;
-    const selected = key === selectedKey;
     return {
       key,
-      stripId: stripElementId(key),
       weekday: WEEKDAY_SHORT[d.getDay()],
       day: d.getDate(),
-      monthDay: monthDayText(d),
-      selected,
-      /** 底部事件条（与稿一致：选中 + 有日程） */
-      showStripEventBar: selected || hasActivity,
       isToday: key === todayKey,
+      showStripEventBar: hasActivity,
       hasActivity
     };
   });
 }
 
 /** 三块周面板：上一周 / 当前周 / 下一周（周条手势一次翻 7 天） */
-function buildWeekStripSwipePages(centerSelectedDate, todayKey, byDate) {
-  const c = startOfDay(centerSelectedDate);
-  const prev = addDays(c, -7);
-  const next = addDays(c, 7);
-  const prevMonday = getMonday(prev);
-  const centerMonday = getMonday(c);
-  const nextMonday = getMonday(next);
+function buildWeekStripSwipePages(centerDate, todayKey, byDate) {
+  const prevMonday = getMonday(addDays(startOfDay(centerDate), -7));
+  const centerMonday = getMonday(startOfDay(centerDate));
+  const nextMonday = getMonday(addDays(startOfDay(centerDate), 7));
+  const weekKey = (mon) => `${dateKey(mon)}_${dateKey(addDays(mon, 6))}`;
   return [
-    { weekKey: `${dateKey(prevMonday)}_${dateKey(prev)}`, days: buildWeekStripPage(prevMonday, dateKey(prev), todayKey, byDate) },
-    { weekKey: `${dateKey(centerMonday)}_${dateKey(c)}`, days: buildWeekStripPage(centerMonday, dateKey(c), todayKey, byDate) },
-    { weekKey: `${dateKey(nextMonday)}_${dateKey(next)}`, days: buildWeekStripPage(nextMonday, dateKey(next), todayKey, byDate) }
+    { weekKey: weekKey(prevMonday),   days: buildWeekStripPage(prevMonday,   todayKey, byDate) },
+    { weekKey: weekKey(centerMonday), days: buildWeekStripPage(centerMonday, todayKey, byDate) },
+    { weekKey: weekKey(nextMonday),   days: buildWeekStripPage(nextMonday,   todayKey, byDate) }
   ];
 }
 
-function buildTimelinePage(firstVisibleDate, byDate, todayKey) {
-  const first = startOfDay(firstVisibleDate);
-  const visibleDays = Array.from({ length: 3 }, (_, i) => {
-    const day = addDays(first, i);
-    const key = dateKey(day);
-    return {
-      key,
-      weekday: WEEKDAY_SHORT[day.getDay()],
-      fullWeekday: WEEKDAY_FULL[day.getDay()],
-      day: day.getDate(),
-      monthDay: monthDayText(day),
-      isToday: key === todayKey,
-      hasActivity: (byDate.get(key) || []).length > 0,
-      selected: i === 0,
-      title: `${monthDayText(day)} - ${WEEKDAY_FULL[day.getDay()]}`,
-      activities: (byDate.get(key) || [])
-        .slice()
-        .sort((a, b) => {
-          const ta = a.start ? new Date(a.start).getTime() : 0;
-          const tb = b.start ? new Date(b.start).getTime() : 0;
-          return ta - tb;
-        })
-    };
-  });
+function buildTimelineColumn(dayDate, byDate, todayKey) {
+  const day = startOfDay(dayDate);
+  const key = dateKey(day);
   return {
-    weekKey: `${dateKey(getMonday(first))}_${dateKey(first)}`,
-    weekNumber: `第${getWeekNumber(first)}周`,
-    firstVisibleKey: dateKey(first),
-    visibleDays
+    key,
+    isToday: key === todayKey,
+    title: `${monthDayText(day)} - ${WEEKDAY_FULL[day.getDay()]}`,
+    activities: (byDate.get(key) || [])
+      .slice()
+      .sort((a, b) => {
+        const ta = a.start ? new Date(a.start).getTime() : 0;
+        const tb = b.start ? new Date(b.start).getTime() : 0;
+        return ta - tb;
+      })
   };
 }
 
 function buildTimelineSwipePages(centerFirstVisibleDate, byDate, todayKey) {
   const c = startOfDay(centerFirstVisibleDate);
-  const prev = addDays(c, -3);
-  const next = addDays(c, 3);
-  return [
-    buildTimelinePage(prev, byDate, todayKey),
-    buildTimelinePage(c, byDate, todayKey),
-    buildTimelinePage(next, byDate, todayKey)
-  ];
+  return [-1, 0, 1, 2, 3].map((offset) =>
+    buildTimelineColumn(addDays(c, offset), byDate, todayKey)
+  );
 }
 
 function resolveTimelineCenterDate(selectedDate, options = {}, data = {}) {
@@ -215,14 +172,6 @@ function resolveTimelineCenterDate(selectedDate, options = {}, data = {}) {
   return startOfDay(selectedDate);
 }
 
-function toDateStartByKey(key, fallbackDate) {
-  const parsed = parseDate(key);
-  return parsed ? startOfDay(parsed) : startOfDay(fallbackDate);
-}
-
-function summarizeWeekKeys(pages) {
-  return (pages || []).map((p) => p.weekKey);
-}
 
 function adaptActivity(item, index) {
   const start = parseDate(item.start_time);
@@ -275,6 +224,7 @@ Page({
     timelineCenterDateKey: "",
     weekStripSwiperIndex: 1,
     weekStripSwiperDuration: 300,
+    weekStripSlideAnim: {},
     timelineSwiperIndex: 1,
     timelineSwiperDuration: 300,
     visibleDays: [],
@@ -452,14 +402,18 @@ Page({
     const fromWeekStripSwipe = !!options.fromWeekStripSwipe;
     const recenterInstant = !!options.recenterInstant;
     const sourceRole = options.sourceRole || "";
+    const weekStripApproachIndex =
+      options.weekStripApproachIndex === 0 || options.weekStripApproachIndex === 2
+        ? options.weekStripApproachIndex
+        : null;
+
+    // 时间格提交手势后立即释放锁，保证重建期间可立即响应下一次滑动
+    if (fromWeekStripSwipe && sourceRole === "timeline") {
+      this._timelineSwipeBusy = false;
+    }
 
     /** parseDate 已支持 Date；此前 Date 曾被 String(...) 转成非法字面量导致周滑动无效 */
     const selected = startOfDay(parseDate(selectedDate) || new Date());
-
-    const selectedKey = dateKey(selected);
-
-    const monday = getMonday(selected);
-
     const byDate = new Map();
     (activities || []).forEach((activity) => {
       if (!byDate.has(activity.dateKey)) byDate.set(activity.dateKey, []);
@@ -468,68 +422,46 @@ Page({
 
     const todayKey = dateKey(startOfDay(new Date()));
     const timelineCenterDate = resolveTimelineCenterDate(selected, options, this.data);
-    const weekStripPages = buildWeekStripSwipePages(selected, todayKey, byDate);
     const timelineSwipePages = buildTimelineSwipePages(timelineCenterDate, byDate, todayKey);
-    const centerTimeline = timelineSwipePages[1] || { weekNumber: "", visibleDays: [] };
-    const firstVisibleDate = toDateStartByKey(
-      centerTimeline.firstVisibleKey,
-      timelineCenterDate
-    );
-    const firstVisibleKey = dateKey(firstVisibleDate);
-    const alignedWeekStripPages = buildWeekStripSwipePages(firstVisibleDate, todayKey, byDate);
+    // timelineSwiperIndex 始终保持 1（无闪）：
+    // forward 手势后 swiper 在 2，新数据 page[1]=N+1，page[2]=N+2 = 旧 page[2],[3] → 内容不变
+    // backward 手势后 swiper 在 0，新数据 page[1]=N-1，page[2]=N   = 旧 page[0],[1] → 内容不变
+    // 跨周视觉动画仅由周条 wx.createAnimation 提供
+    const isCrossWeekFromTimeline =
+      fromWeekStripSwipe && sourceRole === "timeline" && weekStripApproachIndex !== null;
+    const isForwardCrossWeek = isCrossWeekFromTimeline && weekStripApproachIndex === 2;
+
+    const centerKey = dateKey(timelineCenterDate);
+    const weekStripPages = buildWeekStripSwipePages(timelineCenterDate, todayKey, byDate);
 
     const patch = {
-      selectedDateKey: firstVisibleKey,
-      timelineCenterDateKey: dateKey(timelineCenterDate),
-      weekNumber: `第${getWeekNumber(firstVisibleDate)}周`,
-      visibleDays: centerTimeline.visibleDays,
-      weekStripPages: alignedWeekStripPages,
+      selectedDateKey: centerKey,
+      timelineCenterDateKey: centerKey,
+      weekNumber: `第${getWeekNumber(timelineCenterDate)}周`,
+      visibleDays: timelineSwipePages.slice(1, 4),
+      weekStripPages,
       timelineSwipePages,
       weekStripSwiperIndex: 1,
       timelineSwiperIndex: 1
     };
+
     if (fromWeekStripSwipe) {
       if (sourceRole === "week-strip") {
-        patch.weekStripSwiperDuration = recenterInstant ? 0 : 300;
+        patch.weekStripSwiperDuration = 300;
         patch.timelineSwiperDuration = recenterInstant ? 0 : 300;
       } else if (sourceRole === "timeline") {
         patch.timelineSwiperDuration = recenterInstant ? 0 : 300;
+        if (isCrossWeekFromTimeline) {
+          // swiper 程序化 current 变化无视觉动画，用 wx.createAnimation 位移包装层
+          // forward→从右侧(+600px)划入，backward→从左侧(-600px)划入
+          const initAnim = wx.createAnimation({ duration: 0 });
+          initAnim.translateX(isForwardCrossWeek ? 600 : -600).step();
+          patch.weekStripSlideAnim = initAnim.export();
+        }
       }
     }
-    // #region agent log
-    debugAgentIngest({
-      runId: "calendar-weekstrip-pre-fix-1",
-      hypothesisId: "H1_H3",
-      location: "activity_calendar.js:rebuildWeek:patch",
-      message: "patch before setData",
-      data: {
-        fromWeekStripSwipe,
-        duration: patch.weekStripSwiperDuration,
-        swiperIndex: patch.weekStripSwiperIndex,
-        selectedKey,
-        firstVisibleKey,
-        timelineCenterKey: patch.timelineCenterDateKey
-      },
-      timestamp: Date.now()
-    });
-    // #endregion
 
     this.setData(patch, () => {
-      // #region agent log
-      debugAgentIngest({
-        runId: "calendar-weekstrip-pre-fix-1",
-        hypothesisId: "H2_H4",
-        location: "activity_calendar.js:rebuildWeek:setDataCb",
-        message: "setData callback after patch",
-        data: {
-          fromWeekStripSwipe,
-          dataIndex: this.data.weekStripSwiperIndex,
-          dataDuration: this.data.weekStripSwiperDuration,
-          dataSelected: this.data.selectedDateKey
-        },
-        timestamp: Date.now()
-      });
-      // #endregion
       if (!fromWeekStripSwipe) {
         this._weekStripSwipeBusy = false;
         this._timelineSwipeBusy = false;
@@ -537,6 +469,19 @@ Page({
       }
       if (recenterInstant) {
         wx.nextTick(() => {
+          if (isCrossWeekFromTimeline) {
+            // 周条：translateX(±600)→0，220ms；时间格手势本身即为动画，无需额外位移
+            const slideAnim = wx.createAnimation({ duration: 220, timingFunction: "ease" });
+            slideAnim.translateX(0).step();
+            this.setData(
+              { weekStripSlideAnim: slideAnim.export() },
+              () => {
+                this._weekStripSwipeBusy = false;
+                this._timelineSwipeBusy = false;
+              }
+            );
+            return;
+          }
           this.setData({ weekStripSwiperDuration: 300, timelineSwiperDuration: 300 }, () => {
             this._weekStripSwipeBusy = false;
             this._timelineSwipeBusy = false;
@@ -552,60 +497,14 @@ Page({
   onWeekStripSwiperChange(e) {
     const d = e.detail || {};
     const src = d.source;
-    const idxRaw = d.current;
-    const idxNum = Number(idxRaw);
-    const busy = !!this._weekStripSwipeBusy;
-    const role = (e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.role) || "unknown";
-    // #region agent log
-    debugAgentIngest({
-      runId: "calendar-weekstrip-gesture-source-1",
-      hypothesisId: "H10_H11_H12",
-      location: "activity_calendar.js:onWeekStripSwiperChange:entry",
-      message: "swiper change entry",
-      data: {
-        role,
-        source: src,
-        currentRaw: idxRaw,
-        idxNum,
-        busy,
-        dataIndex: this.data.weekStripSwiperIndex,
-        dataDuration: this.data.weekStripSwiperDuration,
-        selectedKey: this.data.selectedDateKey,
-        weekKeys: summarizeWeekKeys(this.data.weekStripPages),
-        timelineLen: (this.data.timelineSwipePages || []).length
-      },
-      timestamp: Date.now()
-    });
-    // #endregion
+    const idxNum = Number(d.current);
 
-    if (busy) {
-      return;
-    }
-
+    if (this._weekStripSwipeBusy) return;
     /** 仅忽略 autoplay；部分基础库手势的 source 可能不是 touch，原先误拦会导致「能拖但不会切」*/
-    if (src === "autoplay") {
-      return;
-    }
+    if (src === "autoplay") return;
 
     const slideIndex = Number.isFinite(idxNum) ? idxNum : NaN;
-    if (slideIndex !== 0 && slideIndex !== 2) {
-      return;
-    }
-    // #region agent log
-    debugAgentIngest({
-      runId: "calendar-weekstrip-gesture-source-1",
-      hypothesisId: "H10_H11",
-      location: "activity_calendar.js:onWeekStripSwiperChange:intent",
-      message: "record swipe intent and wait animationfinish",
-      data: {
-        role,
-        slideIndex,
-        preWeekKeys: summarizeWeekKeys(this.data.weekStripPages),
-        preDataIndex: this.data.weekStripSwiperIndex
-      },
-      timestamp: Date.now()
-    });
-    // #endregion
+    if (slideIndex !== 0 && slideIndex !== 2) return;
 
     this._weekStripPendingSlideIndex = slideIndex;
     this._weekStripGestureRole = "week-strip";
@@ -618,68 +517,16 @@ Page({
   onWeekStripSwiperAnimationFinish(e) {
     const d = (e && e.detail) || {};
     const role = (e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.role) || "unknown";
-    // #region agent log
-    debugAgentIngest({
-      runId: "calendar-weekstrip-gesture-source-1",
-      hypothesisId: "H10_H11_H12",
-      location: "activity_calendar.js:onWeekStripSwiperAnimationFinish",
-      message: "animation finish",
-      data: {
-        role,
-        current: d.current,
-        source: d.source,
-        dataIndex: this.data.weekStripSwiperIndex,
-        dataDuration: this.data.weekStripSwiperDuration,
-        selectedKey: this.data.selectedDateKey,
-        weekKeys: summarizeWeekKeys(this.data.weekStripPages),
-        timelineLen: (this.data.timelineSwipePages || []).length
-      },
-      timestamp: Date.now()
-    });
-    // #endregion
-
     const idxNum = Number(d.current);
     const currentIndex = Number.isFinite(idxNum) ? idxNum : NaN;
     const pending = this._weekStripPendingSlideIndex;
     const slideIndex = pending === 0 || pending === 2 ? pending : currentIndex;
-    if (this._weekStripCommitConsumed) {
-      // #region agent log
-      debugAgentIngest({
-        runId: "calendar-weekstrip-gesture-source-1",
-        hypothesisId: "H14",
-        location: "activity_calendar.js:onWeekStripSwiperAnimationFinish:skip-consumed",
-        message: "skip duplicate commit for same swipe gesture",
-        data: {
-          role,
-          source: d.source,
-          current: d.current,
-          pending
-        },
-        timestamp: Date.now()
-      });
-      // #endregion
-      return;
-    }
+
+    if (this._weekStripCommitConsumed) return;
+
     const gestureRole = this._weekStripGestureRole || "";
-    if (gestureRole !== "week-strip" || role !== "week-strip") {
-      // #region agent log
-      debugAgentIngest({
-        runId: "calendar-weekstrip-gesture-source-1",
-        hypothesisId: "H13",
-        location: "activity_calendar.js:onWeekStripSwiperAnimationFinish:skip-foreign-role",
-        message: "skip duplicate finish from non-gesture swiper",
-        data: {
-          role,
-          gestureRole,
-          source: d.source,
-          current: d.current,
-          pending
-        },
-        timestamp: Date.now()
-      });
-      // #endregion
-      return;
-    }
+    if (gestureRole !== "week-strip" || role !== "week-strip") return;
+
     if (slideIndex !== 0 && slideIndex !== 2) {
       this._weekStripPendingSlideIndex = null;
       this._weekStripGestureRole = "";
@@ -689,38 +536,11 @@ Page({
     }
     this._weekStripCommitConsumed = true;
 
-    const weekDeltaDays = slideIndex === 0 ? -7 : 7;
-    const timelineDeltaDays = slideIndex === 0 ? -7 : 7;
+    const deltaDays = slideIndex === 0 ? -7 : 7;
     const selected = startOfDay(parseDate(this.data.selectedDateKey) || new Date());
-    const timelineCenter = startOfDay(
-      parseDate(this.data.timelineCenterDateKey) || selected
-    );
-    const newSelected = addDays(selected, weekDeltaDays);
-    const newTimelineCenter = addDays(timelineCenter, timelineDeltaDays);
-    const beforeKey = dateKey(selected);
-    const afterKey = dateKey(newSelected);
-    // #region agent log
-    debugAgentIngest({
-      runId: "calendar-weekstrip-gesture-source-1",
-      hypothesisId: "H10_H11_H12",
-      location: "activity_calendar.js:onWeekStripSwiperAnimationFinish:commit",
-      message: "commit swipe on animationfinish",
-      data: {
-        role,
-        slideIndex,
-        weekDeltaDays,
-        timelineDeltaDays,
-        beforeKey,
-        afterKey,
-        timelineBeforeKey: dateKey(timelineCenter),
-        timelineAfterKey: dateKey(newTimelineCenter),
-        selectedWeekday: WEEKDAY_FULL[selected.getDay()],
-        targetWeekday: WEEKDAY_FULL[newSelected.getDay()],
-        timelineTargetWeekday: WEEKDAY_FULL[newTimelineCenter.getDay()]
-      },
-      timestamp: Date.now()
-    });
-    // #endregion
+    const timelineCenter = startOfDay(parseDate(this.data.timelineCenterDateKey) || selected);
+    const newSelected = addDays(selected, deltaDays);
+    const newTimelineCenter = addDays(timelineCenter, deltaDays);
 
     this._weekStripPendingSlideIndex = null;
     this._weekStripGestureRole = "";
@@ -736,86 +556,49 @@ Page({
   onTimelineSwiperChange(e) {
     const d = e.detail || {};
     const src = d.source;
-    const idxRaw = d.current;
-    const idxNum = Number(idxRaw);
-    const busy = !!this._timelineSwipeBusy;
-    const role = (e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.role) || "unknown";
-    // #region agent log
-    debugAgentIngest({
-      runId: "calendar-decoupled-swipe-1",
-      hypothesisId: "H15_H16_H17",
-      location: "activity_calendar.js:onTimelineSwiperChange:entry",
-      message: "timeline swiper change entry",
-      data: {
-        role,
-        source: src,
-        currentRaw: idxRaw,
-        idxNum,
-        busy,
-        dataTimelineIndex: this.data.timelineSwiperIndex,
-        dataWeekIndex: this.data.weekStripSwiperIndex,
-        selectedKey: this.data.selectedDateKey,
-        timelineCenterKey: this.data.timelineCenterDateKey
-      },
-      timestamp: Date.now()
-    });
-    // #endregion
-    if (busy) return;
+    const idxNum = Number(d.current);
+    if (this._timelineSwipeBusy) return;
     if (src === "autoplay") return;
     const slideIndex = Number.isFinite(idxNum) ? idxNum : NaN;
     if (slideIndex !== 0 && slideIndex !== 2) return;
-    this._timelinePendingSlideIndex = slideIndex;
-    this._timelineGestureRole = "timeline";
-    this._timelineCommitConsumed = false;
-    this._timelineSwipeBusy = true;
+    this.setData({ timelineSwiperIndex: slideIndex });
+    // 仅 touch 手势占 busy；程序化 source="" 不占锁，避免 onChange 误加锁后无法释放
+    if (src === "touch") {
+      this._timelinePendingSlideIndex = slideIndex;
+      this._timelineGestureRole = "timeline";
+      this._timelineCommitConsumed = false;
+      this._timelineSwipeBusy = true;
+    }
+  },
+
+  onTimelineSwiperTransition(e) {
+    const d = (e && e.detail) || {};
+    // 仅处理手势驱动的过渡（程序化 source="" 跳过）
+    if (d.source !== "touch") return;
+    const dx = Number(d.dx) || 0;
+    // dx < 0：页面左移（用户向左滑，forward），预选下一天；dx > 0 反之
+    const pages = this.data.timelineSwipePages;
+    const committedKey = this.data.timelineCenterDateKey;
+    let candidateKey;
+    if (dx < -15) candidateKey = pages[2] && pages[2].key;
+    else if (dx > 15) candidateKey = pages[0] && pages[0].key;
+    candidateKey = candidateKey || committedKey;
+    if (!candidateKey || candidateKey === this.data.selectedDateKey) return;
+    this.setData({ selectedDateKey: candidateKey });
   },
 
   onTimelineSwiperAnimationFinish(e) {
     const d = (e && e.detail) || {};
     const role = (e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.role) || "unknown";
-    // #region agent log
-    debugAgentIngest({
-      runId: "calendar-decoupled-swipe-1",
-      hypothesisId: "H15_H16_H17",
-      location: "activity_calendar.js:onTimelineSwiperAnimationFinish",
-      message: "timeline animation finish",
-      data: {
-        role,
-        current: d.current,
-        source: d.source,
-        dataTimelineIndex: this.data.timelineSwiperIndex,
-        dataWeekIndex: this.data.weekStripSwiperIndex,
-        selectedKey: this.data.selectedDateKey,
-        timelineCenterKey: this.data.timelineCenterDateKey
-      },
-      timestamp: Date.now()
-    });
-    // #endregion
     const idxNum = Number(d.current);
     const currentIndex = Number.isFinite(idxNum) ? idxNum : NaN;
     const pending = this._timelinePendingSlideIndex;
     const slideIndex = pending === 0 || pending === 2 ? pending : currentIndex;
+
     if (this._timelineCommitConsumed) return;
     const gestureRole = this._timelineGestureRole || "";
-    if (gestureRole !== "timeline" || role !== "timeline") {
-      // #region agent log
-      debugAgentIngest({
-        runId: "calendar-decoupled-swipe-1",
-        hypothesisId: "H18",
-        location: "activity_calendar.js:onTimelineSwiperAnimationFinish:skip-foreign-role",
-        message: "skip timeline finish without timeline gesture ownership",
-        data: {
-          role,
-          gestureRole,
-          source: d.source,
-          current: d.current,
-          pending
-        },
-        timestamp: Date.now()
-      });
-      // #endregion
-      return;
-    }
+    if (gestureRole !== "timeline" || role !== "timeline") return;
+
     if (slideIndex !== 0 && slideIndex !== 2) {
       this._timelinePendingSlideIndex = null;
       this._timelineGestureRole = "";
@@ -824,29 +607,16 @@ Page({
       return;
     }
     this._timelineCommitConsumed = true;
-    const deltaDays = slideIndex === 0 ? -3 : 3;
-    const selected = startOfDay(parseDate(this.data.selectedDateKey) || new Date());
-    const timelineCenter = startOfDay(parseDate(this.data.timelineCenterDateKey) || selected);
+    const deltaDays = slideIndex === 0 ? -1 : 1;
+    // 用 timelineCenterDateKey 而非 selectedDateKey：
+    // onTimelineSwiperTransition 拖动期间已实时修改 selectedDateKey 为候选日，
+    // 此时用它计算会导致 weekShiftDays=0，跨周动画永远不触发
+    const timelineCenter = startOfDay(parseDate(this.data.timelineCenterDateKey) || new Date());
     const newTimelineCenter = addDays(timelineCenter, deltaDays);
     const newSelected = startOfDay(newTimelineCenter);
-    // #region agent log
-    debugAgentIngest({
-      runId: "calendar-decoupled-swipe-1",
-      hypothesisId: "H15_H16_H17",
-      location: "activity_calendar.js:onTimelineSwiperAnimationFinish:commit",
-      message: "commit timeline swipe only",
-      data: {
-        slideIndex,
-        deltaDays,
-        beforeKey: dateKey(selected),
-        afterKey: dateKey(newSelected),
-        timelineBeforeKey: dateKey(timelineCenter),
-        timelineAfterKey: dateKey(newTimelineCenter),
-        firstVisibleAfterKey: dateKey(newSelected)
-      },
-      timestamp: Date.now()
-    });
-    // #endregion
+    const weekShiftDays = calendarDaysBetween(getMonday(timelineCenter), getMonday(newSelected));
+    const weekStripApproachIndex = weekShiftDays === 7 ? 2 : weekShiftDays === -7 ? 0 : null;
+
     this._timelinePendingSlideIndex = null;
     this._timelineGestureRole = "";
     this._timelineCommitConsumed = false;
@@ -854,6 +624,7 @@ Page({
       fromWeekStripSwipe: true,
       recenterInstant: true,
       timelineCenterDate: newTimelineCenter,
+      weekStripApproachIndex,
       sourceRole: "timeline"
     });
   },
