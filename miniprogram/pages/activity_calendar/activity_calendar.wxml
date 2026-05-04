@@ -1,3 +1,4 @@
+<wxs module="swiperSync" src="./swiper-header-sync.wxs"></wxs>
 <view class="calendar-page">
   <image class="calendar-watermark dragon-watermark dragon-watermark--fixed" src="https://dragon.liqqihome.top/media/images/activity-home-logo.png" mode="aspectFit" />
 
@@ -28,10 +29,10 @@
             bindtap="onDateTap"
             data-key="{{cell.key}}"
           >
-            <text class="week-strip-label {{cell.key === selectedDateKey ? 'week-strip-label--selected' : ''}}">{{cell.weekday}}</text>
+            <text class="week-strip-label {{cell.key === weekStripHighlightKey ? 'week-strip-label--selected' : ''}}">{{cell.weekday}}</text>
             <view class="strip-date-stack {{cell.showStripEventBar ? 'strip-date-stack--with-event' : ''}}">
-              <view class="strip-date-circle {{cell.key === selectedDateKey ? 'strip-date-circle--selected' : ''}}">
-                <text class="strip-date-num {{cell.isToday && cell.key !== selectedDateKey ? 'strip-date-num--today' : ''}}">{{cell.day}}</text>
+              <view class="strip-date-circle {{cell.key === weekStripHighlightKey ? 'strip-date-circle--selected' : ''}}">
+                <text class="strip-date-num {{cell.isToday && cell.key !== weekStripHighlightKey ? 'strip-date-num--today' : ''}}">{{cell.day}}</text>
               </view>
               <view wx:if="{{cell.showStripEventBar}}" class="strip-event-bar"></view>
             </view>
@@ -59,20 +60,7 @@
   </view>
 
   <view wx:else class="calendar-body" style="top: {{timelineTopPx}}px">
-    <!-- 缝隙落在滚动区外：纯白占位 + 标题行固定，避免 Swiper 合成层渗入 -->
     <view class="timeline-above-scroll-gap" style="height: {{timelineBodyGapPx}}px"></view>
-    <view class="timeline-fixed-header-row">
-      <view class="time-axis-head">{{weekNumber}}</view>
-      <view class="timeline-visible-titles">
-        <view
-          wx:for="{{visibleDays}}"
-          wx:key="key"
-          class="timeline-visible-title-cell {{item.isToday ? 'timeline-visible-title-cell--today' : ''}}"
-        >
-          {{item.title}}
-        </view>
-      </view>
-    </view>
     <scroll-view
       class="timeline-scroll"
       scroll-y
@@ -82,57 +70,87 @@
       bindscroll="onTimelineScroll"
     >
       <view class="timeline-sheet-scroll">
-        <view class="timeline-grid-body">
-        <view class="time-axis time-axis--body">
-          <view wx:for="{{hours}}" wx:key="*this" class="hour-row">
-            <text class="hour-text">{{item}}</text>
+        <!--
+          标题行：position:sticky 纵向贴顶；横向由 WXS 实时驱动 strip transform。
+          strip 总长 = pages.length 个 cell，baseOffsetPx = -current * cellWidthPx（左列对齐 swiper 左列）。
+        -->
+        <view class="timeline-sticky-header">
+          <view class="time-axis-head">{{weekNumber}}</view>
+          <view class="day-titles-clip">
+            <view
+              class="day-titles-strip"
+              data-base-offset-px="{{headerStripBaseOffsetPx}}"
+              data-strip-width-px="{{timelineSwipePages.length * headerCellWidthPx}}"
+              data-cell-width-px="{{headerCellWidthPx}}"
+              data-frozen="{{timelineFrozen}}"
+              style="width: {{timelineSwipePages.length * headerCellWidthPx}}px; transform: translateX({{headerStripBaseOffsetPx}}px)"
+            >
+              <view
+                wx:for="{{timelineSwipePages}}"
+                wx:key="key"
+                class="day-titles-strip-cell {{item.isToday ? 'day-titles-strip-cell--today' : ''}}"
+                style="width: {{headerCellWidthPx}}px"
+              >{{item.title}}</view>
+            </view>
           </view>
         </view>
 
-        <swiper
-          class="timeline-swiper"
-          data-role="timeline"
-          circular="{{false}}"
-          display-multiple-items="{{3}}"
-          current="{{timelineSwiperIndex}}"
-          duration="{{timelineSwiperDuration}}"
-          disable-touch="{{false}}"
-          bindtransition="onTimelineSwiperTransition"
-          bindchange="onTimelineSwiperChange"
-          bindanimationfinish="onTimelineSwiperAnimationFinish"
-        >
-          <swiper-item wx:for="{{timelineSwipePages}}" wx:for-item="day" wx:key="key">
-            <view class="timeline-grid-page">
-              <view class="day-columns">
-                <view class="day-column {{day.isToday ? 'day-column-today' : ''}}">
-                  <view class="day-column-body">
-                    <view wx:for="{{hours}}" wx:for-item="hour" wx:key="*this" class="grid-hour"></view>
-                    <view
-                      wx:for="{{day.activities}}"
-                      wx:for-item="activity"
-                      wx:key="_id"
-                      class="calendar-event"
-                      style="{{activity.style}}"
-                      bindtap="onActivityTap"
-                      data-id="{{activity._id}}"
-                    >
-                      <view class="event-title">{{activity.name}}</view>
-                      <view wx:if="{{activity.locationName}}" class="event-line">
-                        <view class="event-icon event-icon-location"></view>
-                        <text class="event-text">{{activity.locationName}}</text>
+        <view class="timeline-grid-body">
+          <view class="time-axis time-axis--body">
+            <view wx:for="{{hours}}" wx:key="*this" class="hour-row">
+              <text class="hour-text">{{item}}</text>
+            </view>
+          </view>
+
+          <view wx:for="{{[timelineSwiperRemountTick]}}" wx:key="*this" class="timeline-swiper-host">
+            <swiper
+              class="timeline-swiper"
+              data-role="timeline"
+              data-frozen="{{timelineFrozen}}"
+              data-suppress-drag-preview="{{timelineSuppressDragPreview}}"
+              data-swiper-current="{{timelineSwiperCurrent}}"
+              circular="{{false}}"
+              display-multiple-items="{{3}}"
+              current="{{timelineSwiperCurrent}}"
+              duration="{{timelineSwiperDuration}}"
+              disable-touch="{{false}}"
+              bindtransition="{{swiperSync.onTransition}}"
+              bindchange="onTimelineSwiperChange"
+              bindanimationfinish="onTimelineSwiperAnimFinish"
+            >
+              <swiper-item wx:for="{{timelineSwipePages}}" wx:for-item="day" wx:key="key">
+                <view class="timeline-grid-page">
+                  <view class="day-columns">
+                    <view class="day-column {{day.isToday ? 'day-column-today' : ''}}">
+                      <view class="day-column-body">
+                        <view wx:for="{{hours}}" wx:for-item="hour" wx:key="*this" class="grid-hour"></view>
+                        <view
+                          wx:for="{{day.activities}}"
+                          wx:for-item="activity"
+                          wx:key="_id"
+                          class="calendar-event"
+                          style="{{activity.style}}"
+                          bindtap="onActivityTap"
+                          data-id="{{activity._id}}"
+                        >
+                          <view class="event-title">{{activity.name}}</view>
+                          <view wx:if="{{activity.locationName}}" class="event-line">
+                            <view class="event-icon event-icon-location"></view>
+                            <text class="event-text">{{activity.locationName}}</text>
+                          </view>
+                          <view class="event-line">
+                            <view class="event-icon event-icon-time"></view>
+                            <text class="event-text">{{activity.timeRange}}</text>
+                          </view>
+                          <view wx:if="{{activity.status === '已取消'}}" class="event-status">已取消</view>
+                        </view>
                       </view>
-                      <view class="event-line">
-                        <view class="event-icon event-icon-time"></view>
-                        <text class="event-text">{{activity.timeRange}}</text>
-                      </view>
-                      <view wx:if="{{activity.status === '已取消'}}" class="event-status">已取消</view>
                     </view>
                   </view>
                 </view>
-              </view>
-            </view>
-          </swiper-item>
-        </swiper>
+              </swiper-item>
+            </swiper>
+          </view>
         </view>
       </view>
     </scroll-view>

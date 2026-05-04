@@ -172,13 +172,23 @@ page {
   flex-direction: column;
 }
 
-.timeline-swiper {
+/* rebuildAll 时 remountTick 自增，宿主 view 重挂载子 swiper，强制 native 从 page 0 初始化到 current=15 */
+.timeline-swiper-host {
   flex: none;
   position: relative;
   z-index: 1;
   min-width: 0;
   width: calc(100% - 100rpx);
   height: 1440px;
+}
+
+.timeline-swiper-host .timeline-swiper {
+  flex: none;
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .timeline-page {
@@ -206,10 +216,14 @@ page {
   overflow: hidden;
 }
 
-/* 固定在 scroll-view 之上（非 sticky）：Swiper/日程无法叠到标题行缝隙 */
-.timeline-fixed-header-row {
-  flex-shrink: 0;
-  position: relative;
+/*
+ * timeline-sticky-header：位于 scroll-view 内部最顶端，position:sticky 可正确找到
+ * scroll-view 作为滚动祖先，纵向滚动时贴顶。
+ * 横向同步由 swiper-header-sync.wxs 在渲染线程实时驱动（物理级同步）。
+ */
+.timeline-sticky-header {
+  position: sticky;
+  top: 0;
   z-index: 10;
   display: flex;
   flex-direction: row;
@@ -217,19 +231,32 @@ page {
   background: #ffffff;
   transform: translateZ(0);
   border-bottom: 1rpx solid #f3f4f6;
+  overflow: hidden;
 }
 
-.timeline-visible-titles {
+/* 裁剪窗口：只露出 3 格宽（cell × 3），超出部分隐藏 */
+.day-titles-clip {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/*
+ * 长 strip：宽度由 inline style 设为 pages.length * cellWidthPx，
+ * WXS 通过 setStyle 实时平移 transform = -current * cellWidthPx + dx。
+ * 永不重建（仅在边界扩展时整体替换内容）。
+ */
+.day-titles-strip {
   display: flex;
   flex-direction: row;
   align-items: stretch;
+  will-change: transform;
 }
 
-.timeline-visible-title-cell {
-  flex: 1;
-  min-width: 0;
+/* 每个 cell 宽度由 inline style 控制（= headerCellWidthPx px） */
+.day-titles-strip-cell {
+  flex-shrink: 0;
   height: 98rpx;
   display: flex;
   align-items: center;
@@ -244,11 +271,7 @@ page {
   text-align: center;
 }
 
-.timeline-visible-title-cell:last-child {
-  border-right: 0;
-}
-
-.timeline-visible-title-cell--today {
+.day-titles-strip-cell--today {
   background: #fff3f5;
   color: #ff001f;
 }
@@ -268,12 +291,6 @@ page {
   flex-direction: row;
   height: 1440px;
   min-height: 1440px;
-}
-
-.timeline-grid-page {
-  width: 100%;
-  height: 1440px;
-  display: flex;
 }
 
 .time-axis {
