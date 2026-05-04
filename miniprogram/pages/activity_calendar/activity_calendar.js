@@ -355,6 +355,10 @@ Page({
     };
   },
 
+  _clearTimelineTouchGestureState() {
+    this._timelineTouchPreviewBaseCurrent = null;
+  },
+
   syncGuestState() {
     const hasWeChatAuth = !!wx.getStorageSync("hasWeChatAuth");
     const hasToken = !!(app.globalData.accessToken || wx.getStorageSync("accessToken"));
@@ -438,6 +442,7 @@ Page({
     this._byDateMap = byDate;
     // 首次手势前 swiper 易吐出异常 dx；待用户 touch 成功翻过一页后再放宽预览（见 onTimelineDragPreview）
     this._timelineDragPreviewLoose = false;
+    this._clearTimelineTouchGestureState();
 
     const nextRemount = (this.data.timelineSwiperRemountTick || 0) + 1;
     const headerPatch = this._buildHeaderSettlePatch(INITIAL_CURRENT);
@@ -682,6 +687,8 @@ Page({
    * 注意：这里不要提前推进 header base 位移。
    * 拖动/吸附阶段应继续使用「旧 base + WXS motion」；
    * 等 animationfinish 再把 base 一次性锁到新列，避免旧 motion 残留时产生超冲一格。
+   * 同时避免把 selectedDateKey / weekStripPages / weekNumber 这类提交态放在 change 阶段，
+   * 否则连续 change 会让业务状态在一次拖动里被多次推进，看起来像“直接跳到目标态”。
    */
   onTimelineSwiperChange(e) {
     const d = e.detail || {};
@@ -708,45 +715,19 @@ Page({
     const newCenterPage = pages[newCurrent];
     if (!newCenterPage) return;
 
-    const newCenterDate = parseDate(newCenterPage.key);
-    const oldSelectedDate = parseDate(this.data.selectedDateKey) || newCenterDate;
-    const crossWeek = getMonday(newCenterDate).getTime() !== getMonday(oldSelectedDate).getTime();
-
     const patch = {
       timelineSwiperCurrent: newCurrent,
-      selectedDateKey: newCenterPage.key,
-      weekStripHighlightKey: newCenterPage.key,
-      weekNumber: `第${getWeekNumber(newCenterDate)}周`,
     };
-    patch.timelineSuppressDragPreview = true;
-    if (crossWeek) {
-      const oldMon = getMonday(oldSelectedDate);
-      const newMon = getMonday(newCenterDate);
-      const forward = newMon.getTime() > oldMon.getTime();
-      const initAnim = wx.createAnimation({ duration: 0 });
-      initAnim.translateX(forward ? 600 : -600).step();
-      patch.weekStripPages = buildWeekStripSwipePages(
-        newCenterDate, dateKey(startOfDay(new Date())), this._byDateMap || new Map()
-      );
-      patch.weekStripSwiperIndex = 1;
-      patch.weekStripSwiperDuration = 0;
-      patch.weekStripSlideAnim = initAnim.export();
+    if (src !== "touch") {
+      patch.timelineSuppressDragPreview = true;
+      patch.weekStripHighlightKey = newCenterPage.key;
+    } else if (!Number.isFinite(this._timelineTouchPreviewBaseCurrent)) {
+      this._timelineTouchPreviewBaseCurrent = oldCurrent;
     }
-    this.setData(patch, () => {
-      if (crossWeek) {
-        wx.nextTick(() => {
-          const slideAnim = wx.createAnimation({ duration: 220, timingFunction: "ease" });
-          slideAnim.translateX(0).step();
-          this.setData({
-            weekStripSlideAnim: slideAnim.export(),
-            weekStripSwiperDuration: 300,
-          });
-        });
-      }
-    });
+    this.setData(patch);
 
-    // 接近边界时后台扩展 pages
-    if (newCurrent <= EDGE_GUARD || newCurrent >= pages.length - 3 - EDGE_GUARD) {
+    // 非 touch 路径可立即扩展；touch 路径延后到 animationfinish，避免一次拖动里因扩展重排而错位。
+    if (src !== "touch" && (newCurrent <= EDGE_GUARD || newCurrent >= pages.length - 3 - EDGE_GUARD)) {
       this._ensurePagesCoverCurrent(newCurrent, () => {});
     }
   },
@@ -816,6 +797,7 @@ Page({
     const key = e.currentTarget.dataset.key;
     const selected = parseDate(key);
     if (!selected) return;
+    this._clearTimelineTouchGestureState();
     const pages = this.data.timelineSwipePages;
     // 在现有 pages 中查找 idx
     const idx = pages.findIndex((p) => p.key === key);
@@ -860,13 +842,25 @@ Page({
     // rebuild 后首次 touch 翻页前：原生 swiper 仍可能吐出极大 dx；首滑通过后再放宽（用户反馈仅第一次会跳两周）
     const maxReasonableDx = (this._timelineDragPreviewLoose ? 6 : 2) * cellW;
     if (Math.abs(dx) > maxReasonableDx) return;
-    // 必须用 JS 层 current：WXS dataset 的 swiperCurrent 常比 bindtransition 晚一帧，与 dx 组合会把 idx 算到错误日（见 debug H10 中 change 已 13 仍 C=12）
-    const C = this.data.timelineSwiperCurrent;
-    if (!Number.isFinite(C) || C < 0 || C >= pages.length) return;
+    // 触摸手势中必须冻结预览基准 current。
+    // 否则同一次拖动里 bindchange 连续推进 current，预览会在“旧 dx + 新 current”下超冲多天再回弹。
     const Cwxs = Number(raw.swiperCurrent);
-    // bindchange 已把 JS current 更新后，仍可能收到「上一轮位移」的 dx，而 WXS dataset 的 swiperCurrent 晚一帧；
-    // 此时 dx 与 C 不属于同一坐标系，会算出错误 idx（如 L22：C=14 而 Cwxs=15、dx=-113 → idx=13 即 5/1）
-    if (Number.isFinite(Cwxs) && Cwxs !== C) return;
+    if (!Number.isFinite(this._timelineTouchPreviewBaseCurrent)) {
+      const gestureBaseCurrent = this.data.timelineSwiperCurrent;
+      if (Number.isFinite(gestureBaseCurrent) && gestureBaseCurrent >= 0 && gestureBaseCurrent < pages.length) {
+        this._timelineTouchPreviewBaseCurrent = gestureBaseCurrent;
+      }
+    }
+    let C = Number.isFinite(this._timelineTouchPreviewBaseCurrent)
+      ? this._timelineTouchPreviewBaseCurrent
+      : this.data.timelineSwiperCurrent;
+    if (!Number.isFinite(C) || C < 0 || C >= pages.length) return;
+    // 非触摸手势或未建立手势基准时，仍保留旧的坐标系保护。
+    if (!Number.isFinite(this._timelineTouchPreviewBaseCurrent)) {
+      // bindchange 已把 JS current 更新后，仍可能收到「上一轮位移」的 dx，而 WXS dataset 的 swiperCurrent 晚一帧；
+      // 此时 dx 与 C 不属于同一坐标系，会算出错误 idx（如 L22：C=14 而 Cwxs=15、dx=-113 → idx=13 即 5/1）
+      if (Number.isFinite(Cwxs) && Cwxs !== C) return;
+    }
     // 与原先三态预览一致：dx 为正时 idx 向 C+1 走（与 event.detail.dx 在微信 swiper 中的符号约定一致）
     const delta = Math.round(dx / cellW);
     let idx = C + delta;
@@ -881,21 +875,60 @@ Page({
     this.setData({ weekStripHighlightKey: key });
   },
 
-  /** 时间格动画结束：周条高亮与左列 pages[current] 对齐（避免 selectedDateKey 偶发滞后于 swiper 导致与吸顶/时间格错位） */
+  /** 时间格动画结束：统一提交当前日期/周条/周号，并锁定 header settle 状态。 */
   onTimelineSwiperAnimFinish(e) {
     const d = (e && e.detail) || {};
     const pages = this.data.timelineSwipePages;
-    const cur = this.data.timelineSwiperCurrent;
+    const detailCurrent = Number(d.current);
+    const cur = Number.isFinite(detailCurrent) ? detailCurrent : this.data.timelineSwiperCurrent;
+    this._clearTimelineTouchGestureState();
     const anchorKey = pages[cur] && pages[cur].key;
     const kSel = this.data.selectedDateKey;
     const k = anchorKey || kSel;
     const before = this.data.weekStripHighlightKey;
     const didSync = this.data.weekStripHighlightKey !== k;
     const suppressWas = this.data.timelineSuppressDragPreview;
+    const anchorDate = parseDate(k);
+    const oldSelectedDate = parseDate(this.data.selectedDateKey) || anchorDate;
+    const crossWeek = anchorDate
+      && oldSelectedDate
+      && getMonday(anchorDate).getTime() !== getMonday(oldSelectedDate).getTime();
     const patch = this._buildHeaderSettlePatch(cur);
+    patch.timelineSwiperCurrent = cur;
+    if (anchorDate) {
+      patch.selectedDateKey = k;
+      patch.weekNumber = `第${getWeekNumber(anchorDate)}周`;
+    }
     if (didSync) patch.weekStripHighlightKey = k;
     if (suppressWas) patch.timelineSuppressDragPreview = false;
-    this.setData(patch);
+    if (crossWeek && anchorDate) {
+      const oldMon = getMonday(oldSelectedDate);
+      const newMon = getMonday(anchorDate);
+      const forward = newMon.getTime() > oldMon.getTime();
+      const initAnim = wx.createAnimation({ duration: 0 });
+      initAnim.translateX(forward ? 600 : -600).step();
+      patch.weekStripPages = buildWeekStripSwipePages(
+        anchorDate, dateKey(startOfDay(new Date())), this._byDateMap || new Map()
+      );
+      patch.weekStripSwiperIndex = 1;
+      patch.weekStripSwiperDuration = 0;
+      patch.weekStripSlideAnim = initAnim.export();
+    }
+    this.setData(patch, () => {
+      if (crossWeek && anchorDate) {
+        wx.nextTick(() => {
+          const slideAnim = wx.createAnimation({ duration: 220, timingFunction: "ease" });
+          slideAnim.translateX(0).step();
+          this.setData({
+            weekStripSlideAnim: slideAnim.export(),
+            weekStripSwiperDuration: 300,
+          });
+        });
+      }
+      if (cur <= EDGE_GUARD || cur >= pages.length - 3 - EDGE_GUARD) {
+        this._ensurePagesCoverCurrent(cur, () => {});
+      }
+    });
     // #region agent log H11
     if (!this._logAnimFinishCount) this._logAnimFinishCount = 0;
     this._logAnimFinishCount++;
