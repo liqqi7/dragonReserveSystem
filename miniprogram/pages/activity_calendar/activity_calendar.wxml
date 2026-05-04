@@ -123,6 +123,7 @@
               current="{{timelineSwiperCurrent}}"
               duration="{{timelineSwiperDuration}}"
               disable-touch="{{false}}"
+              bindtouchstart="onTimelineSwiperTouchStart"
               bindtransition="{{swiperSync.onTransition}}"
               bindchange="onTimelineSwiperChange"
               bindanimationfinish="onTimelineSwiperAnimFinish"
