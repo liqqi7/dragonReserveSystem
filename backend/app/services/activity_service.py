@@ -57,6 +57,18 @@ def list_activities(db: Session) -> list[Activity]:
     return list(db.scalars(stmt).unique().all())
 
 
+def list_my_activities(db: Session, user: User) -> list[Activity]:
+    """List activities joined by the current user, ordered for calendar display."""
+    stmt = (
+        _get_activity_query()
+        .join(ActivityParticipant, ActivityParticipant.activity_id == Activity.id)
+        .where(ActivityParticipant.user_id == user.id)
+        .where(Activity.status != "已删除")
+        .order_by(Activity.start_time.asc())
+    )
+    return list(db.scalars(stmt).unique().all())
+
+
 def _resolve_style_key_implicit(db: Session, activity_type: str) -> Optional[str]:
     """Pick style_key when client omits it: rotate if multiple styles, else single or default."""
 
