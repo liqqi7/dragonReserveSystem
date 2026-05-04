@@ -71,26 +71,35 @@
     >
       <view class="timeline-sheet-scroll">
         <!--
-          标题行：position:sticky 纵向贴顶；横向由 WXS 实时驱动 strip transform。
-          strip 总长 = pages.length 个 cell，baseOffsetPx = -current * cellWidthPx（左列对齐 swiper 左列）。
+          标题行：position:sticky 纵向贴顶。
+          横向位移拆为两层：
+            1) base 层：JS 维护稳定基准位移（-current * cellWidthPx）
+            2) motion 层：WXS 仅维护拖动中的瞬时位移
+          两层职责分离，避免同一节点 transform 被 WXML/WXS 双写。
         -->
         <view class="timeline-sticky-header">
           <view class="time-axis-head">{{weekNumber}}</view>
           <view class="day-titles-clip">
             <view
-              class="day-titles-strip"
-              data-base-offset-px="{{headerStripBaseOffsetPx}}"
-              data-strip-width-px="{{timelineSwipePages.length * headerCellWidthPx}}"
-              data-cell-width-px="{{headerCellWidthPx}}"
-              data-frozen="{{timelineFrozen}}"
+              class="day-titles-strip-base"
               style="width: {{timelineSwipePages.length * headerCellWidthPx}}px; transform: translateX({{headerStripBaseOffsetPx}}px)"
             >
-              <view
-                wx:for="{{timelineSwipePages}}"
-                wx:key="key"
-                class="day-titles-strip-cell {{item.isToday ? 'day-titles-strip-cell--today' : ''}}"
-                style="width: {{headerCellWidthPx}}px"
-              >{{item.title}}</view>
+              <view wx:for="{{[headerStripMotionResetTick]}}" wx:key="*this" class="day-titles-strip-motion-host">
+                <view
+                  class="day-titles-strip-motion"
+                  data-base-offset-px="{{headerStripBaseOffsetPx}}"
+                  data-strip-width-px="{{timelineSwipePages.length * headerCellWidthPx}}"
+                  data-cell-width-px="{{headerCellWidthPx}}"
+                  style="width: {{timelineSwipePages.length * headerCellWidthPx}}px"
+                >
+                  <view
+                    wx:for="{{timelineSwipePages}}"
+                    wx:key="key"
+                    class="day-titles-strip-cell {{item.isToday ? 'day-titles-strip-cell--today' : ''}}"
+                    style="width: {{headerCellWidthPx}}px"
+                  >{{item.title}}</view>
+                </view>
+              </view>
             </view>
           </view>
         </view>

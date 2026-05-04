@@ -243,11 +243,19 @@ page {
 }
 
 /*
- * 长 strip：宽度由 inline style 设为 pages.length * cellWidthPx，
- * WXS 通过 setStyle 实时平移 transform = -current * cellWidthPx + dx。
- * 永不重建（仅在边界扩展时整体替换内容）。
+ * base 层：仅承载稳定的 settle 位移，由 JS 更新 transform。
+ * motion 层：仅承载拖动中的瞬时位移，由 WXS setStyle 更新 transform。
  */
-.day-titles-strip {
+.day-titles-strip-base {
+  position: relative;
+  will-change: transform;
+}
+
+.day-titles-strip-motion-host {
+  width: 100%;
+}
+
+.day-titles-strip-motion {
   display: flex;
   flex-direction: row;
   align-items: stretch;

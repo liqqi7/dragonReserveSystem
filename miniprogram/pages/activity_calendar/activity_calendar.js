@@ -214,6 +214,10 @@ function buildTimelineLongList(anchorDate, byDate, todayKey, radius) {
   );
 }
 
+function headerBaseOffsetForCurrent(current, cellWidthPx) {
+  return -current * cellWidthPx;
+}
+
 function adaptActivity(item, index) {
   const start = parseDate(item.start_time);
   const end = parseDate(item.end_time);
@@ -270,9 +274,11 @@ Page({
     timelineSwiperCurrent: INITIAL_CURRENT,
     timelineSwiperDuration: 0,
     timelineScrollTop: 0,
-    /** WXS 同步 header 用：cellWidthPx + base = -current * cellWidthPx */
+    /** 吸顶标题外层 base 位移：只由 JS 修改 */
     headerCellWidthPx: 0,
     headerStripBaseOffsetPx: 0,
+    /** 吸顶标题内层 motion 重置 tick：用于清掉 WXS 残留 transform */
+    headerStripMotionResetTick: 0,
     /** 边界扩展瞬间冻结 WXS（避免 setData 触发的中间帧错位） */
     timelineFrozen: false,
     /** 周条触发的 7 格连扫期间为 true：WXS 仍平移吸顶条，但不 callMethod 周条高亮预览 */
@@ -313,7 +319,7 @@ Page({
       weekStripHighlightKey: dateKey(today),
       hours: Array.from({ length: 24 }, (_, i) => `${pad(i)}:00`),
       headerCellWidthPx,
-      headerStripBaseOffsetPx: -INITIAL_CURRENT * headerCellWidthPx,
+      headerStripBaseOffsetPx: headerBaseOffsetForCurrent(INITIAL_CURRENT, headerCellWidthPx),
       timelineSwiperCurrent: INITIAL_CURRENT,
     });
     this.rebuildAll([], today);
@@ -328,6 +334,25 @@ Page({
     this._logChangeCount = 0; this._logExtendCount = 0; this._logRebuildCount = 0; this._logAnimFinishCount = 0;
     // #endregion
     this.loadCalendar();
+  },
+
+  _headerBaseOffsetForCurrent(current) {
+    return headerBaseOffsetForCurrent(current, this.data.headerCellWidthPx);
+  },
+
+  _nextHeaderMotionResetTick() {
+    if (typeof this._headerStripMotionResetTick !== "number") {
+      this._headerStripMotionResetTick = this.data.headerStripMotionResetTick || 0;
+    }
+    this._headerStripMotionResetTick += 1;
+    return this._headerStripMotionResetTick;
+  },
+
+  _buildHeaderSettlePatch(current) {
+    return {
+      headerStripBaseOffsetPx: this._headerBaseOffsetForCurrent(current),
+      headerStripMotionResetTick: this._nextHeaderMotionResetTick(),
+    };
   },
 
   syncGuestState() {
@@ -415,6 +440,7 @@ Page({
     this._timelineDragPreviewLoose = false;
 
     const nextRemount = (this.data.timelineSwiperRemountTick || 0) + 1;
+    const headerPatch = this._buildHeaderSettlePatch(INITIAL_CURRENT);
     // #region agent log H7 - rebuild
     if (!this._logRebuildCount) this._logRebuildCount = 0;
     this._logRebuildCount++;
@@ -433,7 +459,8 @@ Page({
       timelineSwiperDuration: 0,
       timelineFrozen: true,
       timelineSwiperRemountTick: nextRemount,
-      headerStripBaseOffsetPx: -INITIAL_CURRENT * this.data.headerCellWidthPx,
+      headerStripBaseOffsetPx: headerPatch.headerStripBaseOffsetPx,
+      headerStripMotionResetTick: headerPatch.headerStripMotionResetTick,
       weekStripSlideAnim: {},
     }, () => {
       if (!this._timelineInitialScrollDone) {
@@ -633,6 +660,7 @@ Page({
         weekStripSwiperDuration: 0,
         timelineSwiperDuration: TIMELINE_BURST_TOTAL_MS,
         timelineSuppressDragPreview: true,
+        headerStripMotionResetTick: this._nextHeaderMotionResetTick(),
         selectedDateKey: newCenterPage.key,
         weekStripHighlightKey: newCenterPage.key,
         weekNumber: `第${getWeekNumber(newSelectedDate)}周`,
@@ -651,7 +679,9 @@ Page({
 
   /**
    * 时间格 swiper 翻页：用户拖动一格触发。current 累加，pages 不变。
-   * 同步更新 selectedDateKey、weekNumber、weekStripPages（如跨周）、headerStripBaseOffsetPx。
+   * 注意：这里不要提前推进 header base 位移。
+   * 拖动/吸附阶段应继续使用「旧 base + WXS motion」；
+   * 等 animationfinish 再把 base 一次性锁到新列，避免旧 motion 残留时产生超冲一格。
    */
   onTimelineSwiperChange(e) {
     const d = e.detail || {};
@@ -687,7 +717,6 @@ Page({
       selectedDateKey: newCenterPage.key,
       weekStripHighlightKey: newCenterPage.key,
       weekNumber: `第${getWeekNumber(newCenterDate)}周`,
-      headerStripBaseOffsetPx: -newCurrent * this.data.headerCellWidthPx,
     };
     patch.timelineSuppressDragPreview = true;
     if (crossWeek) {
@@ -759,6 +788,7 @@ Page({
     }
 
     const newCurrent = this.data.timelineSwiperCurrent + prependCount;
+    const headerPatch = this._buildHeaderSettlePatch(newCurrent);
 
     // #region agent log H9 - extend
     if (!this._logExtendCount) this._logExtendCount = 0;
@@ -771,7 +801,8 @@ Page({
       timelineSwipePages: newPages,
       timelineSwiperCurrent: newCurrent,
       timelineSwiperDuration: 0,
-      headerStripBaseOffsetPx: -newCurrent * this.data.headerCellWidthPx,
+      headerStripBaseOffsetPx: headerPatch.headerStripBaseOffsetPx,
+      headerStripMotionResetTick: headerPatch.headerStripMotionResetTick,
     }, () => {
       wx.nextTick(() => {
         this.setData({ timelineFrozen: false });
@@ -800,6 +831,7 @@ Page({
         this.setData({
           timelineSwiperDuration: 300,
           timelineSuppressDragPreview: true,
+          headerStripMotionResetTick: this._nextHeaderMotionResetTick(),
           selectedDateKey: newCenterPage.key,
           weekStripHighlightKey: newCenterPage.key,
           weekNumber: `第${getWeekNumber(newCenterDate)}周`,
@@ -860,17 +892,10 @@ Page({
     const before = this.data.weekStripHighlightKey;
     const didSync = this.data.weekStripHighlightKey !== k;
     const suppressWas = this.data.timelineSuppressDragPreview;
-    const patch = {};
+    const patch = this._buildHeaderSettlePatch(cur);
     if (didSync) patch.weekStripHighlightKey = k;
     if (suppressWas) patch.timelineSuppressDragPreview = false;
-    // 动画结束后将 header 起点锁定到准确终点（周条翻周动画未在 setData 中设置此值）
-    const expectedHeaderOffset = -cur * this.data.headerCellWidthPx;
-    if (this.data.headerStripBaseOffsetPx !== expectedHeaderOffset) {
-      patch.headerStripBaseOffsetPx = expectedHeaderOffset;
-    }
-    if (Object.keys(patch).length) {
-      this.setData(patch);
-    }
+    this.setData(patch);
     // #region agent log H11
     if (!this._logAnimFinishCount) this._logAnimFinishCount = 0;
     this._logAnimFinishCount++;
