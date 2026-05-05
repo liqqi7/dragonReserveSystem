@@ -1,0 +1,19 @@
+---
+description: 微信小程序 miniprogram 禁用 fetch / 浏览器 XMLHttpRequest；网络必须用 wx.request 或封装
+alwaysApply: true
+---
+
+# 小程序网络（Dragon Reserve）
+
+本仓库 **`miniprogram/`** 代码运行于 **微信小程序**（非浏览器）。
+
+## 硬性约束
+
+- **禁止**使用 **`fetch`、`axios`、`XMLHttpRequest`** 等与浏览器/`node-fetch`绑定的写法。
+- 发起 HTTP/S 必须使用 **`wx.request`**，或复用本项目封装：**`services/request.js`**。
+- Cursor **Debug Mode** / 会话调试埋点：若须在小程序内向本机 ingest 上报，也用 **`wx.request` POST**，不得改用 `fetch`。
+- **真机**访问 `127.0.0.1` / 局域网调试地址时需注意微信合法域名与白名单（仅开发者工具可临时放开）。
+
+## 推荐
+
+新业务接口统一走 **`require("../../services/request")`**（或相对路径等价），以保持鉴权头、超时与日志一致。

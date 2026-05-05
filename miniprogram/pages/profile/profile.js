@@ -3,6 +3,7 @@ const authService = require("../../services/auth");
 const userService = require("../../services/user");
 const { getApiBaseUrl } = require("../../services/config");
 const { isDefaultNickname, isDefaultAvatar } = require("../../utils/profileUtils");
+const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
 const DEFAULT_AVATAR = "/images/default-avatar.svg";
 const MEDIA_BASE_URL = String(getApiBaseUrl() || "").replace(/\/api\/v\d+\/?$/, "");
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
@@ -54,9 +55,10 @@ Page({
   },
 
   onShow() {
-    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setData({ selected: 2 });
-    }
+    patchTabBarIfNeeded(this, {
+      selected: 3,
+      isAdmin: app.globalData.userRole === "admin",
+    });
     this.syncGuestState();
     const hasLocalAuth = !!wx.getStorageSync("accessToken");
     const userId = app.globalData.userId;

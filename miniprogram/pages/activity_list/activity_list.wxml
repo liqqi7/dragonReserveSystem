@@ -19,7 +19,7 @@
       <text class="main-refresher-hint">{{mainRefresherHint}}</text>
     </view>
     <!-- 背景水印（随内容滚动） -->
-    <image class="page-watermark" src="https://dragon.liqqihome.top/media/images/activity-home-logo.png" mode="aspectFit" />
+    <image class="page-watermark dragon-watermark dragon-watermark--absolute" src="https://dragon.liqqihome.top/media/images/activity-home-logo.png" mode="aspectFit" />
 
     <!-- 自定义透明顶部栏（随页面滚动） -->
     <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px">
@@ -31,11 +31,16 @@
     <block>
 
       <!-- ── 我参与的 ── -->
-      <view wx:if="{{groupedActivities.joined.length > 0}}" class="group-section">
+      <view class="group-section joined-group-section">
         <view class="group-header">
           <text class="group-title">我参与的</text>
+          <view wx:if="{{isAdmin}}" class="group-create-btn" bindtap="showCreateModal">
+            <image class="group-create-icon" src="/images/tab-create.png" mode="aspectFit" />
+            <text class="group-create-text">添加活动</text>
+          </view>
         </view>
         <view
+          wx:if="{{groupedActivities.joined.length > 0}}"
           class="cards-carousel"
           data-group="joined"
           bindtouchstart="onGroupTouchStart"
@@ -383,6 +388,11 @@
               <view class="small-card-info">
                 <text class="small-card-name">{{item.name}}</text>
                 <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
+              </view>
+            </view>
+            <view wx:if="{{endedHasMore}}" class="small-card-wrap ended-more-strip" hover-class="{{isGroupSwiping ? '' : 'card-press'}}" hover-stay-time="80">
+              <view class="ended-more-card" catchtap="onEndedHorizontalLoadMore">
+                <text class="ended-more-text">{{endedLoadingMore ? '加载中…' : '点击加载更多'}}</text>
               </view>
             </view>
             <view class="cards-row-end-spacer"></view>

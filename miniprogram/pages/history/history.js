@@ -2,6 +2,7 @@ const app = getApp();
 const activityService = require("../../services/activity");
 const billService = require("../../services/bill");
 const statsService = require("../../services/stats");
+const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
 
 function formatDate(value) {
   if (!value) return "";
@@ -73,9 +74,10 @@ Page({
   },
 
   onShow() {
-    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setData({ selected: 1 });
-    }
+    patchTabBarIfNeeded(this, {
+      selected: 2,
+      isAdmin: app.globalData.userRole === "admin",
+    });
     const isGuest = this.syncGuestState();
     this.loadEndedActivityCount();
     this.loadPigeonStats();

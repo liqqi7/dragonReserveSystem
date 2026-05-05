@@ -4,6 +4,8 @@ const { createTraceId, logInfo, logError, summarizeError } = require("../../serv
 const { enrichSingleActivity } = require("../../utils/activityEnrich");
 const { parseCreatedAtMs, orderParticipantsForRecentAvatarSlice } = require("../../utils/participantSort");
 const cacheManager = require("../../services/cacheManager");
+const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
+const calendarWarmup = require("../../utils/calendarWarmup");
 
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 
@@ -22,6 +24,7 @@ const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
 const DEFAULT_ACTIVITY_TYPE_KEY = "other";
 const CARD_MEDIA_DIAG_WARN_MS = 8000;
 const CARD_MEDIA_DIAG_ERROR_MS = 15000;
+const ENDED_ACTIVITY_PAGE_SIZE = 5;
 /** 须与 wxml 中 refresher-threshold 一致 */
 const MAIN_REFRESH_THRESHOLD_PX = 80;
 const DEFAULT_ACTIVITY_TYPE_STYLES = [
@@ -402,6 +405,9 @@ Page({
     activityList: [],
     filteredList: [],
     groupedActivities: { joined: [], accepting: [], notStarted: [], ended: [] },
+    allEndedActivities: [],
+    endedHasMore: false,
+    endedLoadingMore: false,
     statusBarHeight: 0,
     navBarHeight: 0,
     groupOffset: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
@@ -483,6 +489,8 @@ Page({
 
   onShow() {
     this.syncGuestState();
+    /** 上一轮切 Tab 时 onHide 里 getTabBar() 偶发不可用，会变成 hidden:true 一直回不去 */
+    this._setTabBarHidden(false);
     let pendingEdit = "";
     try {
       pendingEdit = wx.getStorageSync("pendingEditActivityId") || "";
@@ -497,10 +505,10 @@ Page({
     this.setData({ isAdmin, myUserId, myNickname }, () => {
       this.loadActivityListByCachePolicy();
     });
-    // 同步 isAdmin 到自定义 tabBar 组件
-    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setData({ isAdmin: app.globalData.userRole === "admin" });
-    }
+    patchTabBarIfNeeded(this, {
+      selected: 0,
+      isAdmin: app.globalData.userRole === "admin",
+    });
     this._syncTabBarVisibility();
   },
 
@@ -545,12 +553,18 @@ Page({
 
   onHide() {
     this._clearCardMediaDiagnostics();
-    this._setTabBarHidden(false);
+    const self = this;
+    const flush = () => self._setTabBarHidden(false);
+    if (typeof wx !== "undefined" && typeof wx.nextTick === "function") wx.nextTick(flush);
+    else flush();
   },
 
   onUnload() {
     this._clearCardMediaDiagnostics();
-    this._setTabBarHidden(false);
+    const self = this;
+    const flush = () => self._setTabBarHidden(false);
+    if (typeof wx !== "undefined" && typeof wx.nextTick === "function") wx.nextTick(flush);
+    else flush();
   },
 
   _setTabBarHidden(hidden) {
@@ -1015,6 +1029,14 @@ Page({
     const peekLeft = (targetIndex > 0 && targetIndex < meta.maxIndex) ? 10 : 0;
     const targetOffset = Math.max(0, Math.round(targetIndex * step - peekLeft));
 
+    const endedCardCount =
+      group === "ended" ? (this.data.groupedActivities.ended || []).length : 0;
+    const slidOntoEndedLoadStrip =
+      group === "ended" &&
+      !!this.data.endedHasMore &&
+      targetIndex === meta.maxIndex &&
+      meta.maxIndex === endedCardCount;
+
     const prevVideoIndex = this.data.focusedCardIndex[group];
     meta.index = targetIndex;
     meta.lastLeft = targetOffset;
@@ -1026,8 +1048,16 @@ Page({
       [`focusedCardIndex.${group}`]: targetIndex
     }, () => {
       this._syncVideoFocus(group, prevVideoIndex, targetIndex);
+      if (slidOntoEndedLoadStrip) {
+        this.loadMoreEndedActivities();
+      }
     });
 
+  },
+
+  /** 「已结束」横向滑到末尾加载格或点击加载格 */
+  onEndedHorizontalLoadMore() {
+    this.loadMoreEndedActivities();
   },
 
   onMainScroll(e) {
@@ -1219,6 +1249,49 @@ Page({
       });
   },
 
+  buildEndedStreamState(groupedActivities, visibleCount) {
+    const grouped = groupedActivities || { joined: [], accepting: [], notStarted: [], ended: [] };
+    const allEndedActivities = Array.isArray(grouped.ended) ? grouped.ended : [];
+    const nextVisibleCount = Math.min(
+      allEndedActivities.length,
+      Math.max(ENDED_ACTIVITY_PAGE_SIZE, Number(visibleCount) || ENDED_ACTIVITY_PAGE_SIZE)
+    );
+    const visibleEnded = allEndedActivities.slice(0, nextVisibleCount);
+    const endedHasMore = nextVisibleCount < allEndedActivities.length;
+    return {
+      groupedActivities: {
+        ...grouped,
+        ended: visibleEnded
+      },
+      allEndedActivities,
+      endedHasMore
+    };
+  },
+
+  loadMoreEndedActivities() {
+    const allEndedActivities = this.data.allEndedActivities || [];
+    const currentEnded = (this.data.groupedActivities && this.data.groupedActivities.ended) || [];
+    if (this.data.endedLoadingMore || currentEnded.length >= allEndedActivities.length) {
+      return;
+    }
+
+    const nextVisibleCount = Math.min(allEndedActivities.length, currentEnded.length + ENDED_ACTIVITY_PAGE_SIZE);
+    const visibleEnded = allEndedActivities.slice(0, nextVisibleCount);
+    const endedHasMore = nextVisibleCount < allEndedActivities.length;
+    const groupedActivities = {
+      ...this.data.groupedActivities,
+      ended: visibleEnded
+    };
+    this._groupSnapMetricsReady = false;
+    this.setData({
+      groupedActivities,
+      endedHasMore,
+      endedLoadingMore: false
+    }, () => {
+      this.ensureGroupSnapMetrics();
+    });
+  },
+
   _buildStyleOptionsForType(typeKey, typeStyleMapInput) {
     const typeStyleMap = typeStyleMapInput || buildTypeStyleMap(this.data.activityTypeStyles);
     const normalizedType = normalizeTypeKey(typeKey) || DEFAULT_ACTIVITY_TYPE_KEY;
@@ -1256,7 +1329,9 @@ Page({
     cacheManager.setCachedActivityList(listWithFlags, myUserId);
     const { selectedFilter, searchKeyword } = this.data;
     const filtered = this.computeFilteredList(listWithFlags, selectedFilter, searchKeyword);
-    const groupedActivities = this.computeGroupedActivities(listWithFlags);
+    const fullGroupedActivities = this.computeGroupedActivities(listWithFlags);
+    const endedStream = this.buildEndedStreamState(fullGroupedActivities, ENDED_ACTIVITY_PAGE_SIZE);
+    const groupedActivities = endedStream.groupedActivities;
     this._groupSnapMetricsReady = false;
     const focusReset = { joined: 0, accepting: 0, notStarted: 0, ended: 0 };
     // 须在 setData 回调之前创建 session，否则缓存命中的首帧 bindload 可能早于回调，导致事件丢弃并误报 stalled（H1）
@@ -1265,6 +1340,9 @@ Page({
       activityList: listWithFlags,
       filteredList: filtered,
       groupedActivities,
+      allEndedActivities: endedStream.allEndedActivities,
+      endedHasMore: endedStream.endedHasMore,
+      endedLoadingMore: false,
       groupOffset: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
       focusedCardIndex: focusReset,
       groupUseTransition: false
@@ -1287,7 +1365,9 @@ Page({
           const { list } = result;
           const { selectedFilter, searchKeyword } = this.data;
           const filtered = this.computeFilteredList(list, selectedFilter, searchKeyword);
-          const groupedActivities = this.computeGroupedActivities(list);
+          const fullGroupedActivities = this.computeGroupedActivities(list);
+          const endedStream = this.buildEndedStreamState(fullGroupedActivities, ENDED_ACTIVITY_PAGE_SIZE);
+          const groupedActivities = endedStream.groupedActivities;
           this._groupSnapMetricsReady = false;
           const focusReset = { joined: 0, accepting: 0, notStarted: 0, ended: 0 };
           if (!options.skipCardMediaDiagnostics) {
@@ -1297,6 +1377,9 @@ Page({
             activityList: list,
             filteredList: filtered,
             groupedActivities,
+            allEndedActivities: endedStream.allEndedActivities,
+            endedHasMore: endedStream.endedHasMore,
+            endedLoadingMore: false,
             groupOffset: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
             focusedCardIndex: focusReset,
             groupUseTransition: false
@@ -1304,6 +1387,10 @@ Page({
             this.ensureGroupSnapMetrics();
           });
           cacheManager.setCachedActivityList(list, this.data.myUserId || "");
+
+          wx.nextTick(() => {
+            calendarWarmup.prefetchSignedUpList(app);
+          });
 
           if (options.forceNetwork && !options.skipPullOverlayLoading) wx.hideLoading();
 
