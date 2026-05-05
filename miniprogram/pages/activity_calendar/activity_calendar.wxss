@@ -395,6 +395,34 @@ page {
   overflow: hidden;
 }
 
+.today-fab {
+  position: absolute;
+  /* 与 custom-tab-bar 中 .tab-items-wrap（width: 90.256vw + 居中）右缘对齐 */
+  right: calc((100vw - 90.256vw) / 2);
+  /* Tab 占位与 timeline-scroll 一致，再上抬间距（物理像素） */
+  bottom: calc(112rpx + env(safe-area-inset-bottom) + 40px);
+  z-index: 20;
+  min-width: 88rpx;
+  height: 72rpx;
+  padding: 0 24rpx;
+  border-radius: 999rpx;
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 6rpx 24rpx rgba(16, 24, 40, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  line-height: 36rpx;
+  font-weight: 600;
+  color: #101828;
+}
+
+.today-fab:active {
+  transform: scale(0.97);
+  opacity: 0.92;
+}
+
 .event-title {
   font-size: 22rpx;
   line-height: 32rpx;

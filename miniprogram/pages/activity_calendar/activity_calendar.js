@@ -256,12 +256,11 @@ Page({
     navbarPaddingRightPx: 12,
     timelineTopPx: 200,
     timelineBodyGapPx: 12,
-    timelineHeaderHeightPx: 0,
-    timelineGridHeightPx: HOUR_HEIGHT * 24,
     loading: true,
     loadError: "",
     isGuest: false,
     empty: false,
+    todayDateKey: "",
     selectedDateKey: "",
     /** 周条高亮（拖动中由 WXS 预览更新，松手后与 selectedDateKey 对齐） */
     weekStripHighlightKey: "",
@@ -311,16 +310,13 @@ Page({
     const timelineTopPx = statusBarPx + navContentPx + gapNavToWeekPx + weekStripPx;
     const timeAxisWidthPx = (100 / 750) * winW;
     const headerCellWidthPx = (winW - timeAxisWidthPx) / 3;
-    const timelineHeaderHeightPx = Math.round((98 / 750) * winW);
-    const timelineGridHeightPx = HOUR_HEIGHT * 24 + timelineHeaderHeightPx;
 
     this.setData({
       statusBarHeight: statusBarPx,
       navbarPaddingRightPx,
       timelineTopPx,
       timelineBodyGapPx: gapWeekToTimelinePx,
-      timelineHeaderHeightPx,
-      timelineGridHeightPx,
+      todayDateKey: dateKey(today),
       selectedDateKey: dateKey(today),
       weekStripHighlightKey: dateKey(today),
       hours: Array.from({ length: 24 }, (_, i) => `${pad(i)}:00`),
@@ -339,8 +335,6 @@ Page({
     // #region agent log - 重置采集计数
     this._logChangeCount = 0; this._logExtendCount = 0; this._logRebuildCount = 0; this._logAnimFinishCount = 0;
     // #endregion
-    this._timelineGestureSeq = 0;
-    this._activeTimelineGestureId = 0;
     this.loadCalendar();
   },
 
@@ -365,59 +359,6 @@ Page({
 
   _clearTimelineTouchGestureState() {
     this._timelineTouchPreviewBaseCurrent = null;
-  },
-
-  _resetHeaderMotionToCurrent(current) {
-    if (!Number.isFinite(current)) return;
-    this.setData({
-      headerStripBaseOffsetPx: this._headerBaseOffsetForCurrent(current),
-      headerStripMotionResetTick: this._nextHeaderMotionResetTick(),
-    });
-  },
-
-  _nextTimelineGestureId() {
-    if (typeof this._timelineGestureSeq !== "number") this._timelineGestureSeq = 0;
-    this._timelineGestureSeq += 1;
-    this._activeTimelineGestureId = this._timelineGestureSeq;
-    return this._activeTimelineGestureId;
-  },
-
-  _timelineDebugSnapshot(extra) {
-    return Object.assign({
-      gestureId: this._activeTimelineGestureId || 0,
-      current: this.data.timelineSwiperCurrent,
-      baseCurrent: Number.isFinite(this._timelineTouchPreviewBaseCurrent) ? this._timelineTouchPreviewBaseCurrent : null,
-      selectedDateKey: this.data.selectedDateKey,
-      weekStripHighlightKey: this.data.weekStripHighlightKey,
-      suppressDragPreview: this.data.timelineSuppressDragPreview,
-      frozen: this.data.timelineFrozen,
-      remountTick: this.data.timelineSwiperRemountTick,
-    }, extra || {});
-  },
-
-  _logTimelineDebug(hypothesisId, location, message, extra, opts) {
-    const options = opts || {};
-    const counterKey = options.counterKey;
-    const counterLimit = typeof options.limit === "number" ? options.limit : 60;
-    if (counterKey) {
-      const internalKey = `_timelineDebugCounter_${counterKey}`;
-      if (!this[internalKey]) this[internalKey] = 0;
-      this[internalKey] += 1;
-      if (this[internalKey] > counterLimit) return;
-    }
-    wx.request({
-      url: 'http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94',
-      method: 'POST',
-      header: { 'content-type': 'application/json', 'X-Debug-Session-Id': '01549b' },
-      data: {
-        sessionId: '01549b',
-        hypothesisId,
-        location,
-        message,
-        data: this._timelineDebugSnapshot(extra),
-        timestamp: Date.now()
-      }
-    });
   },
 
   syncGuestState() {
@@ -504,8 +445,6 @@ Page({
     // 首次手势前 swiper 易吐出异常 dx；待用户 touch 成功翻过一页后再放宽预览（见 onTimelineDragPreview）
     this._timelineDragPreviewLoose = false;
     this._clearTimelineTouchGestureState();
-    this._timelineHeaderMotionPrimed = false;
-    this._timelineTouchInFlight = false;
 
     const nextRemount = (this.data.timelineSwiperRemountTick || 0) + 1;
     const headerPatch = this._buildHeaderSettlePatch(INITIAL_CURRENT);
@@ -516,12 +455,6 @@ Page({
       wx.request({ url: 'http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94', method: 'POST', header: { 'content-type': 'application/json', 'X-Debug-Session-Id': '01549b' }, data: { sessionId: '01549b', hypothesisId: 'H7', location: 'activity_calendar.js:rebuildAll', message: 'rebuild', data: { anchor: this._anchorDateKey, pagesLen: timelineSwipePages.length, current: INITIAL_CURRENT, remountTick: nextRemount, n: this._logRebuildCount }, timestamp: Date.now() } });
     }
     // #endregion
-    this._logTimelineDebug('H13', 'activity_calendar.js:rebuildAll', 'rebuild snapshot', {
-      anchorDateKey: this._anchorDateKey,
-      pagesLen: timelineSwipePages.length,
-      nextRemount,
-      initialCurrent: INITIAL_CURRENT
-    }, { counterKey: 'rebuild_snapshot', limit: 12 });
     this.setData({
       selectedDateKey: this._anchorDateKey,
       weekStripHighlightKey: this._anchorDateKey,
@@ -799,33 +732,6 @@ Page({
     if (src !== "touch" && (newCurrent <= EDGE_GUARD || newCurrent >= pages.length - 3 - EDGE_GUARD)) {
       this._ensurePagesCoverCurrent(newCurrent, () => {});
     }
-    this._logTimelineDebug('H13', 'activity_calendar.js:onTimelineSwiperChange', 'change snapshot', {
-      source: src || '',
-      oldCurrent,
-      newCurrent,
-      newKey: newCenterPage.key,
-      willSuppressPreview: !!patch.timelineSuppressDragPreview
-    }, { counterKey: 'change_snapshot', limit: 120 });
-  },
-
-  onTimelineSwiperTouchStart() {
-    const current = this.data.timelineSwiperCurrent;
-    if (!Number.isFinite(current)) return;
-    const previousGestureId = this._activeTimelineGestureId || 0;
-    const gestureId = this._nextTimelineGestureId();
-    this._timelineTouchPreviewBaseCurrent = current;
-    const needsMotionReset = !this._timelineHeaderMotionPrimed || !!this._timelineTouchInFlight;
-    this._timelineHeaderMotionPrimed = true;
-    this._timelineTouchInFlight = true;
-    if (needsMotionReset) {
-      this._resetHeaderMotionToCurrent(current);
-    }
-    this._logTimelineDebug('H13', 'activity_calendar.js:onTimelineSwiperTouchStart', 'touchstart', {
-      previousGestureId,
-      gestureId,
-      touchCurrent: current,
-      needsMotionReset
-    }, { counterKey: 'touchstart', limit: 80 });
   },
 
   /**
@@ -847,12 +753,6 @@ Page({
       done && done();
       return;
     }
-    this._logTimelineDebug('H13', 'activity_calendar.js:_ensurePagesCoverCurrent', 'extend requested', {
-      targetCurrent,
-      len,
-      prependCount,
-      appendCount
-    }, { counterKey: 'extend_request', limit: 80 });
 
     let newPages = pages;
     if (prependCount > 0) {
@@ -878,19 +778,6 @@ Page({
     this._logExtendCount++;
     wx.request({ url: 'http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94', method: 'POST', header: { 'content-type': 'application/json', 'X-Debug-Session-Id': '01549b' }, data: { sessionId: '01549b', hypothesisId: 'H9', location: 'activity_calendar.js:_ensurePagesCoverCurrent', message: 'extend', data: { prependCount, appendCount, oldCurrent: this.data.timelineSwiperCurrent, newCurrent, oldLen: len, newLen: newPages.length, n: this._logExtendCount }, timestamp: Date.now() } });
     // #endregion
-    const leftKeyBefore = pages[this.data.timelineSwiperCurrent] && pages[this.data.timelineSwiperCurrent].key;
-    const leftKeyAfter = newPages[newCurrent] && newPages[newCurrent].key;
-    this._logTimelineDebug('H13', 'activity_calendar.js:_ensurePagesCoverCurrent', 'extend snapshot', {
-      targetCurrent,
-      prependCount,
-      appendCount,
-      oldLen: len,
-      newLen: newPages.length,
-      oldCurrent: this.data.timelineSwiperCurrent,
-      newCurrent,
-      leftKeyBefore,
-      leftKeyAfter
-    }, { counterKey: 'extend_snapshot', limit: 80 });
 
     this.setData({
       timelineFrozen: true,
@@ -905,6 +792,54 @@ Page({
         done && done();
       });
     });
+  },
+
+  /** 周条上点击某日：跳转到该日 */
+  onJumpToToday() {
+    const todayKey = this.data.todayDateKey || dateKey(startOfDay(new Date()));
+    if (!todayKey) return;
+    if (this.data.selectedDateKey === todayKey) return;
+    this._clearTimelineTouchGestureState();
+    const pages = this.data.timelineSwipePages || [];
+    const idx = pages.findIndex((p) => p && p.key === todayKey);
+    // #region agent log — debug b404f0 jump-today
+    const selBefore = this.data.selectedDateKey;
+    const anchorBefore = pages[this.data.timelineSwiperCurrent] && pages[this.data.timelineSwiperCurrent].key;
+    const dSel = parseDate(selBefore);
+    const dToday = parseDate(todayKey);
+    const crossWeekIfAnimFinishUsedSelBefore =
+      dSel && dToday && getMonday(dToday).getTime() !== getMonday(dSel).getTime();
+    wx.request({
+      url: "http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94",
+      method: "POST",
+      header: { "content-type": "application/json", "X-Debug-Session-Id": "b404f0" },
+      data: {
+        sessionId: "b404f0",
+        runId: "post-fix",
+        hypothesisId: "T1",
+        location: "activity_calendar.js:onJumpToToday",
+        message: "jump-today entry",
+        data: { todayKey, idx, pagesLen: pages.length, selBefore, anchorBefore, crossWeekIfAnimFinishUsedSelBefore },
+        timestamp: Date.now(),
+      },
+    });
+    // #endregion
+    if (idx >= 0 && idx <= pages.length - 3) {
+      // 勿在动画前写入 selectedDateKey=今天：否则 onTimelineSwiperAnimFinish 里
+      // oldSelectedDate 已是今天，crossWeek 恒为 false，周条不会 rebuild 回本周。
+      this.setData(
+        {
+          timelineSwiperDuration: 300,
+          timelineSuppressDragPreview: true,
+          headerStripMotionResetTick: this._nextHeaderMotionResetTick(),
+        },
+        () => {
+          this.setData({ timelineSwiperCurrent: idx });
+        }
+      );
+      return;
+    }
+    this.rebuildAll(this.activitiesForRebuild(), parseDate(todayKey) || new Date());
   },
 
   /** 周条上点击某日：跳转到该日 */
@@ -987,15 +922,6 @@ Page({
     // #region agent log H10
     wx.request({ url: 'http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94', method: 'POST', header: { 'content-type': 'application/json', 'X-Debug-Session-Id': '01549b' }, data: { sessionId: '01549b', hypothesisId: 'H10', location: 'activity_calendar.js:onTimelineDragPreview', message: 'preview highlight', data: { dx, C, Cwxs, delta, idx, key }, timestamp: Date.now() } });
     // #endregion
-    this._logTimelineDebug('H13', 'activity_calendar.js:onTimelineDragPreview', 'preview highlight snapshot', {
-      source: 'preview',
-      dx,
-      C,
-      Cwxs,
-      delta,
-      idx,
-      nextHighlightKey: key
-    }, { counterKey: 'preview_snapshot', limit: 160 });
     this.setData({ weekStripHighlightKey: key });
   },
 
@@ -1006,7 +932,6 @@ Page({
     const detailCurrent = Number(d.current);
     const cur = Number.isFinite(detailCurrent) ? detailCurrent : this.data.timelineSwiperCurrent;
     this._clearTimelineTouchGestureState();
-    this._timelineTouchInFlight = false;
     const anchorKey = pages[cur] && pages[cur].key;
     const kSel = this.data.selectedDateKey;
     const k = anchorKey || kSel;
@@ -1018,6 +943,31 @@ Page({
     const crossWeek = anchorDate
       && oldSelectedDate
       && getMonday(anchorDate).getTime() !== getMonday(oldSelectedDate).getTime();
+    // #region agent log — debug b404f0 anim-finish crossWeek（仅程序化跳转，避免刷屏）
+    if (suppressWas) {
+      wx.request({
+        url: "http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94",
+        method: "POST",
+        header: { "content-type": "application/json", "X-Debug-Session-Id": "b404f0" },
+        data: {
+          sessionId: "b404f0",
+          runId: "post-fix",
+          hypothesisId: "T2",
+          location: "activity_calendar.js:onTimelineSwiperAnimFinish",
+          message: "crossWeek decision",
+          data: {
+            cur,
+            anchorKey: k,
+            kSel,
+            oldSelKey: this.data.selectedDateKey,
+            crossWeek,
+            willRebuildWeekStrip: !!(crossWeek && anchorDate),
+          },
+          timestamp: Date.now(),
+        },
+      });
+    }
+    // #endregion
     const patch = this._buildHeaderSettlePatch(cur);
     patch.timelineSwiperCurrent = cur;
     if (anchorDate) {
@@ -1054,16 +1004,6 @@ Page({
         this._ensurePagesCoverCurrent(cur, () => {});
       }
     });
-    this._logTimelineDebug('H13', 'activity_calendar.js:onTimelineSwiperAnimFinish', 'animfinish snapshot', {
-      source: (d && d.source) || '',
-      detailCurrent,
-      finalCurrent: cur,
-      anchorKey,
-      committedKey: k,
-      crossWeek: !!crossWeek,
-      didSync,
-      suppressWas
-    }, { counterKey: 'animfinish_snapshot', limit: 120 });
     // #region agent log H11
     if (!this._logAnimFinishCount) this._logAnimFinishCount = 0;
     this._logAnimFinishCount++;
@@ -1090,7 +1030,6 @@ Page({
   // #region agent log - WXS 回调
   /** WXS 通过 callMethod 上报实时 dx，用于验证物理同步 */
   onWxsTransitionLog(args) {
-    this._logTimelineDebug('H13', 'activity_calendar.js:onWxsTransitionLog', 'transition snapshot', args, { counterKey: 'transition_snapshot', limit: 160 });
     wx.request({ url: 'http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94', method: 'POST', header: { 'content-type': 'application/json', 'X-Debug-Session-Id': '01549b' }, data: { sessionId: '01549b', hypothesisId: 'H5', location: 'WXS:onTransition', message: 'wxs dx', data: args, timestamp: Date.now() } });
   }
   // #endregion

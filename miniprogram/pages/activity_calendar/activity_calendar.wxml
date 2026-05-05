@@ -123,7 +123,6 @@
               current="{{timelineSwiperCurrent}}"
               duration="{{timelineSwiperDuration}}"
               disable-touch="{{false}}"
-              bindtouchstart="onTimelineSwiperTouchStart"
               bindtransition="{{swiperSync.onTransition}}"
               bindchange="onTimelineSwiperChange"
               bindanimationfinish="onTimelineSwiperAnimFinish"
@@ -164,6 +163,14 @@
         </view>
       </view>
     </scroll-view>
+
+    <view
+      wx:if="{{selectedDateKey && todayDateKey && selectedDateKey !== todayDateKey}}"
+      class="today-fab"
+      bindtap="onJumpToToday"
+    >
+      今天
+    </view>
 
     <view wx:if="{{empty}}" class="empty-overlay">
       <view class="state-title">本周暂无报名活动</view>
