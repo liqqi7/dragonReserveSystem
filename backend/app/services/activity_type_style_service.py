@@ -10,12 +10,12 @@ from typing import Optional
 DEFAULT_ACTIVITY_TYPE_STYLES: list[dict[str, object]] = [
     {
         "key": "badminton",
-        "display_name": "羽毛球",
+        "display_name": "\u7fbd\u6bdb\u7403",
         "default_style_key": "badminton-default",
         "styles": [
             {
                 "style_key": "badminton-default",
-                "style_name": "纯静态图（无头像）",
+                "style_name": "\u7eaf\u9759\u6001\u56fe\uff08\u65e0\u5934\u50cf\uff09",
                 "badge_label": "Badminton",
                 "show_badge": True,
                 "show_avatar_cluster": False,
@@ -27,12 +27,12 @@ DEFAULT_ACTIVITY_TYPE_STYLES: list[dict[str, object]] = [
     },
     {
         "key": "boardgame",
-        "display_name": "桌游",
+        "display_name": "\u684c\u6e38",
         "default_style_key": "boardgame-default",
         "styles": [
             {
                 "style_key": "boardgame-default",
-                "style_name": "纯静态图（无头像）",
+                "style_name": "\u7eaf\u9759\u6001\u56fe\uff08\u65e0\u5934\u50cf\uff09",
                 "badge_label": "Boardgame",
                 "show_badge": True,
                 "show_avatar_cluster": True,
@@ -44,29 +44,29 @@ DEFAULT_ACTIVITY_TYPE_STYLES: list[dict[str, object]] = [
     },
     {
         "key": "other",
-        "display_name": "其它",
+        "display_name": "\u5176\u5b83",
         "default_style_key": "other-video",
         "styles": [
             {
                 "style_key": "other-video",
-                "style_name": "默认视频",
+                "style_name": "\u9759\u6001\u56fe",
                 "badge_label": "",
                 "show_badge": False,
                 "show_avatar_cluster": False,
-                "large_card_bg_image_url": "",
-                "small_card_bg_image_url": "",
-                "bg_video_url": "https://dragon.liqqihome.top/media/videos/card-bg-other.mp4",
+                "large_card_bg_image_url": "https://dragon.liqqihome.top/media/images/card-bg-other-lg.png",
+                "small_card_bg_image_url": "https://dragon.liqqihome.top/media/images/card-bg-other-sm.png",
+                "bg_video_url": None,
             },
         ],
     },
     {
         "key": "eating",
-        "display_name": "吃饭",
+        "display_name": "\u5403\u996d",
         "default_style_key": "image-clean",
         "styles": [
             {
                 "style_key": "image-clean",
-                "style_name": "静态图无头像",
+                "style_name": "\u9759\u6001\u56fe\u65e0\u5934\u50cf",
                 "badge_label": "Eating",
                 "show_badge": True,
                 "show_avatar_cluster": False,
@@ -105,12 +105,12 @@ DEFAULT_ACTIVITY_TYPE_STYLES: list[dict[str, object]] = [
     },
     {
         "key": "movie",
-        "display_name": "电影",
+        "display_name": "\u7535\u5f71",
         "default_style_key": "image-clean",
         "styles": [
             {
                 "style_key": "image-clean",
-                "style_name": "纯静态图",
+                "style_name": "\u7eaf\u9759\u6001\u56fe",
                 "badge_label": "Movie",
                 "show_badge": True,
                 "show_avatar_cluster": False,
@@ -120,7 +120,7 @@ DEFAULT_ACTIVITY_TYPE_STYLES: list[dict[str, object]] = [
             },
             {
                 "style_key": "image-clean-2",
-                "style_name": "纯静态图2",
+                "style_name": "\u7eaf\u9759\u6001\u56fe2",
                 "badge_label": "Movie",
                 "show_badge": True,
                 "show_avatar_cluster": False,
@@ -145,19 +145,19 @@ DEFAULT_ACTIVITY_TYPE_STYLES: list[dict[str, object]] = [
 
 ACTIVITY_TYPE_ALIASES = {
     "badminton": "badminton",
-    "羽毛球": "badminton",
+    "\u7fbd\u6bdb\u7403": "badminton",
     "boardgame": "boardgame",
     "board game": "boardgame",
-    "桌游": "boardgame",
+    "\u684c\u6e38": "boardgame",
     "other": "other",
-    "其它": "other",
-    "其他": "other",
+    "\u5176\u5b83": "other",
+    "\u5176\u4ed6": "other",
     "eating": "eating",
-    "吃饭": "eating",
+    "\u5403\u996d": "eating",
     "outing": "outing",
     "\u5916\u51fa": "outing",
     "movie": "movie",
-    "电影": "movie",
+    "\u7535\u5f71": "movie",
 }
 
 
@@ -270,4 +270,3 @@ def normalize_activity_style_key(activity_type: str, activity_style_key: Optiona
         return normalized
 
     raise ValueError(f"unknown activity_type={type_key}")
-

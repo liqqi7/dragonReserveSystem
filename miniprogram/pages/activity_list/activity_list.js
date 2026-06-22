@@ -69,13 +69,13 @@ const DEFAULT_ACTIVITY_TYPE_STYLES = [
     styles: [
       {
         style_key: "other-video",
-        style_name: "默认视频",
+        style_name: "纯静态图",
         badge_label: "",
         show_badge: false,
         show_avatar_cluster: false,
-        large_card_bg_image_url: "",
-        small_card_bg_image_url: "",
-        bg_video_url: "https://dragon.liqqihome.top/media/videos/card-bg-other.mp4"
+        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-other-lg.png",
+        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-other-sm.png",
+        bg_video_url: null
       }
     ]
   },
