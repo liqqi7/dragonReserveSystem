@@ -1532,12 +1532,12 @@ Page({
       }
       activity.isSignupClosed = isSignupClosed;
 
-      // 基于时间自动更新状态（已取消、已删除不参与自动推算，避免删除后又显示为未开始）
+      // 基于时间自动更新状态（已取消、已删除、已流局不参与自动推算，避免删除后又显示为未开始）
       const parseDateTime = (s) => new Date(s.replace(" ", "T") + ":00");
       const start = parseDateTime(activity.startTime);
       const end = parseDateTime(activity.endTime);
       let autoStatus = activity.status || "未开始";
-      if (activity.status === "已取消" || activity.status === "已删除") {
+      if (activity.status === "已取消" || activity.status === "已删除" || activity.status === "已流局") {
         autoStatus = activity.status;
       } else if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
         if (now.getTime() < start.getTime()) {
@@ -1549,7 +1549,7 @@ Page({
         }
       }
 
-      if (activity.status !== "已取消" && activity.status !== "已删除") {
+      if (activity.status !== "已取消" && activity.status !== "已删除" && activity.status !== "已流局") {
         activity.status = autoStatus;
       }
 
@@ -1607,7 +1607,7 @@ Page({
       new Date((a.startTime || "").replace(" ", "T") + ":00");
 
     const usedIds = new Set();
-    const valid = (list || []).filter(a => a.status !== "已取消" && a.status !== "已删除");
+    const valid = (list || []).filter(a => a.status !== "已取消" && a.status !== "已删除" && a.status !== "已流局");
 
     // 1. 我参与的：已报名且未结束（已结束的归入下方「已结束」区，避免历史活动占大卡位）
     const joined = valid.filter((a) => a.hasSignedUp && a.status !== "已结束").sort(sortByStart);
@@ -1792,9 +1792,7 @@ Page({
     
     // 如果是状态选择器，需要从数组中取值
     if (field === "status") {
-      const statusList = ["未开始", "进行中", "已取消", "已结束"];
-      value = statusList[Number(value)] || "未开始";
-    } else if (field === "signupEnabled") {
+      const statusList = ["未开始", "进行中", "已取消", "已结束", "已流局"];
       value = !!e.detail.value;
     } else if (field === "limitEnabled") {
       value = !!e.detail.value;

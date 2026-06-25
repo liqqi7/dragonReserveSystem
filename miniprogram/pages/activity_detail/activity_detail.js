@@ -724,7 +724,7 @@ Page({
     const field = e.currentTarget.dataset.field;
     let value = e.detail.value;
     if (field === "status") {
-      const statusList = ["未开始", "进行中", "已取消", "已结束"];
+      const statusList = ["未开始", "进行中", "已取消", "已结束", "已流局"];
       value = statusList[Number(value)] || "未开始";
     } else if (field === "signupEnabled") {
       value = !!e.detail.value;
@@ -1009,7 +1009,7 @@ Page({
   },
 
   directSignup(activity) {
-    if (activity.status === "已结束" || activity.status === "已取消") {
+    if (activity.status === "已结束" || activity.status === "已取消" || activity.status === "已流局") {
       wx.showToast({ title: "该活动已结束或已取消", icon: "none" });
       return;
     }
