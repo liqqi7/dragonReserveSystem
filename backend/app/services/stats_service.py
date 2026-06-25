@@ -47,10 +47,10 @@ def get_pigeon_stats(db: Session) -> list[PigeonStatResponse]:
 
     member_map: dict[int, dict[str, int | str]] = {}
     for activity in activities:
-        if activity.status == "已取消":
+        if activity.status in ("已取消", "已流局"):
             continue
         end_utc = _activity_end_to_utc(activity.end_time)
-        if end_utc > now_utc and activity.status != "已结束":
+        if end_utc > now_utc and activity.status not in ("已结束",):
             continue
 
         for participant in activity.participants:

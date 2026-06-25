@@ -28,6 +28,8 @@ from app.utils.geo import haversine_distance_meters
 
 settings = get_settings()
 CHECKIN_EARLY_WINDOW_MINUTES = 30
+FLOW_CANCEL_WINDOW_MINUTES = 15  # 活动开始前多少分钟内，人数不足则自动流局
+FLOW_CANCEL_MIN_PARTICIPANTS = 2  # 触发流局的最低人数阈值
 
 
 def _get_activity_query():
@@ -47,6 +49,29 @@ def get_activity_by_id(db: Session, activity_id: int) -> Activity:
     return activity
 
 
+def _sync_activity_status(activity: Activity, now: datetime) -> bool:
+    """Compute time-based status for an activity. Returns True if status changed."""
+    if activity.status in ("已取消", "已删除", "已流局"):
+        return False
+    if activity.end_time <= now:
+        new_status = "已结束"
+    elif activity.start_time <= now:
+        new_status = "进行中"
+    elif activity.start_time - timedelta(minutes=FLOW_CANCEL_WINDOW_MINUTES) <= now:
+        # 开始前 15 分钟窗口内，人数不足则流局
+        participant_count = len(activity.participants)
+        if participant_count <= FLOW_CANCEL_MIN_PARTICIPANTS:
+            new_status = "已流局"
+        else:
+            new_status = "未开始"
+    else:
+        new_status = "未开始"
+    if activity.status != new_status:
+        activity.status = new_status
+        return True
+    return False
+
+
 def list_activities(db: Session) -> list[Activity]:
     """List activities ordered by start time descending. Excludes logically deleted (已删除)."""
     stmt = (
@@ -54,7 +79,11 @@ def list_activities(db: Session) -> list[Activity]:
         .where(Activity.status != "已删除")
         .order_by(Activity.start_time.desc())
     )
-    return list(db.scalars(stmt).unique().all())
+    activities = list(db.scalars(stmt).unique().all())
+    now = _utcnow()
+    if any(_sync_activity_status(a, now) for a in activities):
+        db.commit()
+    return activities
 
 
 def list_my_activities(db: Session, user: User) -> list[Activity]:
@@ -66,7 +95,11 @@ def list_my_activities(db: Session, user: User) -> list[Activity]:
         .where(Activity.status != "已删除")
         .order_by(Activity.start_time.asc())
     )
-    return list(db.scalars(stmt).unique().all())
+    activities = list(db.scalars(stmt).unique().all())
+    now = _utcnow()
+    if any(_sync_activity_status(a, now) for a in activities):
+        db.commit()
+    return activities
 
 
 def _resolve_style_key_implicit(db: Session, activity_type: str) -> Optional[str]:
