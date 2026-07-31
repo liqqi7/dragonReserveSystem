@@ -40,6 +40,66 @@ def test_activity_list_allows_guest(client) -> None:
     assert response.status_code == 200
 
 
+def test_activity_list_syncs_all_due_statuses_in_one_request(client, db_session, admin_user) -> None:
+    from app.models import Activity
+    from app.services.activity_service import _activity_status_now
+
+    now = _activity_status_now()
+
+    flow_start = now + timedelta(minutes=2)
+    flow_activity = Activity(
+        name="应流局活动",
+        status="未开始",
+        remark="人数不足流局",
+        max_participants=None,
+        start_time=flow_start,
+        end_time=flow_start + timedelta(hours=1),
+        signup_deadline=flow_start - timedelta(minutes=1),
+        signup_enabled=True,
+        location_name="测试地点",
+        location_address="测试地址",
+        created_by=admin_user.id,
+    )
+    ended_activity = Activity(
+        name="应结束活动",
+        status="进行中",
+        remark="时间已结束",
+        max_participants=None,
+        start_time=now - timedelta(hours=2),
+        end_time=now - timedelta(hours=1),
+        signup_deadline=now - timedelta(hours=3),
+        signup_enabled=True,
+        location_name="测试地点",
+        location_address="测试地址",
+        created_by=admin_user.id,
+    )
+    future_activity = Activity(
+        name="保持未开始活动",
+        status="未开始",
+        remark="尚未进入流局窗口",
+        max_participants=None,
+        start_time=now + timedelta(minutes=30),
+        end_time=now + timedelta(hours=1, minutes=30),
+        signup_deadline=now + timedelta(minutes=20),
+        signup_enabled=True,
+        location_name="测试地点",
+        location_address="测试地址",
+        created_by=admin_user.id,
+    )
+    db_session.add_all([flow_activity, ended_activity, future_activity])
+    db_session.commit()
+
+    response = client.get("/api/v1/activities")
+
+    assert response.status_code == 200
+    db_session.refresh(flow_activity)
+    db_session.refresh(ended_activity)
+    db_session.refresh(future_activity)
+    assert flow_activity.status == "已流局"
+    assert ended_activity.status == "已结束"
+    assert future_activity.status == "未开始"
+
+
 def test_admin_can_create_list_get_update_delete_activity(client, admin_headers) -> None:
     start_time = datetime.utcnow() + timedelta(days=2)
     end_time = start_time + timedelta(hours=2)

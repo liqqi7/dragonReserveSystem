@@ -1,10 +1,11 @@
 """Activity use cases."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 
 from typing import Optional
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
@@ -31,6 +32,11 @@ CHECKIN_EARLY_WINDOW_MINUTES = 30
 FLOW_CANCEL_WINDOW_MINUTES = 15  # 活动开始前多少分钟内，人数不足则自动流局
 FLOW_CANCEL_MIN_PARTICIPANTS = 2  # 触发流局的最低人数阈值
 
+try:
+    _APP_LOCAL_TZ = ZoneInfo("Asia/Shanghai")
+except (ZoneInfoNotFoundError, ModuleNotFoundError):
+    _APP_LOCAL_TZ = timezone(timedelta(hours=8))
+
 
 def _get_activity_query():
     return select(Activity).options(selectinload(Activity.participants))
@@ -38,6 +44,12 @@ def _get_activity_query():
 
 def _utcnow() -> datetime:
     return datetime.utcnow()
+
+
+def _activity_status_now() -> datetime:
+    """Return naive app-local time for comparing DB wall-clock activity times."""
+
+    return datetime.now(_APP_LOCAL_TZ).replace(tzinfo=None)
 
 
 def get_activity_by_id(db: Session, activity_id: int) -> Activity:
@@ -80,8 +92,12 @@ def list_activities(db: Session) -> list[Activity]:
         .order_by(Activity.start_time.desc())
     )
     activities = list(db.scalars(stmt).unique().all())
-    now = _utcnow()
-    if any(_sync_activity_status(a, now) for a in activities):
+    now = _activity_status_now()
+    changed = False
+    for activity in activities:
+        if _sync_activity_status(activity, now):
+            changed = True
+    if changed:
         db.commit()
     return activities
 
@@ -96,8 +112,12 @@ def list_my_activities(db: Session, user: User) -> list[Activity]:
         .order_by(Activity.start_time.asc())
     )
     activities = list(db.scalars(stmt).unique().all())
-    now = _utcnow()
-    if any(_sync_activity_status(a, now) for a in activities):
+    now = _activity_status_now()
+    changed = False
+    for activity in activities:
+        if _sync_activity_status(activity, now):
+            changed = True
+    if changed:
         db.commit()
     return activities
 
