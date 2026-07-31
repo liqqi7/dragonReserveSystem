@@ -1793,7 +1793,7 @@ Page({
     // 如果是状态选择器，需要从数组中取值
     if (field === "status") {
       const statusList = ["未开始", "进行中", "已取消", "已结束", "已流局"];
-      value = !!e.detail.value;
+      value = statusList[Number(value)] || "未开始";
     } else if (field === "limitEnabled") {
       value = !!e.detail.value;
     } else if (field === "maxParticipants") {
