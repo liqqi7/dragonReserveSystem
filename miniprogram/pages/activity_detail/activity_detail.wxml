@@ -6,7 +6,7 @@
     enhanced="true"
     style="height: calc(100vh - {{bottomBarHeight}}px)"
   >
-    <image class="page-watermark" src="https://dragon.liqqihome.top/media/images/activity-home-logo.png" mode="aspectFit" />
+    <image class="page-watermark" src="../../images/activity-home-logo.png" mode="aspectFit" />
 
     <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px">
       <view class="navbar-inner">

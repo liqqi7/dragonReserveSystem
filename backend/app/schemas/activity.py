@@ -10,6 +10,16 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.services.activity_type_style_service import get_allowed_activity_types, normalize_activity_type_key
 
 
+ACTIVITY_STATUSES = {"未开始", "进行中", "已结束", "已取消", "已删除", "已流局"}
+
+
+def _validate_activity_status(value: str) -> str:
+    normalized = value.strip()
+    if normalized not in ACTIVITY_STATUSES:
+        raise ValueError("status is invalid")
+    return normalized
+
+
 def _normalize_activity_type(value: Optional[str]) -> Optional[str]:
     if value is None:
         return None
@@ -29,9 +39,10 @@ class ActivityParticipantResponse(BaseModel):
 
     id: int
     user_id: int
-    nickname_snapshot: str
-    avatar_url_snapshot: str
+    display_nickname: str
+    display_avatar_url: str
     checked_in_at: Optional[datetime]
+    checkin_method: Optional[str]
     checkin_lat: Optional[float]
     checkin_lng: Optional[float]
     created_at: datetime
@@ -73,7 +84,7 @@ class ActivityCreateRequest(BaseModel):
     """Admin-only activity creation payload."""
 
     name: str = Field(min_length=1, max_length=128)
-    status: str = Field(default="进行中", max_length=32)
+    status: str = Field(default="未开始", max_length=32)
     remark: str = ""
     max_participants: Optional[int] = Field(default=None, ge=1, le=999)
     start_time: datetime
@@ -108,6 +119,11 @@ class ActivityCreateRequest(BaseModel):
     def validate_activity_type(cls, value: Optional[str]) -> Optional[str]:
         return _normalize_activity_type(value)
 
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value: str) -> str:
+        return _validate_activity_status(value)
+
 
 class ActivityUpdateRequest(BaseModel):
     """Admin-only activity update payload."""
@@ -131,6 +147,11 @@ class ActivityUpdateRequest(BaseModel):
     @classmethod
     def validate_activity_type(cls, value: Optional[str]) -> Optional[str]:
         return _normalize_activity_type(value)
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value: Optional[str]) -> Optional[str]:
+        return _validate_activity_status(value) if value is not None else None
 
 
 class ActivitySignupResponse(BaseModel):

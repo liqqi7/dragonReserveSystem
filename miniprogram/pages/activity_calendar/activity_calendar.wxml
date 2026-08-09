@@ -1,6 +1,6 @@
 <wxs module="swiperSync" src="./swiper-header-sync.wxs"></wxs>
 <view class="calendar-page">
-  <image class="calendar-watermark dragon-watermark dragon-watermark--fixed" src="https://dragon.liqqihome.top/media/images/activity-home-logo.png" mode="aspectFit" />
+  <image class="calendar-watermark dragon-watermark dragon-watermark--fixed" src="../../images/activity-home-logo.png" mode="aspectFit" />
 
   <view class="calendar-navbar" style="padding-top: {{statusBarHeight}}px">
     <view class="navbar-row" style="padding-right: {{navbarPaddingRightPx}}px">

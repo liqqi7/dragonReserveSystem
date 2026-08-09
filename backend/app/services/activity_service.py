@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta
 import hashlib
 import json
+from zoneinfo import ZoneInfo
 
 from typing import Optional
 
@@ -30,14 +31,17 @@ settings = get_settings()
 CHECKIN_EARLY_WINDOW_MINUTES = 30
 FLOW_CANCEL_WINDOW_MINUTES = 15  # 活动开始前多少分钟内，人数不足则自动流局
 FLOW_CANCEL_MIN_PARTICIPANTS = 2  # 触发流局的最低人数阈值
+APP_TIME_ZONE = ZoneInfo("Asia/Shanghai")
 
 
 def _get_activity_query():
     return select(Activity).options(selectinload(Activity.participants))
 
 
-def _utcnow() -> datetime:
-    return datetime.utcnow()
+def _app_now() -> datetime:
+    """Return a naive datetime in the timezone used by stored activity times."""
+
+    return datetime.now(APP_TIME_ZONE).replace(tzinfo=None)
 
 
 def get_activity_by_id(db: Session, activity_id: int) -> Activity:
@@ -46,6 +50,9 @@ def get_activity_by_id(db: Session, activity_id: int) -> Activity:
     activity = db.scalar(_get_activity_query().where(Activity.id == activity_id))
     if activity is None:
         raise NotFoundError("Activity not found")
+    if _sync_activity_status(activity, _app_now()):
+        db.commit()
+        db.refresh(activity)
     return activity
 
 
@@ -80,7 +87,7 @@ def list_activities(db: Session) -> list[Activity]:
         .order_by(Activity.start_time.desc())
     )
     activities = list(db.scalars(stmt).unique().all())
-    now = _utcnow()
+    now = _app_now()
     if any(_sync_activity_status(a, now) for a in activities):
         db.commit()
     return activities
@@ -96,7 +103,7 @@ def list_my_activities(db: Session, user: User) -> list[Activity]:
         .order_by(Activity.start_time.asc())
     )
     activities = list(db.scalars(stmt).unique().all())
-    now = _utcnow()
+    now = _app_now()
     if any(_sync_activity_status(a, now) for a in activities):
         db.commit()
     return activities
@@ -181,13 +188,14 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
     )
     db.add(activity)
     db.flush()
+    _sync_activity_status(activity, _app_now())
 
     # Auto-signup creator as a participant
     creator_participant = ActivityParticipant(
         activity_id=activity.id,
         user_id=created_by.id,
-        nickname_snapshot=created_by.nickname,
-        avatar_url_snapshot=created_by.avatar_url,
+        display_nickname=created_by.nickname,
+        display_avatar_url=created_by.avatar_url,
     )
     db.add(creator_participant)
 
@@ -233,6 +241,8 @@ def update_activity(db: Session, activity: Activity, payload: ActivityUpdateRequ
     if activity.signup_deadline and activity.signup_deadline > activity.start_time:
         raise ValidationAppError("signup_deadline must be earlier than or equal to start_time")
 
+    _sync_activity_status(activity, _app_now())
+
     db.add(activity)
     db.commit()
     db.refresh(activity)
@@ -256,7 +266,7 @@ def signup_activity(db: Session, activity: Activity, user: User) -> ActivityPart
         raise ValidationAppError("Signup is currently disabled for this activity")
 
     deadline = activity.signup_deadline or activity.start_time
-    if deadline and _utcnow() >= deadline:
+    if deadline and _app_now() >= deadline:
         raise ValidationAppError("Signup deadline has passed")
 
     existing = db.scalar(
@@ -280,8 +290,8 @@ def signup_activity(db: Session, activity: Activity, user: User) -> ActivityPart
     participant = ActivityParticipant(
         activity_id=activity.id,
         user_id=user.id,
-        nickname_snapshot=user.nickname,
-        avatar_url_snapshot=user.avatar_url,
+        display_nickname=user.nickname,
+        display_avatar_url=user.avatar_url,
     )
     db.add(participant)
     db.commit()
@@ -302,7 +312,7 @@ def cancel_signup(db: Session, activity: Activity, user: User) -> None:
         raise NotFoundError("Signup record not found")
 
     deadline = activity.signup_deadline or activity.start_time
-    if user.role != "admin" and deadline and _utcnow() >= deadline:
+    if user.role != "admin" and deadline and _app_now() >= deadline:
         raise ValidationAppError("Signup deadline has passed; contact an admin to remove this signup")
 
     db.delete(participant)
@@ -325,7 +335,7 @@ def remove_participant(db: Session, activity: Activity, participant_id: int, act
         raise ValidationAppError("You can only remove your own signup")
 
     deadline = activity.signup_deadline or activity.start_time
-    if actor.role != "admin" and deadline and _utcnow() >= deadline:
+    if actor.role != "admin" and deadline and _app_now() >= deadline:
         raise ValidationAppError("Signup deadline has passed; contact an admin to remove this signup")
 
     db.delete(participant)
@@ -360,7 +370,8 @@ def admin_checkin_participant(
     if participant.checked_in_at is not None:
         raise ConflictError("Participant has already checked in")
 
-    participant.checked_in_at = _utcnow()
+    participant.checked_in_at = _app_now()
+    participant.checkin_method = "admin"
     participant.checkin_lat = None
     participant.checkin_lng = None
     db.add(participant)
@@ -394,6 +405,7 @@ def admin_cancel_checkin_participant(
         raise ConflictError("Participant has not checked in")
 
     participant.checked_in_at = None
+    participant.checkin_method = None
     participant.checkin_lat = None
     participant.checkin_lng = None
     db.add(participant)
@@ -448,7 +460,8 @@ def checkin_activity(
     if distance > settings.checkin_radius_meters:
         raise ValidationAppError("You are outside the allowed check-in radius")
 
-    participant.checked_in_at = _utcnow()
+    participant.checked_in_at = _app_now()
+    participant.checkin_method = "location"
     participant.checkin_lat = payload.lat
     participant.checkin_lng = payload.lng
     db.add(participant)

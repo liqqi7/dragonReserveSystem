@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 
+from app.models import Activity, ActivityParticipant
+from app.services.activity_service import APP_TIME_ZONE
 
 def _create_signed_up_activity_for_checkin(db_session, admin_user, normal_user, start_time):
-    from app.models import Activity, ActivityParticipant
-
     end_time = start_time + timedelta(hours=2)
     activity = Activity(
         name="签到测试活动",
@@ -26,8 +26,8 @@ def _create_signed_up_activity_for_checkin(db_session, admin_user, normal_user, 
     participant = ActivityParticipant(
         activity_id=activity.id,
         user_id=normal_user.id,
-        nickname_snapshot=normal_user.nickname,
-        avatar_url_snapshot=normal_user.avatar_url,
+        display_nickname=normal_user.nickname,
+        display_avatar_url=normal_user.avatar_url,
     )
     db_session.add(participant)
     db_session.commit()
@@ -146,16 +146,16 @@ def test_my_activities_returns_only_current_user_signups_sorted_and_non_deleted(
             ActivityParticipant(
                 activity_id=activity.id,
                 user_id=normal_user.id,
-                nickname_snapshot=normal_user.nickname,
-                avatar_url_snapshot=normal_user.avatar_url,
+                display_nickname=normal_user.nickname,
+                display_avatar_url=normal_user.avatar_url,
             )
         )
     db_session.add(
         ActivityParticipant(
             activity_id=other_user_activity.id,
             user_id=second_user.id,
-            nickname_snapshot=second_user.nickname,
-            avatar_url_snapshot=second_user.avatar_url,
+            display_nickname=second_user.nickname,
+            display_avatar_url=second_user.avatar_url,
         )
     )
     db_session.commit()
@@ -229,7 +229,7 @@ def test_creator_auto_signed_up_on_create(client, admin_headers) -> None:
 def test_unlimited_capacity_allows_many_signups(client, db_session, admin_user, user_headers) -> None:
     from app.models import Activity
 
-    start_time = datetime.utcnow() + timedelta(hours=1)
+    start_time = datetime.now(APP_TIME_ZONE).replace(tzinfo=None) + timedelta(hours=1)
     end_time = start_time + timedelta(hours=2)
 
     activity = Activity(
@@ -383,8 +383,8 @@ def test_admin_can_retro_checkin_participant(
     participant = ActivityParticipant(
         activity_id=activity.id,
         user_id=normal_user.id,
-        nickname_snapshot=normal_user.nickname,
-        avatar_url_snapshot=normal_user.avatar_url,
+        display_nickname=normal_user.nickname,
+        display_avatar_url=normal_user.avatar_url,
     )
     db_session.add(participant)
     db_session.commit()
@@ -437,8 +437,8 @@ def test_admin_can_cancel_checkin_participant(
     participant = ActivityParticipant(
         activity_id=activity.id,
         user_id=normal_user.id,
-        nickname_snapshot=normal_user.nickname,
-        avatar_url_snapshot=normal_user.avatar_url,
+        display_nickname=normal_user.nickname,
+        display_avatar_url=normal_user.avatar_url,
         checked_in_at=datetime.utcnow(),
     )
     db_session.add(participant)
@@ -467,8 +467,8 @@ def test_user_cannot_remove_other_participant(
     participant = ActivityParticipant(
         activity_id=sample_activity.id,
         user_id=second_user.id,
-        nickname_snapshot=second_user.nickname,
-        avatar_url_snapshot=second_user.avatar_url,
+        display_nickname=second_user.nickname,
+        display_avatar_url=second_user.avatar_url,
     )
     db_session.add(participant)
     db_session.commit()

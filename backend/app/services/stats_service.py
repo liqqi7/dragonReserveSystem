@@ -3,14 +3,13 @@ from __future__ import annotations
 """Statistics use cases."""
 
 from datetime import datetime, timedelta, timezone
-from decimal import Decimal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.models import Activity, Bill
-from app.schemas.stats import ActivityBillStatResponse, PigeonStatResponse
+from app.models import Activity
+from app.schemas.stats import PigeonStatResponse
 
 # 小程序端对无 Z 后缀的 ISO 时间按设备本地时区解析；国内用户即东八区。
 # 库内 naive datetime 与 utcnow() 直接比较会把「本地日历日」误判为未来，导致已结束活动未计入鸽子榜。
@@ -57,7 +56,7 @@ def get_pigeon_stats(db: Session) -> list[PigeonStatResponse]:
             stat = member_map.setdefault(
                 participant.user_id,
                 {
-                    "nickname": participant.nickname_snapshot,
+                    "nickname": participant.display_nickname,
                     "signup_count": 0,
                     "checkin_count": 0,
                 },
@@ -91,49 +90,3 @@ def get_pigeon_stats(db: Session) -> list[PigeonStatResponse]:
         key=lambda item: (item.pigeon_rate, item.signup_count),
         reverse=True,
     )
-
-
-def get_activity_bill_stats(db: Session) -> list[ActivityBillStatResponse]:
-    """Aggregate bills by activity."""
-
-    bills = list(db.scalars(select(Bill).options(selectinload(Bill.participants))).unique().all())
-    activity_name_map = {
-        activity.id: activity.name
-        for activity in db.scalars(select(Activity)).all()
-    }
-    grouped: dict[int | None, dict[str, object]] = {}
-
-    for bill in bills:
-        bucket = grouped.setdefault(
-            bill.activity_id,
-            {
-                "activity_name": (
-                    activity_name_map.get(bill.activity_id, f"活动 {bill.activity_id}")
-                    if bill.activity_id is not None
-                    else "未关联活动"
-                ),
-                "total_amount": Decimal("0.00"),
-                "participants": set(),
-            },
-        )
-        bucket["total_amount"] += bill.total_amount
-        participants = bucket["participants"]
-        for participant in bill.participants:
-            participants.add(participant.user_id)
-
-    result = []
-    for activity_id, bucket in grouped.items():
-        participant_count = len(bucket["participants"])
-        total_amount = bucket["total_amount"]
-        avg_amount = float(total_amount / participant_count) if participant_count else 0.0
-        result.append(
-            ActivityBillStatResponse(
-                activity_id=activity_id,
-                activity_name=str(bucket["activity_name"]),
-                total_amount=float(total_amount),
-                participant_count=participant_count,
-                avg_amount=round(avg_amount, 2),
-            )
-        )
-
-    return sorted(result, key=lambda item: (item.activity_id is None, -(item.activity_id or 0)))

@@ -35,7 +35,7 @@ class Activity(Base):
     location_address: Mapped[str] = mapped_column(String(255), nullable=False, default="")
     location_latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     location_longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    created_by: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -65,10 +65,11 @@ class ActivityParticipant(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     activity_id: Mapped[int] = mapped_column(ForeignKey("activities.id", ondelete="CASCADE"), nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    nickname_snapshot: Mapped[str] = mapped_column(String(64), nullable=False)
-    avatar_url_snapshot: Mapped[str] = mapped_column(String(512), nullable=False, default="")
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    display_nickname: Mapped[str] = mapped_column(String(64), nullable=False)
+    display_avatar_url: Mapped[str] = mapped_column(String(512), nullable=False, default="")
     checked_in_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    checkin_method: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
     checkin_lat: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     checkin_lng: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(

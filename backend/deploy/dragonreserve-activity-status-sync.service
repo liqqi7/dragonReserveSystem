@@ -1,0 +1,10 @@
+[Unit]
+Description=Synchronize Dragon Reserve activity statuses
+After=mysql.service
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/apps/dragonReserveSystem/backend
+EnvironmentFile=/home/ubuntu/apps/dragonReserveSystem/backend/.env
+ExecStart=/home/ubuntu/apps/dragonReserveSystem/backend/.venv/bin/python -m scripts.sync_activity_status

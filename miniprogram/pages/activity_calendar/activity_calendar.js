@@ -332,9 +332,6 @@ Page({
       selected: 1,
       isAdmin: app.globalData.userRole === "admin",
     });
-    // #region agent log - 重置采集计数
-    this._logChangeCount = 0; this._logExtendCount = 0; this._logRebuildCount = 0; this._logAnimFinishCount = 0;
-    // #endregion
     this.loadCalendar();
   },
 
@@ -448,13 +445,6 @@ Page({
 
     const nextRemount = (this.data.timelineSwiperRemountTick || 0) + 1;
     const headerPatch = this._buildHeaderSettlePatch(INITIAL_CURRENT);
-    // #region agent log H7 - rebuild
-    if (!this._logRebuildCount) this._logRebuildCount = 0;
-    this._logRebuildCount++;
-    if (this._logRebuildCount <= 5) {
-      wx.request({ url: 'http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94', method: 'POST', header: { 'content-type': 'application/json', 'X-Debug-Session-Id': '01549b' }, data: { sessionId: '01549b', hypothesisId: 'H7', location: 'activity_calendar.js:rebuildAll', message: 'rebuild', data: { anchor: this._anchorDateKey, pagesLen: timelineSwipePages.length, current: INITIAL_CURRENT, remountTick: nextRemount, n: this._logRebuildCount }, timestamp: Date.now() } });
-    }
-    // #endregion
     this.setData({
       selectedDateKey: this._anchorDateKey,
       weekStripHighlightKey: this._anchorDateKey,
@@ -605,11 +595,6 @@ Page({
     const pending = this._weekStripPendingSlideIndex;
     const slideIndex = pending === 0 || pending === 2 ? pending : currentIndex;
 
-    // #region agent log H12
-    if (!this._logWeekStripCount) this._logWeekStripCount = 0;
-    this._logWeekStripCount++;
-    wx.request({ url: 'http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94', method: 'POST', header: { 'content-type': 'application/json', 'X-Debug-Session-Id': '01549b' }, data: { sessionId: '01549b', hypothesisId: 'H12', location: 'activity_calendar.js:onWeekStripSwiperAnimationFinish', message: 'weekstrip-animfinish', data: { role, currentIndex, slideIndex, pending, consumed: this._weekStripCommitConsumed, gestureRole: this._weekStripGestureRole, timelineCurrent: this.data.timelineSwiperCurrent, n: this._logWeekStripCount }, timestamp: Date.now() } });
-    // #endregion
 
     if (this._weekStripCommitConsumed) return;
     const gestureRole = this._weekStripGestureRole || "";
@@ -638,8 +623,6 @@ Page({
       const adjustedTarget = this.data.timelineSwiperCurrent + deltaDays;
       const newCenterPage = this.data.timelineSwipePages[adjustedTarget];
 
-      // #region agent log H12
-      wx.request({ url: 'http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94', method: 'POST', header: { 'content-type': 'application/json', 'X-Debug-Session-Id': '01549b' }, data: { sessionId: '01549b', hypothesisId: 'H12', location: 'activity_calendar.js:onWeekStripSwiperAnimationFinish:callback', message: 'weekstrip-setdata', data: { curCurrent, deltaDays, adjustedTarget, newPageKey: newCenterPage && newCenterPage.key, timelineCurrentNow: this.data.timelineSwiperCurrent, n: this._logWeekStripCount }, timestamp: Date.now() } });
       // #endregion
 
       if (!newCenterPage) {
@@ -698,13 +681,6 @@ Page({
     const newCurrent = Number(d.current);
     const oldCurrent = this.data.timelineSwiperCurrent;
 
-    // #region agent log H8
-    if (!this._logChangeCount) this._logChangeCount = 0;
-    this._logChangeCount++;
-    if (this._logChangeCount <= 30) {
-      wx.request({ url: 'http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94', method: 'POST', header: { 'content-type': 'application/json', 'X-Debug-Session-Id': '01549b' }, data: { sessionId: '01549b', hypothesisId: 'H8', location: 'activity_calendar.js:onTimelineSwiperChange', message: 'change', data: { newCurrent, oldCurrent, src, n: this._logChangeCount }, timestamp: Date.now() } });
-    }
-    // #endregion
 
     if (!Number.isFinite(newCurrent)) return;
     if (src === "autoplay") return;
@@ -773,11 +749,6 @@ Page({
     const newCurrent = this.data.timelineSwiperCurrent + prependCount;
     const headerPatch = this._buildHeaderSettlePatch(newCurrent);
 
-    // #region agent log H9 - extend
-    if (!this._logExtendCount) this._logExtendCount = 0;
-    this._logExtendCount++;
-    wx.request({ url: 'http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94', method: 'POST', header: { 'content-type': 'application/json', 'X-Debug-Session-Id': '01549b' }, data: { sessionId: '01549b', hypothesisId: 'H9', location: 'activity_calendar.js:_ensurePagesCoverCurrent', message: 'extend', data: { prependCount, appendCount, oldCurrent: this.data.timelineSwiperCurrent, newCurrent, oldLen: len, newLen: newPages.length, n: this._logExtendCount }, timestamp: Date.now() } });
-    // #endregion
 
     this.setData({
       timelineFrozen: true,
@@ -802,28 +773,12 @@ Page({
     this._clearTimelineTouchGestureState();
     const pages = this.data.timelineSwipePages || [];
     const idx = pages.findIndex((p) => p && p.key === todayKey);
-    // #region agent log — debug b404f0 jump-today
     const selBefore = this.data.selectedDateKey;
     const anchorBefore = pages[this.data.timelineSwiperCurrent] && pages[this.data.timelineSwiperCurrent].key;
     const dSel = parseDate(selBefore);
     const dToday = parseDate(todayKey);
     const crossWeekIfAnimFinishUsedSelBefore =
       dSel && dToday && getMonday(dToday).getTime() !== getMonday(dSel).getTime();
-    wx.request({
-      url: "http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94",
-      method: "POST",
-      header: { "content-type": "application/json", "X-Debug-Session-Id": "b404f0" },
-      data: {
-        sessionId: "b404f0",
-        runId: "post-fix",
-        hypothesisId: "T1",
-        location: "activity_calendar.js:onJumpToToday",
-        message: "jump-today entry",
-        data: { todayKey, idx, pagesLen: pages.length, selBefore, anchorBefore, crossWeekIfAnimFinishUsedSelBefore },
-        timestamp: Date.now(),
-      },
-    });
-    // #endregion
     if (idx >= 0 && idx <= pages.length - 3) {
       // 勿在动画前写入 selectedDateKey=今天：否则 onTimelineSwiperAnimFinish 里
       // oldSelectedDate 已是今天，crossWeek 恒为 false，周条不会 rebuild 回本周。
@@ -919,9 +874,6 @@ Page({
     const key = row && row.key;
     if (!key || key === this.data.weekStripHighlightKey) return;
     if (!weekStripPagesContainDateKey(this.data.weekStripPages, key)) return;
-    // #region agent log H10
-    wx.request({ url: 'http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94', method: 'POST', header: { 'content-type': 'application/json', 'X-Debug-Session-Id': '01549b' }, data: { sessionId: '01549b', hypothesisId: 'H10', location: 'activity_calendar.js:onTimelineDragPreview', message: 'preview highlight', data: { dx, C, Cwxs, delta, idx, key }, timestamp: Date.now() } });
-    // #endregion
     this.setData({ weekStripHighlightKey: key });
   },
 
@@ -943,31 +895,6 @@ Page({
     const crossWeek = anchorDate
       && oldSelectedDate
       && getMonday(anchorDate).getTime() !== getMonday(oldSelectedDate).getTime();
-    // #region agent log — debug b404f0 anim-finish crossWeek（仅程序化跳转，避免刷屏）
-    if (suppressWas) {
-      wx.request({
-        url: "http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94",
-        method: "POST",
-        header: { "content-type": "application/json", "X-Debug-Session-Id": "b404f0" },
-        data: {
-          sessionId: "b404f0",
-          runId: "post-fix",
-          hypothesisId: "T2",
-          location: "activity_calendar.js:onTimelineSwiperAnimFinish",
-          message: "crossWeek decision",
-          data: {
-            cur,
-            anchorKey: k,
-            kSel,
-            oldSelKey: this.data.selectedDateKey,
-            crossWeek,
-            willRebuildWeekStrip: !!(crossWeek && anchorDate),
-          },
-          timestamp: Date.now(),
-        },
-      });
-    }
-    // #endregion
     const patch = this._buildHeaderSettlePatch(cur);
     patch.timelineSwiperCurrent = cur;
     if (anchorDate) {
@@ -1004,13 +931,6 @@ Page({
         this._ensurePagesCoverCurrent(cur, () => {});
       }
     });
-    // #region agent log H11
-    if (!this._logAnimFinishCount) this._logAnimFinishCount = 0;
-    this._logAnimFinishCount++;
-    if (this._logAnimFinishCount <= 40) {
-      wx.request({ url: 'http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94', method: 'POST', header: { 'content-type': 'application/json', 'X-Debug-Session-Id': '01549b' }, data: { sessionId: '01549b', hypothesisId: 'H11', location: 'activity_calendar.js:onTimelineSwiperAnimFinish', message: 'animfinish', data: { detail: d, before, anchorKey, selected: kSel, syncTo: k, didSync, suppressWas, clearedSuppress: suppressWas && Object.prototype.hasOwnProperty.call(patch, 'timelineSuppressDragPreview'), n: this._logAnimFinishCount }, timestamp: Date.now() } });
-    }
-    // #endregion
   },
 
   onActivityTap(e) {
@@ -1027,10 +947,4 @@ Page({
     wx.switchTab({ url: "/pages/profile/profile" });
   },
 
-  // #region agent log - WXS 回调
-  /** WXS 通过 callMethod 上报实时 dx，用于验证物理同步 */
-  onWxsTransitionLog(args) {
-    wx.request({ url: 'http://127.0.0.1:7776/ingest/f5086d31-35a2-4638-bcfe-54b976d6ce94', method: 'POST', header: { 'content-type': 'application/json', 'X-Debug-Session-Id': '01549b' }, data: { sessionId: '01549b', hypothesisId: 'H5', location: 'WXS:onTransition', message: 'wxs dx', data: args, timestamp: Date.now() } });
-  }
-  // #endregion
 });

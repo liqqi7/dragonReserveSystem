@@ -3,11 +3,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_optional_current_user
+from app.api.deps import get_optional_current_user
 from app.core.database import get_db
 from app.models import User
-from app.schemas.stats import ActivityBillStatResponse, PigeonStatResponse
-from app.services.stats_service import get_activity_bill_stats, get_pigeon_stats
+from app.schemas.stats import PigeonStatResponse
+from app.services.stats_service import get_pigeon_stats
 
 
 router = APIRouter(prefix="/stats", tags=["stats"])
@@ -21,13 +21,3 @@ def get_history_stats(
     """Return signup/checkin ranking stats."""
 
     return get_pigeon_stats(db)
-
-
-@router.get("/bills", response_model=list[ActivityBillStatResponse], summary="Get bill stats")
-def get_bill_stats(
-    db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
-) -> list[ActivityBillStatResponse]:
-    """Return activity-level bill statistics."""
-
-    return get_activity_bill_stats(db)

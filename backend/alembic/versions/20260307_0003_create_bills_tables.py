@@ -36,7 +36,7 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("bill_id", sa.Integer(), nullable=False),
         sa.Column("user_id", sa.Integer(), nullable=False),
-        sa.Column("nickname_snapshot", sa.String(length=64), nullable=False),
+        sa.Column("display_nickname", sa.String(length=64), nullable=False),
         sa.ForeignKeyConstraint(["bill_id"], ["bills.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"]),
         sa.PrimaryKeyConstraint("id"),

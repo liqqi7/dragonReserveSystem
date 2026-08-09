@@ -305,12 +305,12 @@ function formatDateTime(value) {
 }
 
 function adaptParticipant(participant) {
-  const name = participant.nickname_snapshot || "";
+  const name = participant.display_nickname || "";
   return {
     id: participant.id,
     name,
     userId: participant.user_id != null ? String(participant.user_id) : null,
-    avatarUrl: normalizeAvatarUrl(participant.avatar_url_snapshot),
+    avatarUrl: normalizeAvatarUrl(participant.display_avatar_url),
     checkedInAt: formatDateTime(participant.checked_in_at),
     checkinLat: participant.checkin_lat,
     checkinLng: participant.checkin_lng,

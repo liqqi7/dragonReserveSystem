@@ -86,9 +86,9 @@ def get_or_create_activity_share_preview(activity: Activity) -> SharePreviewResu
 
 
 def _build_cache_key(activity: Activity, style: dict[str, object]) -> str:
-    participants = _participant_snapshots(activity)
+    participants = _participant_display_records(activity)
     fingerprint = ",".join(
-        f"{participant.id}:{participant.user_id}:{participant.nickname_snapshot}:{participant.avatar_url_snapshot}"
+        f"{participant.id}:{participant.user_id}:{participant.display_nickname}:{participant.display_avatar_url}"
         for participant in participants
     )
     raw = "|".join([
@@ -228,7 +228,7 @@ def _truncate_text(draw: ImageDraw.ImageDraw, text: str, max_width: int, font: I
 
 
 def _get_participant_text(activity: Activity) -> str:
-    count = len(_participant_snapshots(activity))
+    count = len(_participant_display_records(activity))
     if activity.max_participants is not None:
         return f"{count}/{activity.max_participants} 人"
     if count > 0:
@@ -237,15 +237,15 @@ def _get_participant_text(activity: Activity) -> str:
 
 
 def _select_share_avatars(activity: Activity) -> list[Image.Image]:
-    """最近报名的 3 人（按 created_at），绘制顺序为 TL=最新；头像仅使用库内 avatar_url_snapshot。"""
+    """最近报名的 3 人（按 created_at），绘制顺序为 TL=最新；头像仅使用库内 display_avatar_url。"""
 
-    snapshots = _participant_snapshots(activity)
+    snapshots = _participant_display_records(activity)
     if not snapshots:
         return []
     selected = list(reversed(snapshots[-3:]))
     images: list[Image.Image] = []
     for participant in selected:
-        url = str(participant.avatar_url_snapshot or "").strip()
+        url = str(participant.display_avatar_url or "").strip()
         if not url:
             continue
         try:
@@ -260,7 +260,7 @@ def _select_share_avatars(activity: Activity) -> list[Image.Image]:
     return images
 
 
-def _participant_snapshots(activity: Activity) -> list[ActivityParticipant]:
+def _participant_display_records(activity: Activity) -> list[ActivityParticipant]:
     participants = list(activity.participants or [])
     return sorted(
         participants,

@@ -19,7 +19,7 @@
       <text class="main-refresher-hint">{{mainRefresherHint}}</text>
     </view>
     <!-- 背景水印（随内容滚动） -->
-    <image class="page-watermark dragon-watermark dragon-watermark--absolute" src="https://dragon.liqqihome.top/media/images/activity-home-logo.png" mode="aspectFit" />
+    <image class="page-watermark dragon-watermark dragon-watermark--absolute" src="../../images/activity-home-logo.png" mode="aspectFit" />
 
     <!-- 自定义透明顶部栏（随页面滚动） -->
     <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px">
