@@ -2,7 +2,8 @@ param(
     [string]$EnvFile = "",
     [string]$AppHost = "127.0.0.1",
     [int]$AppPort = 8001,
-    [int]$AppReload = 1
+    [int]$AppReload = 1,
+    [string]$MiniProgramHost = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -122,16 +123,35 @@ try {
     if (Test-Path $MpConfigFile) {
         # Use a literal single-quoted here-string for JS so PowerShell never parses `function` / `Try`-like tokens.
         # Closing '@ must start at column 0.
-        $apiUrl = "http://$($AppHost):$AppPort/api/v1"
+        $apiHost = if ($MiniProgramHost) { $MiniProgramHost } elseif ($AppHost -eq "0.0.0.0") { "127.0.0.1" } else { $AppHost }
+        $apiUrl = "http://$apiHost`:$AppPort/api/v1"
+        $env:PUBLIC_BASE_URL = "http://$apiHost`:$AppPort"
+        $env:TEST_REQUEST_LOG_FILE = Join-Path $RootDir "test-request.log"
         $localConfig = "const API_BASE_URL = `"$apiUrl`";" + @'
 
 function getApiBaseUrl() {
   return API_BASE_URL;
 }
 
+function resolveLocalMediaUrl(url) {
+  const value = String(url || '').trim();
+  if (!value || !API_BASE_URL.startsWith('http://')) return value;
+  const apiOrigin = API_BASE_URL.replace(/\/api\/v\d+\/?$/, '');
+  const match = value.match(/^http:\/\/(?:127\.0\.0\.1|localhost)(:\d+)?(\/.*)$/i);
+  return match ? `${apiOrigin}${match[2]}` : value;
+}
+
+function isLocalTestMediaUrl(url) {
+  if (!API_BASE_URL.startsWith('http://')) return false;
+  const apiOrigin = API_BASE_URL.replace(/\/api\/v\d+\/?$/, '');
+  return resolveLocalMediaUrl(url).startsWith(`${apiOrigin}/`);
+}
+
 module.exports = {
   API_BASE_URL,
-  getApiBaseUrl
+  getApiBaseUrl,
+  resolveLocalMediaUrl,
+  isLocalTestMediaUrl
 };
 '@
         Set-Content -Path $MpConfigFile -Value $localConfig -Encoding UTF8 -NoNewline:$false

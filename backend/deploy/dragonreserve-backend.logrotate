@@ -1,0 +1,11 @@
+/home/ubuntu/apps/dragonReserveSystem/backend/logs/application.log {
+    daily
+    rotate 14
+    size 50M
+    missingok
+    notifempty
+    compress
+    delaycompress
+    copytruncate
+    su ubuntu ubuntu
+}

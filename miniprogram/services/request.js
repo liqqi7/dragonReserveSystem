@@ -8,6 +8,15 @@ const {
 } = require("./logger");
 
 const DEFAULT_REQUEST_TIMEOUT = 15000;
+const SLOW_REQUEST_THRESHOLD_MS = 2000;
+
+function estimateResponseBytes(data) {
+  try {
+    return JSON.stringify(data == null ? null : data).length;
+  } catch (_e) {
+    return 0;
+  }
+}
 
 function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQUEST_TIMEOUT }) {
   const traceId = createTraceId("req");
@@ -44,6 +53,17 @@ function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQ
             duration,
             statusCode: res.statusCode
           });
+          if (duration >= SLOW_REQUEST_THRESHOLD_MS) {
+            logInfo("request_slow", {
+              url,
+              method,
+              traceId,
+              requestId: responseRequestId || traceId,
+              duration,
+              statusCode: res.statusCode,
+              responseBytes: estimateResponseBytes(res.data)
+            });
+          }
           resolve(res.data);
           return;
         }

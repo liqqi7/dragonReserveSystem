@@ -1,5 +1,6 @@
 const app = getApp();
 const activityService = require("../../services/activity");
+const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
 const { createTraceId, logInfo, logError, summarizeError } = require("../../services/logger");
 const { enrichSingleActivity } = require("../../utils/activityEnrich");
 const { parseCreatedAtMs, orderParticipantsForRecentAvatarSlice } = require("../../utils/participantSort");
@@ -25,6 +26,7 @@ const DEFAULT_ACTIVITY_TYPE_KEY = "other";
 const CARD_MEDIA_DIAG_WARN_MS = 8000;
 const CARD_MEDIA_DIAG_ERROR_MS = 15000;
 const ENDED_ACTIVITY_PAGE_SIZE = 5;
+const CACHE_METADATA_TTL_MS = 60 * 1000;
 /** 须与 wxml 中 refresher-threshold 一致 */
 const MAIN_REFRESH_THRESHOLD_PX = 80;
 const DEFAULT_ACTIVITY_TYPE_STYLES = [
@@ -264,7 +266,8 @@ const ACTIVE_GESTURE_PRESET = "balanced";
 const GESTURE_TUNING = {
   ...GESTURE_PRESETS[ACTIVE_GESTURE_PRESET],
   directionStartPx: 4,
-  verticalDominanceRatio: 1.15,
+  // A diagonal drag should remain a page scroll unless its horizontal intent is clear.
+  verticalDominanceRatio: 0.8,
   quickFlickDurationMs: 320,
   quickFlickDistancePx: 14
 };
@@ -272,7 +275,7 @@ const GESTURE_TUNING = {
 const SWIPE_MOVE_SMOOTHING = {
   // checkpoint-1: { updateIntervalMs: 16, minStepPx: 1, maxStepPxPerFrame: Infinity }
   // checkpoint-2: { updateIntervalMs: 8, minStepPx: 2, maxStepPxPerFrame: Infinity }
-  updateIntervalMs: 0,
+  updateIntervalMs: 16,
   minStepPx: 0,
   maxStepPxPerFrame: Infinity
 };
@@ -292,7 +295,10 @@ function normalizeAvatarUrl(url) {
     const m = value.match(/test-avatar-(\d{2})\.svg$/i);
     return m ? `${LOCAL_TEST_AVATAR_PREFIX}/test-avatar-${m[1]}.svg` : DEFAULT_AVATAR;
   }
-  if (lower.startsWith("http://")) return DEFAULT_AVATAR;
+  if (lower.startsWith("http://")) {
+    const resolved = resolveLocalMediaUrl(value);
+    return isLocalTestMediaUrl(value) ? resolved : DEFAULT_AVATAR;
+  }
 
   return value;
 }
@@ -488,6 +494,8 @@ Page({
   },
 
   onShow() {
+    this._pageVisible = true;
+    this._loadGeneration = (this._loadGeneration || 0) + 1;
     this.syncGuestState();
     /** 上一轮切 Tab 时 onHide 里 getTabBar() 偶发不可用，会变成 hidden:true 一直回不去 */
     this._setTabBarHidden(false);
@@ -513,7 +521,12 @@ Page({
   },
 
   loadActivityListByCachePolicy() {
-    return Promise.all([activityService.getClientConfig(), activityService.getActivityStyleSignature()])
+    const metadataAge = Date.now() - cacheManager.getCacheMetadataCheckedAt();
+    const metadataFresh = metadataAge >= 0 && metadataAge < CACHE_METADATA_TTL_MS;
+    const usedCachedStyles = this.loadActivityTypeStylesFromCache();
+    const usedCachedList = this.loadActivityListFromCache();
+    const hasCompleteCache = usedCachedStyles && usedCachedList;
+    const refreshMetadata = () => Promise.all([activityService.getClientConfig(), activityService.getActivityStyleSignature()])
       .then(([cfg, sigRes]) => {
         const serverVersion = String((cfg && cfg.cache_version) || "1");
         const serverSignature = String((sigRes && sigRes.signature) || "");
@@ -521,38 +534,43 @@ Page({
         const localSignature = cacheManager.getActivityStyleSignature();
         const shouldRefresh = !localVersion || !localSignature ||
           localVersion !== serverVersion || localSignature !== serverSignature;
+        cacheManager.setCacheMetadataCheckedAt();
 
         if (shouldRefresh) {
           cacheManager.clearBusinessCaches();
           cacheManager.setClientCacheVersion(serverVersion);
           cacheManager.setActivityStyleSignature(serverSignature);
-          return this.loadActivityTypeStyles({ forceNetwork: true })
-            .then(() => this.loadActivityList({ forceNetwork: true }));
+          if (usedCachedStyles) {
+            return this.loadActivityTypeStyles({ forceNetwork: true })
+              .then(() => this.loadActivityList({ forceNetwork: true }));
+          }
         }
-
-        const usedCachedStyles = this.loadActivityTypeStylesFromCache();
-        const usedCachedList = this.loadActivityListFromCache();
-        if (usedCachedStyles && usedCachedList) {
-          // 用户报名状态可能在其它入口变更，命中缓存后静默拉新一次，避免分组滞后。
-          // 不再重启卡片媒体诊断：静默拉新后 DOM 常不重建，bindload 不会二次触发，会误报 activity_card_media_stalled。
-          this.loadActivityList({ forceNetwork: false, skipCardMediaDiagnostics: true });
-          return Promise.resolve();
-        }
-        return this.loadActivityTypeStyles({ forceNetwork: true })
-          .then(() => this.loadActivityList({ forceNetwork: true }));
-      })
-      .catch((err) => {
-        console.error(err);
-        const usedCachedStyles = this.loadActivityTypeStylesFromCache();
-        const usedCachedList = this.loadActivityListFromCache();
-        if (usedCachedStyles && usedCachedList) return;
-        return this.loadActivityTypeStyles({ forceNetwork: true })
-          .then(() => this.loadActivityList({ forceNetwork: true }));
       });
+
+    if (hasCompleteCache) {
+      // 缓存先渲染，元数据校验和活动静默刷新均不阻塞首屏。
+      this.loadActivityList({ forceNetwork: false, skipCardMediaDiagnostics: true });
+      if (metadataFresh) return Promise.resolve();
+      return refreshMetadata().catch((err) => console.error(err));
+    }
+
+    // 首次进入没有完整缓存时，样式、活动和元数据检查同时开始；页面只等样式与活动。
+    const stylesPromise = usedCachedStyles
+      ? Promise.resolve()
+      : this.loadActivityTypeStyles({ forceNetwork: true });
+    const rawActivitiesPromise = activityService.listActivities();
+    const activitiesPromise = stylesPromise.then(() =>
+      this.loadActivityList({ forceNetwork: true, responsePromise: rawActivitiesPromise })
+    );
+    const metadataPromise = metadataFresh ? Promise.resolve() : refreshMetadata().catch((err) => console.error(err));
+    return Promise.all([stylesPromise, activitiesPromise, metadataPromise]);
   },
 
   onHide() {
+    this._pageVisible = false;
+    this._loadGeneration = (this._loadGeneration || 0) + 1;
     this._clearCardMediaDiagnostics();
+    calendarWarmup.cancelScheduledPrefetch();
     const self = this;
     const flush = () => self._setTabBarHidden(false);
     if (typeof wx !== "undefined" && typeof wx.nextTick === "function") wx.nextTick(flush);
@@ -560,6 +578,9 @@ Page({
   },
 
   onUnload() {
+    this._pageVisible = false;
+    this._loadGeneration = (this._loadGeneration || 0) + 1;
+    calendarWarmup.cancelScheduledPrefetch();
     this._clearCardMediaDiagnostics();
     const self = this;
     const flush = () => self._setTabBarHidden(false);
@@ -621,16 +642,17 @@ Page({
     const startedAt = Date.now();
     let deviceInfo = {};
     try {
-      const systemInfo = wx.getSystemInfoSync();
+      const device = typeof wx.getDeviceInfo === "function" ? wx.getDeviceInfo() : {};
+      const windowInfo = typeof wx.getWindowInfo === "function" ? wx.getWindowInfo() : {};
       deviceInfo = {
-        brand: systemInfo.brand || "",
-        model: systemInfo.model || "",
-        system: systemInfo.system || "",
-        platform: systemInfo.platform || "",
-        benchmarkLevel: systemInfo.benchmarkLevel,
-        windowWidth: systemInfo.windowWidth,
-        windowHeight: systemInfo.windowHeight,
-        pixelRatio: systemInfo.pixelRatio
+        brand: device.brand || "",
+        model: device.model || "",
+        system: device.system || "",
+        platform: device.platform || "",
+        benchmarkLevel: device.benchmarkLevel,
+        windowWidth: windowInfo.windowWidth,
+        windowHeight: windowInfo.windowHeight,
+        pixelRatio: windowInfo.pixelRatio
       };
     } catch (err) {}
     const items = {};
@@ -983,6 +1005,14 @@ Page({
     if (Math.abs(nextOffset - meta.renderedOffset) < SWIPE_MOVE_SMOOTHING.minStepPx) {
       return;
     }
+    const now = Date.now();
+    if (
+      SWIPE_MOVE_SMOOTHING.updateIntervalMs > 0 &&
+      now - (meta.touchMoveThrottleTs || 0) < SWIPE_MOVE_SMOOTHING.updateIntervalMs
+    ) {
+      return;
+    }
+    meta.touchMoveThrottleTs = now;
     meta.renderedOffset = nextOffset;
     this.setData({ [`groupOffset.${group}`]: nextOffset });
 
@@ -1178,7 +1208,7 @@ Page({
   syncGuestState() {
     const hasWeChatAuth = !!wx.getStorageSync("hasWeChatAuth");
     const isAuthenticated = app.globalData.isAuthenticated;
-    // 未完成微信头像昵称授权 或 未获取访问权限，都视为游客
+    // 未完成登录或未获取访问权限，都视为游客
     const isGuest = !hasWeChatAuth || !isAuthenticated;
     this.setData({ isGuest });
 
@@ -1353,14 +1383,16 @@ Page({
   },
 
   loadActivityList(options = {}) {
+    const generation = options.generation == null ? (this._loadGeneration || 0) : options.generation;
+    if (this._pageVisible === false || generation !== (this._loadGeneration || 0)) return Promise.resolve();
     this._clearCardMediaDiagnostics();
     if (options.forceNetwork && !options.skipPullOverlayLoading) {
       wx.showLoading({ title: "加载中..." });
     }
-    return activityService
-      .listActivities()
+    return (options.responsePromise || activityService.listActivities())
       .then((res) => this.processActivityList(res || [], new Date()))
       .then(result => {
+        if (this._pageVisible === false || generation !== (this._loadGeneration || 0)) return;
         if (result) {
           const { list } = result;
           const { selectedFilter, searchKeyword } = this.data;
@@ -1389,7 +1421,7 @@ Page({
           cacheManager.setCachedActivityList(list, this.data.myUserId || "");
 
           wx.nextTick(() => {
-            calendarWarmup.prefetchSignedUpList(app);
+            calendarWarmup.schedulePrefetchSignedUpList(app);
           });
 
           if (options.forceNetwork && !options.skipPullOverlayLoading) wx.hideLoading();
@@ -1402,6 +1434,7 @@ Page({
         }
       })
       .catch(err => {
+        if (this._pageVisible === false || generation !== (this._loadGeneration || 0)) return;
         console.error(err);
         if (options.forceNetwork && !options.skipPullOverlayLoading) wx.hideLoading();
         // 测试环境切换后常见：本地缓存 token 对应的用户不在当前库中

@@ -19,7 +19,7 @@ class TokenResponse(BaseModel):
 
 
 class WeChatProfilePayload(BaseModel):
-    """Optional profile payload provided by the mini program client."""
+    """Legacy profile payload accepted for compatibility and ignored by the server."""
 
     nickname: str = Field(default="", max_length=64)
     avatar_url: str = Field(default="", max_length=512)

@@ -10,7 +10,9 @@ function updateMe(payload) {
   return request({
     url: "/users/me",
     method: "PATCH",
-    data: payload
+    data: payload,
+    // The test database is reached through an SSH tunnel and can briefly be slow.
+    timeout: 30000
   });
 }
 

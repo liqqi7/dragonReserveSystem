@@ -461,9 +461,9 @@
         <view class="signup-profile-form-row">
           <view class="signup-profile-label">头像</view>
           <view class="signup-profile-avatar-wrap">
-            <button class="signup-profile-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onSignupProfileChooseAvatar">
+            <button class="signup-profile-avatar-btn" bindtap="onSignupProfileChooseAvatar">
               <image wx:if="{{signupProfileAvatarUrl}}" class="signup-profile-avatar-img" src="{{signupProfileAvatarUrl}}" mode="aspectFill" />
-              <view wx:else class="signup-profile-avatar-placeholder">选择头像</view>
+              <view wx:else class="signup-profile-avatar-placeholder">上传头像</view>
             </button>
           </view>
         </view>

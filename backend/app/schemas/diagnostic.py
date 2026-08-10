@@ -32,3 +32,9 @@ class ClientDiagnosticLogResponse(BaseModel):
     status: str = "ok"
     stored: bool = True
 
+
+class ClientDiagnosticLogBatchRequest(BaseModel):
+    """A bounded batch of client diagnostic events."""
+
+    events: list[ClientDiagnosticLogRequest] = Field(default_factory=list, max_length=20)
+

@@ -1,0 +1,17 @@
+[Unit]
+Description=Dragon Reserve FastAPI Backend
+After=network.target mysql.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/apps/dragonReserveSystem/backend
+EnvironmentFile=/home/ubuntu/apps/dragonReserveSystem/backend/.env
+ExecStart=/home/ubuntu/apps/dragonReserveSystem/backend/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-access-log
+Restart=always
+RestartSec=3
+StandardOutput=append:/home/ubuntu/apps/dragonReserveSystem/backend/logs/application.log
+StandardError=append:/home/ubuntu/apps/dragonReserveSystem/backend/logs/application.log
+
+[Install]
+WantedBy=multi-user.target

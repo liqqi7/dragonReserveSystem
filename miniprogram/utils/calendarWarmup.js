@@ -5,8 +5,25 @@ const activityService = require("../services/activity");
 const myActivitiesCache = require("./myActivitiesCache");
 
 const PREFETCH_MIN_INTERVAL_MS = 45 * 1000;
+const PREFETCH_IDLE_DELAY_MS = 350;
 
 let _inflight = null;
+let _scheduledTimer = null;
+
+function cancelScheduledPrefetch() {
+  if (_scheduledTimer) {
+    clearTimeout(_scheduledTimer);
+    _scheduledTimer = null;
+  }
+}
+
+function schedulePrefetchSignedUpList(app) {
+  cancelScheduledPrefetch();
+  _scheduledTimer = setTimeout(() => {
+    _scheduledTimer = null;
+    prefetchSignedUpList(app);
+  }, PREFETCH_IDLE_DELAY_MS);
+}
 
 function prefetchSignedUpList(app) {
   const token = app.globalData.accessToken || wx.getStorageSync("accessToken");
@@ -34,4 +51,6 @@ function prefetchSignedUpList(app) {
 
 module.exports = {
   prefetchSignedUpList,
+  schedulePrefetchSignedUpList,
+  cancelScheduledPrefetch,
 };

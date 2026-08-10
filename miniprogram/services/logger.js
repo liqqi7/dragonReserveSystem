@@ -10,6 +10,12 @@ let cachedSystemMeta;
 let clientDiagnosticSessionId;
 const backendUploadThrottleMap = new Map();
 const wechatAnalyticsTransportThrottleMap = new Map();
+const backendUploadQueue = [];
+let backendUploadTimer = null;
+let backendUploadInFlight = false;
+const BACKEND_UPLOAD_BATCH_SIZE = 8;
+const BACKEND_UPLOAD_DELAY_MS = 1200;
+const BACKEND_UPLOAD_MAX_RETRIES = 1;
 
 function getClientDiagnosticSessionId() {
   if (!clientDiagnosticSessionId) {
@@ -54,12 +60,26 @@ function shouldReportRealtime(event) {
     event === "activity_card_media_stalled" ||
     event === "activity_card_media_error" ||
     event === "activity_card_video_waiting" ||
-    event === "activity_card_media_all_resolved"
+    event === "activity_card_media_all_resolved" ||
+    event === "page_error" ||
+    event === "diagnostic_upload_fail"
   );
 }
 
 function shouldUploadBackend(event) {
-  return shouldReportRealtime(event);
+  return (
+    event === "request_fail" ||
+    event === "request_slow" ||
+    event === "page_error" ||
+    event === "activity_card_media_stalled" ||
+    event === "activity_card_media_error" ||
+    event === "activity_card_video_waiting"
+  );
+}
+
+function getRuntimeEnvironment() {
+  const apiUrl = String(getApiBaseUrl() || "").toLowerCase();
+  return /(?:127\.0\.0\.1|localhost|192\.168\.)/.test(apiUrl) ? "test" : "production";
 }
 
 function normalizeRealtimeValue(value, depth = 0) {
@@ -97,14 +117,15 @@ function getCurrentPageRoute() {
 function getSystemMeta() {
   if (cachedSystemMeta) return cachedSystemMeta;
   try {
-    const info = wx.getSystemInfoSync();
+    const device = typeof wx.getDeviceInfo === "function" ? wx.getDeviceInfo() : {};
+    const appInfo = typeof wx.getAppBaseInfo === "function" ? wx.getAppBaseInfo() : {};
     cachedSystemMeta = {
-      clientVersion: info.version || "",
-      baseLibVersion: info.SDKVersion || "",
-      systemType: info.platform || "",
-      brand: info.brand || "",
-      model: info.model || "",
-      system: info.system || ""
+      clientVersion: appInfo.version || "",
+      baseLibVersion: appInfo.SDKVersion || "",
+      systemType: device.platform || "",
+      brand: device.brand || "",
+      model: device.model || "",
+      system: device.system || ""
     };
   } catch (err) {
     cachedSystemMeta = {
@@ -270,32 +291,96 @@ function uploadBackendLog(level, event, payload) {
   if (shouldThrottleBackendUpload(event, payload || {})) return;
 
   const systemMeta = getSystemMeta();
-  const body = {
-    event,
-    level,
-    traceId: (payload && payload.traceId) || "",
-    sessionId: (payload && payload.sessionId) || getClientDiagnosticSessionId(),
-    page: getCurrentPageRoute(),
-    clientVersion: systemMeta.clientVersion,
-    baseLibVersion: systemMeta.baseLibVersion,
-    systemType: systemMeta.systemType,
-    payload: normalizeRealtimeValue(payload || {})
-  };
+  backendUploadQueue.push({
+    retryCount: 0,
+    body: {
+      event,
+      level,
+      traceId: (payload && payload.traceId) || "",
+      sessionId: (payload && payload.sessionId) || getClientDiagnosticSessionId(),
+      page: getCurrentPageRoute(),
+      clientVersion: systemMeta.clientVersion,
+      baseLibVersion: systemMeta.baseLibVersion,
+      systemType: systemMeta.systemType,
+      payload: {
+        environment: getRuntimeEnvironment(),
+        ...normalizeRealtimeValue(payload || {})
+      }
+    }
+  });
+  if (backendUploadQueue.length >= BACKEND_UPLOAD_BATCH_SIZE) {
+    flushBackendLogs();
+    return;
+  }
+  if (backendUploadTimer) return;
+  backendUploadTimer = setTimeout(() => {
+    backendUploadTimer = null;
+    flushBackendLogs();
+  }, BACKEND_UPLOAD_DELAY_MS);
+}
 
+function flushBackendLogs() {
+  if (backendUploadInFlight || !backendUploadQueue.length) return;
+  if (typeof wx === "undefined" || !wx || typeof wx.request !== "function") return;
+  const token = wx.getStorageSync("accessToken");
+  if (!token) {
+    backendUploadQueue.length = 0;
+    return;
+  }
+  const batch = backendUploadQueue.splice(0, BACKEND_UPLOAD_BATCH_SIZE);
+  backendUploadInFlight = true;
+  const retryOrReport = (reason) => {
+    const retryable = batch
+      .filter((entry) => entry.retryCount < BACKEND_UPLOAD_MAX_RETRIES)
+      .map((entry) => ({ ...entry, retryCount: entry.retryCount + 1 }));
+    if (retryable.length) {
+      backendUploadQueue.unshift(...retryable);
+      return;
+    }
+    const payload = {
+      summary: String(reason || "diagnostic upload failed").slice(0, 200),
+      eventCount: batch.length
+    };
+    console.error("[mini] diagnostic_upload_fail", payload);
+    reportRealtime("error", "diagnostic_upload_fail", payload);
+  };
   try {
     wx.request({
-      url: `${getApiBaseUrl()}/diagnostics/client-logs`,
+      url: `${getApiBaseUrl()}/diagnostics/client-logs/batch`,
       method: "POST",
       timeout: 5000,
       header: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`
       },
-      data: body
+      data: { events: batch.map((entry) => entry.body) },
+      success(res) {
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          retryOrReport(`status:${res.statusCode}`);
+        }
+      },
+      fail(err) {
+        retryOrReport((err && err.errMsg) || "network failed");
+      },
+      complete() {
+        backendUploadInFlight = false;
+        if (backendUploadQueue.length) flushBackendLogs();
+      }
     });
   } catch (err) {
-    // Never let diagnostic upload affect app behavior.
+    backendUploadInFlight = false;
+    retryOrReport((err && err.message) || "request setup failed");
   }
+}
+
+function logPageError(operation, err, context = {}) {
+  const summary = summarizeError(err);
+  logError("page_error", {
+    operation: String(operation || "unknown").slice(0, 100),
+    summary,
+    traceId: (err && err.traceId) || "",
+    ...normalizeRealtimeValue(context)
+  });
 }
 
 function reportRealtime(level, event, payload) {
@@ -333,6 +418,7 @@ module.exports = {
   summarizeError,
   logInfo,
   logError,
+  logPageError,
   reportTransportFailToWechatAnalytics,
   logRequestTransportFail,
   getClientDiagnosticSessionId

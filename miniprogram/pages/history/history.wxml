@@ -11,7 +11,12 @@
       <text class="section-subtitle">共 {{endedActivityCount}} 场已结束活动</text>
     </view>
 
-    <view wx:if="{{pigeonStats.length === 0}}" class="empty-state">
+    <view wx:if="{{isLoadingPigeonStats}}" class="empty-state">
+      <text class="empty-icon">加载中</text>
+      <text class="empty-text">排行榜加载中</text>
+    </view>
+
+    <view wx:elif="{{pigeonStats.length === 0}}" class="empty-state">
       <text class="empty-icon">暂无数据</text>
       <text class="empty-text">暂无鸽子数据</text>
     </view>

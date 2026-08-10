@@ -13,3 +13,20 @@ def test_history_stats_returns_pigeon_ranking(client, db_session, admin_user, no
     response = client.get("/api/v1/stats/history", headers=user_headers)
     assert response.status_code == 200
     assert len(response.json()) == 2
+
+
+def test_history_summary_counts_only_ended_activities(client, db_session, admin_user, user_headers) -> None:
+    now = datetime.utcnow()
+    db_session.add_all(
+        [
+            Activity(name="Ended", status="已结束", remark="", max_participants=10, start_time=now - timedelta(days=2), end_time=now - timedelta(days=1), signup_deadline=None, location_name="Venue", location_address="Address", location_latitude=None, location_longitude=None, created_by=admin_user.id),
+            Activity(name="Upcoming", status="未开始", remark="", max_participants=10, start_time=now + timedelta(days=1), end_time=now + timedelta(days=1, hours=2), signup_deadline=None, location_name="Venue", location_address="Address", location_latitude=None, location_longitude=None, created_by=admin_user.id),
+            Activity(name="Cancelled", status="已取消", remark="", max_participants=10, start_time=now - timedelta(days=2), end_time=now - timedelta(days=1), signup_deadline=None, location_name="Venue", location_address="Address", location_latitude=None, location_longitude=None, created_by=admin_user.id),
+        ]
+    )
+    db_session.commit()
+
+    response = client.get("/api/v1/stats/history-summary", headers=user_headers)
+
+    assert response.status_code == 200
+    assert response.json() == {"ended_activity_count": 1}

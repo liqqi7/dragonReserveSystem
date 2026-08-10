@@ -96,34 +96,18 @@ def login_or_register_wechat_user(db: Session, payload: WeChatLoginRequest) -> U
     openid = str(session_payload["openid"])
     user = db.scalar(select(User).where(User.wechat_openid == openid))
 
-    nickname = (payload.profile.nickname or "").strip() or "微信用户"
-    avatar_url = (payload.profile.avatar_url or "").strip()
-
     if user is None:
         user = User(
             username=None,
             wechat_openid=openid,
             password_hash=None,
-            nickname=nickname,
-            avatar_url=avatar_url,
+            nickname="微信用户",
+            avatar_url="",
             role="guest",
         )
         db.add(user)
         db.commit()
         db.refresh(user)
         return user
-
-    updated = False
-    if nickname and (user.nickname == "微信用户" or not user.nickname.strip()):
-        user.nickname = nickname
-        updated = True
-    if avatar_url and not user.avatar_url:
-        user.avatar_url = avatar_url
-        updated = True
-
-    if updated:
-        db.add(user)
-        db.commit()
-        db.refresh(user)
 
     return user

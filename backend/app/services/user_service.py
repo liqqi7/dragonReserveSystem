@@ -2,6 +2,7 @@
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from urllib.parse import urlparse
 
 from app.core.config import get_settings
 from app.core.exceptions import NotFoundError, ValidationAppError
@@ -23,8 +24,15 @@ def get_user_by_id(db: Session, user_id: int) -> User:
 def update_current_user(db: Session, user: User, payload: UpdateCurrentUserRequest) -> User:
     """Update editable fields on the current user."""
 
+    avatar_url = payload.avatar_url
+    if avatar_url and avatar_url != user.avatar_url:
+        avatar_path = urlparse(avatar_url).path
+        expected_prefix = f"{settings.media_url_prefix.rstrip('/')}/avatars/"
+        if not avatar_path.startswith(expected_prefix):
+            raise ValidationAppError("Avatar must be uploaded through the avatar upload endpoint")
+
     user.nickname = payload.nickname
-    user.avatar_url = payload.avatar_url
+    user.avatar_url = avatar_url
 
     participant_display_records = list(
         db.scalars(select(ActivityParticipant).where(ActivityParticipant.user_id == user.id)).all()

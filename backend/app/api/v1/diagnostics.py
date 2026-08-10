@@ -6,7 +6,11 @@ from fastapi import APIRouter, Depends, Query
 
 from app.api.deps import get_current_user, require_admin
 from app.models import User
-from app.schemas.diagnostic import ClientDiagnosticLogRequest, ClientDiagnosticLogResponse
+from app.schemas.diagnostic import (
+    ClientDiagnosticLogBatchRequest,
+    ClientDiagnosticLogRequest,
+    ClientDiagnosticLogResponse,
+)
 from app.services.diagnostic_service import append_client_diagnostic_log, read_recent_client_diagnostic_logs
 
 
@@ -36,6 +40,32 @@ def post_client_diagnostic_log(
         }
     )
     return ClientDiagnosticLogResponse()
+
+
+@router.post("/client-logs/batch", response_model=ClientDiagnosticLogResponse, summary="Ingest a batch of client diagnostic logs")
+def post_client_diagnostic_log_batch(
+    payload: ClientDiagnosticLogBatchRequest,
+    current_user: User = Depends(get_current_user),
+) -> ClientDiagnosticLogResponse:
+    """Persist a bounded batch without making one request per event."""
+
+    for event in payload.events:
+        append_client_diagnostic_log(
+            {
+                "user_id": current_user.id,
+                "user_role": current_user.role,
+                "event": event.event,
+                "trace_id": event.trace_id,
+                "session_id": event.session_id,
+                "page": event.page,
+                "level": event.level,
+                "client_version": event.client_version,
+                "base_lib_version": event.base_lib_version,
+                "system_type": event.system_type,
+                "payload": event.payload,
+            }
+        )
+    return ClientDiagnosticLogResponse(stored=bool(payload.events))
 
 
 @router.get("/client-logs", summary="List recent client diagnostic logs")

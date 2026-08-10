@@ -61,6 +61,7 @@ class ActivityParticipant(Base):
     __table_args__ = (
         UniqueConstraint("activity_id", "user_id", name="uq_activity_participants_activity_user"),
         Index("ix_activity_participants_activity_id", "activity_id"),
+        Index("ix_activity_participants_user_id", "user_id"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

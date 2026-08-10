@@ -15,6 +15,8 @@ const {
 const { buildActivityShareAppMessageOptions } = require("../../utils/shareActivity");
 const { isDefaultNickname, isDefaultAvatar } = require("../../utils/profileUtils");
 const { orderParticipantsForDrawerRecentFirst } = require("../../utils/participantSort");
+const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
+const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
 
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
 const PROFILE_EDIT_DEFAULT_AVATAR = "/images/default-avatar.svg";
@@ -42,7 +44,10 @@ function normalizeProfileAvatarForModal(url) {
     const m = value.match(/test-avatar-(\d{2})\.svg$/i);
     return m ? `${LOCAL_TEST_AVATAR_PREFIX}/test-avatar-${m[1]}.svg` : PROFILE_EDIT_DEFAULT_AVATAR;
   }
-  if (value.toLowerCase().startsWith("http://")) return PROFILE_EDIT_DEFAULT_AVATAR;
+  if (value.toLowerCase().startsWith("http://")) {
+    const resolved = resolveLocalMediaUrl(value);
+    return isLocalTestMediaUrl(value) ? resolved : PROFILE_EDIT_DEFAULT_AVATAR;
+  }
   return value;
 }
 
@@ -212,16 +217,19 @@ Page({
     );
   },
 
-  onSignupProfileChooseAvatar(e) {
-    const avatarUrl = e.detail && e.detail.avatarUrl;
-    if (!avatarUrl) {
-      wx.showToast({ title: "未选择头像", icon: "none" });
-      return;
-    }
-    this.setData({ signupProfileAvatarUrl: avatarUrl }, () =>
-      this.updateSignupProfileValidation()
-    );
-    wx.showToast({ title: "已选择微信头像", icon: "success" });
+  onSignupProfileChooseAvatar() {
+    chooseUploadedAvatar()
+      .then((avatarUrl) => {
+        this.setData({ signupProfileAvatarUrl: avatarUrl }, () =>
+          this.updateSignupProfileValidation()
+        );
+      })
+      .catch((error) => {
+        const message = (error && error.message) || "选择头像失败";
+        if (!message.includes("cancel")) {
+          wx.showToast({ title: message, icon: "none" });
+        }
+      });
   },
 
   updateSignupProfileValidation() {
@@ -288,15 +296,12 @@ Page({
 
   bootstrap() {
     this.setData({ loading: true, loadError: "" });
-    this.refreshSharePreview(this.data.activityId);
-    activityService
-      .listActivityTypeStyles()
-      .catch(() => [])
-      .then((res) => {
-        this._activityTypeStyles = Array.isArray(res) && res.length > 0 ? res : [];
-        return activityService.getActivity(this.data.activityId);
-      })
-      .then((raw) => {
+    Promise.all([
+      activityService.listActivityTypeStyles().catch(() => []),
+      activityService.getActivity(this.data.activityId)
+    ])
+      .then(([styles, raw]) => {
+        this._activityTypeStyles = Array.isArray(styles) && styles.length > 0 ? styles : [];
         const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
         const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
         const activity = enrichSingleActivity(

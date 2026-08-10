@@ -1,9 +1,23 @@
 const { request } = require("./request");
 
+let historyStatsInFlight = null;
+
 function getHistoryStats() {
-  return request({ url: "/stats/history" });
+  if (historyStatsInFlight) return historyStatsInFlight;
+
+  const pending = request({ url: "/stats/history" });
+  const coalesced = pending.finally(() => {
+    if (historyStatsInFlight === coalesced) historyStatsInFlight = null;
+  });
+  historyStatsInFlight = coalesced;
+  return coalesced;
+}
+
+function getHistorySummary() {
+  return request({ url: "/stats/history-summary" });
 }
 
 module.exports = {
-  getHistoryStats
+  getHistoryStats,
+  getHistorySummary
 };

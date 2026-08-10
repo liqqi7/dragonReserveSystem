@@ -2,6 +2,7 @@ const KEY_CLIENT_CACHE_VERSION = "clientCacheVersion";
 const KEY_ACTIVITY_STYLE_SIGNATURE = "activityStyleSignature";
 const KEY_ACTIVITY_LIST_CACHE = "activityListCache";
 const KEY_ACTIVITY_TYPE_STYLES_CACHE = "activityTypeStylesCache";
+const KEY_CACHE_METADATA_CHECKED_AT = "cacheMetadataCheckedAt";
 
 function _safeGet(key, fallback = null) {
   try {
@@ -34,6 +35,15 @@ function setActivityStyleSignature(signature) {
   _safeSet(KEY_ACTIVITY_STYLE_SIGNATURE, String(signature || ""));
 }
 
+function getCacheMetadataCheckedAt() {
+  const value = Number(_safeGet(KEY_CACHE_METADATA_CHECKED_AT, 0));
+  return Number.isFinite(value) ? value : 0;
+}
+
+function setCacheMetadataCheckedAt(timestamp = Date.now()) {
+  _safeSet(KEY_CACHE_METADATA_CHECKED_AT, Number(timestamp) || Date.now());
+}
+
 function getCachedActivityList() {
   return _safeGet(KEY_ACTIVITY_LIST_CACHE, null);
 }
@@ -44,6 +54,12 @@ function setCachedActivityList(list, userId = "") {
     userId: String(userId || ""),
     updatedAt: Date.now()
   });
+}
+
+function clearCachedActivityList() {
+  try {
+    wx.removeStorageSync(KEY_ACTIVITY_LIST_CACHE);
+  } catch (_e) {}
 }
 
 function getCachedActivityTypeStyles() {
@@ -70,8 +86,11 @@ module.exports = {
   setClientCacheVersion,
   getActivityStyleSignature,
   setActivityStyleSignature,
+  getCacheMetadataCheckedAt,
+  setCacheMetadataCheckedAt,
   getCachedActivityList,
   setCachedActivityList,
+  clearCachedActivityList,
   getCachedActivityTypeStyles,
   setCachedActivityTypeStyles,
   clearBusinessCaches

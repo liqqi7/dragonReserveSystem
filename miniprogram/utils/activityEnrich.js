@@ -6,6 +6,7 @@
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 
 const { parseCreatedAtMs, orderParticipantsForRecentAvatarSlice } = require("./participantSort");
+const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../services/config");
 
 const DEFAULT_AVATAR = "/images/default-avatar.svg";
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
@@ -234,7 +235,10 @@ function normalizeAvatarUrl(url) {
     const m = value.match(/test-avatar-(\d{2})\.svg$/i);
     return m ? `${LOCAL_TEST_AVATAR_PREFIX}/test-avatar-${m[1]}.svg` : DEFAULT_AVATAR;
   }
-  if (lower.startsWith("http://")) return DEFAULT_AVATAR;
+  if (lower.startsWith("http://")) {
+    const resolved = resolveLocalMediaUrl(value);
+    return isLocalTestMediaUrl(value) ? resolved : DEFAULT_AVATAR;
+  }
 
   return value;
 }

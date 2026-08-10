@@ -14,3 +14,9 @@ class PigeonStatResponse(BaseModel):
     checkin_count: int
     pigeon_count: int
     pigeon_rate: float
+
+
+class HistorySummaryResponse(BaseModel):
+    """Small summary displayed above the history ranking."""
+
+    ended_activity_count: int

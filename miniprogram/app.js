@@ -1,4 +1,6 @@
 const userService = require("./services/user");
+const authService = require("./services/auth");
+const { logPageError } = require("./services/logger");
 
 
 
@@ -23,7 +25,11 @@ App({
 
     userProfile: null,
 
-    sessionValidated: false
+    sessionValidated: false,
+
+    _sessionValidationPromise: null,
+
+    _sessionExpiredPromptShown: false
 
   },
 
@@ -31,9 +37,13 @@ App({
 
   onLaunch() {
 
+    this.installGlobalErrorLogging();
+
     this.restoreSessionFromStorage();
 
     this.restoreAuthState();
+
+    this.validateStoredSession({ promptOnExpired: true });
 
   },
 
@@ -145,6 +155,8 @@ App({
 
     this.globalData.sessionValidated = true;
 
+    this.globalData._sessionExpiredPromptShown = false;
+
 
 
     wx.setStorageSync("hasWeChatAuth", true);
@@ -249,6 +261,146 @@ App({
 
   },
 
+  installGlobalErrorLogging() {
+    try {
+      if (typeof wx.onError === "function") {
+        wx.onError((error) => {
+          logPageError("uncaught_error", { message: error });
+        });
+      }
+      if (typeof wx.onUnhandledRejection === "function") {
+        wx.onUnhandledRejection((event) => {
+          logPageError("unhandled_rejection", event && event.reason);
+        });
+      }
+    } catch (error) {
+      console.error("安装全局错误日志失败", error);
+    }
+  },
+
+
+
+  isExpiredSessionError(err) {
+
+    const statusCode = Number(err && err.statusCode);
+
+    return statusCode === 401 || statusCode === 403;
+
+  },
+
+
+
+  showSessionExpiredPrompt() {
+
+    if (this.globalData._sessionExpiredPromptShown) return;
+
+    this.globalData._sessionExpiredPromptShown = true;
+
+    setTimeout(() => {
+
+      wx.showModal({
+
+        title: "登录状态已过期",
+
+        content: "请重新登录后继续使用功能",
+
+        confirmText: "立即登录",
+
+        cancelText: "稍后",
+
+        success: (res) => {
+
+          if (!res.confirm) return;
+
+          this.reauthenticateAfterExpiry();
+
+        }
+
+      });
+
+    }, 300);
+
+  },
+
+
+
+  reauthenticateAfterExpiry() {
+
+    wx.showLoading({ title: "登录中...", mask: true });
+
+    authService.loginWithWechat(this)
+
+      .then(() => {
+
+        wx.hideLoading();
+
+        const pages = typeof getCurrentPages === "function" ? getCurrentPages() : [];
+        const currentPage = pages.length ? pages[pages.length - 1] : null;
+        if (currentPage && typeof currentPage.onShow === "function") currentPage.onShow();
+
+        wx.showToast({ title: "登录成功", icon: "success" });
+
+      })
+
+      .catch((err) => {
+
+        wx.hideLoading();
+        wx.showToast({ title: (err && err.message) || "登录失败", icon: "none" });
+
+      });
+
+  },
+
+
+
+  validateStoredSession({ promptOnExpired = false } = {}) {
+
+    const token = this.globalData.accessToken || wx.getStorageSync("accessToken");
+
+    if (!token) return Promise.resolve(false);
+
+    if (this.globalData._sessionValidationPromise) {
+
+      return this.globalData._sessionValidationPromise;
+
+    }
+
+    const validation = userService.getMe()
+
+      .then((user) => {
+
+        this.applyCurrentUser(user);
+
+        return true;
+
+      })
+
+      .catch((err) => {
+
+        if (this.isExpiredSessionError(err)) {
+
+          this.logout();
+
+          if (promptOnExpired) this.showSessionExpiredPrompt();
+
+        }
+
+        return false;
+
+      })
+
+      .finally(() => {
+
+        this.globalData._sessionValidationPromise = null;
+
+      });
+
+    this.globalData._sessionValidationPromise = validation;
+
+    return validation;
+
+  },
+
 
 
   ensureUserReady(callback) {
@@ -273,31 +425,11 @@ App({
 
 
 
-    if (!this.globalData.accessToken) {
+    this.validateStoredSession({ promptOnExpired: true })
 
-      this.logout();
+      .then((isValid) => {
 
-      return;
-
-    }
-
-
-
-    userService.getMe()
-
-      .then((user) => {
-
-        this.applyCurrentUser(user);
-
-        callback && callback();
-
-      })
-
-      .catch((err) => {
-
-        console.error("ensureUserReady error", err);
-
-        this.logout();
+        if (isValid) callback && callback();
 
       });
 

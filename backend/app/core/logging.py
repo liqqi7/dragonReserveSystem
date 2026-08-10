@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import logging
+import os
 import time
 import uuid
+from pathlib import Path
 from typing import Any
 
 from fastapi import Request
@@ -17,6 +19,16 @@ if not logging.getLogger().handlers:
         level=logging.INFO,
         format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
     )
+
+
+_test_log_file = os.getenv("TEST_REQUEST_LOG_FILE", "").strip()
+if _test_log_file:
+    test_log_path = Path(_test_log_file).expanduser()
+    test_log_path.parent.mkdir(parents=True, exist_ok=True)
+    test_handler = logging.FileHandler(test_log_path, encoding="utf-8")
+    test_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s [%(name)s] %(message)s"))
+    logger.addHandler(test_handler)
+    logger.setLevel(logging.INFO)
 
 
 def ensure_trace_id(request: Request) -> str:

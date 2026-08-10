@@ -1,8 +1,9 @@
 const app = getApp();
 const authService = require("../../services/auth");
 const userService = require("../../services/user");
-const { getApiBaseUrl } = require("../../services/config");
+const { getApiBaseUrl, resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
 const { isDefaultNickname, isDefaultAvatar } = require("../../utils/profileUtils");
+const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
 const DEFAULT_AVATAR = "/images/default-avatar.svg";
 const MEDIA_BASE_URL = String(getApiBaseUrl() || "").replace(/\/api\/v\d+\/?$/, "");
@@ -31,7 +32,10 @@ function normalizeAvatarUrl(url) {
     const output = m ? `${LOCAL_TEST_AVATAR_PREFIX}/test-avatar-${m[1]}.svg` : DEFAULT_AVATAR;
     return output;
   }
-  if (value.toLowerCase().startsWith("http://")) return DEFAULT_AVATAR;
+  if (value.toLowerCase().startsWith("http://")) {
+    const resolved = resolveLocalMediaUrl(value);
+    return isLocalTestMediaUrl(value) ? resolved : DEFAULT_AVATAR;
+  }
   return value;
 }
 
@@ -89,7 +93,17 @@ Page({
     }
 
     app.ensureUserReady(() => {
-      this.loadUserProfile();
+      const currentUser = app.globalData.userProfile || {};
+      const currentUserId = String(app.globalData.userId || "");
+      this.setData({
+        hasUser: true,
+        isGuest: !app.globalData.isAuthenticated,
+        user: {
+          nickname: currentUser.nickname || "",
+          userIdShort: currentUserId.slice(0, 8),
+          avatarUrl: normalizeAvatarUrl(currentUser.avatarUrl || "")
+        }
+      });
       if (app.globalData._pendingOpenEditProfile) {
         app.globalData._pendingOpenEditProfile = false;
         this.openEditModal({
@@ -273,15 +287,17 @@ Page({
     this.setData({ editNickname: e.detail.value || "" }, () => this.updateForceProfileValidation());
   },
 
-  onChooseAvatar(e) {
-    const avatarUrl = e.detail && e.detail.avatarUrl;
-    if (!avatarUrl) {
-      wx.showToast({ title: "未选择头像", icon: "none" });
-      return;
-    }
-
-    this.setData({ editAvatarUrl: avatarUrl }, () => this.updateForceProfileValidation());
-    wx.showToast({ title: "已选择微信头像", icon: "success" });
+  onChooseAvatar() {
+    chooseUploadedAvatar()
+      .then((avatarUrl) => {
+        this.setData({ editAvatarUrl: avatarUrl }, () => this.updateForceProfileValidation());
+      })
+      .catch((error) => {
+        const message = (error && error.message) || "选择头像失败";
+        if (!message.includes("cancel")) {
+          wx.showToast({ title: message, icon: "none" });
+        }
+      });
   },
 
   saveProfile() {

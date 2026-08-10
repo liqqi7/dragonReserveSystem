@@ -59,6 +59,18 @@ def main() -> None:
     from app.services.activity_service import _app_now
 
     now = _app_now()
+    # Test data uses stable, publicly accessible production avatar URLs. The old SVG
+    # placeholders were intentionally removed from the mini-program package.
+    test_avatar_urls = [
+        "https://dragon.liqqihome.top/media/avatars/3e61efeb45c64f09ad96f929b390d451.jpg",
+        "https://dragon.liqqihome.top/media/avatars/5faa1227342e45acb9da2661151230ce.jpg",
+        "https://dragon.liqqihome.top/media/avatars/654a32e3-b92d-4149-a596-952ee05abd30.jpg",
+        "https://dragon.liqqihome.top/media/avatars/84c5c9ce08714ce2aec2e6750ce8f4ac.jpg",
+        "https://dragon.liqqihome.top/media/avatars/c22de226c2d74ab2a600739e95f3bdd4.jpg",
+        "https://dragon.liqqihome.top/media/avatars/d0589308-71ee-4ee5-be7a-2c7743d3412d.jpg",
+        "https://dragon.liqqihome.top/media/avatars/d9f16109-2780-48ae-9595-77186327c78f.jpg",
+        "https://dragon.liqqihome.top/media/avatars/ebc8614ede6e4f91b22bcee77a7d095f.jpg",
+    ]
     with SessionLocal() as db:
         users: list[User] = []
         for index in range(1, 17):
@@ -67,7 +79,7 @@ def main() -> None:
                 username=f"test_user_{index:02d}",
                 password_hash=get_password_hash("Test123456"),
                 nickname=f"测试用户{index:02d}",
-                avatar_url=f"/media/avatars/test-avatar-{((index - 1) % 10) + 1:02d}.svg",
+                avatar_url=test_avatar_urls[(index - 1) % len(test_avatar_urls)],
                 role=role,
                 wechat_openid=f"test_openid_{index:02d}",
             )

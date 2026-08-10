@@ -79,6 +79,29 @@ def test_wechat_login_success(client, monkeypatch) -> None:
     assert body["token_type"] == "bearer"
 
 
+def test_wechat_login_ignores_profile_avatar(client, db_session, monkeypatch) -> None:
+    monkeypatch.setattr(
+        "app.services.auth_service.exchange_wechat_code",
+        lambda code: {"openid": "wx-openid-no-avatar", "session_key": "session-key"},
+    )
+
+    response = client.post(
+        "/api/v1/auth/wechat-login",
+        json={
+            "code": "mock-code",
+            "profile": {
+                "nickname": "微信成员",
+                "avatar_url": "https://example.com/wx-avatar.png",
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    user = db_session.query(User).filter_by(wechat_openid="wx-openid-no-avatar").one()
+    assert user.nickname == "微信用户"
+    assert user.avatar_url == ""
+
+
 def test_wechat_login_reuses_existing_user(client, db_session, monkeypatch) -> None:
     monkeypatch.setattr(
         "app.services.auth_service.exchange_wechat_code",

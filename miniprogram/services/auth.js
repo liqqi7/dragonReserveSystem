@@ -55,21 +55,6 @@ function wechatLogin(payload) {
   });
 }
 
-function fetchWechatProfile(flowId) {
-  return withTimeout(() => new Promise((resolve) => {
-    if (!wx.getUserProfile) {
-      resolve({ nickname: "", avatarUrl: "" });
-      return;
-    }
-
-    wx.getUserProfile({
-      desc: "用于完善你的昵称和头像",
-      success: (res) => resolve(res.userInfo || { nickname: "", avatarUrl: "" }),
-      fail: () => resolve({ nickname: "", avatarUrl: "" })
-    });
-  }), 8000, "获取微信资料超时", { flowId, stage: "getUserProfile" });
-}
-
 function fetchLoginCode(flowId) {
   return withTimeout(() => new Promise((resolve, reject) => {
     wx.login({
@@ -95,15 +80,8 @@ function loginWithWechat(app) {
   logInfo("login_flow_start", { flowId });
 
   return withTimeout(
-    () => fetchWechatProfile(flowId)
-      .then((profile) => fetchLoginCode(flowId).then((code) => ({ profile, code })))
-      .then(({ profile, code }) => wechatLogin({
-        code,
-        profile: {
-          nickname: profile.nickname || "",
-          avatar_url: profile.avatarUrl || ""
-        }
-      }))
+    () => fetchLoginCode(flowId)
+      .then((code) => wechatLogin({ code }))
       .then((authRes) => {
         wx.setStorageSync("accessToken", authRes.access_token);
         return userService.getMe().then((user) => ({ authRes, user }));

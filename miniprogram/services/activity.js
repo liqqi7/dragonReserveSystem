@@ -1,11 +1,43 @@
 const { request } = require("./request");
+const cacheManager = require("./cacheManager");
+const myActivitiesCache = require("../utils/myActivitiesCache");
+const historyStatsCache = require("../utils/historyStatsCache");
+
+let listActivitiesInFlight = null;
+let listMyActivitiesInFlight = null;
+
+function invalidateActivityCaches({ clearMyActivities = false } = {}) {
+  cacheManager.clearCachedActivityList();
+  historyStatsCache.clear();
+  if (!clearMyActivities) return;
+  const userId = wx.getStorageSync("userId") || "";
+  myActivitiesCache.removeForUser(userId);
+}
 
 function listActivities() {
-  return request({ url: "/activities" });
+  if (listActivitiesInFlight) return listActivitiesInFlight;
+
+  const pending = request({ url: "/activities" });
+  const coalesced = pending.finally(() => {
+    if (listActivitiesInFlight === coalesced) listActivitiesInFlight = null;
+  });
+  listActivitiesInFlight = coalesced;
+  return coalesced;
 }
 
 function listMyActivities() {
-  return request({ url: "/activities/me/signed-up" });
+  const token = wx.getStorageSync("accessToken") || "";
+  if (listMyActivitiesInFlight && listMyActivitiesInFlight.token === token) {
+    return listMyActivitiesInFlight.promise;
+  }
+
+  const entry = { token, promise: null };
+  const pending = request({ url: "/activities/me/signed-up" });
+  entry.promise = pending.finally(() => {
+    if (listMyActivitiesInFlight === entry) listMyActivitiesInFlight = null;
+  });
+  listMyActivitiesInFlight = entry;
+  return entry.promise;
 }
 
 function listActivityTypeStyles() {
@@ -33,6 +65,9 @@ function createActivity(payload) {
     url: "/activities",
     method: "POST",
     data: payload
+  }).then((result) => {
+    invalidateActivityCaches();
+    return result;
   });
 }
 
@@ -41,6 +76,9 @@ function updateActivity(activityId, payload) {
     url: `/activities/${activityId}`,
     method: "PATCH",
     data: payload
+  }).then((result) => {
+    invalidateActivityCaches();
+    return result;
   });
 }
 
@@ -48,6 +86,9 @@ function deleteActivity(activityId) {
   return request({
     url: `/activities/${activityId}`,
     method: "DELETE"
+  }).then((result) => {
+    invalidateActivityCaches();
+    return result;
   });
 }
 
@@ -55,6 +96,9 @@ function signupActivity(activityId) {
   return request({
     url: `/activities/${activityId}/signup`,
     method: "POST"
+  }).then((result) => {
+    invalidateActivityCaches({ clearMyActivities: true });
+    return result;
   });
 }
 
@@ -62,6 +106,9 @@ function cancelSignup(activityId) {
   return request({
     url: `/activities/${activityId}/signup`,
     method: "DELETE"
+  }).then((result) => {
+    invalidateActivityCaches({ clearMyActivities: true });
+    return result;
   });
 }
 
@@ -69,6 +116,9 @@ function removeParticipant(activityId, participantId) {
   return request({
     url: `/activities/${activityId}/participants/${participantId}`,
     method: "DELETE"
+  }).then((result) => {
+    invalidateActivityCaches({ clearMyActivities: true });
+    return result;
   });
 }
 
@@ -77,6 +127,9 @@ function checkinActivity(activityId, payload) {
     url: `/activities/${activityId}/checkin`,
     method: "POST",
     data: payload
+  }).then((result) => {
+    invalidateActivityCaches({ clearMyActivities: true });
+    return result;
   });
 }
 
@@ -84,6 +137,9 @@ function adminCheckinParticipant(activityId, participantId) {
   return request({
     url: `/activities/${activityId}/participants/${participantId}/admin-checkin`,
     method: "POST"
+  }).then((result) => {
+    invalidateActivityCaches();
+    return result;
   });
 }
 
@@ -91,6 +147,9 @@ function adminCancelCheckinParticipant(activityId, participantId) {
   return request({
     url: `/activities/${activityId}/participants/${participantId}/admin-checkin`,
     method: "DELETE"
+  }).then((result) => {
+    invalidateActivityCaches();
+    return result;
   });
 }
 
