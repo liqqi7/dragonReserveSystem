@@ -1,10 +1,25 @@
 const API_BASE_URL = "https://dragon.liqqihome.top/api/v1";
-
 function getApiBaseUrl() {
   return API_BASE_URL;
 }
 
+function resolveLocalMediaUrl(url) {
+  const value = String(url || '').trim();
+  if (!value || !API_BASE_URL.startsWith('http://')) return value;
+  const apiOrigin = API_BASE_URL.replace(/\/api\/v\d+\/?$/, '');
+  const match = value.match(/^http:\/\/(?:127\.0\.0\.1|localhost)(:\d+)?(\/.*)$/i);
+  return match ? `${apiOrigin}${match[2]}` : value;
+}
+
+function isLocalTestMediaUrl(url) {
+  if (!API_BASE_URL.startsWith('http://')) return false;
+  const apiOrigin = API_BASE_URL.replace(/\/api\/v\d+\/?$/, '');
+  return resolveLocalMediaUrl(url).startsWith(`${apiOrigin}/`);
+}
+
 module.exports = {
   API_BASE_URL,
-  getApiBaseUrl
+  getApiBaseUrl,
+  resolveLocalMediaUrl,
+  isLocalTestMediaUrl
 };

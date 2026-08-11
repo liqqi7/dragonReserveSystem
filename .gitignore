@@ -31,5 +31,9 @@ backend/htmlcov/
 backend/deploy/*.generated
 backend/storage/
 
+# Runtime-only backend artifacts
+backend/logs/
+backend/migration_backups/
+backend/test-request.log
 # WeChat miniprogram local config (do not commit env-specific base URLs)
 miniprogram/services/config.js

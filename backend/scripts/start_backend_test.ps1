@@ -203,6 +203,13 @@ module.exports = {
     }
 }
 finally {
+    # A test session may have redirected the mini program to a LAN address.
+    # Always restore the HTTPS production template so a later preview/upload cannot inherit it.
+    if (Test-Path $MpTemplateFile) {
+        Copy-Item -LiteralPath $MpTemplateFile -Destination $MpConfigFile -Force
+        Write-Host "Restored mini program API config to the HTTPS production template."
+    }
+
     if ($tunnelProcess -and -not $tunnelProcess.HasExited) {
         Write-Host "Stopping SSH tunnel (pid=$($tunnelProcess.Id))"
         Stop-Process -Id $tunnelProcess.Id -Force -ErrorAction SilentlyContinue
