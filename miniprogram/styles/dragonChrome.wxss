@@ -4,10 +4,10 @@
  */
 
 .dragon-watermark {
-  left: 175px;
-  top: -29px;
-  width: 323px;
-  height: 211px;
+  left: 336.54rpx;
+  top: -55.77rpx;
+  width: 621.15rpx;
+  height: 405.77rpx;
   opacity: 0.8;
   pointer-events: none;
   z-index: 1;

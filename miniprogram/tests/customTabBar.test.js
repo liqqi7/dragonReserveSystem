@@ -47,8 +47,8 @@ test("custom tab bar follows the four-item Pencil component", () => {
   assert.equal((js.match(/"\/pages\//g) || []).length, 4);
   assert.doesNotMatch(js, /TAB_SWITCH_COMMIT_DELAY_MS|_pendingSwitchIndex/);
   assert.doesNotMatch(syncJs, /indicatorTransitionEnabled/);
-  assert.match(listWxml, /height: calc\(56px \+ env\(safe-area-inset-bottom\)\)/);
-  assert.match(calendarWxss, /\.today-fab\s*{[\s\S]*?right:\s*32rpx;[\s\S]*?bottom:\s*calc\(112rpx \+ env\(safe-area-inset-bottom\) \+ 40px\);/);
+  assert.match(listWxml, /height: calc\(107\.69rpx \+ env\(safe-area-inset-bottom\)\)/);
+  assert.match(calendarWxss, /\.today-fab\s*{[\s\S]*?right:\s*32rpx;[\s\S]*?bottom:\s*calc\(112rpx \+ env\(safe-area-inset-bottom\) \+ 76\.92rpx\);/);
   assert.doesNotMatch(calendarWxss, /90\.256vw/);
 });
 

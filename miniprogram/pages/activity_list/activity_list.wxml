@@ -405,7 +405,7 @@
       </view>
 
       <!-- 底部占位与全宽 TabBar 高度一致，避免内容被遮挡 -->
-      <view style="height: calc(56px + env(safe-area-inset-bottom))"></view>
+      <view style="height: calc(107.69rpx + env(safe-area-inset-bottom))"></view>
     </block>
   </scroll-view>
 

@@ -8,7 +8,7 @@
     </view>
   </view>
 
-  <view class="week-strip" style="top: {{statusBarHeight + navBarHeight + 12}}px">
+  <view class="week-strip" style="top: calc({{statusBarHeight}}px + 107.7rpx)">
     <view animation="{{weekStripSlideAnim}}" class="week-strip-slide-wrapper">
     <swiper
       class="week-strip-swiper"
@@ -59,8 +59,8 @@
     <button class="state-btn" bindtap="onRetry">重新加载</button>
   </view>
 
-  <view wx:else class="calendar-body" style="top: {{timelineTopPx}}px">
-    <view class="timeline-above-scroll-gap" style="height: {{timelineBodyGapPx}}px"></view>
+  <view wx:else class="calendar-body" style="top: calc({{statusBarHeight}}px + 244.7rpx)">
+    <view class="timeline-above-scroll-gap"></view>
     <scroll-view
       class="timeline-scroll"
       scroll-y

@@ -751,26 +751,26 @@ button.create-btn-fixed.create-btn-hover {
 }
 
 .custom-navbar + .group-section {
-  margin-top: 12px;
+  margin-top: 23.08rpx;
 }
 
 .navbar-inner {
-  height: 44px;
+  height: 84.62rpx;
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 38.46rpx;
   position: relative;
   z-index: 2;
 }
 
 .navbar-title {
-  font-size: 24px;
+  font-size: 46.15rpx;
   font-weight: 600;
   line-height: 1;
   color: #0a0a0a;
   letter-spacing: 0;
   flex: 1;
-  transform: translateY(-1px);
+  transform: translateY(-1.92rpx);
 }
 
 /* ── 主滚动区 ── */
@@ -809,19 +809,19 @@ button.create-btn-fixed.create-btn-hover {
 
 .group-section {
   /* 列表行底部已有 20px 内边距，这里补 16px => 列表到底下一个标题约 36px */
-  margin-bottom: 16px;
+  margin-bottom: 30.77rpx;
 }
 
 .group-header {
-  height: 30px;
+  height: 57.69rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 38.46rpx;
 }
 
 .group-title {
-  font-size: 20px;
+  font-size: 38.46rpx;
   font-weight: 700;
   color: #0a0a0a;
 }
@@ -877,7 +877,7 @@ button.create-btn-fixed.create-btn-hover {
   display: inline-flex;
   align-items: flex-start;
   /* scroll-view 会裁剪超出边界的阴影：通过 padding 把阴影包进可视区域 */
-  padding: 4px 20px 20px;
+  padding: 7.69rpx 38.46rpx 38.46rpx;
   gap: 20rpx;
 }
 
@@ -903,13 +903,13 @@ button.create-btn-fixed.create-btn-hover {
 
 /* 大卡片主体 */
 .large-card {
-  width: 276px;
-  height: 368px;
-  border-radius: 20px;
+  width: 530.77rpx;
+  height: 707.69rpx;
+  border-radius: 38.46rpx;
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 7.69rpx 30.77rpx rgba(0, 0, 0, 0.16);
 }
 
 /* 小卡片行 */
@@ -917,30 +917,30 @@ button.create-btn-fixed.create-btn-hover {
   display: inline-flex;
   align-items: flex-start;
   /* 同上：预留阴影空间，避免被 scroll-view 裁剪 */
-  padding: 14px 20px 20px;
-  gap: 10px;
+  padding: 26.92rpx 38.46rpx 38.46rpx;
+  gap: 19.23rpx;
 }
 
 .ended-section .small-cards-row {
-  gap: 10px;
+  gap: 19.23rpx;
 }
 
 /* 「已结束」横向末尾加载格（宽同 .small-card-wrap，保证横向 snap 步长一致） */
 .ended-more-strip .ended-more-card {
   width: 100%;
-  min-height: 180px;
-  border-radius: 6px;
+  min-height: 346.15rpx;
+  border-radius: 11.54rpx;
   border: 1px dashed rgba(0, 0, 0, 0.12);
   background: rgba(247, 247, 248, 0.96);
   box-sizing: border-box;
-  padding: 12px 10px;
+  padding: 23.08rpx 19.23rpx;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .ended-more-strip .ended-more-text {
-  font-size: 12px;
+  font-size: 23.08rpx;
   line-height: 1.45;
   color: #8a8a8e;
   text-align: center;
@@ -952,15 +952,15 @@ button.create-btn-fixed.create-btn-hover {
   align-items: flex-start;
   gap: 14rpx;
   flex-shrink: 0;
-  width: 180px;
+  width: 346.15rpx;
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 /* 小卡片主体 */
 .small-card {
-  width: 180px;
-  height: 180px;
-  border-radius: 6px;
+  width: 346.15rpx;
+  height: 346.15rpx;
+  border-radius: 11.54rpx;
   position: relative;
   overflow: hidden;
   box-shadow: none;
@@ -972,7 +972,7 @@ button.create-btn-fixed.create-btn-hover {
 
 .small-card-name {
   display: block;
-  font-size: 12px;
+  font-size: 23.08rpx;
   font-weight: 500;
   color: #000000;
   white-space: nowrap;
@@ -983,7 +983,7 @@ button.create-btn-fixed.create-btn-hover {
 
 .small-card-time {
   display: block;
-  font-size: 12px;
+  font-size: 23.08rpx;
   font-weight: 500;
   color: #8a8a8e;
   margin-top: 0;
@@ -1097,11 +1097,11 @@ button.create-btn-fixed.create-btn-hover {
 /* 左上大头像 */
 .avatar-tl {
   position: absolute;
-  top: 16px;
-  left: 16px;
-  width: 165px;
-  height: 165px;
-  border-radius: 82.5px;
+  top: 30.77rpx;
+  left: 30.77rpx;
+  width: 317.31rpx;
+  height: 317.31rpx;
+  border-radius: 158.65rpx;
   overflow: hidden;
   background-color: rgba(255,255,255,0.3);
   border: none;
@@ -1111,11 +1111,11 @@ button.create-btn-fixed.create-btn-hover {
 /* 右上中头像 */
 .avatar-tr {
   position: absolute;
-  top: 134px;
-  left: 166px;
-  width: 94px;
-  height: 94px;
-  border-radius: 47px;
+  top: 257.69rpx;
+  left: 319.23rpx;
+  width: 180.77rpx;
+  height: 180.77rpx;
+  border-radius: 90.38rpx;
   overflow: hidden;
   background-color: rgba(255,255,255,0.3);
   border: none;
@@ -1125,11 +1125,11 @@ button.create-btn-fixed.create-btn-hover {
 /* 中部小头像 */
 .avatar-mid {
   position: absolute;
-  top: 186px;
-  left: 86px;
-  width: 82px;
-  height: 82px;
-  border-radius: 41px;
+  top: 357.69rpx;
+  left: 165.38rpx;
+  width: 157.69rpx;
+  height: 157.69rpx;
+  border-radius: 78.85rpx;
   overflow: hidden;
   background-color: rgba(255,255,255,0.3);
   border: none;
@@ -1148,11 +1148,11 @@ button.create-btn-fixed.create-btn-hover {
 
 .avatar-tl-sm {
   position: absolute;
-  top: 12px;
-  left: 14px;
-  width: 100px;
-  height: 100px;
-  border-radius: 50px;
+  top: 23.08rpx;
+  left: 26.92rpx;
+  width: 192.31rpx;
+  height: 192.31rpx;
+  border-radius: 96.15rpx;
   overflow: hidden;
   background-color: rgba(255,255,255,0.3);
   border: none;
@@ -1161,11 +1161,11 @@ button.create-btn-fixed.create-btn-hover {
 
 .avatar-tr-sm {
   position: absolute;
-  top: 87px;
-  left: 108px;
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
+  top: 167.31rpx;
+  left: 207.69rpx;
+  width: 115.38rpx;
+  height: 115.38rpx;
+  border-radius: 57.69rpx;
   overflow: hidden;
   background-color: rgba(255,255,255,0.3);
   border: none;
@@ -1174,11 +1174,11 @@ button.create-btn-fixed.create-btn-hover {
 
 .avatar-mid-sm {
   position: absolute;
-  top: 120px;
-  left: 54px;
-  width: 52px;
-  height: 52px;
-  border-radius: 26px;
+  top: 230.77rpx;
+  left: 103.85rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50rpx;
   overflow: hidden;
   background-color: rgba(255,255,255,0.3);
   border: none;
@@ -1186,8 +1186,8 @@ button.create-btn-fixed.create-btn-hover {
 }
 
 .glass-meta-icon-img {
-  width: 14px;
-  height: 14px;
+  width: 26.92rpx;
+  height: 26.92rpx;
   flex-shrink: 0;
   display: block;
 }
@@ -1207,8 +1207,8 @@ button.create-btn-fixed.create-btn-hover {
   right: 0;
   padding: 24rpx;
   background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 100%);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(57.69rpx);
+  -webkit-backdrop-filter: blur(57.69rpx);
   z-index: 3;
   border-bottom-left-radius: 24rpx;
   border-bottom-right-radius: 24rpx;
@@ -1216,37 +1216,37 @@ button.create-btn-fixed.create-btn-hover {
 
 .glass-name {
   display: block;
-  font-size: 16px;
+  font-size: 30.77rpx;
   font-weight: 700;
   color: #ffffff;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-bottom: 6px;
+  margin-bottom: 11.54rpx;
 }
 
 .glass-remark {
   display: block;
-  font-size: 12px;
+  font-size: 23.08rpx;
   font-weight: 400;
   color: rgba(255,255,255,0.85);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-bottom: 6px;
+  margin-bottom: 11.54rpx;
 }
 
 .glass-meta-row {
   display: flex;
   align-items: center;
   gap: 24rpx;
-  margin-top: 6px;
+  margin-top: 11.54rpx;
 }
 
 .glass-meta-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 11.54rpx;
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -1257,7 +1257,7 @@ button.create-btn-fixed.create-btn-hover {
 }
 
 .glass-meta-text {
-  font-size: 12px;
+  font-size: 23.08rpx;
   font-weight: 400;
   color: rgba(255,255,255,0.85);
   white-space: nowrap;
@@ -1287,8 +1287,8 @@ button.create-btn-fixed.create-btn-hover {
   padding: 8rpx;
   border-radius: 999rpx;
   background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(38.46rpx);
+  -webkit-backdrop-filter: blur(38.46rpx);
   box-shadow: inset 0 -2rpx 4rpx rgba(0,0,0,0.12), inset 0 2rpx 2rpx #fff;
 }
 

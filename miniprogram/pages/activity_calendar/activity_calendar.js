@@ -40,8 +40,8 @@ function currentUserId(appLocal) {
 
 const WEEKDAY_SHORT = ["日", "一", "二", "三", "四", "五", "六"];
 const WEEKDAY_FULL = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
-const HOUR_HEIGHT = 60;
-const MIN_EVENT_HEIGHT = 60;
+const HOUR_HEIGHT_RPX = 115.38;
+const MIN_EVENT_HEIGHT_RPX = 115.38;
 const TIMELINE_DEFAULT_START_HOUR = 9;
 const TIMELINE_PADDING_BELOW_STICKY_PX = 14;
 const TIMELINE_SCROLL_TOP_CALIBRATION_PX = 60;
@@ -226,8 +226,11 @@ function adaptActivity(item, index) {
   const color = EVENT_COLORS[index % EVENT_COLORS.length];
   const status = item.status || "";
   const isCancelled = status === "已取消";
-  const top = Math.round((startMinutes / 60) * HOUR_HEIGHT);
-  const height = Math.max(MIN_EVENT_HEIGHT, Math.round((durationMinutes / 60) * HOUR_HEIGHT));
+  const topRpx = Number(((startMinutes / 60) * HOUR_HEIGHT_RPX).toFixed(2));
+  const heightRpx = Math.max(
+    MIN_EVENT_HEIGHT_RPX,
+    Number(((durationMinutes / 60) * HOUR_HEIGHT_RPX).toFixed(2))
+  );
   const locationName = String(item.location_name || item.location_address || "").trim();
 
   return {
@@ -240,8 +243,8 @@ function adaptActivity(item, index) {
     dateKey: start ? dateKey(start) : "",
     timeRange: `${timeText(start)} - ${timeText(end)}`,
     style: [
-      `top:${top}px`,
-      `height:${height}px`,
+      `top:${topRpx}rpx`,
+      `height:${heightRpx}rpx`,
       `background:${isCancelled ? "#f3f4f6" : color.bg}`,
       `border-left-color:${isCancelled ? "#9ca3af" : color.border}`,
       `color:${isCancelled ? "#6b7280" : color.text}`
@@ -252,10 +255,7 @@ function adaptActivity(item, index) {
 Page({
   data: {
     statusBarHeight: 20,
-    navBarHeight: 44,
     navbarPaddingRightPx: 12,
-    timelineTopPx: 200,
-    timelineBodyGapPx: 12,
     loading: true,
     loadError: "",
     isGuest: false,
@@ -287,7 +287,7 @@ Page({
     /** rebuildAll 自增，wx:for 宿主重挂载 swiper，强制 native 从 page 0 初始化到 current=15，避免内部状态停留在 0 */
     timelineSwiperRemountTick: 0,
     hours: [],
-    gridHeight: HOUR_HEIGHT * 24,
+    gridHeight: HOUR_HEIGHT_RPX * 24,
     activities: [],
   },
 
@@ -301,21 +301,16 @@ Page({
       }
     } catch (e) {}
     const today = startOfDay(new Date());
-    const winW = info.windowWidth || 375;
-    const weekStripPx = Math.round((137 / 750) * winW);
+    const winW = info.windowWidth || 390;
     const statusBarPx = info.statusBarHeight || 20;
-    const navContentPx = 44;
-    const gapNavToWeekPx = 12;
-    const gapWeekToTimelinePx = 12;
-    const timelineTopPx = statusBarPx + navContentPx + gapNavToWeekPx + weekStripPx;
     const timeAxisWidthPx = (100 / 750) * winW;
     const headerCellWidthPx = (winW - timeAxisWidthPx) / 3;
+
+    this._hourHeightPx = (HOUR_HEIGHT_RPX / 750) * winW;
 
     this.setData({
       statusBarHeight: statusBarPx,
       navbarPaddingRightPx,
-      timelineTopPx,
-      timelineBodyGapPx: gapWeekToTimelinePx,
       todayDateKey: dateKey(today),
       selectedDateKey: dateKey(today),
       weekStripHighlightKey: dateKey(today),
@@ -371,7 +366,7 @@ Page({
     const target = Math.max(
       0,
       Math.round(
-        TIMELINE_DEFAULT_START_HOUR * HOUR_HEIGHT -
+        TIMELINE_DEFAULT_START_HOUR * (this._hourHeightPx || 60) -
           TIMELINE_PADDING_BELOW_STICKY_PX -
           TIMELINE_SCROLL_TOP_CALIBRATION_PX
       )

@@ -21,21 +21,21 @@ page {
 }
 
 .navbar-row {
-  height: 44px;
+  height: 84.62rpx;
   display: flex;
   align-items: center;
-  padding-left: 20px;
+  padding-left: 38.46rpx;
   box-sizing: border-box;
 }
 
 /* 「日程」与主页 navbar-title 同系；无副标题 */
 .navbar-main-title {
   flex-shrink: 0;
-  font-size: 24px;
+  font-size: 46.15rpx;
   font-weight: 600;
-  line-height: 29px;
+  line-height: 55.77rpx;
   color: #0a0a0a;
-  transform: translateY(-1px);
+  transform: translateY(-1.92rpx);
 }
 
 .week-strip {
@@ -129,8 +129,8 @@ page {
 .strip-date-circle--selected {
   background: #ff9800;
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.1),
-    0 1px 2px rgba(0, 0, 0, 0.1);
+    0 1.92rpx 5.77rpx rgba(0, 0, 0, 0.1),
+    0 1.92rpx 3.85rpx rgba(0, 0, 0, 0.1);
 }
 
 .strip-date-num {
@@ -139,7 +139,7 @@ page {
   font-weight: 500;
   color: #101828;
   text-align: center;
-  letter-spacing: -0.3125px;
+  letter-spacing: -0.6rpx;
 }
 
 .strip-date-num--today {
@@ -179,7 +179,7 @@ page {
   z-index: 1;
   min-width: 0;
   width: calc(100% - 100rpx);
-  height: 1440px;
+  height: 2769.23rpx;
 }
 
 .timeline-swiper-host .timeline-swiper {
@@ -212,6 +212,7 @@ page {
 .timeline-above-scroll-gap {
   flex-shrink: 0;
   width: 100%;
+  height: 23.08rpx;
   background: #ffffff;
   overflow: hidden;
 }
@@ -297,8 +298,8 @@ page {
   z-index: 1;
   display: flex;
   flex-direction: row;
-  height: 1440px;
-  min-height: 1440px;
+  height: 2769.23rpx;
+  min-height: 2769.23rpx;
 }
 
 .time-axis {
@@ -325,7 +326,7 @@ page {
 
 .hour-row {
   position: relative;
-  height: 60px;
+  height: 115.38rpx;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -368,7 +369,7 @@ page {
 }
 
 .grid-hour {
-  height: 60px;
+  height: 115.38rpx;
   border-top: 1rpx solid #f3f4f6;
   box-sizing: border-box;
 }
@@ -380,7 +381,7 @@ page {
 
 .day-column-body {
   position: relative;
-  height: 1440px;
+  height: 2769.23rpx;
 }
 
 .calendar-event {
@@ -400,7 +401,7 @@ page {
   /* 与全宽 TabBar 的页面安全边距对齐 */
   right: 32rpx;
   /* TabBar 高度之上保留操作间距 */
-  bottom: calc(112rpx + env(safe-area-inset-bottom) + 40px);
+  bottom: calc(112rpx + env(safe-area-inset-bottom) + 76.92rpx);
   z-index: 20;
   min-width: 88rpx;
   height: 72rpx;
@@ -435,15 +436,15 @@ page {
 .event-line {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 3.85rpx;
   margin-top: 4rpx;
   min-width: 0;
 }
 
 .event-icon {
   flex-shrink: 0;
-  width: 10px;
-  height: 10px;
+  width: 19.23rpx;
+  height: 19.23rpx;
   background: currentColor;
 }
 
@@ -459,8 +460,8 @@ page {
 
 .event-text {
   min-width: 0;
-  font-size: 9px;
-  line-height: 13.5px;
+  font-size: 17.31rpx;
+  line-height: 25.96rpx;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

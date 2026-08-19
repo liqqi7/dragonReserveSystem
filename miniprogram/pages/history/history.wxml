@@ -8,6 +8,7 @@
 
       <view class="ranking-content" id="qa-ranking-content">
       <view class="ranking-switch" id="qa-ranking-tabs">
+        <view class="ranking-switch-slider {{activeTab === 'pigeon' ? 'is-pigeon' : ''}}"></view>
         <view class="ranking-switch-item {{activeTab === 'activity' ? 'is-active' : ''}}" data-tab="activity" bindtap="switchRankingTab"><text>活动榜</text></view>
         <view class="ranking-switch-item {{activeTab === 'pigeon' ? 'is-active' : ''}}" data-tab="pigeon" bindtap="switchRankingTab"><text>鸽子榜</text></view>
       </view>
