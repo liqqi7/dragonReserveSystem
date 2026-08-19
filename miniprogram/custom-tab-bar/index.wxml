@@ -1,26 +1,20 @@
 <view class="tab-bar-wrap" hidden="{{hidden}}">
-  <view class="tab-bottom-fade"></view>
   <view class="tab-items-wrap">
-    <view class="tab-indicator {{indicatorTransitionEnabled ? '' : 'tab-indicator-snap'}}" style="transform: translateX({{selected * 100}}%)"></view>
-    <view class="tab-item" bindtap="onTabTap" data-index="0">
-      <image class="tab-icon-img" src="{{selected === 0 ? '/images/tab-home-active.png' : '/images/tab-home.png'}}" mode="aspectFit" />
-      <text class="tab-label {{selected === 0 ? 'tab-label-active' : ''}}">主页</text>
+    <view class="tab-item {{selected === 0 ? 'tab-item--active' : ''}}" bindtap="onTabTap" data-index="0" aria-role="tab" aria-selected="{{selected === 0}}">
+      <image class="tab-icon" src="{{selected === 0 ? '/images/tab-home-lucide-active.svg' : '/images/tab-home-lucide.svg'}}" mode="aspectFit" />
+      <text class="tab-label {{selected === 0 ? 'tab-label--active' : ''}}">首页</text>
     </view>
-    <view class="tab-item" bindtap="onTabTap" data-index="1">
-      <view class="tab-icon-svg tab-icon-calendar-wrap {{selected === 1 ? 'tab-icon-svg-active' : ''}}">
-        <view class="tab-icon-calendar-shape"></view>
-        <view class="tab-icon-calendar-line tab-icon-calendar-line-top"></view>
-        <view class="tab-icon-calendar-line tab-icon-calendar-line-bottom"></view>
-      </view>
-      <text class="tab-label {{selected === 1 ? 'tab-label-active' : ''}}">日程</text>
+    <view class="tab-item {{selected === 1 ? 'tab-item--active' : ''}}" bindtap="onTabTap" data-index="1" aria-role="tab" aria-selected="{{selected === 1}}">
+      <image class="tab-icon" src="{{selected === 1 ? '/images/tab-calendar-days-lucide-active.svg' : '/images/tab-calendar-days-lucide.svg'}}" mode="aspectFit" />
+      <text class="tab-label {{selected === 1 ? 'tab-label--active' : ''}}">日程</text>
     </view>
-    <view class="tab-item" bindtap="onTabTap" data-index="2">
-      <view class="tab-icon-svg tab-icon-ranking {{selected === 2 ? 'tab-icon-svg-active' : ''}}"></view>
-      <text class="tab-label {{selected === 2 ? 'tab-label-active' : ''}}">排行榜</text>
+    <view class="tab-item {{selected === 2 ? 'tab-item--active' : ''}}" bindtap="onTabTap" data-index="2" aria-role="tab" aria-selected="{{selected === 2}}">
+      <image class="tab-icon" src="{{selected === 2 ? '/images/tab-ranking-lucide-active.svg' : '/images/tab-ranking-lucide.svg'}}" mode="aspectFit" />
+      <text class="tab-label {{selected === 2 ? 'tab-label--active' : ''}}">排行</text>
     </view>
-    <view class="tab-item" bindtap="onTabTap" data-index="3">
-      <image class="tab-icon-img" src="{{selected === 3 ? '/images/tab-profile-active.png' : '/images/tab-profile.png'}}" mode="aspectFit" />
-      <text class="tab-label {{selected === 3 ? 'tab-label-active' : ''}}">我的</text>
+    <view class="tab-item {{selected === 3 ? 'tab-item--active' : ''}}" bindtap="onTabTap" data-index="3" aria-role="tab" aria-selected="{{selected === 3}}">
+      <image class="tab-icon" src="{{selected === 3 ? '/images/tab-user-round-lucide-active.svg' : '/images/tab-user-round-lucide.svg'}}" mode="aspectFit" />
+      <text class="tab-label {{selected === 3 ? 'tab-label--active' : ''}}">我的</text>
     </view>
   </view>
 </view>

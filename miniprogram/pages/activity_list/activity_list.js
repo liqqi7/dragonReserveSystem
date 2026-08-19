@@ -423,37 +423,8 @@ Page({
     mainRefresherTriggered: false,
     mainRefresherHint: "下拉刷新",
     isGroupSwiping: false,
-    showEditModal: false,
-    currentActivity: null,
-    editForm: {
-      // 活动名称
-      name: "",
-      // 活动状态
-      status: "进行中",
-      // 活动备注
-      remark: "",
-      // 活动开始时间（日期和时间分开存储）
-      startDate: "",
-      startTime: "",
-      // 活动结束时间（日期和时间分开存储）
-      endDate: "",
-      endTime: "",
-      // 报名截止时间（日期和时间分开存储）
-      signupDeadlineDate: "",
-      signupDeadlineTime: "",
-      // 活动位置
-      locationName: "",
-      locationAddress: "",
-      locationLatitude: null,
-      locationLongitude: null,
-      signupEnabled: true,
-      // 报名人数上限
-      limitEnabled: false,
-      maxParticipants: null,
-      // 活动类型：backend-driven key
-      activityType: DEFAULT_ACTIVITY_TYPE_KEY,
-      activityStyleKey: ""
-    },
+    showActivityForm: false,
+    activityFormSubmitting: false,
     myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
     myNickname: "", // 当前用户昵称（userId 为空时的回退，兼容旧数据）
     locationDisabled: false,
@@ -463,11 +434,7 @@ Page({
     selectedFilter: "我参与的",
     activityTypeStyles: DEFAULT_ACTIVITY_TYPE_STYLES,
     activityTypeOptionLabels: DEFAULT_ACTIVITY_TYPE_STYLES.map((item) => item.display_name || item.key),
-    activityTypeOptionValues: DEFAULT_ACTIVITY_TYPE_STYLES.map((item) => item.key),
-    editActivityTypeIndex: 0,
-    activityStyleOptionLabels: [],
-    activityStyleOptionValues: [],
-    editActivityStyleIndex: 0
+    activityTypeOptionValues: DEFAULT_ACTIVITY_TYPE_STYLES.map((item) => normalizeTypeKey(item.key)).filter(Boolean)
   },
 
   onLoad(options) {
@@ -499,14 +466,6 @@ Page({
     this.syncGuestState();
     /** 上一轮切 Tab 时 onHide 里 getTabBar() 偶发不可用，会变成 hidden:true 一直回不去 */
     this._setTabBarHidden(false);
-    let pendingEdit = "";
-    try {
-      pendingEdit = wx.getStorageSync("pendingEditActivityId") || "";
-      if (pendingEdit) wx.removeStorageSync("pendingEditActivityId");
-    } catch (e) {
-      console.error(e);
-    }
-    if (pendingEdit) this._pendingEditActivityId = String(pendingEdit);
     const isAdmin = app.globalData.userRole === "admin";
     const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
     const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
@@ -596,7 +555,7 @@ Page({
   },
 
   _syncTabBarVisibility() {
-    this._setTabBarHidden(!!this.data.showEditModal);
+    this._setTabBarHidden(!!this.data.showActivityForm);
   },
 
 
@@ -1218,40 +1177,10 @@ Page({
   _applyActivityTypeStyles(styles) {
     const optionValues = styles.map((item) => normalizeTypeKey(item.key)).filter(Boolean);
     const optionLabels = styles.map((item) => String(item.display_name || item.key || ""));
-    const currentType = this.data.editForm && this.data.editForm.activityType
-      ? normalizeTypeKey(this.data.editForm.activityType)
-      : DEFAULT_ACTIVITY_TYPE_KEY;
-    let editIndex = optionValues.indexOf(currentType);
-    if (editIndex < 0) editIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
-    if (editIndex < 0) editIndex = 0;
-    const typeStyleMap = buildTypeStyleMap(styles);
-    const selectedType = optionValues[editIndex] || DEFAULT_ACTIVITY_TYPE_KEY;
-    const styleOptions = this._buildStyleOptionsForType(selectedType, typeStyleMap);
-    const creating = this.data.showEditModal && !this.data.currentActivity;
-    let styleIndex;
-    let nextStyleKey;
-    if (creating) {
-      const defKey = this._defaultStyleKeyForType(selectedType, typeStyleMap);
-      styleIndex = styleOptions.values.indexOf(defKey);
-      if (styleIndex < 0) styleIndex = 0;
-      nextStyleKey = styleOptions.values[styleIndex] || "";
-    } else {
-      const desiredStyleKey = this.data.editForm && this.data.editForm.activityStyleKey
-        ? String(this.data.editForm.activityStyleKey)
-        : "";
-      styleIndex = styleOptions.values.indexOf(desiredStyleKey);
-      if (styleIndex < 0) styleIndex = 0;
-      nextStyleKey = styleOptions.values[styleIndex] || "";
-    }
     this.setData({
       activityTypeStyles: styles,
       activityTypeOptionValues: optionValues,
-      activityTypeOptionLabels: optionLabels,
-      editActivityTypeIndex: editIndex,
-      activityStyleOptionValues: styleOptions.values,
-      activityStyleOptionLabels: styleOptions.labels,
-      editActivityStyleIndex: styleIndex,
-      "editForm.activityStyleKey": nextStyleKey
+      activityTypeOptionLabels: optionLabels
     });
   },
 
@@ -1320,28 +1249,6 @@ Page({
     }, () => {
       this.ensureGroupSnapMetrics();
     });
-  },
-
-  _buildStyleOptionsForType(typeKey, typeStyleMapInput) {
-    const typeStyleMap = typeStyleMapInput || buildTypeStyleMap(this.data.activityTypeStyles);
-    const normalizedType = normalizeTypeKey(typeKey) || DEFAULT_ACTIVITY_TYPE_KEY;
-    const typeEntry = typeStyleMap[normalizedType] || typeStyleMap[DEFAULT_ACTIVITY_TYPE_KEY];
-    const styleMap = (typeEntry && typeEntry.styleMap) || {};
-    const values = Object.keys(styleMap);
-    const labels = values.map((k) => styleMap[k].styleName || k);
-    return { values, labels };
-  },
-
-  /** 与后端/缓存中活动类型配置的 default_style_key 一致；无配置时取该类型下第一个样式 */
-  _defaultStyleKeyForType(typeKey, typeStyleMapInput) {
-    const typeStyleMap = typeStyleMapInput || buildTypeStyleMap(this.data.activityTypeStyles);
-    const normalizedType = normalizeTypeKey(typeKey) || DEFAULT_ACTIVITY_TYPE_KEY;
-    const typeEntry = typeStyleMap[normalizedType] || typeStyleMap[DEFAULT_ACTIVITY_TYPE_KEY];
-    if (!typeEntry || !typeEntry.styleMap) return "";
-    const dk = typeEntry.defaultStyleKey;
-    if (dk && typeEntry.styleMap[dk]) return dk;
-    const first = Object.keys(typeEntry.styleMap)[0];
-    return first || "";
   },
 
   loadActivityListFromCache() {
@@ -1426,11 +1333,6 @@ Page({
 
           if (options.forceNetwork && !options.skipPullOverlayLoading) wx.hideLoading();
 
-          const peid = this._pendingEditActivityId;
-          if (peid) {
-            this._pendingEditActivityId = "";
-            this._openEditForActivityId(peid);
-          }
         }
       })
       .catch(err => {
@@ -1671,493 +1573,43 @@ Page({
     return { joined, accepting, notStarted, ended };
   },
 
-  // 管理员：创建活动
+  // 管理员：首页只负责创建活动，编辑入口统一放在活动详情页。
   showCreateModal() {
-    const now = new Date();
-    // 开始时间默认：当前时间 + 2 小时
-    const startDateTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-    const date = `${startDateTime.getFullYear()}-${pad(startDateTime.getMonth() + 1)}-${pad(startDateTime.getDate())}`;
-    const startTime = `${pad(startDateTime.getHours())}:${pad(startDateTime.getMinutes())}`;
-    // 结束时间默认：开始时间后 1 小时
-    const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000);
-    const endTime = `${pad(endDateTime.getHours())}:${pad(endDateTime.getMinutes())}`;
-    const endDate = `${endDateTime.getFullYear()}-${pad(endDateTime.getMonth() + 1)}-${pad(endDateTime.getDate())}`;
-    // 报名截止时间默认：开始时间前 1 小时
-    const deadlineDateTime = new Date(startDateTime.getTime() - 60 * 60 * 1000);
-    const deadlineDate = `${deadlineDateTime.getFullYear()}-${pad(deadlineDateTime.getMonth() + 1)}-${pad(deadlineDateTime.getDate())}`;
-    const deadlineTime = `${pad(deadlineDateTime.getHours())}:${pad(deadlineDateTime.getMinutes())}`;
-
-    const defaultType = DEFAULT_ACTIVITY_TYPE_KEY;
-    const optionValues = this.data.activityTypeOptionValues || [];
-    let editTypeIndex = optionValues.indexOf(defaultType);
-    if (editTypeIndex < 0) editTypeIndex = 0;
-    const styleOptions = this._buildStyleOptionsForType(defaultType);
-    const defaultStyleKey = this._defaultStyleKeyForType(defaultType);
-    let styleIndex = styleOptions.values.indexOf(defaultStyleKey);
-    if (styleIndex < 0) styleIndex = 0;
-    const resolvedStyleKey = styleOptions.values[styleIndex] || "";
-    this.setData({
-      showEditModal: true,
-      currentActivity: null,
-      locationDisabled: false,
-      editActivityTypeIndex: editTypeIndex,
-      activityStyleOptionValues: styleOptions.values,
-      activityStyleOptionLabels: styleOptions.labels,
-      editActivityStyleIndex: styleIndex,
-      editForm: {
-        name: "",
-        status: "未开始",
-        remark: "",
-        startDate: date,
-        startTime: startTime,
-        endDate: endDate,
-        endTime: endTime,
-        signupDeadlineDate: deadlineDate,
-        signupDeadlineTime: deadlineTime,
-        locationName: "",
-        locationAddress: "",
-        locationLatitude: null,
-        locationLongitude: null,
-        signupEnabled: true,
-        limitEnabled: false,
-        maxParticipants: null,
-        activityType: defaultType,
-        activityStyleKey: resolvedStyleKey
-      }
-    });
+    if (this.data.activityFormSubmitting) return;
+    this.setData({ showActivityForm: true, activityFormSubmitting: false });
     this._setTabBarHidden(true);
   },
 
-  // 管理员：编辑活动
-  showEditModal(e) {
-    const activity = e.currentTarget.dataset.activity;
-    // 解析开始时间和结束时间
-    let startDate = "";
-    let startTime = "";
-    let endDate = "";
-    let endTime = "";
-    let signupDeadlineDate = "";
-    let signupDeadlineTime = "";
-
-    if (activity.startTime) {
-      const startParts = activity.startTime.split(" ");
-      startDate = startParts[0] || activity.date || "";
-      startTime = startParts[1] || "00:00";
-    } else if (activity.date) {
-      startDate = activity.date;
-      startTime = "00:00";
-    }
-    
-    if (activity.endTime) {
-      const endParts = activity.endTime.split(" ");
-      endDate = endParts[0] || activity.date || "";
-      endTime = endParts[1] || "01:00";
-    } else if (activity.date) {
-      endDate = activity.date;
-      endTime = "01:00";
-    }
-
-    // 报名截止时间：优先使用已有 signupDeadline，否则用开始时间前 1 小时
-    if (activity.signupDeadline) {
-      const parts = activity.signupDeadline.split(" ");
-      signupDeadlineDate = parts[0] || startDate;
-      signupDeadlineTime = parts[1] || startTime;
-    } else if (activity.startTime) {
-      const base = new Date(activity.startTime.replace(" ", "T") + ":00");
-      if (!isNaN(base.getTime())) {
-        const dl = new Date(base.getTime() - 60 * 60 * 1000);
-        signupDeadlineDate = `${dl.getFullYear()}-${pad(dl.getMonth() + 1)}-${pad(dl.getDate())}`;
-        signupDeadlineTime = `${pad(dl.getHours())}:${pad(dl.getMinutes())}`;
-      }
-    } else {
-      signupDeadlineDate = startDate;
-      signupDeadlineTime = startTime;
-    }
-
-    const hasCheckedIn = (activity.checkinCount || 0) > 0;
-
-    const maxParticipants = activity.maxParticipants == null ? null : activity.maxParticipants;
-
-    const optionValues = this.data.activityTypeOptionValues || [];
-    const normalizedType = normalizeTypeKey(activity.activityType || DEFAULT_ACTIVITY_TYPE_KEY) || DEFAULT_ACTIVITY_TYPE_KEY;
-    let editTypeIndex = optionValues.indexOf(normalizedType);
-    if (editTypeIndex < 0) editTypeIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
-    if (editTypeIndex < 0) editTypeIndex = 0;
-    const styleOptions = this._buildStyleOptionsForType(normalizedType);
-    let styleIndex = styleOptions.values.indexOf(String(activity.activityStyleKey || ""));
-    if (styleIndex < 0) styleIndex = 0;
-
-    this.setData({
-      showEditModal: true,
-      currentActivity: activity,
-      locationDisabled: hasCheckedIn,
-      editActivityTypeIndex: editTypeIndex,
-      activityStyleOptionValues: styleOptions.values,
-      activityStyleOptionLabels: styleOptions.labels,
-      editActivityStyleIndex: styleIndex,
-      editForm: {
-        name: activity.name,
-        status: activity.status,
-        remark: activity.remark || "",
-        startDate: startDate,
-        startTime: startTime,
-        endDate: endDate,
-        endTime: endTime,
-        signupDeadlineDate: signupDeadlineDate,
-        signupDeadlineTime: signupDeadlineTime,
-        locationName: activity.locationName || "",
-        locationAddress: activity.locationAddress || "",
-        locationLatitude: activity.locationLatitude ?? null,
-        locationLongitude: activity.locationLongitude ?? null,
-        signupEnabled: activity.signupEnabled !== false,
-        limitEnabled: maxParticipants != null,
-        maxParticipants: maxParticipants,
-        activityType: normalizedType,
-        activityStyleKey: styleOptions.values[styleIndex] || ""
-      }
-    });
-    this._setTabBarHidden(true);
+  closeActivityForm() {
+    if (this.data.activityFormSubmitting) return;
+    this.setData({ showActivityForm: false }, () => this._syncTabBarVisibility());
   },
 
-  onEditFormChange(e) {
-    const field = e.currentTarget.dataset.field;
-    let value = e.detail.value;
-    
-    // 如果是状态选择器，需要从数组中取值
-    if (field === "status") {
-      const statusList = ["未开始", "进行中", "已取消", "已结束", "已流局"];
-      value = !!e.detail.value;
-    } else if (field === "limitEnabled") {
-      value = !!e.detail.value;
-    } else if (field === "maxParticipants") {
-      const num = Number(value);
-      if (!value) {
-        value = "";
-      } else if (Number.isNaN(num) || !Number.isFinite(num)) {
-        wx.showToast({ title: "人数上限需为数字", icon: "none" });
-        return;
-      } else {
-        value = String(Math.floor(num));
-      }
+  submitCreateActivity(e) {
+    if (this.data.activityFormSubmitting) return;
+    const payload = e && e.detail && e.detail.payload;
+    if (!payload) {
+      wx.showToast({ title: "活动信息缺失", icon: "none" });
+      return;
     }
-    
-    this.setData({
-      [`editForm.${field}`]: value
-    });
-  },
-
-  // 活动类型选择
-  onActivityTypeChange(e) {
-    const index = Number(e.detail.value);
-    const values = this.data.activityTypeOptionValues || [];
-    const nextType = values[index] || DEFAULT_ACTIVITY_TYPE_KEY;
-    const styleOptions = this._buildStyleOptionsForType(nextType);
-    const defaultStyleKey = this._defaultStyleKeyForType(nextType);
-    let styleIndex = styleOptions.values.indexOf(defaultStyleKey);
-    if (styleIndex < 0) styleIndex = 0;
-    const resolvedStyleKey = styleOptions.values[styleIndex] || "";
-    this.setData({
-      editActivityTypeIndex: index,
-      activityStyleOptionValues: styleOptions.values,
-      activityStyleOptionLabels: styleOptions.labels,
-      editActivityStyleIndex: styleIndex,
-      "editForm.activityType": nextType,
-      "editForm.activityStyleKey": resolvedStyleKey
-    });
-  },
-
-  onActivityStyleChange(e) {
-    const index = Number(e.detail.value);
-    const values = this.data.activityStyleOptionValues || [];
-    this.setData({
-      editActivityStyleIndex: index,
-      "editForm.activityStyleKey": values[index] || ""
-    });
-  },
-
-  _openEditForActivityId(activityId) {
-    if (!activityId) return;
-    const styles = this.data.activityTypeStyles || [];
-    const myUserId = this.data.myUserId || "";
-    const myNickname = (this.data.myNickname || "").trim();
+    this.setData({ activityFormSubmitting: true });
+    wx.showLoading({ title: "创建中...", mask: true });
     activityService
-      .getActivity(activityId)
-      .then((raw) => {
-        const activity = enrichSingleActivity(raw, styles, myUserId, myNickname);
-        this.showEditModal({ currentTarget: { dataset: { activity } } });
+      .createActivity(payload)
+      .then(() => {
+        wx.hideLoading();
+        wx.showToast({ title: "创建成功", icon: "success" });
+        this.setData({ showActivityForm: false, activityFormSubmitting: false }, () => {
+          this._syncTabBarVisibility();
+          this.loadActivityList();
+        });
       })
       .catch((err) => {
         console.error(err);
-        wx.showToast({ title: (err && err.message) || "加载活动失败", icon: "none" });
+        wx.hideLoading();
+        this.setData({ activityFormSubmitting: false });
+        wx.showToast({ title: (err && err.message) || "创建失败", icon: "none" });
       });
-  },
-
-  // 已由 custom-tab-bar 组件统一处理导航，这两个方法保留兼容性
-  goToHistory() {
-    wx.switchTab({ url: "/pages/history/history" });
-  },
-
-  goToProfile() {
-    wx.switchTab({ url: "/pages/profile/profile" });
-  },
-
-  // 开始日期变更
-  onStartDateChange(e) {
-    this.setData({
-      "editForm.startDate": e.detail.value
-    });
-  },
-
-  // 开始时间变更
-  onStartTimeChange(e) {
-    this.setData({
-      "editForm.startTime": e.detail.value
-    });
-  },
-
-  // 结束日期变更
-  onEndDateChange(e) {
-    this.setData({
-      "editForm.endDate": e.detail.value
-    });
-  },
-
-  // 结束时间变更
-  onEndTimeChange(e) {
-    this.setData({
-      "editForm.endTime": e.detail.value
-    });
-  },
-
-  // 报名截止日期变更
-  onSignupDeadlineDateChange(e) {
-    this.setData({
-      "editForm.signupDeadlineDate": e.detail.value
-    });
-  },
-
-  // 报名截止时间变更
-  onSignupDeadlineTimeChange(e) {
-    this.setData({
-      "editForm.signupDeadlineTime": e.detail.value
-    });
-  },
-
-  // 选择活动位置：直接打开地图选点（跳过中间页）；若已有人签到则不可修改
-  onChooseLocation() {
-    if (this.data.locationDisabled) {
-      wx.showToast({ title: "已有用户完成签到，不可修改活动地点", icon: "none" });
-      return;
-    }
-    wx.chooseLocation({
-      success: (res) => {
-        this.setData({
-          "editForm.locationName": res.name || res.address || "",
-          "editForm.locationAddress": res.address || "",
-          "editForm.locationLatitude": res.latitude,
-          "editForm.locationLongitude": res.longitude
-        });
-      }
-    });
-  },
-
-  saveActivity() {
-    // picker / input 的 setData 为异步，立即点「保存」会读到旧 editForm；延后到下一渲染周期再校验与提交
-    wx.nextTick(() => this._saveActivityRun());
-  },
-
-  _saveActivityRun() {
-    const form = this.data.editForm;
-    if (!form.name.trim()) {
-      wx.showToast({ title: "请输入活动名称", icon: "none" });
-      return;
-    }
-    if (!form.startDate) {
-      wx.showToast({ title: "请选择开始日期", icon: "none" });
-      return;
-    }
-    if (!form.startTime) {
-      wx.showToast({ title: "请选择开始时间", icon: "none" });
-      return;
-    }
-    if (!form.endDate) {
-      wx.showToast({ title: "请选择结束日期", icon: "none" });
-      return;
-    }
-    if (!form.endTime) {
-      wx.showToast({ title: "请选择结束时间", icon: "none" });
-      return;
-    }
-    if (!form.signupDeadlineDate) {
-      wx.showToast({ title: "请选择报名截止日期", icon: "none" });
-      return;
-    }
-    if (!form.signupDeadlineTime) {
-      wx.showToast({ title: "请选择报名截止时间", icon: "none" });
-      return;
-    }
-
-    if (form.limitEnabled) {
-      const raw = form.maxParticipants;
-      const num = Number(raw);
-      if (!raw) {
-        wx.showToast({ title: "请输入人数上限", icon: "none" });
-        return;
-      }
-      if (Number.isNaN(num) || !Number.isFinite(num) || num <= 0) {
-        wx.showToast({ title: "人数上限需为正整数", icon: "none" });
-        return;
-      }
-      if (num > 999) {
-        wx.showToast({ title: "人数上限不能超过 999", icon: "none" });
-        return;
-      }
-    }
-
-    // 组合开始/结束时间，进行时间合法性校验
-    const startDateTime = new Date(`${form.startDate}T${form.startTime}:00`);
-    const endDateTime = new Date(`${form.endDate}T${form.endTime}:00`);
-    if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
-      wx.showToast({ title: "时间格式错误，请重新选择", icon: "none" });
-      return;
-    }
-
-    const signupDeadlineDateTime = new Date(`${form.signupDeadlineDate}T${form.signupDeadlineTime}:00`);
-    if (isNaN(signupDeadlineDateTime.getTime())) {
-      wx.showToast({ title: "报名截止时间格式错误，请重新选择", icon: "none" });
-      return;
-    }
-
-    const now = new Date();
-    const isEdit = !!this.data.currentActivity;
-    // 新建活动时，开始时间不能早于当前时间
-    if (!isEdit && startDateTime.getTime() < now.getTime()) {
-      wx.showToast({ title: "开始时间不能早于当前时间", icon: "none" });
-      return;
-    }
-
-    if (endDateTime.getTime() <= startDateTime.getTime()) {
-      wx.showToast({ title: "结束时间必须晚于开始时间", icon: "none" });
-      return;
-    }
-    if (signupDeadlineDateTime.getTime() > startDateTime.getTime()) {
-      wx.showToast({ title: "报名截止时间必须早于或等于开始时间", icon: "none" });
-      return;
-    }
-    if (signupDeadlineDateTime.getTime() >= endDateTime.getTime()) {
-      wx.showToast({ title: "报名截止时间必须早于结束时间", icon: "none" });
-      return;
-    }
-
-    wx.showLoading({ title: "保存中..." });
-    const maxParticipants =
-      form.limitEnabled && form.maxParticipants
-        ? Number(form.maxParticipants)
-        : null;
-    const payload = {
-      name: form.name.trim(),
-      status: form.status,
-      remark: form.remark.trim(),
-      start_time: `${form.startDate}T${form.startTime}:00`,
-      end_time: `${form.endDate}T${form.endTime}:00`,
-      signup_deadline: `${form.signupDeadlineDate}T${form.signupDeadlineTime}:00`,
-      location_name: form.locationName || "",
-      location_address: form.locationAddress || "",
-      location_latitude: form.locationLatitude,
-      location_longitude: form.locationLongitude,
-      max_participants: maxParticipants,
-      signup_enabled: form.signupEnabled,
-      activity_type: form.activityType || null
-    };
-    if (isEdit) {
-      payload.activity_style_key = form.activityStyleKey || null;
-      activityService
-        .updateActivity(this.data.currentActivity._id, payload)
-        .then(() => {
-          wx.hideLoading();
-          wx.showToast({ title: "更新成功", icon: "success" });
-          this.closeEditModal();
-          this.loadActivityList();
-        })
-        .catch((err) => {
-          console.error(err);
-          wx.hideLoading();
-          wx.showToast({ title: (err && err.message) || "更新失败", icon: "none" });
-        });
-    } else {
-      activityService
-        .createActivity(payload)
-        .then(() => {
-          wx.hideLoading();
-          wx.showToast({ title: "创建成功", icon: "success" });
-          this.closeEditModal();
-          this.loadActivityList();
-        })
-        .catch((err) => {
-          console.error(err);
-          wx.hideLoading();
-          wx.showToast({ title: (err && err.message) || "创建失败", icon: "none" });
-        });
-    }
-  },
-
-  closeEditModal() {
-    const optionValues = this.data.activityTypeOptionValues || [];
-    let editTypeIndex = optionValues.indexOf(DEFAULT_ACTIVITY_TYPE_KEY);
-    if (editTypeIndex < 0) editTypeIndex = 0;
-    this.setData({
-      showEditModal: false,
-      currentActivity: null,
-      editActivityTypeIndex: editTypeIndex,
-      activityStyleOptionValues: [],
-      activityStyleOptionLabels: [],
-      editActivityStyleIndex: 0,
-      editForm: {
-        name: "",
-        status: "进行中",
-        remark: "",
-        startDate: "",
-        startTime: "",
-        endDate: "",
-        endTime: "",
-        signupDeadlineDate: "",
-        signupDeadlineTime: "",
-        locationName: "",
-        locationAddress: "",
-        locationLatitude: null,
-        locationLongitude: null,
-        activityType: DEFAULT_ACTIVITY_TYPE_KEY,
-        activityStyleKey: ""
-      }
-    });
-    this._syncTabBarVisibility();
-  },
-
-  // 管理员：取消活动（将状态设为已取消）
-  cancelActivity() {
-    const activity = this.data.currentActivity;
-    if (!activity || !activity._id) return;
-    wx.showModal({
-      title: "确认取消活动",
-      content: `确定要取消活动"${activity.name}"吗？`,
-      success: (res) => {
-        if (!res.confirm) return;
-        wx.showLoading({ title: "处理中..." });
-        activityService
-          .updateActivity(activity._id, { status: "已取消" })
-          .then(() => {
-            wx.hideLoading();
-            wx.showToast({ title: "已取消活动", icon: "success" });
-            this.closeEditModal();
-            this.loadActivityList();
-          })
-          .catch((err) => {
-            console.error(err);
-            wx.hideLoading();
-            wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
-          });
-      }
-    });
   },
 
   // 管理员：逻辑删除已取消的活动（标记为已删除，列表中不再展示）

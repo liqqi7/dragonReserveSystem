@@ -1,4 +1,6 @@
 {
   "navigationStyle": "custom",
-  "usingComponents": {}
+  "usingComponents": {
+    "activity-form-sheet": "../../components/activity-form-sheet/index"
+  }
 }

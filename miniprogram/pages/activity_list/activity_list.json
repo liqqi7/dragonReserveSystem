@@ -1,5 +1,8 @@
 {
   "navigationStyle": "custom",
   "disableScroll": false,
-  "enablePullDownRefresh": false
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "activity-form-sheet": "../../components/activity-form-sheet/index"
+  }
 }

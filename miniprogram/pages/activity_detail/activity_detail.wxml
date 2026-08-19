@@ -236,123 +236,19 @@
     </view>
   </view>
 
-  <view wx:if="{{showEditModal && isAdmin}}" class="edit-modal-container">
-    <view class="edit-modal-bg" catchtouchmove="stopPropagation" bindtap="closeEditModal"></view>
-    <view class="edit-modal-panel" catchtap="stopPropagation" catchtouchmove="stopPropagation">
-      <view class="modal-header edit-modal-header">
-        <text>编辑活动</text>
-        <text class="close-btn" bindtap="closeEditModal">×</text>
-      </view>
-
-      <view class="edit-modal-body-wrapper">
-        <scroll-view scroll-y="{{true}}" class="edit-modal-body">
-          <view class="form-item">
-            <view class="label">开始时间：</view>
-            <view class="datetime-picker-wrapper">
-              <picker mode="date" value="{{editForm.startDate}}" bindchange="onStartDateChange">
-                <view class="picker datetime-date">{{editForm.startDate || '请选择日期'}}</view>
-              </picker>
-              <picker mode="time" value="{{editForm.startTime}}" bindchange="onStartTimeChange">
-                <view class="picker datetime-time">{{editForm.startTime || '请选择时间'}}</view>
-              </picker>
-            </view>
-          </view>
-
-          <view class="form-item">
-            <view class="label">结束时间：</view>
-            <view class="datetime-picker-wrapper">
-              <picker mode="date" value="{{editForm.endDate}}" bindchange="onEndDateChange">
-                <view class="picker datetime-date">{{editForm.endDate || '请选择日期'}}</view>
-              </picker>
-              <picker mode="time" value="{{editForm.endTime}}" bindchange="onEndTimeChange">
-                <view class="picker datetime-time">{{editForm.endTime || '请选择时间'}}</view>
-              </picker>
-            </view>
-          </view>
-
-          <view class="form-item">
-            <view class="label">报名截止：</view>
-            <view class="datetime-picker-wrapper">
-              <picker mode="date" value="{{editForm.signupDeadlineDate}}" bindchange="onSignupDeadlineDateChange">
-                <view class="picker datetime-date">{{editForm.signupDeadlineDate || '请选择日期'}}</view>
-              </picker>
-              <picker mode="time" value="{{editForm.signupDeadlineTime}}" bindchange="onSignupDeadlineTimeChange">
-                <view class="picker datetime-time">{{editForm.signupDeadlineTime || '请选择时间'}}</view>
-              </picker>
-            </view>
-          </view>
-
-          <view wx:if="{{isAdmin}}" class="form-item">
-            <view class="label">限制报名人数：</view>
-            <switch
-              checked="{{editForm.limitEnabled}}"
-              bindchange="onEditFormChange"
-              data-field="limitEnabled"
-            />
-          </view>
-          <view wx:if="{{isAdmin && editForm.limitEnabled}}" class="form-item">
-            <view class="label">人数上限：</view>
-            <input
-              class="input"
-              type="number"
-              placeholder="请输入人数上限（1-999）"
-              value="{{editForm.maxParticipants}}"
-              bindinput="onEditFormChange"
-              data-field="maxParticipants"
-              adjust-position="{{false}}"
-            />
-          </view>
-
-          <view wx:if="{{isAdmin && currentActivity}}" class="form-item">
-            <view class="label">允许报名：</view>
-            <switch
-              checked="{{editForm.signupEnabled}}"
-              bindchange="onEditFormChange"
-              data-field="signupEnabled"
-            />
-          </view>
-
-          <view class="form-item">
-            <view class="label">活动名称：</view>
-            <input
-              class="input"
-              placeholder="请输入活动名称"
-              value="{{editForm.name}}"
-              bindinput="onEditFormChange"
-              data-field="name"
-              adjust-position="{{false}}"
-            />
-          </view>
-
-          <view class="form-item">
-            <view class="label">活动地点：</view>
-            <view class="picker {{locationDisabled ? 'picker-disabled' : ''}}" bindtap="onChooseLocation">
-              {{editForm.locationName || '请选择活动位置'}}
-            </view>
-          </view>
-
-          <view class="form-item">
-            <view class="label">活动备注：</view>
-            <textarea
-              class="textarea"
-              placeholder="请输入备注（可选）"
-              value="{{editForm.remark}}"
-              bindinput="onEditFormChange"
-              data-field="remark"
-              adjust-position="{{true}}"
-              cursor-spacing="120"
-            />
-          </view>
-          <view style="height:24rpx"></view>
-        </scroll-view>
-      </view>
-
-      <view class="modal-footer edit-modal-footer">
-        <button wx:if="{{currentActivity && currentActivity.status !== '已取消'}}" class="btn danger" hover-class="btn-hover" hover-stay-time="80" bindtap="cancelActivity">取消活动</button>
-        <button class="btn primary" hover-class="btn-hover" hover-stay-time="80" bindtap="saveActivity">保存</button>
-      </view>
-    </view>
-  </view>
+  <activity-form-sheet
+    id="qaActivityFormSheet"
+    wx:if="{{showActivityForm && isAdmin && activity}}"
+    visible="{{true}}"
+    mode="edit"
+    activity="{{activity}}"
+    participant-count="{{activityParticipantCount}}"
+    location-disabled="{{locationDisabled}}"
+    submitting="{{activityFormSubmitting}}"
+    bindclose="closeActivityForm"
+    bindsubmit="submitActivityForm"
+    bindcancelactivity="cancelActivityFromForm"
+  />
 
   <view wx:if="{{showParticipantsDrawer && activity}}" class="participants-drawer-root">
     <view class="participants-drawer-mask" catchtouchmove="stopPropagation" bindtap="closeParticipantsDrawer"></view>

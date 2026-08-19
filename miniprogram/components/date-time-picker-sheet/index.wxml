@@ -1,0 +1,52 @@
+<root-portal enable="{{visible}}">
+  <view wx:if="{{visible}}" class="picker-sheet-root" catchtouchmove="stopPropagation">
+    <view class="picker-sheet-mask" catchtouchmove="stopPropagation" catchtap="onClose"></view>
+
+    <view class="picker-sheet-panel">
+      <view class="picker-sheet-header">
+        <text class="picker-sheet-title">{{title}}</text>
+        <view class="picker-sheet-close" bindtap="onClose" aria-role="button" aria-label="关闭">
+          <image class="picker-sheet-close-icon" src="/images/icon-close.svg" mode="aspectFit" />
+        </view>
+      </view>
+      <view class="picker-sheet-divider"></view>
+
+      <view class="picker-sheet-wheel">
+        <view class="picker-sheet-selection picker-sheet-selection--{{mode}}"></view>
+        <picker-view
+          class="picker-sheet-view picker-sheet-view--{{mode}}"
+          value="{{pickerValue}}"
+          bindchange="onPickerChange"
+          indicator-class="picker-sheet-native-indicator"
+          indicator-style="height: 96rpx; background: transparent; border: 0; box-shadow: none;"
+        >
+          <block wx:if="{{showDate}}">
+            <picker-view-column class="picker-sheet-column picker-sheet-column--year">
+              <view wx:for="{{years}}" wx:key="*this" wx:for-index="index" class="picker-sheet-item">{{item}}年</view>
+            </picker-view-column>
+            <picker-view-column class="picker-sheet-column picker-sheet-column--month">
+              <view wx:for="{{months}}" wx:key="*this" wx:for-index="index" class="picker-sheet-item">{{item < 10 ? '0' + item : item}}月</view>
+            </picker-view-column>
+            <picker-view-column class="picker-sheet-column picker-sheet-column--day">
+              <view wx:for="{{days}}" wx:key="*this" wx:for-index="index" class="picker-sheet-item">{{item < 10 ? '0' + item : item}}日</view>
+            </picker-view-column>
+          </block>
+          <block wx:if="{{showTime}}">
+            <picker-view-column class="picker-sheet-column picker-sheet-column--hour">
+              <view wx:for="{{hours}}" wx:key="*this" wx:for-index="index" class="picker-sheet-item">{{item < 10 ? '0' + item : item}}时</view>
+            </picker-view-column>
+            <picker-view-column class="picker-sheet-column picker-sheet-column--minute">
+              <view wx:for="{{minutes}}" wx:key="*this" wx:for-index="index" class="picker-sheet-item">{{item < 10 ? '0' + item : item}}分</view>
+            </picker-view-column>
+          </block>
+        </picker-view>
+        <view class="picker-sheet-fade picker-sheet-fade--top"></view>
+        <view class="picker-sheet-fade picker-sheet-fade--bottom"></view>
+      </view>
+
+      <view class="picker-sheet-footer">
+        <view class="picker-sheet-confirm" hover-class="picker-sheet-confirm--pressed" bindtap="onConfirm" aria-role="button">确定</view>
+      </view>
+    </view>
+  </view>
+</root-portal>

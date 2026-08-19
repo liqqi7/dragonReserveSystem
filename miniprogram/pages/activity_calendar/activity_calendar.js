@@ -66,7 +66,7 @@ const EDGE_EXTEND = 14;                         // 每次扩展 14 天
 const TIMELINE_BURST_TOTAL_MS = 700;
 
 const EVENT_COLORS = [
-  { bg: "#fff0f0", border: "#ff001f", text: "#cc0018" },
+  { bg: "#fff3e0", border: "#ff9800", text: "#ff9800" },
   { bg: "#f1f8e9", border: "#7cb342", text: "#558b2f" },
   { bg: "#e3f2fd", border: "#2196f3", text: "#1565c0" },
   { bg: "#fff7ed", border: "#f97316", text: "#c2410c" },

@@ -102,7 +102,7 @@ page {
 }
 
 .week-strip-label--selected {
-  color: #ff001f;
+  color: #ff9800;
 }
 
 .strip-date-stack {
@@ -127,7 +127,7 @@ page {
 }
 
 .strip-date-circle--selected {
-  background: #ff001f;
+  background: #ff9800;
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.1),
     0 1px 2px rgba(0, 0, 0, 0.1);
@@ -143,7 +143,7 @@ page {
 }
 
 .strip-date-num--today {
-  color: #ff001f;
+  color: #ff9800;
   font-weight: 600;
 }
 
@@ -155,7 +155,7 @@ page {
   width: 24rpx;
   height: 4rpx;
   border-radius: 24rpx;
-  background: #ff001f;
+  background: #ff9800;
   flex-shrink: 0;
 }
 
@@ -280,8 +280,8 @@ page {
 }
 
 .day-titles-strip-cell--today {
-  background: #fff3f5;
-  color: #ff001f;
+  background: #fff3e0;
+  color: #ff9800;
 }
 
 .timeline-scroll {
@@ -360,7 +360,7 @@ page {
 }
 
 .day-column-today {
-  background: linear-gradient(180deg, rgba(255, 0, 31, 0.08) 0%, rgba(255, 0, 31, 0.03) 100%);
+  background: linear-gradient(180deg, rgba(255, 152, 0, 0.08) 0%, rgba(255, 152, 0, 0.03) 100%);
 }
 
 .day-column:last-child {
@@ -388,7 +388,7 @@ page {
   left: 4rpx;
   right: 0;
   z-index: 1;
-  border-left: 6rpx solid #ff001f;
+  border-left: 6rpx solid #ff9800;
   border-radius: 8rpx;
   padding: 8rpx 8rpx 8rpx 10rpx;
   box-sizing: border-box;
@@ -397,9 +397,9 @@ page {
 
 .today-fab {
   position: absolute;
-  /* 与 custom-tab-bar 中 .tab-items-wrap（width: 90.256vw + 居中）右缘对齐 */
-  right: calc((100vw - 90.256vw) / 2);
-  /* Tab 占位与 timeline-scroll 一致，再上抬间距（物理像素） */
+  /* 与全宽 TabBar 的页面安全边距对齐 */
+  right: 32rpx;
+  /* TabBar 高度之上保留操作间距 */
   bottom: calc(112rpx + env(safe-area-inset-bottom) + 40px);
   z-index: 20;
   min-width: 88rpx;
@@ -508,7 +508,7 @@ page {
   min-width: 192rpx;
   height: 72rpx;
   border-radius: 999rpx;
-  background: #ff001f;
+  background: #ff9800;
   color: #ffffff;
   font-size: 28rpx;
   line-height: 72rpx;
