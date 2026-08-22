@@ -29,7 +29,6 @@ from app.utils.geo import haversine_distance_meters
 
 settings = get_settings()
 CHECKIN_EARLY_WINDOW_MINUTES = 30
-FLOW_CANCEL_WINDOW_MINUTES = 15  # 活动开始前多少分钟内，人数不足则自动流局
 FLOW_CANCEL_MIN_PARTICIPANTS = 2  # 触发流局的最低人数阈值
 APP_TIME_ZONE = ZoneInfo("Asia/Shanghai")
 
@@ -62,15 +61,17 @@ def _sync_activity_status(activity: Activity, now: datetime) -> bool:
         return False
     if activity.end_time <= now:
         new_status = "已结束"
-    elif activity.start_time <= now:
-        new_status = "进行中"
-    elif activity.start_time - timedelta(minutes=FLOW_CANCEL_WINDOW_MINUTES) <= now:
-        # 开始前 15 分钟窗口内，人数不足则流局
+    elif (activity.signup_deadline or activity.start_time) <= now:
+        # 报名截止时检查人数；未设置报名截止时间时回退到活动开始时间
         participant_count = len(activity.participants)
         if participant_count <= FLOW_CANCEL_MIN_PARTICIPANTS:
             new_status = "已流局"
+        elif activity.start_time <= now:
+            new_status = "进行中"
         else:
             new_status = "未开始"
+    elif activity.start_time <= now:
+        new_status = "进行中"
     else:
         new_status = "未开始"
     if activity.status != new_status:

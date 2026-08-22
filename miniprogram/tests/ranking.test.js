@@ -29,6 +29,9 @@ function loadRankingInternals(statsServiceOverrides = {}) {
       if (request === "../../utils/tabBarSync") {
         return { patchTabBarIfNeeded() {} };
       }
+      if (request === "../../utils/safeArea") {
+        return { getBottomSafeAreaRpx: () => 0 };
+      }
       throw new Error(`Unexpected require: ${request}`);
     }
   };
@@ -149,7 +152,8 @@ test("ranking page preserves champion jokes and follows the Pencil layout fixes"
   assert.doesNotMatch(wxml, /ranking-switch-sticky/);
   assert.doesNotMatch(wxss, /position:\s*sticky/);
   assert.match(wxml, /class="ranking-scroll-body"/);
-  assert.match(wxml, /class="ranking-scroll"[^>]*style="top: 0;/);
+  assert.doesNotMatch(wxml, /class="ranking-scroll"[^>]*style=/);
+  assert.match(wxss, /\.ranking-scroll\s*\{[^}]*top:\s*0;[^}]*bottom:\s*0;/s);
   assert.doesNotMatch(wxss, /\.ranking-navbar\s*\{[^}]*position:\s*fixed;/s);
 
   assert.match(wxml, /class="ranking-switch-slider \{\{activeTab === 'pigeon' \? 'is-pigeon' : ''\}\}"/);
@@ -158,9 +162,9 @@ test("ranking page preserves champion jokes and follows the Pencil layout fixes"
   assert.match(wxss, /\.ranking-switch-item\s*\{[^}]*font-size:\s*26\.92rpx;[^}]*font-weight:\s*500;[^}]*transition:\s*color 160ms ease;/s);
   assert.match(wxss, /\.ranking-switch-item\.is-active\s*\{[^}]*font-weight:\s*600;/s);
   assert.doesNotMatch(wxss, /\.ranking-switch-item\.is-active\s*\{[^}]*background:/s);
-  assert.match(wxss, /\.ranking-section-title\s*\{[^}]*height:\s*53\.85rpx;[^}]*font-size:\s*38\.46rpx;[^}]*font-weight:\s*700;[^}]*line-height:\s*53\.85rpx;/s);
-  assert.match(wxss, /\.champion-card\s*\{[^}]*height:\s*430\.77rpx;[^}]*padding:\s*23\.08rpx;/s);
-  assert.match(wxss, /\.heatmap-card\s*\{[^}]*height:\s*336\.54rpx;/s);
+  assert.match(wxss, /\.ranking-section-title\s*\{[^}]*height:\s*42\.31rpx;[^}]*font-size:\s*38\.46rpx;[^}]*font-weight:\s*700;[^}]*line-height:\s*42\.31rpx;/s);
+  assert.match(wxss, /\.champion-card\s*\{[^}]*height:\s*430\.77rpx;[^}]*padding:\s*30\.77rpx;/s);
+  assert.match(wxss, /\.heatmap-card\s*\{[^}]*height:\s*384\.62rpx;/s);
   assert.match(wxss, /\.heatmap-calendar\s*\{[^}]*gap:\s*7\.69rpx;/s);
   assert.match(wxss, /\.heatmap-body\s*\{[^}]*height:\s*192\.31rpx;/s);
   assert.match(wxss, /\.ranking-row:nth-child\(n \+ 4\) \.ranking-progress-fill\s*\{[^}]*background:\s*#ffe0b2;/s);

@@ -3,7 +3,11 @@ page {
 }
 
 .container {
+  box-sizing: border-box;
+  min-height: 100vh;
   padding: 24rpx;
+
+  background: #f5f5f5;
 }
 
 .center-box {

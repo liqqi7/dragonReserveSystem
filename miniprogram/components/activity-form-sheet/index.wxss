@@ -24,7 +24,7 @@
   flex-direction: column;
   overflow: hidden;
   box-sizing: border-box;
-  border-radius: 48rpx 48rpx 0 0;
+  border-radius: 46.15rpx 46.15rpx 0 0;
   background: #f5f5f5;
   box-shadow: 0 -10rpx 36rpx rgba(65, 74, 138, 0.08);
   animation: activity-sheet-up 180ms ease-out;
@@ -47,10 +47,10 @@
 }
 
 .activity-sheet-header {
-  height: 80rpx;
+  height: 76.92rpx;
   flex: none;
   margin-top: 12rpx;
-  padding: 0 36rpx;
+  padding: 0 30.77rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -58,23 +58,23 @@
 }
 
 .activity-sheet-title {
-  font-size: 40rpx;
-  line-height: 50rpx;
+  font-size: 38.46rpx;
+  line-height: 48rpx;
   font-weight: 700;
   color: #000000;
 }
 
 .activity-sheet-close {
-  width: 64rpx;
-  height: 64rpx;
+  width: 61.54rpx;
+  height: 61.54rpx;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .activity-sheet-close-icon {
-  width: 40rpx;
-  height: 40rpx;
+  width: 38.46rpx;
+  height: 38.46rpx;
   display: block;
 }
 
@@ -87,23 +87,23 @@
 }
 
 .bento-grid {
-  padding: 12rpx 36rpx 16rpx;
+  padding: 15.38rpx 30.77rpx;
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
+  gap: 15.38rpx;
   box-sizing: border-box;
 }
 
 .bento-card {
   box-sizing: border-box;
-  border-radius: 24rpx;
+  border-radius: 23.08rpx;
   background: #ffffff;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
 }
 
 .bento-card--full {
   width: 100%;
-  padding: 16rpx 24rpx;
+  padding: 15.38rpx 23.08rpx;
 }
 
 .bento-card--disabled {
@@ -127,8 +127,8 @@
 .deadline-card {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
-  padding: 16rpx 24rpx;
+  gap: 15.38rpx;
+  padding: 15.38rpx 23.08rpx;
 }
 
 .activity-time-grid,
@@ -140,14 +140,14 @@
 .date-time-row {
   min-width: 0;
   flex: 1;
-  padding: 16rpx;
-  border-radius: 16rpx;
+  padding: 15.38rpx;
+  border-radius: 15.38rpx;
   background: #f5f5f5;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16rpx;
+  gap: 15.38rpx;
 }
 
 .date-time-row--pressed {
@@ -181,7 +181,7 @@
 .bento-pair-row {
   width: 100%;
   display: flex;
-  gap: 20rpx;
+  gap: 7.69rpx;
 }
 
 .bento-card--half {
@@ -190,8 +190,8 @@
 }
 
 .compact-card {
-  height: 92rpx;
-  padding: 16rpx 24rpx;
+  height: 100rpx;
+  padding: 15.38rpx 23.08rpx;
   box-sizing: border-box;
 }
 
@@ -231,18 +231,18 @@
 }
 
 .compact-switch-card {
-  height: 92rpx;
+  height: 100rpx;
 }
 
 .prototype-switch {
-  width: 92rpx;
-  height: 56rpx;
+  width: 88.46rpx;
+  height: 53.85rpx;
   flex: none;
-  padding: 6rpx;
+  padding: 5.77rpx;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  border-radius: 28rpx;
+  border-radius: 26.92rpx;
   background: #d1d5db;
   box-sizing: border-box;
 }
@@ -253,8 +253,8 @@
 }
 
 .prototype-switch-thumb {
-  width: 44rpx;
-  height: 44rpx;
+  width: 42.31rpx;
+  height: 42.31rpx;
   flex: none;
   border-radius: 50%;
   background: #ffffff;
@@ -270,24 +270,24 @@
 
 .stepper {
   flex: none;
-  width: 220rpx;
-  height: 76rpx;
+  width: 211.54rpx;
+  height: 73.08rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20rpx;
+  padding: 0 19.23rpx;
   overflow: hidden;
-  border-radius: 24rpx;
+  border-radius: 23.08rpx;
   background: #f5f5f5;
   box-sizing: border-box;
 }
 
 .stepper-button {
-  width: 44rpx;
-  min-width: 44rpx;
-  max-width: 44rpx;
-  flex: 0 0 44rpx;
-  height: 44rpx;
+  width: 38.46rpx;
+  min-width: 38.46rpx;
+  max-width: 38.46rpx;
+  flex: 0 0 38.46rpx;
+  height: 38.46rpx;
   padding: 0;
   margin: 0;
   border: 0;
@@ -299,8 +299,8 @@
 }
 
 .stepper-icon {
-  width: 40rpx;
-  height: 40rpx;
+  width: 38.46rpx;
+  height: 38.46rpx;
   display: block;
 }
 
@@ -313,10 +313,10 @@
 }
 
 .stepper-value {
-  width: 44rpx;
-  min-width: 44rpx;
-  max-width: 44rpx;
-  flex: 0 0 44rpx;
+  width: 42.31rpx;
+  min-width: 42.31rpx;
+  max-width: 42.31rpx;
+  flex: 0 0 42.31rpx;
   text-align: center;
   color: #000000;
   font-size: 28rpx;
@@ -325,10 +325,10 @@
 }
 
 .stepper-value-input {
-  width: 44rpx;
-  min-width: 44rpx;
-  max-width: 44rpx;
-  flex: 0 0 44rpx;
+  width: 42.31rpx;
+  min-width: 42.31rpx;
+  max-width: 42.31rpx;
+  flex: 0 0 42.31rpx;
   height: 40rpx;
   min-height: 40rpx;
   padding: 0;
@@ -471,7 +471,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  height: calc(100rpx + env(safe-area-inset-bottom));
+  height: calc(153.85rpx + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
   box-sizing: border-box;
   border-top: 1rpx solid #e5e7eb;
@@ -480,24 +480,24 @@
 }
 
 .activity-sheet-footer-actions {
-  height: 100rpx;
-  padding: 12rpx 32rpx 0;
+  height: 107.69rpx;
+  padding: 11.54rpx 38.46rpx 0;
   display: flex;
   align-items: flex-start;
-  gap: 16rpx;
+  gap: 15.38rpx;
   box-sizing: border-box;
 }
 
 .sheet-button {
-  height: 88rpx;
+  height: 84.62rpx;
   flex: 1;
   min-width: 0;
   padding: 0;
   margin: 0;
   border: 0;
-  border-radius: 24rpx;
-  font-size: 28rpx;
-  line-height: 88rpx;
+  border-radius: 23.08rpx;
+  font-size: 26.92rpx;
+  line-height: 84.62rpx;
   font-weight: 700;
 }
 
@@ -526,7 +526,7 @@
 
 /* 新建活动主抽屉：与最新 Pencil 规范对齐，不影响编辑活动。 */
 .activity-sheet-panel--create {
-  padding-bottom: calc(112rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(153.85rpx + env(safe-area-inset-bottom));
 }
 
 .activity-sheet-panel--create .activity-sheet-body {
@@ -534,12 +534,12 @@
 }
 
 .bento-grid--create {
-  gap: 12rpx;
+  gap: 15.38rpx;
 }
 
 .activity-sheet-panel--create .compact-card,
 .activity-sheet-panel--create .compact-switch-card {
-  height: 104rpx;
+  height: 100rpx;
 }
 
 .activity-sheet-panel--create .compact-select-row {
@@ -547,23 +547,23 @@
 }
 
 .activity-sheet-panel--create .stepper-card {
-  min-height: 104rpx;
+  min-height: 100rpx;
 }
 
 .activity-sheet-panel--create .stepper {
-  width: 220rpx;
-  height: 72rpx;
-  padding: 0 24rpx;
-  justify-content: flex-start;
-  gap: 24rpx;
+  width: 211.54rpx;
+  height: 73.08rpx;
+  padding: 0 19.23rpx;
+  justify-content: space-between;
+  gap: 0;
 }
 
 .activity-sheet-panel--create .stepper-button {
-  width: 40rpx;
-  min-width: 40rpx;
-  max-width: 40rpx;
-  flex-basis: 40rpx;
-  height: 40rpx;
+  width: 38.46rpx;
+  min-width: 38.46rpx;
+  max-width: 38.46rpx;
+  flex-basis: 38.46rpx;
+  height: 38.46rpx;
 }
 
 .activity-sheet-panel--create .participant-limit-card--create {
@@ -587,10 +587,10 @@
 }
 
 .activity-sheet-panel--create .participant-limit-card--create.participant-limit-card--visible {
-  min-height: 104rpx;
-  height: 104rpx;
-  padding-top: 16rpx;
-  padding-bottom: 16rpx;
+  min-height: 100rpx;
+  height: 100rpx;
+  padding-top: 15.38rpx;
+  padding-bottom: 15.38rpx;
   margin-top: 0;
   opacity: 1;
   pointer-events: auto;
@@ -619,13 +619,13 @@
 }
 
 .activity-sheet-footer--create {
-  height: calc(112rpx + env(safe-area-inset-bottom));
+  height: calc(153.85rpx + env(safe-area-inset-bottom));
   border-top-width: 2rpx;
 }
 
 .activity-sheet-footer-actions--create {
-  height: 112rpx;
-  padding: 12rpx 32rpx;
+  height: 107.69rpx;
+  padding: 11.54rpx 38.46rpx;
 }
 
 .sheet-button--primary-create {
@@ -634,7 +634,7 @@
 
 /* 编辑活动抽屉：复用公共表单结构，仅覆盖编辑态与最新 Pencil 原型的差异。 */
 .activity-sheet-panel--edit {
-  padding-bottom: calc(112rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(153.85rpx + env(safe-area-inset-bottom));
 }
 
 .activity-sheet-panel--edit .activity-sheet-body {
@@ -642,30 +642,30 @@
 }
 
 .bento-grid--edit {
-  gap: 12rpx;
+  gap: 15.38rpx;
 }
 
 .activity-sheet-panel--edit .compact-card,
 .activity-sheet-panel--edit .compact-switch-card,
 .activity-sheet-panel--edit .stepper-card {
-  min-height: 104rpx;
-  height: 104rpx;
+  min-height: 100rpx;
+  height: 100rpx;
 }
 
 .activity-sheet-panel--edit .stepper {
-  width: 220rpx;
-  height: 72rpx;
-  padding: 0 24rpx;
-  justify-content: flex-start;
-  gap: 24rpx;
+  width: 211.54rpx;
+  height: 73.08rpx;
+  padding: 0 19.23rpx;
+  justify-content: space-between;
+  gap: 0;
 }
 
 .activity-sheet-panel--edit .stepper-button {
-  width: 40rpx;
-  min-width: 40rpx;
-  max-width: 40rpx;
-  flex-basis: 40rpx;
-  height: 40rpx;
+  width: 38.46rpx;
+  min-width: 38.46rpx;
+  max-width: 38.46rpx;
+  flex-basis: 38.46rpx;
+  height: 38.46rpx;
 }
 
 .activity-sheet-panel--edit .participant-limit-card--edit {
@@ -689,10 +689,10 @@
 }
 
 .activity-sheet-panel--edit .participant-limit-card--edit.participant-limit-card--visible {
-  min-height: 104rpx;
-  height: 104rpx;
-  padding-top: 16rpx;
-  padding-bottom: 16rpx;
+  min-height: 100rpx;
+  height: 100rpx;
+  padding-top: 15.38rpx;
+  padding-bottom: 15.38rpx;
   margin-top: 0;
   opacity: 1;
   pointer-events: auto;
@@ -722,20 +722,20 @@
 }
 
 .activity-sheet-footer--double {
-  height: calc(112rpx + env(safe-area-inset-bottom));
+  height: calc(153.85rpx + env(safe-area-inset-bottom));
   border-top-width: 2rpx;
 }
 
 .activity-sheet-footer-actions--edit {
-  height: 112rpx;
-  padding: 12rpx 32rpx;
+  height: 107.69rpx;
+  padding: 11.54rpx 38.46rpx;
   align-items: center;
-  gap: 16rpx;
+  gap: 15.38rpx;
 }
 
 .sheet-button--secondary-edit {
-  width: 224rpx;
-  flex: 0 0 224rpx;
+  width: 215.38rpx;
+  flex: 0 0 215.38rpx;
   border: 2rpx solid #ff9800;
   background: transparent;
   color: #ff9800;

@@ -1,7 +1,86 @@
 from datetime import datetime, timedelta
+from types import SimpleNamespace
 
 from app.models import Activity, ActivityParticipant
-from app.services.activity_service import APP_TIME_ZONE
+from app.services.activity_service import APP_TIME_ZONE, _sync_activity_status
+
+
+def _activity_for_status_sync(
+    *,
+    now: datetime,
+    participant_count: int,
+    signup_deadline: datetime | None,
+    status: str = "未开始",
+):
+    return SimpleNamespace(
+        status=status,
+        start_time=now + timedelta(hours=1) if signup_deadline is not None else now,
+        end_time=now + timedelta(hours=3),
+        signup_deadline=signup_deadline,
+        participants=[object() for _ in range(participant_count)],
+    )
+
+
+def test_activity_does_not_flow_before_signup_deadline() -> None:
+    now = datetime(2026, 8, 20, 10, 0, 0)
+    activity = _activity_for_status_sync(
+        now=now,
+        participant_count=2,
+        signup_deadline=now + timedelta(seconds=1),
+    )
+
+    assert _sync_activity_status(activity, now) is False
+    assert activity.status == "未开始"
+
+
+def test_activity_flows_at_signup_deadline_when_fewer_than_three_people() -> None:
+    now = datetime(2026, 8, 20, 10, 0, 0)
+    activity = _activity_for_status_sync(
+        now=now,
+        participant_count=2,
+        signup_deadline=now,
+    )
+
+    assert _sync_activity_status(activity, now) is True
+    assert activity.status == "已流局"
+
+
+def test_activity_does_not_flow_at_signup_deadline_with_three_people() -> None:
+    now = datetime(2026, 8, 20, 10, 0, 0)
+    activity = _activity_for_status_sync(
+        now=now,
+        participant_count=3,
+        signup_deadline=now,
+    )
+
+    assert _sync_activity_status(activity, now) is False
+    assert activity.status == "未开始"
+
+
+def test_activity_without_signup_deadline_checks_at_start_time() -> None:
+    now = datetime(2026, 8, 20, 10, 0, 0)
+    activity = _activity_for_status_sync(
+        now=now,
+        participant_count=2,
+        signup_deadline=None,
+    )
+
+    assert _sync_activity_status(activity, now) is True
+    assert activity.status == "已流局"
+
+
+def test_terminal_activity_status_is_not_overwritten() -> None:
+    now = datetime(2026, 8, 20, 10, 0, 0)
+    for status in ("已取消", "已删除", "已流局"):
+        activity = _activity_for_status_sync(
+            now=now,
+            participant_count=2,
+            signup_deadline=now,
+            status=status,
+        )
+
+        assert _sync_activity_status(activity, now) is False
+        assert activity.status == status
 
 def _create_signed_up_activity_for_checkin(db_session, admin_user, normal_user, start_time):
     end_time = start_time + timedelta(hours=2)

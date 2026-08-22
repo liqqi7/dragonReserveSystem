@@ -1,12 +1,12 @@
 <view class="ranking-page">
-  <scroll-view class="ranking-scroll" scroll-y show-scrollbar="false" lower-threshold="120" bindscrolltolower="loadMoreActivityRanking" style="top: 0; bottom: calc(112rpx + env(safe-area-inset-bottom));">
+  <scroll-view class="ranking-scroll" scroll-y show-scrollbar="false" lower-threshold="120" bindscrolltolower="loadMoreActivityRanking">
     <view class="ranking-scroll-body">
       <image class="dragon-watermark dragon-watermark--absolute ranking-watermark" src="../../images/activity-home-logo.png" mode="aspectFit" />
       <view class="ranking-navbar" style="padding-top: {{statusBarHeight}}px">
         <view class="ranking-navbar-row"><text class="ranking-navbar-title">排行榜</text></view>
       </view>
 
-      <view class="ranking-content" id="qa-ranking-content">
+      <view class="ranking-content" id="qa-ranking-content" style="padding-bottom: calc(123.07692rpx + {{bottomSafeAreaRpx}}rpx);">
       <view class="ranking-switch" id="qa-ranking-tabs">
         <view class="ranking-switch-slider {{activeTab === 'pigeon' ? 'is-pigeon' : ''}}"></view>
         <view class="ranking-switch-item {{activeTab === 'activity' ? 'is-active' : ''}}" data-tab="activity" bindtap="switchRankingTab"><text>活动榜</text></view>

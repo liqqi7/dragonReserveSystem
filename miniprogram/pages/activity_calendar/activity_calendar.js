@@ -3,6 +3,7 @@ const activityService = require("../../services/activity");
 const userService = require("../../services/user");
 const myActivitiesCache = require("../../utils/myActivitiesCache");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
+const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
 
 function ensureSessionParallel(appLocal) {
   return new Promise((resolve) => {
@@ -289,6 +290,7 @@ Page({
     hours: [],
     gridHeight: HOUR_HEIGHT_RPX * 24,
     activities: [],
+    bottomSafeAreaRpx: 0,
   },
 
   onLoad() {
@@ -310,6 +312,7 @@ Page({
 
     this.setData({
       statusBarHeight: statusBarPx,
+      bottomSafeAreaRpx: getBottomSafeAreaRpx(),
       navbarPaddingRightPx,
       todayDateKey: dateKey(today),
       selectedDateKey: dateKey(today),

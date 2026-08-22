@@ -162,11 +162,13 @@
           </view>
         </view>
       </view>
+      <view class="timeline-tab-spacer" style="height: calc(100rpx + {{bottomSafeAreaRpx}}rpx);"></view>
     </scroll-view>
 
     <view
       wx:if="{{selectedDateKey && todayDateKey && selectedDateKey !== todayDateKey}}"
       class="today-fab"
+      style="bottom: calc(100rpx + {{bottomSafeAreaRpx}}rpx + 76.92308rpx);"
       bindtap="onJumpToToday"
     >
       今天

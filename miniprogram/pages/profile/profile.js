@@ -5,6 +5,7 @@ const { getApiBaseUrl, resolveLocalMediaUrl, isLocalTestMediaUrl } = require("..
 const { isDefaultNickname, isDefaultAvatar } = require("../../utils/profileUtils");
 const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
+const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
 const DEFAULT_AVATAR = "/images/default-avatar.svg";
 const MEDIA_BASE_URL = String(getApiBaseUrl() || "").replace(/\/api\/v\d+\/?$/, "");
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
@@ -55,10 +56,12 @@ Page({
     forceProfileHint: "",
     forceProfileCanSubmit: true,
     showPermissionModal: false,
-    permissionInput: ""
+    permissionInput: "",
+    bottomSafeAreaRpx: 0
   },
 
   onShow() {
+    this.setData({ bottomSafeAreaRpx: getBottomSafeAreaRpx() });
     patchTabBarIfNeeded(this, {
       selected: 3,
       isAdmin: app.globalData.userRole === "admin",

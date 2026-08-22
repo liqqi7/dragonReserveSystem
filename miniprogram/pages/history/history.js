@@ -1,6 +1,7 @@
 const app = getApp();
 const statsService = require("../../services/stats");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
+const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
 
 const DEFAULT_AVATAR = "/images/default-avatar.svg";
 const MONTH_NAMES = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
@@ -96,13 +97,17 @@ Page({
     pigeonRest: [],
     activityHasMore: false,
     isLoadingActivityMore: false,
-    isLoading: true
+    isLoading: true,
+    bottomSafeAreaRpx: 0
   },
 
   onLoad() {
     try {
       const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
-      this.setData({ statusBarHeight: info.statusBarHeight || 20 });
+      this.setData({
+        statusBarHeight: info.statusBarHeight || 20,
+        bottomSafeAreaRpx: getBottomSafeAreaRpx()
+      });
     } catch (error) {
       console.warn("Failed to read status bar height", error);
     }

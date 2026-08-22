@@ -288,9 +288,14 @@ page {
 .timeline-scroll {
   flex: 1;
   min-height: 0;
-  padding-bottom: calc(112rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   background: #ffffff;
+}
+
+.timeline-tab-spacer {
+  width: 100%;
+
+  background: transparent;
 }
 
 .timeline-grid-body {
@@ -398,10 +403,10 @@ page {
 
 .today-fab {
   position: absolute;
-  /* 与全宽 TabBar 的页面安全边距对齐 */
+  /* 与悬浮 Tab 的页面安全边距对齐 */
   right: 32rpx;
   /* TabBar 高度之上保留操作间距 */
-  bottom: calc(112rpx + env(safe-area-inset-bottom) + 76.92rpx);
+
   z-index: 20;
   min-width: 88rpx;
   height: 72rpx;

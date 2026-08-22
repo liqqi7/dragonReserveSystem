@@ -829,21 +829,23 @@ button.create-btn-fixed.create-btn-hover {
 .group-create-btn {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  height: 56rpx;
-  padding: 0 18rpx;
-  border-radius: 999rpx;
+  gap: 9.62rpx;
+  width: 184.62rpx;
+  height: 65.38rpx;
+  padding: 0 19.23rpx;
+  box-sizing: border-box;
+  border-radius: 32.69rpx;
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 4rpx 14rpx rgba(0, 0, 0, 0.08);
 }
 
 .group-create-icon {
-  width: 30rpx;
-  height: 30rpx;
+  width: 32.69rpx;
+  height: 32.69rpx;
 }
 
 .group-create-text {
-  font-size: 24rpx;
+  font-size: 26.92rpx;
   line-height: 1;
   font-weight: 600;
   color: #191919;
@@ -885,7 +887,7 @@ button.create-btn-fixed.create-btn-hover {
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12rpx;
+  gap: 19.23rpx;
   flex-shrink: 0;
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
@@ -904,8 +906,8 @@ button.create-btn-fixed.create-btn-hover {
 /* 大卡片主体 */
 .large-card {
   width: 530.77rpx;
-  height: 707.69rpx;
-  border-radius: 38.46rpx;
+  height: 715.38rpx;
+  border-radius: 30.77rpx;
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
@@ -950,7 +952,7 @@ button.create-btn-fixed.create-btn-hover {
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 14rpx;
+  gap: 15.38rpx;
   flex-shrink: 0;
   width: 346.15rpx;
   transition: transform 0.15s ease, opacity 0.15s ease;
@@ -960,7 +962,7 @@ button.create-btn-fixed.create-btn-hover {
 .small-card {
   width: 346.15rpx;
   height: 346.15rpx;
-  border-radius: 11.54rpx;
+  border-radius: 23.08rpx;
   position: relative;
   overflow: hidden;
   box-shadow: none;
@@ -1063,9 +1065,9 @@ button.create-btn-fixed.create-btn-hover {
 /* ── 类型角标 ── */
 .card-type-label {
   position: absolute;
-  top: 24rpx;
-  right: 24rpx;
-  font-size: 28rpx;
+  top: 30.77rpx;
+  right: 30.77rpx;
+  font-size: 30.77rpx;
   font-weight: 600;
   color: #ffffff;
   z-index: 2;
@@ -1205,13 +1207,13 @@ button.create-btn-fixed.create-btn-hover {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 24rpx;
+  padding: 30.77rpx;
   background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 100%);
   backdrop-filter: blur(57.69rpx);
   -webkit-backdrop-filter: blur(57.69rpx);
   z-index: 3;
-  border-bottom-left-radius: 24rpx;
-  border-bottom-right-radius: 24rpx;
+  border-bottom-left-radius: 30.77rpx;
+  border-bottom-right-radius: 30.77rpx;
 }
 
 .glass-name {
@@ -1239,7 +1241,7 @@ button.create-btn-fixed.create-btn-hover {
 .glass-meta-row {
   display: flex;
   align-items: center;
-  gap: 24rpx;
+  gap: 30.77rpx;
   margin-top: 11.54rpx;
 }
 
@@ -1321,4 +1323,3 @@ button.create-btn-fixed.create-btn-hover {
 .tab-label-active {
   color: #ff001f;
 }
-

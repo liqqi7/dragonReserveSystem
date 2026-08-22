@@ -404,8 +404,8 @@
         </view>
       </view>
 
-      <!-- 底部占位与全宽 TabBar 高度一致，避免内容被遮挡 -->
-      <view style="height: calc(107.69rpx + env(safe-area-inset-bottom))"></view>
+      <!-- 底部占位与悬浮 Tab 高度一致，避免内容被遮挡 -->
+      <view style="height: calc(100rpx + {{bottomSafeAreaRpx}}rpx)"></view>
     </block>
   </scroll-view>
 

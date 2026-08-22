@@ -7,6 +7,7 @@ const { parseCreatedAtMs, orderParticipantsForRecentAvatarSlice } = require("../
 const cacheManager = require("../../services/cacheManager");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
 const calendarWarmup = require("../../utils/calendarWarmup");
+const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
 
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 
@@ -434,7 +435,8 @@ Page({
     selectedFilter: "我参与的",
     activityTypeStyles: DEFAULT_ACTIVITY_TYPE_STYLES,
     activityTypeOptionLabels: DEFAULT_ACTIVITY_TYPE_STYLES.map((item) => item.display_name || item.key),
-    activityTypeOptionValues: DEFAULT_ACTIVITY_TYPE_STYLES.map((item) => normalizeTypeKey(item.key)).filter(Boolean)
+    activityTypeOptionValues: DEFAULT_ACTIVITY_TYPE_STYLES.map((item) => normalizeTypeKey(item.key)).filter(Boolean),
+    bottomSafeAreaRpx: 0
   },
 
   onLoad(options) {
@@ -446,6 +448,7 @@ Page({
       return;
     }
     this.syncGuestState();
+    this.setData({ bottomSafeAreaRpx: getBottomSafeAreaRpx() });
     // 计算自定义导航栏高度
     try {
       const windowInfo = wx.getWindowInfo();
