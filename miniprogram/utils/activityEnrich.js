@@ -6,7 +6,7 @@
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 
 const { parseCreatedAtMs, orderParticipantsForRecentAvatarSlice } = require("./participantSort");
-const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../services/config");
+const { getApiBaseUrl, resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../services/config");
 
 const DEFAULT_AVATAR = "/images/default-avatar.svg";
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
@@ -160,6 +160,12 @@ function normalizeTypeKey(value) {
   return t;
 }
 
+function buildCardGlassImageUrl(typeKey, styleKey) {
+  const apiBaseUrl = String(getApiBaseUrl() || "").replace(/\/$/, "");
+  if (!apiBaseUrl || !typeKey || !styleKey) return "";
+  return `${apiBaseUrl}/activities/type-styles/${encodeURIComponent(typeKey)}/${encodeURIComponent(styleKey)}/glass-image?v=1`;
+}
+
 function buildTypeStyleMap(typeStyles) {
   const source = Array.isArray(typeStyles) && typeStyles.length > 0 ? typeStyles : DEFAULT_ACTIVITY_TYPE_STYLES;
   const map = {};
@@ -178,6 +184,7 @@ function buildTypeStyleMap(typeStyles) {
         showBadge: s.show_badge !== false,
         showAvatarCluster: s.show_avatar_cluster !== false,
         largeCardBgImageUrl: String(s.large_card_bg_image_url || ""),
+        largeCardGlassImageUrl: buildCardGlassImageUrl(key, styleKey),
         smallCardBgImageUrl: String(s.small_card_bg_image_url || ""),
         bgVideoUrl: s.bg_video_url ? String(s.bg_video_url) : ""
       };
@@ -313,6 +320,7 @@ function enrichSingleActivity(rawItem, typeStyles, myUserId, myNickname, now) {
   activity.showAvatarCluster = selectedStyle ? !!selectedStyle.showAvatarCluster : false;
   activity.bgVideoUrl = selectedStyle ? (selectedStyle.bgVideoUrl || "") : "";
   activity.largeCardBgImageUrl = selectedStyle ? (selectedStyle.largeCardBgImageUrl || "") : "";
+  activity.largeCardGlassImageUrl = selectedStyle ? (selectedStyle.largeCardGlassImageUrl || "") : "";
   activity.smallCardBgImageUrl = selectedStyle ? (selectedStyle.smallCardBgImageUrl || "") : "";
 
   const typeEntry = typeStyleMap[normalizedType] || typeStyleMap[DEFAULT_ACTIVITY_TYPE_KEY];

@@ -1,8 +1,14 @@
+const { getApiBaseUrl } = require("./config");
 const KEY_CLIENT_CACHE_VERSION = "clientCacheVersion";
 const KEY_ACTIVITY_STYLE_SIGNATURE = "activityStyleSignature";
 const KEY_ACTIVITY_LIST_CACHE = "activityListCache";
 const KEY_ACTIVITY_TYPE_STYLES_CACHE = "activityTypeStylesCache";
 const KEY_CACHE_METADATA_CHECKED_AT = "cacheMetadataCheckedAt";
+
+function cacheKey(key) {
+  const api = String(getApiBaseUrl() || "default").replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  return `${key}:${api || "default"}`;
+}
 
 function _safeGet(key, fallback = null) {
   try {
@@ -20,36 +26,36 @@ function _safeSet(key, value) {
 }
 
 function getClientCacheVersion() {
-  return String(_safeGet(KEY_CLIENT_CACHE_VERSION, ""));
+  return String(_safeGet(cacheKey(KEY_CLIENT_CACHE_VERSION), ""));
 }
 
 function setClientCacheVersion(version) {
-  _safeSet(KEY_CLIENT_CACHE_VERSION, String(version || ""));
+  _safeSet(cacheKey(KEY_CLIENT_CACHE_VERSION), String(version || ""));
 }
 
 function getActivityStyleSignature() {
-  return String(_safeGet(KEY_ACTIVITY_STYLE_SIGNATURE, ""));
+  return String(_safeGet(cacheKey(KEY_ACTIVITY_STYLE_SIGNATURE), ""));
 }
 
 function setActivityStyleSignature(signature) {
-  _safeSet(KEY_ACTIVITY_STYLE_SIGNATURE, String(signature || ""));
+  _safeSet(cacheKey(KEY_ACTIVITY_STYLE_SIGNATURE), String(signature || ""));
 }
 
 function getCacheMetadataCheckedAt() {
-  const value = Number(_safeGet(KEY_CACHE_METADATA_CHECKED_AT, 0));
+  const value = Number(_safeGet(cacheKey(KEY_CACHE_METADATA_CHECKED_AT), 0));
   return Number.isFinite(value) ? value : 0;
 }
 
 function setCacheMetadataCheckedAt(timestamp = Date.now()) {
-  _safeSet(KEY_CACHE_METADATA_CHECKED_AT, Number(timestamp) || Date.now());
+  _safeSet(cacheKey(KEY_CACHE_METADATA_CHECKED_AT), Number(timestamp) || Date.now());
 }
 
 function getCachedActivityList() {
-  return _safeGet(KEY_ACTIVITY_LIST_CACHE, null);
+  return _safeGet(cacheKey(KEY_ACTIVITY_LIST_CACHE), null);
 }
 
 function setCachedActivityList(list, userId = "") {
-  _safeSet(KEY_ACTIVITY_LIST_CACHE, {
+  _safeSet(cacheKey(KEY_ACTIVITY_LIST_CACHE), {
     list: Array.isArray(list) ? list : [],
     userId: String(userId || ""),
     updatedAt: Date.now()
@@ -58,16 +64,16 @@ function setCachedActivityList(list, userId = "") {
 
 function clearCachedActivityList() {
   try {
-    wx.removeStorageSync(KEY_ACTIVITY_LIST_CACHE);
+    wx.removeStorageSync(cacheKey(KEY_ACTIVITY_LIST_CACHE));
   } catch (_e) {}
 }
 
 function getCachedActivityTypeStyles() {
-  return _safeGet(KEY_ACTIVITY_TYPE_STYLES_CACHE, null);
+  return _safeGet(cacheKey(KEY_ACTIVITY_TYPE_STYLES_CACHE), null);
 }
 
 function setCachedActivityTypeStyles(styles) {
-  _safeSet(KEY_ACTIVITY_TYPE_STYLES_CACHE, {
+  _safeSet(cacheKey(KEY_ACTIVITY_TYPE_STYLES_CACHE), {
     styles: Array.isArray(styles) ? styles : [],
     updatedAt: Date.now()
   });
@@ -76,7 +82,7 @@ function setCachedActivityTypeStyles(styles) {
 function clearBusinessCaches() {
   [KEY_ACTIVITY_LIST_CACHE, KEY_ACTIVITY_TYPE_STYLES_CACHE].forEach((k) => {
     try {
-      wx.removeStorageSync(k);
+      wx.removeStorageSync(cacheKey(k));
     } catch (_e) {}
   });
 }

@@ -1,6 +1,7 @@
 """Activity routes."""
 
-from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_optional_current_user, require_admin
@@ -17,6 +18,10 @@ from app.schemas.activity import (
     ActivityStyleSignatureResponse,
     ActivityTypeStyleResponse,
     ActivityUpdateRequest,
+)
+from app.services.activity_card_glass_service import (
+    ActivityCardGlassNotFoundError,
+    get_or_create_activity_card_glass,
 )
 from app.services.activity_type_style_service import list_activity_type_styles
 from app.services.activity_share_preview_service import get_or_create_activity_share_preview
@@ -63,6 +68,38 @@ def get_activity_type_styles(_: User | None = Depends(get_optional_current_user)
     """Return backend-driven activity type/style config for the client."""
 
     return [ActivityTypeStyleResponse.model_validate(item) for item in list_activity_type_styles()]
+
+
+@router.get(
+    "/type-styles/{activity_type}/{style_key}/glass-image",
+    response_class=FileResponse,
+    summary="Get pre-rendered large-card glass image",
+)
+def get_activity_type_style_glass_image(
+    activity_type: str,
+    style_key: str,
+    _: User | None = Depends(get_optional_current_user),
+) -> FileResponse:
+    """Return a server-rendered blur so clients do not run a live CSS filter."""
+
+    try:
+        image_path = get_or_create_activity_card_glass(activity_type, style_key)
+    except ActivityCardGlassNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception(
+            "activity_card_glass_failed activity_type=%s style_key=%s summary=%s",
+            activity_type,
+            style_key,
+            str(exc) or exc.__class__.__name__,
+        )
+        raise HTTPException(status_code=502, detail="card glass image generation failed") from exc
+
+    return FileResponse(
+        image_path,
+        media_type="image/png",
+        headers={"Cache-Control": "public, max-age=2592000, immutable"},
+    )
 
 
 @router.get("/style-signature", response_model=ActivityStyleSignatureResponse, summary="Get activity style signature")

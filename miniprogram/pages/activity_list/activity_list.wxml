@@ -47,13 +47,11 @@
           bindtouchmove="onGroupTouchMove"
           bindtouchend="onGroupTouchEnd"
         >
-          <view class="large-cards-row" style="transform:translateX(-{{groupOffset.joined}}px);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
+          <view class="large-cards-row" style="transform:translate3d(-{{groupOffset.joined}}px, 0, 0);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
             <view
               wx:for="{{groupedActivities.joined}}"
               wx:key="_id"
               class="large-card-wrap"
-              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
-              hover-stay-time="80"
               bindtap="showDetail"
               data-activity="{{item}}"
             >
@@ -125,20 +123,29 @@
                     />
                   </view>
                 </view>
-                <!-- 毛玻璃底部信息 -->
+                <!-- 卡片内部底部毛玻璃：模糊层与信息层共用同一个边界，避免顶部出现接缝 -->
                 <view class="glass-bottom">
-                  <text class="glass-name">{{item.name}}</text>
-                  <text wx:if="{{item.remark}}" class="glass-remark">{{item.remark}}</text>
-                  <view class="glass-meta-row">
-                    <view wx:if="{{item.locationName}}" class="glass-meta-item">
-                      <image class="glass-meta-icon-img" src="/images/icon-location.png" mode="aspectFit" />
-                      <text class="glass-meta-text">{{item.locationName}}</text>
+                  <view class="glass-static-blur-layer">
+                    <view wx:if="{{item.largeCardGlassImageUrl}}" class="glass-static-blur-stage">
+                      <!-- 服务端已完成镜像扩边和单次模糊；真机只展示静态位图，不运行实时滤镜。 -->
+                      <image class="glass-static-blur-image" src="{{item.largeCardGlassImageUrl}}" mode="aspectFill" />
                     </view>
-                    <view class="glass-meta-item">
-                      <image class="glass-meta-icon-img" src="/images/icon-people.png" mode="aspectFit" />
-                      <text class="glass-meta-text" wx:if="{{item.maxParticipants != null}}">{{item.participants.length}}/{{item.maxParticipants}} 人</text>
-                      <text class="glass-meta-text" wx:elif="{{item.participants.length > 0}}">{{item.participants.length}} 人</text>
-                      <text class="glass-meta-text" wx:else>0 人</text>
+                  </view>
+                  <view class="glass-tint-layer"></view>
+                  <view class="glass-content">
+                    <text class="glass-name">{{item.name}}</text>
+                    <text class="glass-remark">{{item.remark || ''}}</text>
+                    <view class="glass-meta-row">
+                      <view wx:if="{{item.locationName}}" class="glass-meta-item">
+                        <image class="glass-meta-icon-img" src="/images/icon-location.png" mode="aspectFit" />
+                        <text class="glass-meta-text">{{item.locationName}}</text>
+                      </view>
+                      <view class="glass-meta-item">
+                        <image class="glass-meta-icon-img" src="/images/icon-people.png" mode="aspectFit" />
+                        <text class="glass-meta-text" wx:if="{{item.maxParticipants != null}}">{{item.participants.length}}/{{item.maxParticipants}} 人</text>
+                        <text class="glass-meta-text" wx:elif="{{item.participants.length > 0}}">{{item.participants.length}} 人</text>
+                        <text class="glass-meta-text" wx:else>0 人</text>
+                      </view>
                     </view>
                   </view>
                 </view>
@@ -162,13 +169,11 @@
           bindtouchmove="onGroupTouchMove"
           bindtouchend="onGroupTouchEnd"
         >
-          <view class="small-cards-row" style="transform:translateX(-{{groupOffset.accepting}}px);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
+          <view class="small-cards-row" style="transform:translate3d(-{{groupOffset.accepting}}px, 0, 0);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
             <view
               wx:for="{{groupedActivities.accepting}}"
               wx:key="_id"
               class="small-card-wrap"
-              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
-              hover-stay-time="80"
               bindtap="showDetail"
               data-activity="{{item}}"
             >
@@ -245,13 +250,11 @@
           bindtouchmove="onGroupTouchMove"
           bindtouchend="onGroupTouchEnd"
         >
-          <view class="small-cards-row" style="transform:translateX(-{{groupOffset.notStarted}}px);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
+          <view class="small-cards-row" style="transform:translate3d(-{{groupOffset.notStarted}}px, 0, 0);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
             <view
               wx:for="{{groupedActivities.notStarted}}"
               wx:key="_id"
               class="small-card-wrap"
-              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
-              hover-stay-time="80"
               bindtap="showDetail"
               data-activity="{{item}}"
             >
@@ -328,13 +331,11 @@
           bindtouchmove="onGroupTouchMove"
           bindtouchend="onGroupTouchEnd"
         >
-          <view class="small-cards-row" style="transform:translateX(-{{groupOffset.ended}}px);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
+          <view class="small-cards-row" style="transform:translate3d(-{{groupOffset.ended}}px, 0, 0);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
             <view
               wx:for="{{groupedActivities.ended}}"
               wx:key="_id"
               class="small-card-wrap"
-              hover-class="{{isGroupSwiping ? '' : 'card-press'}}"
-              hover-stay-time="80"
               bindtap="showDetail"
               data-activity="{{item}}"
             >
@@ -394,7 +395,7 @@
                 <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
               </view>
             </view>
-            <view wx:if="{{endedHasMore}}" class="small-card-wrap ended-more-strip" hover-class="{{isGroupSwiping ? '' : 'card-press'}}" hover-stay-time="80">
+            <view wx:if="{{endedHasMore}}" class="small-card-wrap ended-more-strip">
               <view class="ended-more-card" catchtap="onEndedHorizontalLoadMore">
                 <text class="ended-more-text">{{endedLoadingMore ? '加载中…' : '点击加载更多'}}</text>
               </view>

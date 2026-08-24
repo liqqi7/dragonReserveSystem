@@ -1,6 +1,6 @@
 const app = getApp();
 const activityService = require("../../services/activity");
-const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
+const { getApiBaseUrl, resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
 const { createTraceId, logInfo, logError, summarizeError } = require("../../services/logger");
 const { enrichSingleActivity } = require("../../utils/activityEnrich");
 const { parseCreatedAtMs, orderParticipantsForRecentAvatarSlice } = require("../../utils/participantSort");
@@ -178,6 +178,12 @@ function normalizeTypeKey(value) {
   return t;
 }
 
+function buildCardGlassImageUrl(typeKey, styleKey) {
+  const apiBaseUrl = String(getApiBaseUrl() || "").replace(/\/$/, "");
+  if (!apiBaseUrl || !typeKey || !styleKey) return "";
+  return `${apiBaseUrl}/activities/type-styles/${encodeURIComponent(typeKey)}/${encodeURIComponent(styleKey)}/glass-image?v=1`;
+}
+
 function buildTypeStyleMap(typeStyles) {
   const source = Array.isArray(typeStyles) && typeStyles.length > 0 ? typeStyles : DEFAULT_ACTIVITY_TYPE_STYLES;
   const map = {};
@@ -196,6 +202,7 @@ function buildTypeStyleMap(typeStyles) {
         showBadge: s.show_badge !== false,
         showAvatarCluster: s.show_avatar_cluster !== false,
         largeCardBgImageUrl: String(s.large_card_bg_image_url || ""),
+        largeCardGlassImageUrl: buildCardGlassImageUrl(key, styleKey),
         smallCardBgImageUrl: String(s.small_card_bg_image_url || ""),
         bgVideoUrl: s.bg_video_url ? String(s.bg_video_url) : ""
       };
@@ -916,8 +923,9 @@ Page({
     meta.touchLastX = startX;
     meta.touchStartTime = Date.now();
     meta.touchStartOffset = this.data.groupOffset[group] || 0;
+    meta.liveLeft = meta.touchStartOffset;
     meta.touchMoveThrottleTs = 0;
-    meta.renderedOffset = Math.round(meta.touchStartOffset);
+    meta.renderedOffset = meta.touchStartOffset;
     meta.gestureDirection = null;
     if (this.data.isGroupSwiping) {
       this.setData({ isGroupSwiping: false });
@@ -943,7 +951,8 @@ Page({
           // Rebase at lock point to avoid a first-frame jump.
           meta.touchStartX = currentX;
           meta.touchStartOffset = this.data.groupOffset[group] || 0;
-          meta.renderedOffset = Math.round(meta.touchStartOffset);
+          meta.liveLeft = meta.touchStartOffset;
+          meta.renderedOffset = meta.touchStartOffset;
           this.setData({ groupUseTransition: false, mainScrollEnabled: false, isGroupSwiping: true });
         }
       }
@@ -955,16 +964,11 @@ Page({
     const baseOffset = meta.touchStartOffset || 0;
     const maxOffset = Math.max(0, meta.maxIndex * (meta.step || 1));
     const newOffset = Math.max(0, Math.min(maxOffset, baseOffset - deltaX));
-    const roundedOffset = Math.round(newOffset);
+    const nextOffset = newOffset;
     if (meta.renderedOffset == null) {
-      meta.renderedOffset = roundedOffset;
+      meta.renderedOffset = meta.touchStartOffset || 0;
     }
-    let nextOffset = roundedOffset;
-    const frameDiff = nextOffset - meta.renderedOffset;
-    if (Math.abs(frameDiff) > SWIPE_MOVE_SMOOTHING.maxStepPxPerFrame) {
-      nextOffset = meta.renderedOffset + (frameDiff > 0 ? SWIPE_MOVE_SMOOTHING.maxStepPxPerFrame : -SWIPE_MOVE_SMOOTHING.maxStepPxPerFrame);
-    }
-    if (Math.abs(nextOffset - meta.renderedOffset) < SWIPE_MOVE_SMOOTHING.minStepPx) {
+    if (Math.abs(nextOffset - meta.renderedOffset) < 0.25) {
       return;
     }
     const now = Date.now();
@@ -976,6 +980,7 @@ Page({
     }
     meta.touchMoveThrottleTs = now;
     meta.renderedOffset = nextOffset;
+    meta.liveLeft = nextOffset;
     this.setData({ [`groupOffset.${group}`]: nextOffset });
 
   },
@@ -1002,7 +1007,7 @@ Page({
     const startX = meta.touchStartX;
     const touchDuration = Date.now() - (meta.touchStartTime || Date.now());
     const deltaX = startX != null && endX != null ? endX - startX : 0;
-    const currentOffset = this.data.groupOffset[group] || 0;
+    const currentOffset = typeof meta.liveLeft === "number" ? meta.liveLeft : (this.data.groupOffset[group] || 0);
     const step = meta.step || 1;
 
     let targetIndex;
@@ -1032,6 +1037,7 @@ Page({
     const prevVideoIndex = this.data.focusedCardIndex[group];
     meta.index = targetIndex;
     meta.lastLeft = targetOffset;
+    meta.liveLeft = targetOffset;
     this.setData({
       groupUseTransition: true,
       mainScrollEnabled: true,
@@ -1372,6 +1378,7 @@ Page({
       activity.showAvatarCluster = selectedStyle ? !!selectedStyle.showAvatarCluster : false;
       activity.bgVideoUrl = selectedStyle ? (selectedStyle.bgVideoUrl || "") : "";
       activity.largeCardBgImageUrl = selectedStyle ? (selectedStyle.largeCardBgImageUrl || "") : "";
+      activity.largeCardGlassImageUrl = selectedStyle ? (selectedStyle.largeCardGlassImageUrl || "") : "";
       activity.smallCardBgImageUrl = selectedStyle ? (selectedStyle.smallCardBgImageUrl || "") : "";
       let signupDeadline = activity.signupDeadline;
       if (!signupDeadline && activity.startTime) {

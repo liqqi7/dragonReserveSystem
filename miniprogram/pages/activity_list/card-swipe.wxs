@@ -1,0 +1,168 @@
+/**
+ * 首页活动卡片拖动层。
+ *
+ * 触摸移动只改渲染线程中的 motion layer，不把每一帧的 transform 通过
+ * Page.setData 传回逻辑线程；JS 只处理方向锁定、结束吸附和业务状态。
+ */
+
+var state = {
+  group: '',
+  row: null,
+  startX: null,
+  startY: null,
+  lastX: null,
+  baseOffset: 0,
+  step: 1,
+  maxOffset: 0,
+  direction: null,
+  startTime: 0,
+  lockThreshold: 4,
+  verticalDominanceRatio: 0.8
+};
+
+function numberOr(value, fallback) {
+  var n = parseFloat(value);
+  return isNaN(n) ? fallback : n;
+}
+
+function getDataset(event) {
+  if (event && event.instance && event.instance.getDataset) {
+    return event.instance.getDataset() || {};
+  }
+  if (event && event.currentTarget && event.currentTarget.dataset) {
+    return event.currentTarget.dataset || {};
+  }
+  return {};
+}
+
+function getTouch(event, changed) {
+  var list = changed ? event.changedTouches : event.touches;
+  if (!list || !list.length) return null;
+  return list[0];
+}
+
+
+function coordinate(touch, primary, fallback) {
+  if (!touch) return null;
+  if (typeof touch[primary] === 'number') return touch[primary];
+  if (typeof touch[fallback] === 'number') return touch[fallback];
+  if (typeof touch[primary === 'clientX' ? 'pageX' : 'pageY'] === 'number') return touch[primary === 'clientX' ? 'pageX' : 'pageY'];
+  if (typeof touch[primary === 'clientX' ? 'x' : 'y'] === 'number') return touch[primary === 'clientX' ? 'x' : 'y'];
+  return null;
+}
+
+function getRow(ownerInstance, group) {
+  if (!ownerInstance || !ownerInstance.selectComponent || !group) return null;
+  return ownerInstance.selectComponent('.cards-row-motion-' + group);
+}
+
+function setMotionStyle(row, offset) {
+  if (!row || !row.setStyle) return;
+  row.setStyle({
+    transform: 'translate3d(' + offset + 'px, 0, 0)',
+    transition: 'none'
+  });
+}
+
+function onTouchStart(event, ownerInstance) {
+  var dataset = getDataset(event);
+  var touch = getTouch(event, false);
+  if (!touch) return;
+
+  state.group = dataset.group || '';
+  console.log('cardSwipe touchstart', state.group);
+  state.row = getRow(ownerInstance, state.group);
+  state.startX = coordinate(touch, 'clientX', 'pageX');
+  state.startY = coordinate(touch, 'clientY', 'pageY');
+  state.lastX = state.startX;
+  state.baseOffset = numberOr(dataset.swipeBaseOffset, 0);
+  state.step = numberOr(dataset.swipeStep, 1);
+  state.maxOffset = Math.max(0, numberOr(dataset.swipeMaxOffset, 0));
+  state.direction = null;
+  state.startTime = event && typeof event.timeStamp === 'number' ? event.timeStamp : 0;
+
+  // 每次手势开始都把增量层归零，避免上一帧的 WXS style 残留。
+  setMotionStyle(state.row, 0);
+}
+
+function onTouchMove(event, ownerInstance) {
+  if (!state.group || state.startX === null) return;
+  var touch = getTouch(event, false);
+  var currentX = coordinate(touch, 'clientX', 'pageX');
+  if (currentX === null) return;
+  var currentY = coordinate(touch, 'clientY', 'pageY');
+  if (currentY === null) currentY = state.startY;
+  state.lastX = currentX;
+
+  if (state.direction === null) {
+    var dx = Math.abs(currentX - state.startX);
+    var dy = state.startY !== null && currentY !== null ? Math.abs(currentY - state.startY) : 0;
+    if (dx > state.lockThreshold || dy > state.lockThreshold) {
+      state.direction = dy > dx * state.verticalDominanceRatio ? 'vertical' : 'horizontal';
+      if (state.direction === 'horizontal') {
+        // 与原实现一致：在方向锁定点重新设定起点，避免首帧跳动。
+        state.startX = currentX;
+        state.startTime = event && typeof event.timeStamp === 'number' ? event.timeStamp : state.startTime;
+        setMotionStyle(state.row, 0);
+        ownerInstance.callMethod('onWxsGroupSwipeStart', {
+          group: state.group,
+          startX: state.startX,
+          baseOffset: state.baseOffset
+        });
+      }
+    }
+  }
+
+  if (state.direction !== 'horizontal') return;
+
+  var deltaX = currentX - state.startX;
+  var currentOffset = state.baseOffset - deltaX;
+  if (currentOffset < 0) currentOffset = 0;
+  if (currentOffset > state.maxOffset) currentOffset = state.maxOffset;
+  var motionOffset = currentOffset - state.baseOffset;
+  setMotionStyle(state.row, motionOffset);
+}
+
+function onTouchEnd(event, ownerInstance) {
+  if (!state.group || state.startX === null) return;
+  var touch = getTouch(event, true) || getTouch(event, false);
+  var endX = coordinate(touch, 'clientX', 'pageX');
+  if (endX === null) endX = state.lastX;
+  var durationMs = state.startTime > 0 && event && typeof event.timeStamp === 'number'
+    ? Math.max(0, event.timeStamp - state.startTime)
+    : 0;
+  var horizontal = state.direction === 'horizontal';
+  var currentOffset = state.baseOffset;
+
+  if (horizontal && endX !== null) {
+    var deltaX = endX - state.startX;
+    currentOffset = state.baseOffset - deltaX;
+    if (currentOffset < 0) currentOffset = 0;
+    if (currentOffset > state.maxOffset) currentOffset = state.maxOffset;
+  }
+
+  // 先撤销瞬时增量，再交给 JS 在 base layer 上做一次吸附动画。
+  setMotionStyle(state.row, 0);
+  ownerInstance.callMethod('onWxsGroupSwipeEnd', {
+    group: state.group,
+    horizontal: horizontal,
+    startX: state.startX,
+    endX: endX,
+    durationMs: durationMs,
+    currentOffset: currentOffset
+  });
+
+  state.group = '';
+  state.row = null;
+  state.startX = null;
+  state.startY = null;
+  state.lastX = null;
+  state.direction = null;
+  state.startTime = 0;
+}
+
+module.exports = {
+  onTouchStart: onTouchStart,
+  onTouchMove: onTouchMove,
+  onTouchEnd: onTouchEnd
+};
