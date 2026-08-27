@@ -1,4 +1,4 @@
-<view id="qa-chwazi-page" class="chwazi-page" style="background: {{pageBackground}};">
+<view id="qa-chwazi-page" class="chwazi-page {{status === 'selected' ? 'chwazi-page--selected' : ''}}" style="background: {{pageBackground}};">
   <view class="chwazi-navbar" style="padding-top: {{statusBarHeight}}px;">
     <view class="chwazi-navbar-inner">
       <view id="qa-chwazi-back" class="chwazi-back" bindtap="onBackTap">
@@ -11,29 +11,51 @@
 
   <view
     id="qa-chwazi-stage"
-    class="chwazi-stage"
+    class="chwazi-stage {{status === 'selected' ? 'chwazi-stage--selected' : ''}}"
     bindtouchstart="onStageTouchStart"
-    bindtouchmove="onStageTouchMove"
+    catchtouchmove="onStageTouchMove"
     bindtouchend="onStageTouchEnd"
     bindtouchcancel="onStageTouchCancel"
   >
     <block wx:for="{{touches}}" wx:key="id">
       <view class="touch-point {{status === 'selected' ? 'touch-point--selected' : ''}}" style="left: {{item.leftRpx}}rpx; top: {{item.topRpx}}rpx;">
-        <view class="touch-ring-track" style="background: {{item.outerColor}};"></view>
-        <view class="touch-ring-progress" style="background: conic-gradient({{item.outerColor}} {{item.progressDeg}}deg, transparent {{item.progressDeg}}deg);"></view>
+        <view class="touch-ring-progress">
+          <view class="touch-ring-half touch-ring-half--right">
+            <view class="touch-ring-arc touch-ring-arc--right" style="border-top-color: {{item.outerColor}}; border-right-color: {{item.outerColor}}; animation-delay: {{item.progressAnimationDelayMs}}ms;"></view>
+          </view>
+          <view class="touch-ring-half touch-ring-half--left">
+            <view class="touch-ring-arc touch-ring-arc--left" style="border-bottom-color: {{item.outerColor}}; border-left-color: {{item.outerColor}}; animation-delay: {{item.progressAnimationDelayMs}}ms;"></view>
+          </view>
+        </view>
+        <view class="touch-ring-cutout"></view>
+        <view class="touch-ring-cap touch-ring-cap--start" style="background: {{item.outerColor}}; animation-delay: {{item.progressAnimationDelayMs}}ms;"></view>
+        <view class="touch-ring-cap-rotator" style="animation-delay: {{item.progressAnimationDelayMs}}ms;">
+          <view class="touch-ring-cap touch-ring-cap--end" style="background: {{item.outerColor}}; animation-delay: {{item.progressAnimationDelayMs}}ms;"></view>
+        </view>
         <view class="touch-inner" style="left: {{item.innerLeftRpx - item.leftRpx}}rpx; top: {{item.innerTopRpx - item.topRpx}}rpx; background: {{item.innerColor}};"></view>
       </view>
     </block>
 
-    <view wx:if="{{status === 'idle'}}" class="chwazi-hint">请所有人按住屏幕</view>
-    <view wx:if="{{status === 'selected'}}" class="chwazi-selected-label">选中啦</view>
-  </view>
-
-  <view wx:if="{{status === 'tooMany'}}" class="chwazi-too-many">
-    <block wx:for="{{tooManyMessage}}" wx:key="index">
-      <text class="chwazi-too-many-line">{{item}}</text>
-    </block>
+    <text wx:if="{{status === 'tooMany'}}" class="chwazi-too-many">{{tooManyMessage}}</text>
   </view>
 
   <view class="chwazi-bottom-spacer" style="height: {{bottomSafeAreaRpx}}rpx;"></view>
+
+  <view
+    wx:if="{{winnerTransitioning}}"
+    id="qa-chwazi-winner-curtain"
+    class="chwazi-winner-curtain"
+    data-transition-id="{{winnerTransitionId}}"
+    style="transform-origin: {{winnerRevealOriginXpx}}px {{winnerRevealOriginYpx}}px;"
+    bindanimationend="onWinnerTransitionEnd"
+  >
+    <view class="chwazi-winner-curtain-stage" style="top: {{winnerTransitionStageTopPx}}px;">
+      <block wx:for="{{winnerTransitionTouches}}" wx:key="id">
+        <view class="winner-curtain-touch" style="left: {{item.leftRpx}}rpx; top: {{item.topRpx}}rpx;">
+          <view class="winner-curtain-ring" style="border-color: {{item.outerColor}};"></view>
+          <view class="winner-curtain-inner" style="background: {{item.innerColor}};"></view>
+        </view>
+      </block>
+    </view>
+  </view>
 </view>

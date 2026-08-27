@@ -1,4 +1,6 @@
 {
+  "disableScroll": true,
   "navigationStyle": "custom",
+  "navigationBarTextStyle": "white",
   "usingComponents": {}
 }

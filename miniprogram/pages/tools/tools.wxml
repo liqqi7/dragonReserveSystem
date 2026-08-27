@@ -1,8 +1,9 @@
 <view id="qa-tools-page" class="tools-page">
+  <image class="tools-watermark" src="/images/activity-home-logo.png" mode="aspectFit" />
+
   <view class="tools-navbar" style="padding-top: {{statusBarHeight}}px;">
     <view class="tools-navbar-inner">
       <text class="tools-title">工具</text>
-      <image class="tools-logo" src="/images/activity-home-logo.png" mode="aspectFit" />
     </view>
   </view>
 

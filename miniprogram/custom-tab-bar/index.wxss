@@ -79,7 +79,7 @@
 
 .tab-item--active {
   background: rgba(255, 255, 255, 0.901961);
-  box-shadow: 0 1.92308rpx 7.69231rpx rgba(100, 116, 139, 0.05);
+  box-shadow: 0 3.84615rpx 15.38462rpx rgba(100, 116, 139, 0.070588);
 }
 
 .tab-icon {

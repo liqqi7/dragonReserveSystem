@@ -76,7 +76,7 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.match(strokeSvg, /<rect x="0\.5" y="0\.5" width="349" height="51" rx="25\.5" ry="25\.5" fill="none" stroke="url\(#tabGlassStroke\)" stroke-width="1"\/>/);
 
   assert.match(wxss, /\.tab-item\s*{[\s\S]*?height:\s*84\.61538rpx;[\s\S]*?gap:\s*1\.92308rpx;[\s\S]*?border-radius:\s*calc\(50rpx - 7\.69231rpx\);/);
-  assert.match(wxss, /\.tab-item--active\s*{[\s\S]*?background:\s*rgba\(255, 255, 255, 0\.901961\);[\s\S]*?box-shadow:\s*0 1\.92308rpx 7\.69231rpx rgba\(100, 116, 139, 0\.05\)/);
+  assert.match(wxss, /\.tab-item--active\s*{[\s\S]*?background:\s*rgba\(255, 255, 255, 0\.901961\);[\s\S]*?box-shadow:\s*0 3\.84615rpx 15\.38462rpx rgba\(100, 116, 139, 0\.070588\)/);
   assert.match(wxss, /\.tab-icon\s*{[\s\S]*?width:\s*34\.61538rpx;[\s\S]*?height:\s*34\.61538rpx;/);
   assert.match(wxss, /\.tab-label\s*{[\s\S]*?color:\s*#111827;[\s\S]*?font-size:\s*21\.15385rpx;[\s\S]*?font-weight:\s*300;/);
   assert.match(wxss, /\.tab-label--active\s*{[\s\S]*?color:\s*#f59e0b;/);
@@ -118,6 +118,20 @@ test("tab icons use the Pencil Material Symbols Rounded assets", () => {
     assert.doesNotMatch(active, /stroke=/);
   }
 });
+
+test("tools tab icon uses the Pencil widgets glyph instead of grid_view", () => {
+  for (const suffix of ["", "-active"]) {
+    const svg = fs.readFileSync(
+      path.join(imageDir, `tab-tools-material-rounded${suffix}.svg`),
+      "utf8"
+    );
+
+    assert.match(svg, /<path d="M648\.4-500\.07 500\.83-647\.63/);
+    assert.match(svg, /671\.23-790 546\.46-665\.23l124\.77 124\.38/);
+    assert.doesNotMatch(svg, /M180-180v-240h240v240H180/);
+  }
+});
+
 test("five tab routes and selected states stay aligned", () => {
   const appJson = JSON.parse(fs.readFileSync(path.join(__dirname, "../app.json"), "utf8"));
   const expected = [
