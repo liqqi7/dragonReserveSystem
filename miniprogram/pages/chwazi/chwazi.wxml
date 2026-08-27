@@ -1,0 +1,39 @@
+<view id="qa-chwazi-page" class="chwazi-page" style="background: {{pageBackground}};">
+  <view class="chwazi-navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="chwazi-navbar-inner">
+      <view id="qa-chwazi-back" class="chwazi-back" bindtap="onBackTap">
+        <image src="/images/icon-chevron-left.svg" mode="aspectFit" />
+      </view>
+      <text class="chwazi-title">Chwazi</text>
+      <view class="chwazi-navbar-placeholder"></view>
+    </view>
+  </view>
+
+  <view
+    id="qa-chwazi-stage"
+    class="chwazi-stage"
+    bindtouchstart="onStageTouchStart"
+    bindtouchmove="onStageTouchMove"
+    bindtouchend="onStageTouchEnd"
+    bindtouchcancel="onStageTouchCancel"
+  >
+    <block wx:for="{{touches}}" wx:key="id">
+      <view class="touch-point {{status === 'selected' ? 'touch-point--selected' : ''}}" style="left: {{item.leftRpx}}rpx; top: {{item.topRpx}}rpx;">
+        <view class="touch-ring-track" style="background: {{item.outerColor}};"></view>
+        <view class="touch-ring-progress" style="background: conic-gradient({{item.outerColor}} {{item.progressDeg}}deg, transparent {{item.progressDeg}}deg);"></view>
+        <view class="touch-inner" style="left: {{item.innerLeftRpx - item.leftRpx}}rpx; top: {{item.innerTopRpx - item.topRpx}}rpx; background: {{item.innerColor}};"></view>
+      </view>
+    </block>
+
+    <view wx:if="{{status === 'idle'}}" class="chwazi-hint">请所有人按住屏幕</view>
+    <view wx:if="{{status === 'selected'}}" class="chwazi-selected-label">选中啦</view>
+  </view>
+
+  <view wx:if="{{status === 'tooMany'}}" class="chwazi-too-many">
+    <block wx:for="{{tooManyMessage}}" wx:key="index">
+      <text class="chwazi-too-many-line">{{item}}</text>
+    </block>
+  </view>
+
+  <view class="chwazi-bottom-spacer" style="height: {{bottomSafeAreaRpx}}rpx;"></view>
+</view>

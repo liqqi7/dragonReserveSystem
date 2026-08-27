@@ -2,12 +2,14 @@
   "pages": [
     "pages/activity_list/activity_list",
     "pages/activity_calendar/activity_calendar",
+    "pages/tools/tools",
     "pages/activity_detail/activity_detail",
     "pages/welcome/welcome",
     "pages/history/history",
     "pages/clear_data/clear_data",
     "pages/profile/profile",
-    "pages/checkin_map/checkin_map"
+    "pages/checkin_map/checkin_map",
+    "pages/chwazi/chwazi"
   ],
   "window": {
     "navigationBarTitleText": "Dragon Reserve",
@@ -34,6 +36,12 @@
         "text": "Schedule",
         "iconPath": "images/icon-detail-time.png",
         "selectedIconPath": "images/icon-detail-time.png"
+      },
+      {
+        "pagePath": "pages/tools/tools",
+        "text": "Tools",
+        "iconPath": "images/tab-home.png",
+        "selectedIconPath": "images/tab-home-active.png"
       },
       {
         "pagePath": "pages/history/history",

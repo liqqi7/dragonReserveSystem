@@ -115,7 +115,7 @@ Page({
 
   onShow() {
     patchTabBarIfNeeded(this, {
-      selected: 2,
+      selected: 3,
       isAdmin: app.globalData.userRole === "admin"
     });
     this.loadRankings();

@@ -9,6 +9,7 @@ const imageDir = path.join(__dirname, "../images");
 const iconNames = [
   "tab-home-material-rounded",
   "tab-calendar-month-material-rounded",
+  "tab-tools-material-rounded",
   "tab-leaderboard-material-rounded",
   "tab-person-material-rounded"
 ];
@@ -27,7 +28,7 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   const profileWxml = fs.readFileSync(path.join(__dirname, "../pages/profile/profile.wxml"), "utf8");
   const profileWxss = fs.readFileSync(path.join(__dirname, "../pages/profile/profile.wxss"), "utf8");
 
-  assert.equal((wxml.match(/class="tab-item /g) || []).length, 4);
+  assert.equal((wxml.match(/class="tab-item /g) || []).length, 5);
   assert.match(wxml, /id="qa-custom-tab-bar"/);
   assert.match(wxml, /id="qa-tab-glass"/);
   assert.match(wxml, /id="qa-tab-glass-blur"[^>]*opacity: \{\{tabGlassBlurOpacity\}\}[^>]*blur\(\{\{tabGlassBlurRadiusRpx\}\}rpx\)/);
@@ -35,14 +36,15 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.match(wxml, /id="qa-tab-glass-stroke"/);
   assert.match(wxml, /class="tab-glass-stroke"/);
   assert.match(wxml, /src="\/images\/tab-glass-stroke\.svg"/);
-  for (const qaId of ["home", "calendar", "ranking", "profile"]) {
+  for (const qaId of ["home", "calendar", "tools", "ranking", "profile"]) {
     assert.match(wxml, new RegExp(`id="qa-tab-${qaId}"`));
   }
   assert.match(wxml, />首页<\/text>/);
   assert.match(wxml, />日程<\/text>/);
   assert.match(wxml, />排行<\/text>/);
   assert.match(wxml, />我的<\/text>/);
-  assert.doesNotMatch(wxml, /工具|tab-indicator|tab-bottom-fade|data:image\/svg|lucide/);
+  assert.match(wxml, />工具<\/text>/);
+  assert.doesNotMatch(wxml, /tab-indicator|tab-bottom-fade|data:image\/svg|lucide/);
 
   for (const iconName of iconNames) {
     assert.match(wxml, new RegExp(`/images/${iconName}\\.svg`));
@@ -80,7 +82,7 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.match(wxss, /\.tab-label--active\s*{[\s\S]*?color:\s*#f59e0b;/);
   assert.doesNotMatch(wxss, /border-radius:\s*999(?:r?px)|tab-indicator/);
 
-  assert.equal((js.match(/"\/pages\//g) || []).length, 4);
+  assert.equal((js.match(/"\/pages\//g) || []).length, 5);
   assert.doesNotMatch(js, /TAB_SWITCH_COMMIT_DELAY_MS|_pendingSwitchIndex/);
   assert.doesNotMatch(syncJs, /indicatorTransitionEnabled/);
   assert.match(listWxml, /height: calc\(100rpx \+ \{\{bottomSafeAreaRpx\}\}rpx\)/);
@@ -116,13 +118,14 @@ test("tab icons use the Pencil Material Symbols Rounded assets", () => {
     assert.doesNotMatch(active, /stroke=/);
   }
 });
-test("four tab routes and selected states stay aligned", () => {
+test("five tab routes and selected states stay aligned", () => {
   const appJson = JSON.parse(fs.readFileSync(path.join(__dirname, "../app.json"), "utf8"));
   const expected = [
     ["pages/activity_list/activity_list", "activity_list/activity_list.js", 0],
     ["pages/activity_calendar/activity_calendar", "activity_calendar/activity_calendar.js", 1],
-    ["pages/history/history", "history/history.js", 2],
-    ["pages/profile/profile", "profile/profile.js", 3]
+    ["pages/tools/tools", "tools/tools.js", 2],
+    ["pages/history/history", "history/history.js", 3],
+    ["pages/profile/profile", "profile/profile.js", 4]
   ];
 
   assert.equal(appJson.tabBar.custom, true);
@@ -173,8 +176,8 @@ test("tab selection follows the visible route without mutating the page being le
     };
 
     definition.pageLifetimes.show.call(ctx);
-    assert.equal(ctx.data.selected, 3);
-    assert.equal(app.globalData.tabBarSelected, 3);
+    assert.equal(ctx.data.selected, 4);
+    assert.equal(app.globalData.tabBarSelected, 4);
 
     patches.length = 0;
     definition.methods.onTabTap.call(ctx, {

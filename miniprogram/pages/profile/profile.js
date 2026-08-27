@@ -63,7 +63,7 @@ Page({
   onShow() {
     this.setData({ bottomSafeAreaRpx: getBottomSafeAreaRpx() });
     patchTabBarIfNeeded(this, {
-      selected: 3,
+      selected: 4,
       isAdmin: app.globalData.userRole === "admin",
     });
     this.syncGuestState();

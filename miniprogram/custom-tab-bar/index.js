@@ -11,6 +11,7 @@ const { getBottomSafeAreaRpx } = require("../utils/safeArea");
 const TAB_URLS = [
   "/pages/activity_list/activity_list",
   "/pages/activity_calendar/activity_calendar",
+  "/pages/tools/tools",
   "/pages/history/history",
   "/pages/profile/profile"
 ];

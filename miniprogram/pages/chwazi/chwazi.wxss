@@ -1,0 +1,141 @@
+page {
+  background: #09090b;
+  overflow: hidden;
+}
+
+.chwazi-page {
+  box-sizing: border-box;
+  min-height: 100vh;
+  overflow: hidden;
+  color: #ffffff;
+  transition: background-color 0.18s ease;
+}
+
+.chwazi-navbar {
+  box-sizing: border-box;
+  height: 88.46rpx;
+  padding-left: 38.46rpx;
+  padding-right: 38.46rpx;
+}
+
+.chwazi-navbar-inner {
+  display: flex;
+  box-sizing: border-box;
+  height: 88.46rpx;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chwazi-back,
+.chwazi-navbar-placeholder {
+  display: flex;
+  width: 61.54rpx;
+  height: 61.54rpx;
+  align-items: center;
+  justify-content: center;
+}
+
+.chwazi-back image {
+  width: 46.15rpx;
+  height: 46.15rpx;
+}
+
+.chwazi-title {
+  color: #ffffff;
+  font-size: 34.62rpx;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.chwazi-stage {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 1038.46rpx;
+  overflow: hidden;
+}
+
+.touch-point {
+  position: absolute;
+  width: 230.77rpx;
+  height: 230.77rpx;
+}
+
+.touch-ring-track,
+.touch-ring-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 230.77rpx;
+  height: 230.77rpx;
+  border-radius: 50%;
+}
+
+.touch-ring-track {
+  opacity: 0.22;
+}
+
+.touch-ring-progress {
+  opacity: 1;
+}
+
+.touch-point--selected::before {
+  position: absolute;
+  top: -23.08rpx;
+  left: -23.08rpx;
+  width: 276.92rpx;
+  height: 276.92rpx;
+  border-radius: 50%;
+  background: #09090b;
+  content: "";
+}
+
+.touch-point--selected .touch-ring-track {
+  opacity: 1;
+}
+
+.touch-inner {
+  position: absolute;
+  width: 157.69rpx;
+  height: 157.69rpx;
+  border-radius: 50%;
+}
+
+.chwazi-hint,
+.chwazi-selected-label {
+  position: absolute;
+  right: 0;
+  bottom: 46.15rpx;
+  left: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 26.92rpx;
+  font-weight: 400;
+  text-align: center;
+}
+
+.chwazi-selected-label {
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 600;
+}
+
+.chwazi-too-many {
+  position: absolute;
+  top: 373.08rpx;
+  right: 46.15rpx;
+  left: 46.15rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chwazi-too-many-line {
+  color: #ffffff;
+  font-size: 32.69rpx;
+  font-weight: 600;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.chwazi-bottom-spacer {
+  width: 100%;
+}
