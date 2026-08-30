@@ -5,8 +5,11 @@ page {
 
 .chwazi-page {
   position: relative;
+  display: flex;
   box-sizing: border-box;
+  height: 100vh;
   min-height: 100vh;
+  flex-direction: column;
   overflow: hidden;
   color: #ffffff;
   transition: background-color 0.18s ease;
@@ -19,6 +22,7 @@ page {
 .chwazi-navbar {
   position: relative;
   z-index: 110;
+  flex: 0 0 auto;
   box-sizing: border-box;
   height: auto;
   padding-left: 38.46rpx;
@@ -56,18 +60,33 @@ page {
   line-height: 1.4;
 }
 
+.chwazi-touch-surface {
+  position: relative;
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  padding-top: 80.76923rpx;
+  overflow: hidden;
+}
+
+.chwazi-touch-surface--selected {
+  padding-top: 76.92308rpx;
+}
+
 .chwazi-stage {
   position: relative;
   box-sizing: border-box;
   width: 100%;
-  height: 1038.46rpx;
-  margin-top: 80.76923rpx;
-  overflow: hidden;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: visible;
 }
 
-.chwazi-stage--selected {
-  height: 1269.23077rpx;
-  margin-top: 76.92308rpx;
+.chwazi-bottom-safe-area {
+  flex: 0 0 auto;
 }
 
 .touch-point {
@@ -76,94 +95,18 @@ page {
   height: 230.77rpx;
 }
 
-.touch-ring-progress {
+.touch-point--selected {
+  z-index: 3;
+}
+
+.touch-ring-canvas {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 1;
   width: 230.77rpx;
   height: 230.77rpx;
-  border-radius: 50%;
-}
-
-.touch-ring-half {
-  position: absolute;
-  top: 0;
-  width: 50%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.touch-ring-half--right {
-  right: 0;
-}
-
-.touch-ring-half--left {
-  left: 0;
-}
-
-.touch-ring-arc {
-  position: absolute;
-  top: 0;
-  box-sizing: border-box;
-  width: 230.77rpx;
-  height: 230.77rpx;
-  border: 17.30769rpx solid transparent;
-  border-radius: 50%;
-  transform: rotate(-135deg);
-  animation-duration: 1500ms;
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
-  will-change: transform;
-}
-
-.touch-ring-arc--right {
-  right: 0;
-  animation-name: chwazi-ring-right;
-}
-
-.touch-ring-arc--left {
-  left: 0;
-  animation-name: chwazi-ring-left;
-}
-
-.touch-ring-cutout {
-  position: absolute;
-  top: 17.30769rpx;
-  left: 17.30769rpx;
-  z-index: 2;
-  width: 196.15385rpx;
-  height: 196.15385rpx;
-  border-radius: 50%;
-  background: #09090b;
-}
-
-.touch-ring-cap-rotator {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 3;
-  width: 230.77rpx;
-  height: 230.77rpx;
-  transform-origin: center;
-  animation: chwazi-ring-cap 1500ms linear forwards;
-  will-change: transform;
-}
-
-.touch-ring-cap {
-  position: absolute;
-  z-index: 3;
-  width: 17.30769rpx;
-  height: 17.30769rpx;
-  border-radius: 50%;
-  opacity: 0;
-  animation: chwazi-ring-cap-visible 1500ms linear forwards;
-}
-
-.touch-ring-cap--start,
-.touch-ring-cap--end {
-  top: 0;
-  left: 106.73077rpx;
+  pointer-events: none;
 }
 
 .touch-point--selected::before {
@@ -188,9 +131,10 @@ page {
 
 .chwazi-too-many {
   position: absolute;
-  top: 373.08rpx;
+  top: 453.85rpx;
   right: 46.15rpx;
   left: 46.15rpx;
+  z-index: 10;
   display: block;
   width: auto;
   color: #ffffff;
@@ -202,107 +146,30 @@ page {
   white-space: pre-line;
 }
 
-.chwazi-bottom-spacer {
-  width: 100%;
-}
-
 .chwazi-winner-curtain {
   position: fixed;
-  z-index: 100;
+  z-index: 2;
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
-  overflow: hidden;
-  background: #09090b;
   pointer-events: none;
+}
+
+.chwazi-winner-collapse-disc {
+  position: absolute;
+  border-radius: 50%;
+  background: #09090b;
   animation: chwazi-collapse-to-winner 480ms cubic-bezier(0.65, 0, 0.35, 1) both;
   will-change: transform;
 }
 
-.chwazi-winner-curtain-stage {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 1038.46rpx;
-  overflow: hidden;
-}
-
-.winner-curtain-touch {
-  position: absolute;
-  width: 230.77rpx;
-  height: 230.77rpx;
-}
-
-.winner-curtain-ring {
-  position: absolute;
-  top: 0;
-  left: 0;
-  box-sizing: border-box;
-  width: 230.77rpx;
-  height: 230.77rpx;
-  border: 17.30769rpx solid;
-  border-radius: 50%;
-}
-
-.winner-curtain-inner {
-  position: absolute;
-  top: 36.53846rpx;
-  left: 36.53846rpx;
-  width: 157.69rpx;
-  height: 157.69rpx;
-  border-radius: 50%;
-}
-
-@keyframes chwazi-ring-right {
-  0% {
-    transform: rotate(-135deg);
-  }
-
-  50%,
-  100% {
-    transform: rotate(45deg);
-  }
-}
-
-@keyframes chwazi-ring-left {
-  0%,
-  50% {
-    transform: rotate(-135deg);
-  }
-
-  100% {
-    transform: rotate(45deg);
-  }
-}
-
-@keyframes chwazi-ring-cap {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes chwazi-ring-cap-visible {
-  0% {
-    opacity: 0;
-  }
-
-  0.1%,
-  100% {
-    opacity: 1;
-  }
-}
-
 @keyframes chwazi-collapse-to-winner {
   from {
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
 
   to {
-    transform: scale(0);
+    transform: translate(-50%, -50%) scale(0);
   }
 }

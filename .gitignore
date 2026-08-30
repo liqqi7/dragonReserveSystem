@@ -24,6 +24,7 @@ backend/.alembic_cache/
 .idea/
 .vscode/
 .cursor/debug-*.log
+.codex-backups/
 
 # Project-local artifacts
 backend/.coverage

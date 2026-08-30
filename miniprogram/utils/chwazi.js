@@ -28,12 +28,6 @@ function getProgress(startedAt, now = Date.now(), durationMs = PROGRESS_DURATION
   return Math.max(0, Math.min(1, (Number(now) - Number(startedAt)) / duration));
 }
 
-function allProgressComplete(touches) {
-  return Array.isArray(touches)
-    && touches.length >= MIN_TOUCHES
-    && touches.every((touch) => Number(touch.progress) >= 1);
-}
-
 function getTouchColor(index) {
   return TOUCH_COLORS[Math.max(0, Number(index) || 0) % TOUCH_COLORS.length];
 }
@@ -62,7 +56,7 @@ function getSelectionWaitMs(touches, now = Date.now()) {
   return Math.max(0, readyAt - currentTime);
 }
 
-function normalizeTouchPosition(touch, rect) {
+function normalizeTouchPosition(touch, rect, options = {}) {
   const width = Number(rect && rect.width);
   const height = Number(rect && rect.height);
   if (!Number.isFinite(width) || width <= 0 || !Number.isFinite(height) || height <= 0) return null;
@@ -95,9 +89,13 @@ function normalizeTouchPosition(touch, rect) {
   const radius = TOUCH_DIAMETER_PX / 2;
   const designX = x / scale;
   const designY = y / scale;
+  const minY = Number.isFinite(Number(options.minY)) ? Number(options.minY) : radius;
+  const maxY = Number.isFinite(Number(options.maxY))
+    ? Number(options.maxY)
+    : STAGE_HEIGHT_PX - radius;
   return {
     xPx: Math.max(radius, Math.min(DESIGN_WIDTH_PX - radius, designX)),
-    yPx: Math.max(radius, Math.min(STAGE_HEIGHT_PX - radius, designY))
+    yPx: Math.max(minY, Math.min(maxY, designY))
   };
 }
 
@@ -114,7 +112,6 @@ module.exports = {
   TOUCH_COLORS,
   getTouchId,
   getProgress,
-  allProgressComplete,
   getTouchColor,
   getAvailableTouchColorIndex,
   getSelectionWaitMs,

@@ -17,7 +17,17 @@ const {
 } = require("../../utils/chwazi");
 
 const INNER_DIAMETER_PX = 82;
+const RING_CENTER_PX = TOUCH_DIAMETER_PX / 2;
+const RING_LINE_WIDTH_PX = 9;
+const RING_RADIUS_PX = (TOUCH_DIAMETER_PX - RING_LINE_WIDTH_PX) / 2;
+const RING_FRAME_MS = 16;
+const TOUCH_MOVE_FRAME_MS = 16;
+const TOO_MANY_CANCEL_FALLBACK_MS = 80;
 const WINNER_TRANSITION_FALLBACK_MS = WINNER_TRANSITION_DURATION_MS + 120;
+const STAGE_TOP_GAP_PX = 42;
+const SELECTED_STAGE_TOP_GAP_PX = 40;
+const TOUCH_DOWN_AUDIO_SRC = "/audio/chwazi-touch-down.wav";
+const SELECTION_AUDIO_SRC = "/audio/chwazi-selection.mp3";
 
 function toRpx(px) {
   return Number((Number(px) * 750 / DESIGN_WIDTH_PX).toFixed(2));
@@ -48,6 +58,10 @@ function getParticipantKey(touches) {
   return (touches || []).map((touch) => String(touch.id)).sort().join(",");
 }
 
+function getRingCanvasId(id) {
+  return "chwazi-ring-" + String(id).replace(/[^a-zA-Z0-9_-]/g, "-");
+}
+
 function getFiniteNumber(value, fallback) {
   if (value === null || value === undefined || value === "") return fallback;
   const number = Number(value);
@@ -65,12 +79,13 @@ Page({
     winnerTransitionId: 0,
     winnerRevealOriginXpx: 0,
     winnerRevealOriginYpx: 0,
-    winnerTransitionStageTopPx: 0,
-    winnerTransitionTouches: [],
+    winnerCollapseDiameterPx: 0,
+    winnerTouchId: "",
     tooManyMessage: " iPhone 不支持 5 个以上的触摸\n感觉受到了侮辱\n\n但是我猜这句话应该没人看得到\n因为没那么多人玩桌游\n都打羽毛球去了"
   },
 
   onLoad() {
+    this._pageVisible = true;
     let statusBarHeight = 0;
     let windowInfo = null;
     try {
@@ -78,6 +93,7 @@ Page({
       statusBarHeight = Number(windowInfo.statusBarHeight) || 0;
     } catch (e) {}
     this._windowInfo = windowInfo;
+    this._initAudio();
     this._setFallbackStageRect("idle");
     this.setData({
       statusBarHeight,
@@ -91,15 +107,22 @@ Page({
   },
 
   onShow() {
+    this._pageVisible = true;
+    this._initAudio();
     this._setTabBarHidden(true);
   },
 
   onHide() {
+    this._pageVisible = false;
+    this._cancelTooManyCancellationFallback();
+    this._stopAudio();
     this._resetGame();
   },
 
   onUnload() {
+    this._pageVisible = false;
     this._setTabBarHidden(false);
+    this._destroyAudio();
     this._resetGame();
   },
 
@@ -108,9 +131,16 @@ Page({
       this._windowInfo = typeof wx.getWindowInfo === "function" ? wx.getWindowInfo() : wx.getSystemInfoSync();
     } catch (e) {}
     const statusBarHeight = Number(this._windowInfo && this._windowInfo.statusBarHeight) || 0;
-    if (statusBarHeight !== Number(this.data.statusBarHeight)) this.setData({ statusBarHeight });
-    this._setFallbackStageRect(this.data.status);
-    this._measureStage(true);
+    const bottomSafeAreaRpx = getBottomSafeAreaRpx();
+    const patch = {};
+    if (statusBarHeight !== Number(this.data.statusBarHeight)) patch.statusBarHeight = statusBarHeight;
+    if (bottomSafeAreaRpx !== Number(this.data.bottomSafeAreaRpx)) patch.bottomSafeAreaRpx = bottomSafeAreaRpx;
+    const refreshStageGeometry = () => {
+      this._setFallbackStageRect(this.data.status);
+      this._measureStage(true);
+    };
+    if (Object.keys(patch).length) this.setData(patch, refreshStageGeometry);
+    else refreshStageGeometry();
   },
 
   _setTabBarHidden(hidden) {
@@ -119,17 +149,133 @@ Page({
     if (tabBar && typeof tabBar.setData === "function") tabBar.setData({ hidden: !!hidden });
   },
 
+  _initAudio() {
+    if (this._audioInitialized) return true;
+    if (typeof wx === "undefined" || typeof wx.createInnerAudioContext !== "function") return false;
+    try {
+      this._touchDownAudioPool = Array.from({ length: MAX_TOUCHES }, () => {
+        const audio = wx.createInnerAudioContext();
+        audio.src = TOUCH_DOWN_AUDIO_SRC;
+        return audio;
+      });
+      this._selectionAudio = wx.createInnerAudioContext();
+      this._selectionAudio.src = SELECTION_AUDIO_SRC;
+      this._touchDownAudioCursor = 0;
+      this._audioInitialized = true;
+      return true;
+    } catch (e) {
+      this._destroyAudio();
+      return false;
+    }
+  },
+
+  _playAudio(audio) {
+    if (!audio) return;
+    try {
+      if (audio._chwaziHasStarted && audio.paused === false) audio.stop();
+      audio.play();
+      audio._chwaziHasStarted = true;
+    } catch (e) {}
+  },
+
+  _playTouchDown(count = 1) {
+    if (!this._initAudio() || !this._touchDownAudioPool.length) return;
+    const playCount = Math.max(0, Number(count) || 0);
+    for (let index = 0; index < playCount; index += 1) {
+      const audio = this._touchDownAudioPool[this._touchDownAudioCursor];
+      this._touchDownAudioCursor = (this._touchDownAudioCursor + 1) % this._touchDownAudioPool.length;
+      this._playAudio(audio);
+    }
+  },
+
+  _playSelection() {
+    if (!this._initAudio()) return;
+    this._playAudio(this._selectionAudio);
+  },
+
+  _vibrateSelection() {
+    if (typeof wx === "undefined" || typeof wx.vibrateShort !== "function") return;
+    let fallbackStarted = false;
+    const fallback = () => {
+      if (fallbackStarted) return;
+      fallbackStarted = true;
+      try { wx.vibrateShort(); } catch (e) {}
+    };
+    try {
+      wx.vibrateShort({ type: "medium", fail: fallback });
+    } catch (e) {
+      fallback();
+    }
+  },
+
+  _destroyAudio() {
+    const contexts = [
+      ...(this._touchDownAudioPool || []),
+      this._selectionAudio
+    ].filter(Boolean);
+    for (const audio of contexts) {
+      try { audio.stop(); } catch (e) {}
+      try {
+        if (typeof audio.destroy === "function") audio.destroy();
+      } catch (e) {}
+    }
+    this._touchDownAudioPool = null;
+    this._selectionAudio = null;
+    this._touchDownAudioCursor = 0;
+    this._audioInitialized = false;
+  },
+
+  _stopAudio() {
+    const contexts = [
+      ...(this._touchDownAudioPool || []),
+      this._selectionAudio
+    ].filter(Boolean);
+    for (const audio of contexts) {
+      try {
+        if (audio.paused === false) audio.stop();
+        audio._chwaziHasStarted = false;
+      } catch (e) {}
+    }
+  },
+
+  _playNewTouchAudio(e) {
+    if (
+      (this.data.status !== "idle" && this.data.status !== "touching")
+      || this._waitForAllTouchesReleased
+    ) return;
+    const trackedIds = new Set((this.data.touches || []).map((touch) => String(touch.id)));
+    if (this._touchStartedAtById) {
+      for (const id of this._touchStartedAtById.keys()) trackedIds.add(String(id));
+    }
+    const changedTouches = Array.isArray(e && e.changedTouches) ? e.changedTouches : [];
+    const activeTouches = Array.isArray(e && e.touches) ? e.touches : [];
+    const candidates = changedTouches.length ? changedTouches : activeTouches;
+    const newIds = new Set();
+    candidates.forEach((touch, index) => {
+      const id = getTouchId(touch, index);
+      if (!trackedIds.has(id)) newIds.add(id);
+    });
+    this._playTouchDown(newIds.size);
+  },
+
   _setFallbackStageRect(status = this.data.status) {
     const width = Number(this._windowInfo && this._windowInfo.windowWidth);
+    const windowHeight = Number(this._windowInfo && this._windowInfo.windowHeight);
     const statusBarHeight = Number(this._windowInfo && this._windowInfo.statusBarHeight) || 0;
     if (!Number.isFinite(width) || width <= 0) return null;
     const scale = width / DESIGN_WIDTH_PX;
     const selected = status === "selected";
+    const top = statusBarHeight + (44 + (selected ? 40 : 42)) * scale;
+    const bottomSafeAreaPx = getBottomSafeAreaRpx() * width / 750;
+    const minimumHeight = (selected ? 660 : 540) * scale;
+    const availableHeight = windowHeight - top - bottomSafeAreaPx;
     this._stageRect = {
       left: 0,
-      top: statusBarHeight + (44 + (selected ? 40 : 42)) * scale,
+      top,
       width,
-      height: (selected ? 660 : 540) * scale
+      height: Number.isFinite(availableHeight) && availableHeight > 0
+        ? availableHeight
+        : minimumHeight
     };
     return this._stageRect;
   },
@@ -161,7 +307,17 @@ Page({
   },
 
   _getTouchPosition(touch) {
-    return normalizeTouchPosition(touch, this._stageRect);
+    const rect = this._stageRect;
+    if (!rect) return null;
+    const scale = getFiniteNumber(rect.width, DESIGN_WIDTH_PX) / DESIGN_WIDTH_PX;
+    const stageTopGap = this.data.status === "selected"
+      ? SELECTED_STAGE_TOP_GAP_PX
+      : STAGE_TOP_GAP_PX;
+    const stageHeight = getFiniteNumber(rect.height, 540) / scale;
+    return normalizeTouchPosition(touch, rect, {
+      minY: -stageTopGap,
+      maxY: stageHeight - TOUCH_DIAMETER_PX / 2
+    });
   },
 
   _formatTouch(touch, index, previous, now, colorIndex) {
@@ -174,7 +330,6 @@ Page({
       : getFiniteNumber(trackedStartedAt, now);
     const position = this._getTouchPosition(touch);
     if (!position) return previous || null;
-    const progress = getProgress(startedAt, now, PROGRESS_DURATION_MS);
     return {
       id,
       colorIndex: resolvedColorIndex,
@@ -185,14 +340,103 @@ Page({
       topRpx: toRpx(position.yPx - TOUCH_DIAMETER_PX / 2),
       innerLeftRpx: toRpx(position.xPx - INNER_DIAMETER_PX / 2),
       innerTopRpx: toRpx(position.yPx - INNER_DIAMETER_PX / 2),
+      canvasId: (previous && previous.canvasId) || getRingCanvasId(id),
       outerColor: (previous && previous.outerColor) || color.outer,
-      innerColor: (previous && previous.innerColor) || color.inner,
-      progress,
-      progressDeg: Number((progress * 360).toFixed(1)),
-      progressAnimationDelayMs: previous
-        ? getFiniteNumber(previous.progressAnimationDelayMs, 0)
-        : -Math.round(progress * PROGRESS_DURATION_MS)
+      innerColor: (previous && previous.innerColor) || color.inner
     };
+  },
+
+  _drawTouchRings(now = Date.now()) {
+    if (typeof wx === "undefined" || typeof wx.createCanvasContext !== "function") return false;
+    const touches = Array.isArray(this.data.touches) ? this.data.touches : [];
+    const canvasScale = getFiniteNumber(this._stageRect && this._stageRect.width, DESIGN_WIDTH_PX)
+      / DESIGN_WIDTH_PX;
+    const canvasSize = TOUCH_DIAMETER_PX * canvasScale;
+    if (!this._ringCanvasContexts) this._ringCanvasContexts = new Map();
+    const activeCanvasIds = new Set(touches.map((touch) => touch.canvasId).filter(Boolean));
+    for (const canvasId of Array.from(this._ringCanvasContexts.keys())) {
+      if (!activeCanvasIds.has(canvasId)) this._ringCanvasContexts.delete(canvasId);
+    }
+
+    let animationPending = false;
+    for (const touch of touches) {
+      if (!touch.canvasId) continue;
+      let context = this._ringCanvasContexts.get(touch.canvasId);
+      if (!context) {
+        context = wx.createCanvasContext(touch.canvasId, this);
+        this._ringCanvasContexts.set(touch.canvasId, context);
+      }
+      const progress = this.data.status === "selected"
+        ? 1
+        : getProgress(touch.startedAt, now, PROGRESS_DURATION_MS);
+      if (progress < 1) animationPending = true;
+      context.clearRect(0, 0, canvasSize, canvasSize);
+      if (progress > 0) {
+        context.beginPath();
+        context.setStrokeStyle(touch.outerColor);
+        context.setLineWidth(RING_LINE_WIDTH_PX * canvasScale);
+        context.setLineCap("round");
+        context.arc(
+          RING_CENTER_PX * canvasScale,
+          RING_CENTER_PX * canvasScale,
+          RING_RADIUS_PX * canvasScale,
+          -Math.PI / 2,
+          -Math.PI / 2 + Math.PI * 2 * progress,
+          false
+        );
+        context.stroke();
+      }
+      context.draw();
+    }
+    return animationPending;
+  },
+
+  _startRingRenderLoop() {
+    if (this._ringRenderTimer) return;
+    const render = () => {
+      this._ringRenderTimer = null;
+      if (this.data.status !== "touching") {
+        this._drawTouchRings();
+        return;
+      }
+      if (this._drawTouchRings()) {
+        this._ringRenderTimer = setTimeout(render, RING_FRAME_MS);
+      }
+    };
+    render();
+  },
+
+  _stopRingRenderLoop() {
+    if (this._ringRenderTimer) clearTimeout(this._ringRenderTimer);
+    this._ringRenderTimer = null;
+    if (this._ringCanvasContexts) this._ringCanvasContexts.clear();
+  },
+
+  _queueTouchMove(rawTouches) {
+    this._pendingMoveTouches = cloneRawTouches(rawTouches);
+    if (this._touchMoveTimer) return;
+    this._touchMoveTimer = setTimeout(() => {
+      this._touchMoveTimer = null;
+      const touches = this._pendingMoveTouches;
+      this._pendingMoveTouches = null;
+      if (this._pageVisible === false || !touches) return;
+      this._syncTouches(touches);
+    }, TOUCH_MOVE_FRAME_MS);
+  },
+
+  _cancelPendingTouchMove() {
+    if (this._touchMoveTimer) clearTimeout(this._touchMoveTimer);
+    this._touchMoveTimer = null;
+    this._pendingMoveTouches = null;
+  },
+
+  _getTrackedTouchCount() {
+    return Math.max(
+      Array.isArray(this.data.touches) ? this.data.touches.length : 0,
+      Array.isArray(this._pendingRawTouches) ? this._pendingRawTouches.length : 0,
+      Array.isArray(this._pendingMoveTouches) ? this._pendingMoveTouches.length : 0,
+      this._touchStartedAtById instanceof Map ? this._touchStartedAtById.size : 0
+    );
   },
 
   _syncTouches(rawTouches) {
@@ -209,7 +453,26 @@ Page({
       if (!touches.length) {
         if (this.data.winnerTransitioning) this._winnerReleasedDuringTransition = true;
         else this._resetGame();
+        return;
       }
+      const winnerId = String(this._winnerTouchId || this.data.winnerTouchId || "");
+      const winnerRawTouch = touches.find((touch, index) => getTouchId(touch, index) === winnerId);
+      if (!winnerRawTouch || !this.data.touches.length) return;
+      const now = Date.now();
+      const winner = this._formatTouch(
+        winnerRawTouch,
+        0,
+        this.data.touches[0],
+        now,
+        getStoredColorIndex(this.data.touches[0])
+      );
+      if (!winner) return;
+      const revealOrigin = this._getWinnerRevealOrigin(winner);
+      this.setData({
+        touches: [winner],
+        winnerRevealOriginXpx: revealOrigin.xPx,
+        winnerRevealOriginYpx: revealOrigin.yPx
+      }, () => this._drawTouchRings(now));
       return;
     }
 
@@ -265,11 +528,12 @@ Page({
       return;
     }
 
-    this.setData({
-      status: "touching",
-      pageBackground: "#09090B",
-      touches: next
-    });
+    const patch = { touches: next };
+    if (this.data.status !== "touching") {
+      patch.status = "touching";
+      patch.pageBackground = "#09090B";
+    }
+    this.setData(patch, () => this._startRingRenderLoop());
     this._maybeScheduleSelection(next);
   },
 
@@ -285,10 +549,8 @@ Page({
     const waitMs = getSelectionWaitMs(touches);
     if (waitMs === null) return;
     const participantKey = getParticipantKey(touches);
-    this._selectionParticipantKey = participantKey;
     this._selectionTimer = setTimeout(() => {
       this._selectionTimer = null;
-      this._selectionParticipantKey = null;
       if (this.data.status !== "touching" || getParticipantKey(this.data.touches) !== participantKey) return;
       const remainingMs = getSelectionWaitMs(this.data.touches);
       if (remainingMs === null) return;
@@ -304,7 +566,6 @@ Page({
   _cancelSelection() {
     if (this._selectionTimer) clearTimeout(this._selectionTimer);
     this._selectionTimer = null;
-    this._selectionParticipantKey = null;
   },
 
   _getWinnerRevealOrigin(winner) {
@@ -325,24 +586,36 @@ Page({
     };
   },
 
+  _getWinnerCollapseRadius(origin) {
+    const rect = this._stageRect || { left: 0, top: 0, width: DESIGN_WIDTH_PX, height: 540 };
+    const viewportWidth = getFiniteNumber(
+      this._windowInfo && this._windowInfo.windowWidth,
+      getFiniteNumber(rect.left, 0) + getFiniteNumber(rect.width, DESIGN_WIDTH_PX)
+    );
+    const viewportHeight = getFiniteNumber(
+      this._windowInfo && this._windowInfo.windowHeight,
+      getFiniteNumber(rect.top, 0) + getFiniteNumber(rect.height, 540)
+    );
+    const x = getFiniteNumber(origin && origin.xPx, 0);
+    const y = getFiniteNumber(origin && origin.yPx, 0);
+    return Number(Math.max(
+      Math.hypot(x, y),
+      Math.hypot(viewportWidth - x, y),
+      Math.hypot(x, viewportHeight - y),
+      Math.hypot(viewportWidth - x, viewportHeight - y)
+    ).toFixed(2));
+  },
+
   _showWinner(winner) {
     this._cancelSelection();
     this._clearWinnerTransition(true);
     this._winnerReleasedDuringTransition = false;
-    const selected = {
-      ...winner,
-      progress: 1,
-      progressDeg: 360,
-      progressAnimationDelayMs: -PROGRESS_DURATION_MS
-    };
+    this._playSelection();
+    const selected = { ...winner };
+    this._winnerTouchId = String(selected.id);
     const revealOrigin = this._getWinnerRevealOrigin(selected);
+    const collapseRadius = this._getWinnerCollapseRadius(revealOrigin);
     const transitionId = this._winnerTransitionId;
-    const transitionTouches = (this.data.touches || []).map((touch) => ({
-      ...touch,
-      progress: 1,
-      progressDeg: 360,
-      progressAnimationDelayMs: -PROGRESS_DURATION_MS
-    }));
     this.setData({
       status: "selected",
       pageBackground: selected.innerColor,
@@ -351,9 +624,14 @@ Page({
       winnerTransitionId: transitionId,
       winnerRevealOriginXpx: revealOrigin.xPx,
       winnerRevealOriginYpx: revealOrigin.yPx,
-      winnerTransitionStageTopPx: getFiniteNumber(this._stageRect && this._stageRect.top, 0),
-      winnerTransitionTouches: transitionTouches
-    }, () => this._startWinnerTransitionFallback(transitionId));
+      winnerCollapseDiameterPx: collapseRadius * 2,
+      winnerTouchId: this._winnerTouchId
+    }, () => {
+      this._vibrateSelection();
+      this._stopRingRenderLoop();
+      this._drawTouchRings();
+      this._startWinnerTransitionFallback(transitionId);
+    });
   },
 
   _startWinnerTransitionFallback(transitionId) {
@@ -379,20 +657,41 @@ Page({
       this._resetGame();
       return;
     }
-    this.setData({ winnerTransitioning: false, winnerTransitionTouches: [] });
+    this.setData({ winnerTransitioning: false });
   },
 
   onWinnerTransitionEnd(e) {
     const targetId = e && e.target && e.target.id;
-    if (targetId && targetId !== "qa-chwazi-winner-curtain") return;
+    if (targetId && targetId !== "qa-chwazi-winner-collapse-disc") return;
     const transitionId = e && e.currentTarget && e.currentTarget.dataset
       ? e.currentTarget.dataset.transitionId
       : this._winnerTransitionId;
     this._finishWinnerTransition(transitionId);
   },
 
-  _enterTooMany(reportedTouchCount = MAX_TOUCHES + 1) {
+  _scheduleTooManyCancellationFallback() {
+    this._cancelTooManyCancellationFallback();
     this._cancelSelection();
+    this._stopRingRenderLoop();
+    this._tooManyCancellationTimer = setTimeout(() => {
+      this._tooManyCancellationTimer = null;
+      if (this._pageVisible === false) return;
+      if (this.data.status !== "idle" && this.data.status !== "touching") return;
+      if (this._getTrackedTouchCount() < MAX_TOUCHES) return;
+      this._enterTooMany(MAX_TOUCHES + 1);
+    }, TOO_MANY_CANCEL_FALLBACK_MS);
+  },
+
+  _cancelTooManyCancellationFallback() {
+    if (this._tooManyCancellationTimer) clearTimeout(this._tooManyCancellationTimer);
+    this._tooManyCancellationTimer = null;
+  },
+
+  _enterTooMany(reportedTouchCount = MAX_TOUCHES + 1) {
+    this._cancelTooManyCancellationFallback();
+    this._cancelPendingTouchMove();
+    this._cancelSelection();
+    this._stopRingRenderLoop();
     this._clearWinnerTransition(true);
     this._clearTooManyTimer(true);
     this._winnerReleasedDuringTransition = false;
@@ -406,7 +705,8 @@ Page({
       pageBackground: "#09090B",
       touches: [],
       winnerTransitioning: false,
-      winnerTransitionTouches: []
+      winnerCollapseDiameterPx: 0,
+      winnerTouchId: ""
     }, () => {
       if (this.data.status === "tooMany" && Number(tooManyToken) === Number(this._tooManyToken)) {
         this._startTooManyTimer(tooManyToken);
@@ -435,7 +735,8 @@ Page({
       pageBackground: "#09090B",
       touches: [],
       winnerTransitioning: false,
-      winnerTransitionTouches: []
+      winnerCollapseDiameterPx: 0,
+      winnerTouchId: ""
     });
   },
 
@@ -446,10 +747,14 @@ Page({
   },
 
   _resetGame() {
+    this._cancelTooManyCancellationFallback();
+    this._cancelPendingTouchMove();
     this._cancelSelection();
+    this._stopRingRenderLoop();
     this._clearWinnerTransition(true);
     this._clearTooManyTimer(true);
     this._winnerReleasedDuringTransition = false;
+    this._winnerTouchId = "";
     this._waitForAllTouchesReleased = false;
     this._latestTooManyTouchCount = 0;
     this._pendingRawTouches = null;
@@ -461,21 +766,22 @@ Page({
         pageBackground: "#09090B",
         touches: [],
         winnerTransitioning: false,
-        winnerTransitionTouches: []
+        winnerCollapseDiameterPx: 0,
+        winnerTouchId: ""
       });
     }
   },
 
   onStageTouchStart(e) {
+    this._cancelTooManyCancellationFallback();
+    this._cancelPendingTouchMove();
+    this._playNewTouchAudio(e);
     const touches = Array.isArray(e && e.touches) ? e.touches : [];
     const activeIds = new Set(touches.map((touch, index) => getTouchId(touch, index)));
     const changedTouches = Array.isArray(e && e.changedTouches) ? e.changedTouches : [];
-    const additionalReportedTouches = changedTouches.filter((touch, index) => (
-      touch && touch.identifier !== undefined
-      && touch.identifier !== null
-      && !activeIds.has(getTouchId(touch, index))
-    )).length;
-    const reportedTouchCount = touches.length + additionalReportedTouches;
+    const reportedIds = new Set(activeIds);
+    changedTouches.forEach((touch, index) => reportedIds.add(getTouchId(touch, index)));
+    const reportedTouchCount = Math.max(touches.length, reportedIds.size);
     if (this.data.status === "tooMany") {
       this._latestTooManyTouchCount = reportedTouchCount;
       return;
@@ -492,15 +798,32 @@ Page({
   },
 
   onStageTouchMove(e) {
-    this._syncTouches(e && e.touches);
+    this._queueTouchMove(e && e.touches);
   },
 
   onStageTouchEnd(e) {
+    this._cancelPendingTouchMove();
     this._syncTouches(e && e.touches);
   },
 
   onStageTouchCancel(e) {
-    this._syncTouches(e && e.touches);
+    this._cancelPendingTouchMove();
+    const touches = Array.isArray(e && e.touches) ? e.touches : [];
+    const changedTouches = Array.isArray(e && e.changedTouches) ? e.changedTouches : [];
+    const trackedTouchCount = this._getTrackedTouchCount();
+    const unexpectedCancellation = changedTouches.length > 0 || touches.length < trackedTouchCount;
+    const reachedDeviceTouchLimit = trackedTouchCount >= MAX_TOUCHES;
+    if (
+      this.data.status !== "tooMany"
+      && this.data.status !== "selected"
+      && !this._waitForAllTouchesReleased
+      && reachedDeviceTouchLimit
+      && unexpectedCancellation
+    ) {
+      this._scheduleTooManyCancellationFallback();
+      return;
+    }
+    this._syncTouches(touches);
   },
 
   onBackTap() {

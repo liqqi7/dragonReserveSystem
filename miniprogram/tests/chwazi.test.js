@@ -14,7 +14,6 @@ const {
   TOUCH_DIAMETER_PX,
   getTouchId,
   getProgress,
-  allProgressComplete,
   getTouchColor,
   getAvailableTouchColorIndex,
   getSelectionWaitMs,
@@ -158,15 +157,47 @@ test("touch coordinates normalize to the 390px Pencil stage at different screen 
     normalizeTouchPosition({ clientX: -50, clientY: -50 }, { left: 0, top: 0, width: 390, height: 540 }),
     { xPx: 60, yPx: 60 }
   );
+  assert.equal(
+    normalizeTouchPosition(
+      { clientX: 100, clientY: -30 },
+      { left: 0, top: 0, width: 390, height: 540 },
+      { minY: -42, maxY: 480 }
+    ).yPx,
+    -30
+  );
   assert.equal(normalizeTouchPosition({ clientX: 100, clientY: 100 }, null), null);
   assert.equal(normalizeTouchPosition({}, { left: 0, top: 0, width: 390, height: 540 }), null);
 });
 
-test("selection only becomes eligible after every participant is full", () => {
-  assert.equal(allProgressComplete([]), false);
-  assert.equal(allProgressComplete([{ progress: 1 }]), false);
-  assert.equal(allProgressComplete([{ progress: 1 }, { progress: 0.99 }]), false);
-  assert.equal(allProgressComplete([{ progress: 1 }, { progress: 1 }]), true);
+test("touches in the gap above the visual stage remain inside the interactive surface", () => {
+  const page = createPageContext(loadPageDefinition());
+  const position = page._getTouchPosition({ clientX: 195, clientY: 100 });
+  assert.equal(position.xPx, 195);
+  assert.equal(position.yPx, -30);
+});
+
+test("fallback geometry fills the viewport down to the bottom safe area", () => {
+  const page = createPageContext(loadPageDefinition());
+  const windowInfo = {
+    windowWidth: 390,
+    windowHeight: 844,
+    statusBarHeight: 47,
+    safeAreaInsets: { bottom: 34 }
+  };
+  page._windowInfo = windowInfo;
+
+  withGlobalWx({ getWindowInfo: () => windowInfo }, () => {
+    page._setFallbackStageRect("idle");
+  });
+
+  assert.equal(page._stageRect.top, 133);
+  assert.ok(Math.abs(page._stageRect.height - 677) < 0.01);
+  const bottomPosition = page._getTouchPosition({ clientX: 195, clientY: 790 });
+  assert.ok(Math.abs(bottomPosition.yPx - 617) < 0.01);
+  assert.ok(Math.abs(bottomPosition.yPx + TOUCH_DIAMETER_PX / 2 - 677) < 0.01);
+});
+
+test("selection only becomes eligible after the newest participant deadline", () => {
   assert.equal(getSelectionWaitMs([{ startedAt: 100 }], 100), null);
   assert.equal(getSelectionWaitMs([{ startedAt: 100 }, { startedAt: 400 }], 400), 1850);
   assert.equal(getSelectionWaitMs([{ startedAt: 100 }, { startedAt: 400 }], 2250), 0);
@@ -193,7 +224,8 @@ test("one touch never selects while two touches select at the absolute deadline"
     assert.equal(twoTouchPage.data.status, "selected");
     assert.equal(twoTouchPage.data.touches[0].id, "0");
     assert.equal(twoTouchPage.data.winnerTransitioning, true);
-    assert.equal(twoTouchPage.data.winnerTransitionTouches.length, 2);
+    assert.equal(twoTouchPage.data.touches.length, 1);
+    assert.equal(twoTouchPage.data.winnerTouchId, "0");
   } finally {
     Math.random = originalRandom;
   }
@@ -209,13 +241,13 @@ test("the newest participant owns the deadline and moving does not restart it", 
     t.mock.timers.tick(500);
     page._syncTouches(makeRawTouches(2));
     const selectionTimer = page._selectionTimer;
-    const firstDelay = page.data.touches[0].progressAnimationDelayMs;
+    const firstStartedAt = page.data.touches[0].startedAt;
     page._syncTouches([
       { identifier: 0, clientX: 120, clientY: 280 },
       { identifier: 1, clientX: 260, clientY: 360 }
     ]);
     assert.equal(page._selectionTimer, selectionTimer);
-    assert.equal(page.data.touches[0].progressAnimationDelayMs, firstDelay);
+    assert.equal(page.data.touches[0].startedAt, firstStartedAt);
 
     t.mock.timers.tick(PROGRESS_DURATION_MS + SELECT_DELAY_MS - 1);
     assert.equal(page.data.status, "touching");
@@ -267,6 +299,79 @@ test("touch colors survive movement and remain unique when participants change",
   assert.notEqual(page.data.touches[0].colorIndex, page.data.touches[1].colorIndex);
 });
 
+test("rapid touchmove events apply only the latest positions once per frame", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const page = createPageContext(loadPageDefinition());
+  const updates = [];
+  page._syncTouches = (touches) => updates.push(touches);
+
+  page.onStageTouchMove({ touches: [{ identifier: 1, clientX: 100, clientY: 200 }] });
+  page.onStageTouchMove({ touches: [{ identifier: 1, clientX: 140, clientY: 240 }] });
+
+  t.mock.timers.tick(15);
+  assert.equal(updates.length, 0);
+  t.mock.timers.tick(1);
+  assert.equal(updates.length, 1);
+  assert.equal(updates[0][0].clientX, 140);
+  assert.equal(updates[0][0].clientY, 240);
+});
+
+test("touchend cancels a stale queued move before applying the final state", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const page = createPageContext(loadPageDefinition());
+  const updates = [];
+  page._syncTouches = (touches) => updates.push(touches);
+
+  page.onStageTouchMove({ touches: [{ identifier: 1, clientX: 140, clientY: 240 }] });
+  page.onStageTouchEnd({ touches: [] });
+  t.mock.timers.tick(16);
+
+  assert.equal(updates.length, 1);
+  assert.deepEqual(updates[0], []);
+});
+
+test("progress ring uses one rounded canvas arc without a split radial seam", () => {
+  const calls = [];
+  const context = {
+    clearRect: (...args) => calls.push(["clearRect", ...args]),
+    beginPath: () => calls.push(["beginPath"]),
+    setStrokeStyle: (value) => calls.push(["setStrokeStyle", value]),
+    setLineWidth: (value) => calls.push(["setLineWidth", value]),
+    setLineCap: (value) => calls.push(["setLineCap", value]),
+    arc: (...args) => calls.push(["arc", ...args]),
+    stroke: () => calls.push(["stroke"]),
+    draw: () => calls.push(["draw"])
+  };
+  const wxHarness = {
+    createCanvasContext(canvasId) {
+      calls.push(["createCanvasContext", canvasId]);
+      return context;
+    }
+  };
+
+  withGlobalWx(wxHarness, () => {
+    const page = createPageContext(loadPageDefinition());
+    page._stageRect.width = 375;
+    page.data.status = "touching";
+    page.data.touches = [{
+      id: "1",
+      canvasId: "chwazi-ring-1",
+      startedAt: 100,
+      outerColor: "#FFD500"
+    }];
+    const pending = page._drawTouchRings(850);
+    const arc = calls.find((call) => call[0] === "arc");
+    const lineWidth = calls.find((call) => call[0] === "setLineWidth");
+
+    assert.equal(pending, true);
+    assert.deepEqual(calls.find((call) => call[0] === "setLineCap"), ["setLineCap", "round"]);
+    assert.ok(Math.abs(lineWidth[1] - 9 * 375 / 390) < 0.0001);
+    assert.equal(arc.length, 7);
+    assert.ok(Math.abs(arc[4] - (-Math.PI / 2)) < 0.0001);
+    assert.ok(Math.abs(arc[5] - (Math.PI / 2)) < 0.0001);
+  });
+});
+
 test("winner stays under the selected finger and over-five state cannot become a six-touch game", () => {
   const definition = loadPageDefinition();
   const page = createPageContext(definition);
@@ -278,8 +383,7 @@ test("winner stays under the selected finger and over-five state cannot become a
     leftRpx: 448.08,
     topRpx: 713.46,
     innerLeftRpx: 484.62,
-    innerTopRpx: 750,
-    progress: 1
+    innerTopRpx: 750
   };
 
   page._showWinner(winner);
@@ -300,6 +404,50 @@ test("winner stays under the selected finger and over-five state cannot become a
     clientY: 220 + index
   })));
   assert.equal(enteredTooMany, true);
+});
+
+test("selected winner follows its original finger and moves the collapse center", () => {
+  const page = createPageContext(loadPageDefinition());
+  page._showWinner({
+    id: "2",
+    colorIndex: 1,
+    innerColor: "#1198B9",
+    outerColor: "#1C839B",
+    leftRpx: 448.08,
+    topRpx: 713.46,
+    innerLeftRpx: 484.62,
+    innerTopRpx: 750,
+    xRpx: 563.46,
+    yRpx: 828.85
+  });
+  const firstOrigin = {
+    x: page.data.winnerRevealOriginXpx,
+    y: page.data.winnerRevealOriginYpx
+  };
+
+  page._syncTouches([{ identifier: 2, clientX: 330, clientY: 300 }]);
+
+  assert.equal(page.data.touches.length, 1);
+  assert.equal(page.data.touches[0].id, "2");
+  assert.notEqual(page.data.touches[0].xRpx, 563.46);
+  assert.notEqual(page.data.winnerRevealOriginXpx, firstOrigin.x);
+  assert.notEqual(page.data.winnerRevealOriginYpx, firstOrigin.y);
+});
+
+test("collapse radius starts at the farthest viewport corner instead of an oversized vmax circle", () => {
+  const page = createPageContext(loadPageDefinition());
+  page._windowInfo = { windowWidth: 390, windowHeight: 844 };
+  const origin = { xPx: 293, yPx: 559 };
+  const radius = page._getWinnerCollapseRadius(origin);
+  const cornerDistances = [
+    Math.hypot(origin.xPx, origin.yPx),
+    Math.hypot(390 - origin.xPx, origin.yPx),
+    Math.hypot(origin.xPx, 844 - origin.yPx),
+    Math.hypot(390 - origin.xPx, 844 - origin.yPx)
+  ];
+
+  assert.equal(radius, Number(Math.max(...cornerDistances).toFixed(2)));
+  assert.ok(radius < 844);
 });
 
 test("an old stage measurement cannot revive five cached touches after the sixth touch", () => {
@@ -343,6 +491,194 @@ test("touchstart detects a sixth identifier reported only through changedTouches
   });
   assert.equal(page.data.status, "tooMany");
   assert.deepEqual(page.data.touches, []);
+});
+
+test("touchstart counts a changed sixth touch even without an identifier", () => {
+  const page = createPageContext(loadPageDefinition());
+  const fiveTouches = makeRawTouches(5);
+
+  page.onStageTouchStart({ touches: fiveTouches, changedTouches: [fiveTouches[4]] });
+  page.onStageTouchStart({
+    touches: fiveTouches,
+    changedTouches: [{ clientX: 300, clientY: 360 }]
+  });
+
+  assert.equal(page.data.status, "tooMany");
+  assert.deepEqual(page.data.touches, []);
+});
+
+test("five tracked touches followed by touchcancel enter the delayed over-five fallback", (t) => {
+  t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: 100 });
+  const page = createPageContext(loadPageDefinition(), { liveTimers: true });
+  const fiveTouches = makeRawTouches(5);
+
+  page.onStageTouchStart({ touches: fiveTouches, changedTouches: [fiveTouches[4]] });
+  assert.equal(page.data.status, "touching");
+  assert.equal(page._getTrackedTouchCount(), 5);
+
+  page.onStageTouchCancel({ touches: [], changedTouches: fiveTouches });
+
+  assert.equal(page.data.status, "touching");
+  t.mock.timers.tick(79);
+  assert.equal(page.data.status, "touching");
+  t.mock.timers.tick(1);
+  assert.equal(page.data.status, "tooMany");
+  assert.deepEqual(page.data.touches, []);
+  assert.equal(page._latestTooManyTouchCount, 6);
+});
+
+test("page hide cancels the ambiguous five-touch fallback", (t) => {
+  t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: 100 });
+  const page = createPageContext(loadPageDefinition(), { liveTimers: true });
+  const fiveTouches = makeRawTouches(5);
+
+  page.onStageTouchStart({ touches: fiveTouches, changedTouches: [fiveTouches[4]] });
+  page.onStageTouchCancel({ touches: [], changedTouches: fiveTouches });
+  page.onHide();
+  t.mock.timers.tick(80);
+
+  assert.equal(page.data.status, "idle");
+  assert.equal(page._tooManyCancellationTimer, null);
+});
+
+test("touchcancel below the device limit keeps the normal reset behavior", () => {
+  const page = createPageContext(loadPageDefinition());
+  const touches = makeRawTouches(4);
+
+  page.onStageTouchStart({ touches, changedTouches: [touches[3]] });
+  page.onStageTouchCancel({ touches: [], changedTouches: touches });
+
+  assert.equal(page.data.status, "idle");
+  assert.deepEqual(page.data.touches, []);
+});
+
+test("touch and selection sounds use the requested assets and fire once per event", () => {
+  const contexts = [];
+  const wxHarness = {
+    createInnerAudioContext() {
+      const context = {
+        src: "",
+        playCount: 0,
+        stopCount: 0,
+        paused: true,
+        stop() { this.stopCount += 1; this.paused = true; },
+        play() { this.playCount += 1; this.paused = false; },
+        destroy() {}
+      };
+      contexts.push(context);
+      return context;
+    }
+  };
+
+  withGlobalWx(wxHarness, () => {
+    const page = createPageContext(loadPageDefinition());
+    page._initAudio();
+    const firstTouches = makeRawTouches(1);
+    page.onStageTouchStart({ touches: firstTouches, changedTouches: [firstTouches[0]] });
+    page.onStageTouchStart({
+      touches: makeRawTouches(2),
+      changedTouches: [{ identifier: 1, clientX: 120, clientY: 240 }]
+    });
+    page._showWinner(page.data.touches[0]);
+  });
+
+  assert.equal(contexts.length, MAX_TOUCHES + 1);
+  assert.equal(contexts[0].src, "/audio/chwazi-touch-down.wav");
+  assert.equal(contexts[MAX_TOUCHES].src, "/audio/chwazi-selection.mp3");
+  assert.equal(contexts[0].playCount, 1);
+  assert.equal(contexts[1].playCount, 1);
+  assert.equal(contexts[MAX_TOUCHES].playCount, 1);
+  assert.equal(contexts.slice(2, MAX_TOUCHES).every((context) => context.playCount === 0), true);
+  assert.equal(contexts.every((context) => context.stopCount === 0), true);
+});
+
+test("hidden and locked states stop or suppress audio feedback", () => {
+  const contexts = [];
+  withGlobalWx({
+    createInnerAudioContext() {
+      const context = {
+        src: "",
+        playCount: 0,
+        stopCount: 0,
+        paused: true,
+        stop() { this.stopCount += 1; this.paused = true; },
+        play() { this.playCount += 1; this.paused = false; },
+        destroy() {}
+      };
+      contexts.push(context);
+      return context;
+    }
+  }, () => {
+    const page = createPageContext(loadPageDefinition());
+    page._initAudio();
+    page._playSelection();
+    page.onHide();
+    assert.equal(contexts[MAX_TOUCHES].stopCount, 1);
+
+    page.data.status = "tooMany";
+    page.onStageTouchStart({ touches: makeRawTouches(1), changedTouches: makeRawTouches(1) });
+    page.data.status = "idle";
+    page._waitForAllTouchesReleased = true;
+    page.onStageTouchStart({ touches: makeRawTouches(1), changedTouches: makeRawTouches(1) });
+  });
+
+  assert.equal(contexts.slice(0, MAX_TOUCHES).every((context) => context.playCount === 0), true);
+});
+
+test("touch-down WAV starts within 15ms instead of carrying leading silence", () => {
+  const audio = fs.readFileSync(path.join(pageDir, "../../audio/chwazi-touch-down.wav"));
+  assert.equal(audio.toString("ascii", 0, 4), "RIFF");
+  assert.equal(audio.toString("ascii", 8, 12), "WAVE");
+  assert.equal(audio.readUInt16LE(20), 1);
+  const channelCount = audio.readUInt16LE(22);
+  const sampleRate = audio.readUInt32LE(24);
+  const bitsPerSample = audio.readUInt16LE(34);
+  assert.equal(channelCount, 2);
+  assert.equal(sampleRate, 48000);
+  assert.equal(bitsPerSample, 16);
+
+  const dataOffset = 44;
+  const sampleCount = (audio.length - dataOffset) / 2;
+  let peak = 0;
+  for (let index = 0; index < sampleCount; index += 1) {
+    peak = Math.max(peak, Math.abs(audio.readInt16LE(dataOffset + index * 2)));
+  }
+  const threshold = peak * 0.01;
+  let onsetFrame = null;
+  for (let sample = 0; sample < sampleCount; sample += channelCount) {
+    let framePeak = 0;
+    for (let channel = 0; channel < channelCount; channel += 1) {
+      framePeak = Math.max(framePeak, Math.abs(audio.readInt16LE(dataOffset + (sample + channel) * 2)));
+    }
+    if (framePeak >= threshold) {
+      onsetFrame = sample / channelCount;
+      break;
+    }
+  }
+  assert.notEqual(onsetFrame, null);
+  assert.ok(onsetFrame / sampleRate * 1000 < 15);
+});
+
+test("selection MP3 uses the trimmed stream without the two leading frames", () => {
+  const audio = fs.readFileSync(path.join(pageDir, "../../audio/chwazi-selection.mp3"));
+  assert.equal(audio.subarray(0, 4).toString("hex"), "fffbd244");
+  assert.equal(audio.subarray(0, 1024).includes(Buffer.from("LAME3.100")), false);
+  assert.ok(audio.length < 76000);
+});
+
+test("selection triggers one short vibration", () => {
+  const calls = [];
+  withGlobalWx({
+    vibrateShort(options) { calls.push(options); }
+  }, () => {
+    const page = createPageContext(loadPageDefinition());
+    page._showWinner({ id: "0", innerColor: "#FFE663", outerColor: "#FFD500" });
+    page._showWinner({ id: "1", innerColor: "#1198B9", outerColor: "#1C839B" });
+  });
+
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].type, "medium");
+  assert.equal(calls[1].type, "medium");
 });
 
 test("over-five warning stays locked for three seconds and then requires release", (t) => {
@@ -419,7 +755,7 @@ test("winner transition completion is idempotent and stale animation events are 
   });
   assert.equal(page.data.winnerTransitioning, true);
   page.onWinnerTransitionEnd({
-    target: { id: "qa-chwazi-winner-curtain" },
+    target: { id: "qa-chwazi-winner-collapse-disc" },
     currentTarget: { dataset: { transitionId: firstTransitionId } }
   });
   assert.equal(page.data.status, "selected");
@@ -433,7 +769,7 @@ test("winner transition completion is idempotent and stale animation events are 
   const secondTransitionId = page.data.winnerTransitionId;
   assert.notEqual(secondTransitionId, firstTransitionId);
   page.onWinnerTransitionEnd({
-    target: { id: "qa-chwazi-winner-curtain" },
+    target: { id: "qa-chwazi-winner-collapse-disc" },
     currentTarget: { dataset: { transitionId: firstTransitionId } }
   });
   assert.equal(page.data.winnerTransitioning, true);
@@ -492,8 +828,6 @@ test("cached touches retain their own first-seen times while stage geometry is p
       const byId = new Map(page.data.touches.map((touch) => [touch.id, touch]));
       assert.equal(byId.get("1").startedAt, 100);
       assert.equal(byId.get("2").startedAt, 400);
-      assert.ok(Math.abs(byId.get("1").progress - 500 / 1500) < 0.0001);
-      assert.ok(Math.abs(byId.get("2").progress - 200 / 1500) < 0.0001);
       assert.equal(page._pendingRawTouches, null);
     } finally {
       Date.now = originalNow;
@@ -528,8 +862,7 @@ test("selected result stays locked until every finger is lifted", () => {
     innerColor: "#1198B9",
     outerColor: "#1C839B",
     leftRpx: 448.08,
-    topRpx: 713.46,
-    progress: 1
+    topRpx: 713.46
   });
   const selectedSnapshot = JSON.parse(JSON.stringify(page.data));
   page._enterTooMany = () => { throw new Error("selected result must not enter tooMany"); };
@@ -540,7 +873,7 @@ test("selected result stays locked until every finger is lifted", () => {
   page._syncTouches([]);
   assert.equal(page.data.status, "selected");
   page.onWinnerTransitionEnd({
-    target: { id: "qa-chwazi-winner-curtain" },
+    target: { id: "qa-chwazi-winner-collapse-disc" },
     currentTarget: { dataset: { transitionId: page.data.winnerTransitionId } }
   });
   assert.equal(page.data.status, "idle");
@@ -561,19 +894,18 @@ test("Chwazi page matches the Pencil stage, ring and over-five presentation", ()
   assert.match(js, /WINNER_TRANSITION_DURATION_MS/);
   assert.match(js, /Math\.random\(\) \* this\.data\.touches\.length/);
   assert.doesNotMatch(js, /setInterval|clearInterval|TICK_MS|_startTicker|_tick\s*\(/);
-  assert.match(wxml, /bindtouchstart="onStageTouchStart"/);
+  assert.match(wxml, /catchtouchstart="onStageTouchStart"/);
   assert.match(wxml, /catchtouchmove="onStageTouchMove"/);
-  assert.match(wxml, /bindtouchend="onStageTouchEnd"/);
-  assert.doesNotMatch(wxml, /conic-gradient\(/);
-  assert.match(wxml, /touch-ring-half--right/);
-  assert.match(wxml, /touch-ring-half--left/);
-  assert.match(wxml, /touch-ring-cutout/);
-  assert.match(wxml, /touch-ring-cap-rotator/);
+  assert.match(wxml, /catchtouchend="onStageTouchEnd"/);
+  assert.match(wxml, /id="qa-chwazi-touch-surface"[\s\S]*?catchtouchstart="onStageTouchStart"/);
+  assert.doesNotMatch(wxml, /id="qa-chwazi-stage"[\s\S]*?catchtouchstart="onStageTouchStart"/);
+  assert.match(wxml, /canvas-id="\{\{item\.canvasId\}\}"/);
+  assert.doesNotMatch(wxml, /conic-gradient\(|touch-ring-half|touch-ring-cutout|touch-ring-cap/);
   assert.match(wxml, /id="qa-chwazi-winner-curtain"/);
   assert.match(wxml, /data-transition-id="\{\{winnerTransitionId\}\}"/);
-  assert.match(wxml, /transform-origin: \{\{winnerRevealOriginXpx\}\}px \{\{winnerRevealOriginYpx\}\}px/);
+  assert.match(wxml, /left: \{\{winnerRevealOriginXpx\}\}px; top: \{\{winnerRevealOriginYpx\}\}px; width: \{\{winnerCollapseDiameterPx\}\}px; height: \{\{winnerCollapseDiameterPx\}\}px;/);
   assert.match(wxml, /bindanimationend="onWinnerTransitionEnd"/);
-  assert.match(wxml, /winnerTransitionTouches/);
+  assert.match(wxml, /id="qa-chwazi-winner-collapse-disc"/);
   assert.match(wxml, /id="qa-chwazi-stage"/);
   assert.match(js, /iPhone 不支持 5 个以上的触摸/);
   assert.match(js, /tooManyMessage: " iPhone/);
@@ -582,16 +914,22 @@ test("Chwazi page matches the Pencil stage, ring and over-five presentation", ()
   assert.doesNotMatch(wxml, /请所有人按住屏幕|选中啦|touch-ring-track/);
   assert.match(wxss, /\.chwazi-navbar-inner\s*{[\s\S]*?height:\s*84\.61538rpx/);
   assert.match(wxss, /\.chwazi-back image\s*{[\s\S]*?transform:\s*translateX\(-7\.69231rpx\)/);
-  assert.match(wxss, /\.chwazi-stage\s*{[\s\S]*?height:\s*1038\.46rpx;[\s\S]*?margin-top:\s*80\.76923rpx/);
-  assert.match(wxss, /\.chwazi-stage--selected\s*{[\s\S]*?height:\s*1269\.23077rpx;[\s\S]*?margin-top:\s*76\.92308rpx/);
-  assert.match(wxss, /\.touch-ring-cutout\s*{[\s\S]*?width:\s*196\.15385rpx;[\s\S]*?background:\s*#09090b/);
-  assert.match(wxss, /\.touch-ring-arc\s*{[\s\S]*?animation-duration:\s*1500ms;[\s\S]*?will-change:\s*transform/);
-  assert.match(wxss, /@keyframes chwazi-ring-right/);
-  assert.match(wxss, /@keyframes chwazi-ring-left/);
-  assert.match(wxss, /\.chwazi-winner-curtain\s*{[\s\S]*?animation:\s*chwazi-collapse-to-winner 480ms/);
-  assert.match(wxss, /@keyframes chwazi-collapse-to-winner\s*{[\s\S]*?from\s*{\s*transform:\s*scale\(1\);[\s\S]*?to\s*{\s*transform:\s*scale\(0\);/);
+  assert.match(wxss, /\.chwazi-page\s*{[\s\S]*?display:\s*flex;[\s\S]*?height:\s*100vh;[\s\S]*?flex-direction:\s*column/);
+  assert.match(wxss, /\.chwazi-touch-surface\s*{[\s\S]*?display:\s*flex;[\s\S]*?flex:\s*1 1 auto;[\s\S]*?flex-direction:\s*column;[\s\S]*?padding-top:\s*80\.76923rpx/);
+  assert.match(wxss, /\.chwazi-touch-surface--selected\s*{[\s\S]*?padding-top:\s*76\.92308rpx/);
+  assert.match(wxss, /\.chwazi-stage\s*{[\s\S]*?min-height:\s*0;[\s\S]*?flex:\s*1 1 auto/);
+  assert.doesNotMatch(wxss, /\.chwazi-stage(?:--selected)?\s*{[\s\S]*?height:\s*(?:1038\.46|1269\.23077)rpx/);
+  assert.match(wxml, /class="chwazi-bottom-safe-area" style="height: \{\{bottomSafeAreaRpx\}\}rpx;"/);
+  assert.match(js, /setLineCap\("round"\)/);
+  assert.match(js, /context\.arc\([\s\S]*?Math\.PI \* 2 \* progress/);
+  assert.match(wxss, /\.touch-ring-canvas\s*{[\s\S]*?width:\s*230\.77rpx;[\s\S]*?height:\s*230\.77rpx/);
+  assert.match(wxss, /\.chwazi-touch-surface\s*{[\s\S]*?overflow:\s*hidden/);
+  assert.doesNotMatch(wxss, /chwazi-ring-right|chwazi-ring-left|touch-ring-arc/);
+  assert.match(wxss, /\.chwazi-winner-collapse-disc\s*{[\s\S]*?border-radius:\s*50%;[\s\S]*?animation:\s*chwazi-collapse-to-winner 480ms/);
+  assert.doesNotMatch(wxss, /300vmax|150vmax/);
+  assert.match(wxss, /@keyframes chwazi-collapse-to-winner\s*{[\s\S]*?from\s*{\s*transform:\s*translate\(-50%, -50%\) scale\(1\);[\s\S]*?to\s*{\s*transform:\s*translate\(-50%, -50%\) scale\(0\);/);
   assert.match(wxss, /\.touch-point--selected::before/);
-  assert.match(wxss, /\.chwazi-too-many\s*{[\s\S]*?top:\s*373\.08rpx;[\s\S]*?line-height:\s*1\.45/);
+  assert.match(wxss, /\.chwazi-too-many\s*{[\s\S]*?top:\s*453\.85rpx;[\s\S]*?z-index:\s*10;[\s\S]*?line-height:\s*1\.45/);
   assert.equal(json.disableScroll, true);
   assert.equal(json.navigationBarTextStyle, "white");
 });
