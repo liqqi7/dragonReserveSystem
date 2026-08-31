@@ -38,6 +38,15 @@ test("cards do not apply native press opacity during horizontal paging", () => {
   assert.doesNotMatch(fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8"), /\.card-press/);
 });
 
+test("home sections match the prototype title and module spacing", () => {
+  const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");
+
+  assert.match(wxss, /\.group-section\s*\{[^}]*margin-bottom:\s*0;/s);
+  assert.match(wxss, /\.group-header\s*\{[^}]*height:\s*53\.85rpx;/s);
+  assert.match(wxss, /\.large-cards-row\s*\{[^}]*padding:\s*23\.08rpx 38\.46rpx 38\.46rpx;/s);
+  assert.match(wxss, /\.small-cards-row\s*\{[^}]*padding:\s*23\.08rpx 38\.46rpx 38\.46rpx;/s);
+});
+
 test("large-card glass panel reserves the remark row when remark is empty", () => {
   assert.match(wxml, /<text class="glass-remark">\{\{item\.remark \|\| ''\}\}<\/text>/);
   const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");

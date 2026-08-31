@@ -808,12 +808,12 @@ button.create-btn-fixed.create-btn-hover {
 }
 
 .group-section {
-  /* 列表行底部已有 20px 内边距，这里补 16px => 列表到底下一个标题约 36px */
-  margin-bottom: 30.77rpx;
+  /* 卡片行底部已保留 38.46rpx（在 390px 屏宽上为 20px），模块不再叠加外边距。 */
+  margin-bottom: 0;
 }
 
 .group-header {
-  height: 57.69rpx;
+  height: 53.85rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -879,7 +879,7 @@ button.create-btn-fixed.create-btn-hover {
   display: inline-flex;
   align-items: flex-start;
   /* scroll-view 会裁剪超出边界的阴影：通过 padding 把阴影包进可视区域 */
-  padding: 7.69rpx 38.46rpx 38.46rpx;
+  padding: 23.08rpx 38.46rpx 38.46rpx;
   gap: 19.23rpx;
 }
 
@@ -916,7 +916,7 @@ button.create-btn-fixed.create-btn-hover {
   display: inline-flex;
   align-items: flex-start;
   /* 同上：预留阴影空间，避免被 scroll-view 裁剪 */
-  padding: 26.92rpx 38.46rpx 38.46rpx;
+  padding: 23.08rpx 38.46rpx 38.46rpx;
   gap: 19.23rpx;
 }
 

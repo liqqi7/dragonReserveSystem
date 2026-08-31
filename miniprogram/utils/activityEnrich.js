@@ -58,8 +58,8 @@ const DEFAULT_ACTIVITY_TYPE_STYLES = [
         badge_label: "",
         show_badge: false,
         show_avatar_cluster: false,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-other-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-other-sm.png",
+        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-other-v2-lg.jpg",
+        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-other-v2-sm.jpg",
         bg_video_url: null
       }
     ]
@@ -163,7 +163,7 @@ function normalizeTypeKey(value) {
 function buildCardGlassImageUrl(typeKey, styleKey) {
   const apiBaseUrl = String(getApiBaseUrl() || "").replace(/\/$/, "");
   if (!apiBaseUrl || !typeKey || !styleKey) return "";
-  return `${apiBaseUrl}/activities/type-styles/${encodeURIComponent(typeKey)}/${encodeURIComponent(styleKey)}/glass-image?v=1`;
+  return `${apiBaseUrl}/activities/type-styles/${encodeURIComponent(typeKey)}/${encodeURIComponent(styleKey)}/glass-image?v=2`;
 }
 
 function buildTypeStyleMap(typeStyles) {

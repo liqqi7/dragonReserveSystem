@@ -1,0 +1,45 @@
+{
+  "captured_at_utc": "2026-08-30T06:24:28.970960+00:00",
+  "ranking": {
+    "name": "BGG Board Game Rank",
+    "source_url": "https://boardgamegeek.com/browse/boardgame",
+    "range": "1-50"
+  },
+  "details": {
+    "source": "BGG XML API2 /thing",
+    "parameters": [
+      "type=boardgame",
+      "stats=1",
+      "versions=1",
+      "videos=1"
+    ],
+    "batch_size": 20,
+    "batch_delay_seconds": 6
+  },
+  "included": [
+    "基础属性和所有名称",
+    "主封面和缩略图 URL",
+    "玩家人数、时长、年龄和 BGG 投票建议",
+    "简介",
+    "分类、机制、家族、设计师、美术、出版商和关联桌游",
+    "评分、排名、评分人数、收藏状态统计和重度",
+    "所有版本元数据",
+    "视频元数据",
+    "50 张主封面本地文件"
+  ],
+  "excluded_for_size_or_volatility": [
+    "comments",
+    "ratingcomments",
+    "marketplace",
+    "forums and threads",
+    "user collections",
+    "play logs"
+  ],
+  "counts": {
+    "expected_games": 50,
+    "fetched_games": 50,
+    "downloaded_covers": 50,
+    "versions": 1204,
+    "videos": 750
+  }
+}
