@@ -1,9 +1,6 @@
 <view class="page-wrap">
-  <scroll-view
+  <view
     class="main-scroll"
-    scroll-y="true"
-    show-scrollbar="false"
-    enhanced="true"
     style="height: calc(100vh - {{bottomBarHeightRpx}}rpx)"
   >
     <view wx:if="{{loading}}" class="state-block state-block-full">
@@ -51,7 +48,7 @@
         <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px">
           <view class="navbar-inner">
             <view class="nav-back" hover-class="nav-back-hover" hover-stay-time="80" bindtap="onTapBack">
-              <image class="nav-back-icon" src="/images/icon-chevron-left.svg" mode="aspectFit" />
+              <image class="nav-back-icon" src="/images/activity-detail-chevron-left.svg" mode="aspectFit" />
             </view>
             <text class="navbar-title">活动详情</text>
             <view class="nav-placeholder"></view>
@@ -69,8 +66,8 @@
             <view wx:if="{{remarkExpandable}}" class="remark-toggle">
               <text class="remark-toggle-text">{{remarkExpanded ? '收起' : '展开'}}</text>
               <image
-                class="remark-chevron {{remarkExpanded ? 'remark-chevron-up' : ''}}"
-                src="/images/icon-chevron-down.svg"
+                class="remark-chevron"
+                src="{{remarkExpanded ? '/images/activity-detail-chevron-up.svg' : '/images/activity-detail-chevron-down.svg'}}"
                 mode="aspectFit"
               />
             </view>
@@ -78,7 +75,7 @@
           <text wx:if="{{activity.remark}}" class="hero-remark-measure">{{activity.remark}}</text>
           <view wx:if="{{activity.remark}}" class="remark-toggle-measure">
             <text class="remark-toggle-text">展开</text>
-            <image class="remark-chevron" src="/images/icon-chevron-down.svg" mode="aspectFit" />
+            <image class="remark-chevron" src="/images/activity-detail-chevron-down.svg" mode="aspectFit" />
           </view>
         </view>
       </view>
@@ -86,9 +83,6 @@
       <view id="qaActivityDetailContent" class="detail-panel">
         <view class="section-title-row">
           <text class="section-title">基本信息</text>
-          <view wx:if="{{signupStatusText}}" class="section-assist">
-            <text class="section-assist-text">{{signupStatusText}}</text>
-          </view>
         </view>
         <view class="facts-row">
           <view class="fact-item">
@@ -96,7 +90,7 @@
             <text class="fact-value">{{activityDateText}}</text>
           </view>
           <view class="fact-divider"></view>
-          <view class="fact-item">
+          <view class="fact-item fact-item-time">
             <text class="fact-label">时间</text>
             <text class="fact-value fact-value-time">{{activityTimeText}}</text>
           </view>
@@ -107,7 +101,7 @@
               <text class="participant-current">{{participantCurrentText}}</text>
               <text wx:if="{{participantHasLimit}}" class="participant-separator">/</text>
               <text class="participant-limit">{{participantHasLimit ? participantMaxText + ' 人' : '人'}}</text>
-              <image class="fact-chevron" src="/images/icon-chevron-right.svg" mode="aspectFit" />
+              <image class="fact-chevron" src="/images/activity-detail-chevron-right.svg" mode="aspectFit" />
             </view>
           </view>
         </view>
@@ -126,14 +120,8 @@
               enable-zoom="{{false}}"
               enable-rotate="{{false}}"
               enable-overlooking="{{false}}"
-            >
-              <cover-view class="map-pin-wrap">
-                <cover-view class="map-pin">
-                  <cover-image class="map-pin-icon" src="/images/icon-location.png" />
-                </cover-view>
-                <cover-view class="map-pin-shadow"></cover-view>
-              </cover-view>
-            </map>
+              markers="{{locationMapMarkers}}"
+            />
             <view wx:else class="map-empty">
               <text class="map-empty-text">暂无地图信息</text>
             </view>
@@ -191,10 +179,9 @@
           </view>
           <view wx:if="{{weather.available}}" class="weather-attribution"><text class="weather-attribution-text">{{weather.attribution}}</text></view>
         </view>
-        <view class="scroll-bottom-spacer"></view>
       </view>
     </block>
-  </scroll-view>
+  </view>
 
   <view wx:if="{{activity}}" id="qaActivityDetailBottomBar" class="bottom-bar" style="padding-bottom: {{safeBottomRpx}}rpx">
     <view class="bottom-inner">

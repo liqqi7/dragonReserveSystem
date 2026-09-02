@@ -44,7 +44,7 @@ test("safe area supports the legacy safeArea.bottom coordinate", () => {
   });
 });
 
-test("Android uses the prototype fallback when the runtime explicitly reports zero inset", () => {
+test("Android uses the 24px design fallback when the runtime explicitly reports zero inset", () => {
   withWx({
     getWindowInfo() {
       return {
@@ -64,11 +64,11 @@ test("Android uses the prototype fallback when the runtime explicitly reports ze
     }
   }, () => {
     assert.equal(safeArea.getBottomSafeAreaPx(safeArea.getWindowInfoCompat()), 0);
-    assert.equal(safeArea.getBottomSafeAreaRpx(), 73.08);
+    assert.equal(safeArea.getBottomSafeAreaRpx(), 46.15);
     const diagnostic = safeArea.buildSafeAreaDiagnostic();
     assert.equal(diagnostic.computedBottomPx, 0);
     assert.equal(diagnostic.computedBottomRpx, 0);
-    assert.equal(diagnostic.resolvedBottomRpx, 73.08);
+    assert.equal(diagnostic.resolvedBottomRpx, 46.15);
     assert.equal(diagnostic.androidFallbackApplied, true);
   });
 });

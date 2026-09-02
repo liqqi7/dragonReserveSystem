@@ -9,6 +9,7 @@ const pageDir = path.join(__dirname, "../pages/activity_detail");
 const js = fs.readFileSync(path.join(pageDir, "activity_detail.js"), "utf8");
 const wxml = fs.readFileSync(path.join(pageDir, "activity_detail.wxml"), "utf8");
 const wxss = fs.readFileSync(path.join(pageDir, "activity_detail.wxss"), "utf8");
+const pageJson = JSON.parse(fs.readFileSync(path.join(pageDir, "activity_detail.json"), "utf8"));
 
 test("activity detail formats date, time and the prototype hero meta", () => {
   assert.equal(detail.formatActivityDate("2026-09-05 16:30"), "9月5日 周六");
@@ -73,7 +74,7 @@ test("weather view uses one temperature and degrades air quality independently",
   assert.equal(view.humidity, "58%");
   assert.equal(view.wind, "东南风 2级");
   assert.equal(view.airQuality, "—");
-  assert.equal(view.icon, "/images/weather-sunny.svg");
+  assert.equal(view.icon, "/images/weather-partly-cloudy.svg");
 });
 
 test("weather unavailable state is independent from location state", () => {
@@ -145,35 +146,52 @@ test("signup status remains global after the current user has signed up", () => 
   assert.equal(activity.detailStatusTag, "报名中");
 });
 
-test("prototype status, basic information and participant structures are present", () => {
+test("basic information header has no right-side status text", () => {
   assert.match(wxml, /class="hero-status-row"/);
   assert.match(wxml, /class="status-pill \{\{detailStatusClass\}\}"/);
-  assert.match(wxml, /\{\{signupStatusText\}\}/);
   assert.match(wxml, /participant-current/);
   assert.match(wxml, /participant-separator/);
   assert.match(wxml, /participant-limit/);
-  assert.match(js, /signupStatusText = resolveBasicInfoStatusText\(activity\)/);
-  assert.equal(detail.resolveBasicInfoStatusText({ detailStatusTag: "报名中" }), "报名进行中");
-  assert.equal(detail.resolveBasicInfoStatusText({ status: "未开始", signupEnabled: true, isSignupClosed: false, isFull: false }), "报名进行中");
-  assert.equal(detail.resolveBasicInfoStatusText({ status: "未开始", signupEnabled: true, isSignupClosed: true, isFull: false }), "");
-  assert.equal(detail.resolveBasicInfoStatusText({ detailStatusTag: "进行中" }), "活动进行中");
-  assert.equal(detail.resolveBasicInfoStatusText({ status: "进行中" }), "活动进行中");
-  assert.equal(detail.resolveBasicInfoStatusText({ detailStatusTag: "已结束", status: "已结束" }), "");
-  assert.doesNotMatch(wxml, /section-assist-chevron/);
+  assert.doesNotMatch(wxml, /signupStatusText|section-assist|报名进行中/);
+  assert.doesNotMatch(js, /signupStatusText|resolveBasicInfoStatusText/);
+  assert.equal(detail.resolveBasicInfoStatusText, undefined);
 });
 
+
+
+test("activity detail locks the viewport instead of exposing page overscroll", () => {
+  assert.equal(pageJson.disableScroll, true);
+  assert.match(wxml, /<view\s+class="main-scroll"[\s\S]*?height: calc\(100vh - \{\{bottomBarHeightRpx\}\}rpx\)/);
+  assert.doesNotMatch(wxml, /<scroll-view\s+[\s\S]*?class="main-scroll"/);
+  assert.doesNotMatch(wxml, /class="scroll-bottom-spacer"/);
+  assert.match(wxss, /^page\s*\{[^}]*height:\s*100%;[^}]*overflow:\s*hidden;/s);
+  assert.match(wxss, /\.page-wrap\s*\{[^}]*height:\s*100vh;[^}]*overflow:\s*hidden;/s);
+  assert.match(wxss, /\.main-scroll\s*\{[^}]*overflow:\s*hidden;/s);
+});
+
+test("activity location uses a native coordinate marker instead of a viewport cover layer", () => {
+  assert.match(wxml, /<map[\s\S]*?markers="\{\{locationMapMarkers\}\}"[\s\S]*?\/>/);
+  assert.doesNotMatch(wxml, /<cover-view class="map-pin-wrap">/);
+  assert.doesNotMatch(wxss, /\.map-pin(?:-wrap|-shadow|-icon)?\s*\{/);
+  assert.match(js, /function buildLocationMapMarkers\(latitude, longitude, windowWidthPx\)/);
+  assert.match(js, /iconPath:\s*LOCATION_MAP_MARKER_ICON/);
+  assert.match(js, /anchor:\s*\{ x:\s*0\.5, y:\s*LOCATION_MAP_MARKER_ANCHOR_Y \}/);
+  assert.match(js, /locationMapMarkers:\s*locationMapAvailable/);
+  const markerPath = path.join(__dirname, "../images/icon-activity-map-marker.png");
+  assert.equal(fs.existsSync(markerPath), true);
+});
 
 test("location card uses the activity coordinates for a real non-interactive map", () => {
   assert.match(wxml, /<map[\s\S]*id="qaActivityLocationMap"/);
   assert.match(wxml, /latitude="\{\{locationMapLatitude\}\}"/);
   assert.match(wxml, /longitude="\{\{locationMapLongitude\}\}"/);
-  assert.match(wxml, /scale="15"/);
+  assert.match(wxml, /scale="10"/);
   assert.match(wxml, /enable-scroll="\{\{false\}\}"/);
   assert.match(wxml, /enable-zoom="\{\{false\}\}"/);
   assert.match(wxml, /enable-rotate="\{\{false\}\}"/);
   assert.match(wxml, /enable-overlooking="\{\{false\}\}"/);
   assert.match(wxml, /wx:if="\{\{locationMapAvailable\}\}"/);
-  assert.match(wxml, /<cover-view class="map-pin-wrap">/);
+  assert.match(wxml, /markers="\{\{locationMapMarkers\}\}"/);
   assert.doesNotMatch(wxml, /map-water|map-road|map-label/);
   assert.match(js, /const rawLocationMapLatitude = activity\.locationLatitude;/);
   assert.match(js, /rawLocationMapLatitude !== null/);
@@ -183,10 +201,26 @@ test("location card uses the activity coordinates for a real non-interactive map
   assert.match(js, /locationMapLongitude <= 180/);
 });
 
+test("native map marker preserves the prototype size across viewport widths", () => {
+  assert.match(js, /const LOCATION_MAP_MARKER_DESIGN_SIZE_PX = 54;/);
+  assert.match(js, /LOCATION_MAP_MARKER_DESIGN_SIZE_PX \* viewportWidth \/ 390/);
+  assert.match(js, /width:\s*markerSizePx/);
+  assert.match(js, /height:\s*markerSizePx/);
+  assert.match(js, /const LOCATION_MAP_MARKER_ANCHOR_Y = 23 \/ 54;/);
+});
+
+test("activity detail follows the latest eight-pixel drawer rhythm", () => {
+  assert.match(wxss, /\.detail-panel\s*\{[^}]*margin-top:\s*-94\.23rpx;[^}]*padding:\s*30\.77rpx;[^}]*box-shadow:\s*0 -7\.69rpx 34\.62rpx rgba\(0, 0, 0, 0\.102\);/s);
+  assert.match(wxss, /\.facts-row\s*\{[^}]*margin-top:\s*15\.38rpx;/s);
+  assert.match(wxss, /\.location-card,\s*\n\.weather-card\s*\{[^}]*margin-top:\s*15\.38rpx;/s);
+  assert.match(wxss, /\.hero-copy\s*\{[^}]*bottom:\s*140\.38rpx;[^}]*gap:\s*23\.08rpx;/s);
+});
+
 test("weather card matches the prototype structure and unavailable state", () => {
   assert.match(wxml, /weather-icon-wrap/);
   assert.match(wxml, /weather-humidity\.svg/);
   assert.match(wxml, /weather-wind\.svg/);
+  assert.match(wxml, /activity-detail-chevron-down\.svg/);
   assert.match(wxml, /weather-air-quality\.svg/);
   assert.match(wxml, />空气湿度</);
   assert.match(wxml, />风向风速</);
@@ -201,18 +235,39 @@ test("activity detail uses the shared rpx safe-area resolver", () => {
   assert.doesNotMatch(wxml, /safeBottom\}\}px/);
 });
 
+test("detail hero avatar composition scales the home large-card layout by width", () => {
+  assert.match(wxss, /\.hero-avatar-tl\s*\{[^}]*top:\s*43\.48rpx;[^}]*left:\s*43\.48rpx;[^}]*width:\s*448\.37rpx;[^}]*height:\s*448\.37rpx;/s);
+  assert.match(wxss, /\.hero-avatar-tr\s*\{[^}]*top:\s*364\.13rpx;[^}]*left:\s*451\.09rpx;[^}]*width:\s*255\.43rpx;[^}]*height:\s*255\.43rpx;/s);
+  assert.match(wxss, /\.hero-avatar-mid\s*\{[^}]*top:\s*505\.43rpx;[^}]*left:\s*233\.70rpx;[^}]*width:\s*222\.83rpx;[^}]*height:\s*222\.83rpx;/s);
+  assert.doesNotMatch(wxss, /\.hero-avatar-tr\s*\{[^}]*right:/s);
+});
+
 test("prototype key sizes, colors, typography and action layout do not regress", () => {
   assert.match(wxss, /\.immersive-hero\s*\{[^}]*height:\s*750rpx;/s);
   assert.match(wxss, /\.hero-shade\s*\{[\s\S]*?radial-gradient\([\s\S]*?linear-gradient\([\s\S]*?background-blend-mode:\s*multiply, normal;/);
   assert.match(wxss, /\.status-pill\s*\{[^}]*height:\s*53\.85rpx;[^}]*border-radius:\s*26\.92rpx;[^}]*font-size:\s*26\.92rpx;/s);
-  assert.match(wxss, /\.hero-title\s*\{[^}]*font-size:\s*61\.54rpx;/s);
-  assert.match(wxss, /\.section-assist\s*\{[^}]*width:\s*128\.85rpx;/s);
-  assert.match(wxss, /\.facts-row\s*\{[^}]*height:\s*88\.46rpx;[^}]*padding:\s*0 23\.08rpx;/s);
+  assert.match(wxss, /\.hero-title\s*\{[^}]*height:\s*84\.62rpx;[^}]*font-size:\s*61\.54rpx;/s);
+  assert.match(wxss, /\.hero-title\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;/s);
+  assert.doesNotMatch(wxss, /\.section-assist(?:-text)?\s*\{/);
+  assert.match(wxss, /\.hero-copy\s*\{[^}]*gap:\s*23\.08rpx;/s);
+  assert.match(wxss, /\.facts-row\s*\{[^}]*height:\s*78\.85rpx;[^}]*padding:\s*0 23\.08rpx;/s);
+  assert.match(wxss, /\.fact-item\s*\{[^}]*height:\s*78\.85rpx;/s);
+  assert.match(wxss, /\.nav-back-icon\s*\{[^}]*width:\s*34\.62rpx;[^}]*height:\s*34\.62rpx;/s);
+  assert.match(wxss, /\.fact-item\s*\{[^}]*padding:\s*0 15\.38rpx;[^}]*gap:\s*7\.69rpx;/s);
+  assert.match(wxml, /class="fact-item fact-item-time"/);
+  assert.match(wxss, /\.fact-item-time\s*\{[^}]*padding-left:\s*15\.38rpx;/s);
+  assert.match(wxss, /\.fact-label\s*\{[^}]*font-size:\s*23\.08rpx;[^}]*font-weight:\s*500;[^}]*line-height:\s*34\.62rpx;/s);
+  assert.match(wxss, /\.fact-value,[\s\S]*?\{[^}]*font-size:\s*26\.92rpx;[^}]*font-weight:\s*600;[^}]*line-height:\s*42\.31rpx;/s);
+  assert.match(wxss, /\.participant-separator\s*\{[^}]*font-size:\s*23\.08rpx;[^}]*font-weight:\s*500;[^}]*line-height:\s*34\.62rpx;/s);
   assert.match(wxss, /\.fact-participants\s*\{[^}]*flex:\s*0 0 211\.54rpx;/s);
   assert.match(wxss, /\.location-card\s*\{[^}]*height:\s*388\.46rpx;/s);
-  assert.match(wxss, /\.location-address\s*\{[^}]*font-weight:\s*500;/s);
+  assert.match(wxss, /\.location-name\s*\{[^}]*font-size:\s*26\.92rpx;/s);
+  assert.match(wxss, /\.location-distance,\s*\n\.location-address\s*\{[^}]*font-size:\s*23\.08rpx;/s);
+  assert.match(wxss, /\.location-address\s*\{[^}]*font-weight:\s*400;[^}]*line-height:\s*1\.3;/s);
   assert.match(wxss, /\.navigate-button\s*\{[^}]*width:\s*130\.77rpx;[^}]*height:\s*69\.23rpx;[^}]*border-radius:\s*23\.08rpx;/s);
   assert.match(wxss, /\.weather-card\s*\{[^}]*height:\s*192\.31rpx;/s);
+  assert.match(wxss, /\.weather-metric-value\s*\{[^}]*height:\s*32\.31rpx;[^}]*line-height:\s*32\.31rpx;/s);
+  assert.match(wxss, /\.weather-metric-label\s*\{[^}]*font-size:\s*19\.23rpx;[^}]*font-weight:\s*500;[^}]*line-height:\s*1\.4;/s);
   assert.match(wxss, /\.weather-unavailable-message\s*\{[^}]*font-size:\s*23\.08rpx;[^}]*font-weight:\s*400;/s);
   assert.match(wxss, /\.weather-attribution\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*flex-end;/s);
   assert.match(wxss, /\.weather-attribution-text\s*\{[^}]*font-size:\s*19\.23rpx;[^}]*font-weight:\s*400;[^}]*line-height:\s*1;/s);
@@ -221,14 +276,16 @@ test("prototype key sizes, colors, typography and action layout do not regress",
   assert.match(wxss, /\.bottom-icon-button-wide\s*\{[^}]*width:\s*184\.62rpx;/s);
   assert.match(wxss, /\.bottom-primary\s*\{[^}]*left:\s*238\.46rpx;[^}]*width:\s*473\.08rpx;[^}]*height:/s);
   assert.match(wxss, /\.bottom-primary-disabled\s*\{[^}]*background:\s*#e5e7eb;[^}]*color:\s*#9ca3af;/s);
-  const shareIcon = fs.readFileSync(path.join(__dirname, "../images/icon-share.svg"), "utf8");
-  const editIcon = fs.readFileSync(path.join(__dirname, "../images/icon-edit.svg"), "utf8");
-  const navigationIcon = fs.readFileSync(path.join(__dirname, "../images/icon-navigation.svg"), "utf8");
-  assert.match(shareIcon, /<circle cx="18" cy="5" r="3"\/>/);
-  assert.match(editIcon, /viewBox="0 0 14 14"/);
-  assert.match(editIcon, /M11\.00244 0\.60156/);
-  assert.doesNotMatch(editIcon, /M12 20h9/);
-  assert.match(navigationIcon, /width="15" height="15" viewBox="0 0 14 14"/);
-  assert.match(navigationIcon, /M12\.73877 0\.60156/);
-  assert.doesNotMatch(navigationIcon, /stroke-width="1\.6"/);
+  assert.match(wxml, /src="\/images\/activity-detail-chevron-left\.svg"/);
+  assert.match(wxml, /activity-detail-chevron-up\.svg/);
+  assert.match(wxml, /activity-detail-chevron-down\.svg/);
+  assert.match(wxml, /src="\/images\/activity-detail-chevron-right\.svg"/);
+  assert.match(wxml, /src="\/images\/icon-navigation\.svg"/);
+  assert.match(wxml, /src="\/images\/weather-humidity\.svg"/);
+  assert.match(wxml, /src="\/images\/weather-wind\.svg"/);
+  assert.match(wxml, /src="\/images\/weather-air-quality\.svg"/);
+  assert.match(wxml, /src="\/images\/icon-share\.svg"/);
+  assert.match(wxml, /src="\/images\/icon-edit\.svg"/);
+  assert.doesNotMatch(wxml, /icon-chevron-down-light\.svg/);
+  assert.doesNotMatch(wxss, /remark-chevron-up/);
 });

@@ -80,7 +80,9 @@ function formatDistance(distanceMeters) {
 
 function resolveWeatherIcon(code, condition) {
   const numericCode = Number(code);
-  if (numericCode >= 100 && numericCode <= 103) return "/images/weather-sunny.svg";
+  if ([100, 150].includes(numericCode)) return "/images/weather-sunny.svg";
+  if ([102, 103, 152, 153].includes(numericCode)) return "/images/weather-partly-cloudy.svg";
+  if ([101, 104, 151].includes(numericCode)) return "/images/weather-cloudy.svg";
   if (numericCode >= 300 && numericCode <= 399) return "/images/weather-rain.svg";
   if (numericCode >= 400 && numericCode <= 499) return "/images/weather-snow.svg";
   if ([500, 501, 509, 510, 514, 515].includes(numericCode)) return "/images/weather-fog.svg";
@@ -90,6 +92,7 @@ function resolveWeatherIcon(code, condition) {
   if (/雪/.test(text)) return "/images/weather-snow.svg";
   if (/雾|霾/.test(text)) return "/images/weather-fog.svg";
   if (/沙|尘/.test(text)) return "/images/weather-dust.svg";
+  if (/晴间多云|少云/.test(text)) return "/images/weather-partly-cloudy.svg";
   if (/晴/.test(text)) return "/images/weather-sunny.svg";
   return "/images/weather-cloudy.svg";
 }
@@ -117,23 +120,6 @@ function buildWeatherView(payload) {
     icon: resolveWeatherIcon(payload.icon_code, payload.condition),
     attribution: payload.attribution || "天气服务驱动 by QWeather"
   };
-}
-
-function resolveBasicInfoStatusText(activity) {
-  const item = activity || {};
-  const tag = String(item.detailStatusTag || "").trim();
-  const status = String(item.status || "").trim();
-  const acceptingSignup =
-    status === "报名中" ||
-    tag === "报名中" ||
-    (status === "未开始" &&
-      item.signupEnabled !== false &&
-      item.isSignupClosed !== true &&
-      item.isFull !== true);
-
-  if (acceptingSignup) return "报名进行中";
-  if (status === "进行中" || tag === "进行中") return "活动进行中";
-  return "";
 }
 
 function resolvePrimaryAction(activity, isCheckinWindowOpen) {
@@ -165,6 +151,5 @@ module.exports = {
   calculateDistanceMeters,
   formatDistance,
   buildWeatherView,
-  resolveBasicInfoStatusText,
   resolvePrimaryAction
 };

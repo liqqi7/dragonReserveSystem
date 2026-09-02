@@ -6,7 +6,6 @@
     "pages/activity_detail/activity_detail",
     "pages/welcome/welcome",
     "pages/history/history",
-    "pages/clear_data/clear_data",
     "pages/profile/profile",
     "pages/checkin_map/checkin_map",
     "pages/chwazi/chwazi"

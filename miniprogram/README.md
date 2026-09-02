@@ -21,7 +21,6 @@ pages/checkin_map/        地图签到
 pages/history/            历史统计和排行榜
 pages/profile/            登录、角色与个人资料
 pages/welcome/            首次登录引导
-pages/clear_data/         管理员清理活动数据
 services/                 API 请求、认证、用户、活动和统计封装
 images/                   TabBar 和页面静态图片
 ```

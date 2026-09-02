@@ -22,7 +22,6 @@ const {
   calculateDistanceMeters,
   formatDistance,
   buildWeatherView,
-  resolveBasicInfoStatusText,
   resolvePrimaryAction
 } = require("../../utils/activityDetail");
 
@@ -61,6 +60,23 @@ function normalizeProfileAvatarForModal(url) {
 
 const PARTICIPANT_PREVIEW_MAX = 14;
 const PARTICIPANTS_MORE_ICON = "/images/icon-participants-more.png";
+const LOCATION_MAP_MARKER_ICON = "/images/icon-activity-map-marker.png";
+const LOCATION_MAP_MARKER_DESIGN_SIZE_PX = 54;
+const LOCATION_MAP_MARKER_ANCHOR_Y = 23 / 54;
+
+function buildLocationMapMarkers(latitude, longitude, windowWidthPx) {
+  const viewportWidth = Number(windowWidthPx) > 0 ? Number(windowWidthPx) : 390;
+  const markerSizePx = Math.max(1, Math.round(LOCATION_MAP_MARKER_DESIGN_SIZE_PX * viewportWidth / 390));
+  return [{
+    id: 1,
+    latitude,
+    longitude,
+    iconPath: LOCATION_MAP_MARKER_ICON,
+    width: markerSizePx,
+    height: markerSizePx,
+    anchor: { x: 0.5, y: LOCATION_MAP_MARKER_ANCHOR_Y }
+  }];
+}
 
 Page({
   data: {
@@ -88,11 +104,11 @@ Page({
     heroMetaText: "",
     activityTitleText: "",
     detailStatusClass: "status-pill-signup",
-    signupStatusText: "",
     locationDistanceText: "",
     locationMapAvailable: false,
     locationMapLatitude: 0,
     locationMapLongitude: 0,
+    locationMapMarkers: [],
     weather: {
       loading: true,
       available: false,
@@ -122,12 +138,14 @@ Page({
   _locationRequestId: 0,
   _hasShownOnce: false,
   _sharePreviewGen: 0,
+  _windowWidthPx: 390,
 
   onLoad(options) {
     const id = (options && options.id) || "";
     try {
       const win = getWindowInfoCompat();
       const statusBarHeight = win.statusBarHeight || 20;
+      this._windowWidthPx = Number(win.windowWidth) > 0 ? Number(win.windowWidth) : 390;
       const safeBottomRpx = getBottomSafeAreaRpx();
       this.setData({
         statusBarHeight,
@@ -137,6 +155,7 @@ Page({
         activityId: id
       });
     } catch (e) {
+      this._windowWidthPx = 390;
       this.setData({ activityId: id, bottomBarHeightRpx: 107.69, safeBottomRpx: 0 });
     }
 
@@ -406,7 +425,6 @@ Page({
       : (["已结束", "已取消", "已删除"].includes(activity.detailStatusTag)
         ? "status-pill-ended"
         : "status-pill-signup");
-    const signupStatusText = resolveBasicInfoStatusText(activity);
     const rawLocationMapLatitude = activity.locationLatitude;
     const rawLocationMapLongitude = activity.locationLongitude;
     const locationMapLatitude = Number(rawLocationMapLatitude);
@@ -441,10 +459,12 @@ Page({
       heroMetaText: formatHeroMeta(activity),
       activityTitleText: truncateActivityTitle(activity.name),
       detailStatusClass,
-      signupStatusText,
       locationMapAvailable,
       locationMapLatitude: locationMapAvailable ? locationMapLatitude : 0,
       locationMapLongitude: locationMapAvailable ? locationMapLongitude : 0,
+      locationMapMarkers: locationMapAvailable
+        ? buildLocationMapMarkers(locationMapLatitude, locationMapLongitude, this._windowWidthPx)
+        : [],
       remarkExpanded: false,
       remarkExpandable: false,
       primaryActionLabel: primaryAction.label,
