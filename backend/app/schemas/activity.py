@@ -11,12 +11,25 @@ from app.services.activity_type_style_service import get_allowed_activity_types,
 
 
 ACTIVITY_STATUSES = {"未开始", "进行中", "已结束", "已取消", "已删除", "已流局"}
+MAX_ACTIVITY_NAME_LENGTH = 10
+MAX_ACTIVITY_REMARK_LENGTH = 120
 
 
 def _validate_activity_status(value: str) -> str:
     normalized = value.strip()
     if normalized not in ACTIVITY_STATUSES:
         raise ValueError("status is invalid")
+    return normalized
+
+
+def _validate_required_text(value: object, field_name: str) -> object:
+    if value is None:
+        raise ValueError(f"{field_name} is required")
+    if not isinstance(value, str):
+        return value
+    normalized = value.strip()
+    if not normalized:
+        raise ValueError(f"{field_name} is required")
     return normalized
 
 
@@ -83,9 +96,9 @@ class ActivityResponse(BaseModel):
 class ActivityCreateRequest(BaseModel):
     """Admin-only activity creation payload."""
 
-    name: str = Field(min_length=1, max_length=128)
+    name: str = Field(min_length=1, max_length=MAX_ACTIVITY_NAME_LENGTH)
     status: str = Field(default="未开始", max_length=32)
-    remark: str = ""
+    remark: str = Field(min_length=1, max_length=MAX_ACTIVITY_REMARK_LENGTH)
     max_participants: Optional[int] = Field(default=None, ge=1, le=999)
     start_time: datetime
     end_time: datetime
@@ -97,6 +110,11 @@ class ActivityCreateRequest(BaseModel):
     location_address: str = Field(default="", max_length=255)
     location_latitude: Optional[float] = None
     location_longitude: Optional[float] = None
+
+    @field_validator("name", "remark", mode="before")
+    @classmethod
+    def validate_required_text(cls, value: object, info) -> object:
+        return _validate_required_text(value, info.field_name)
 
     @field_validator("end_time")
     @classmethod
@@ -128,9 +146,9 @@ class ActivityCreateRequest(BaseModel):
 class ActivityUpdateRequest(BaseModel):
     """Admin-only activity update payload."""
 
-    name: Optional[str] = Field(default=None, min_length=1, max_length=128)
+    name: Optional[str] = Field(default=None, min_length=1, max_length=MAX_ACTIVITY_NAME_LENGTH)
     status: Optional[str] = Field(default=None, max_length=32)
-    remark: Optional[str] = None
+    remark: Optional[str] = Field(default=None, min_length=1, max_length=MAX_ACTIVITY_REMARK_LENGTH)
     max_participants: Optional[int] = Field(default=None, ge=1, le=999)
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
@@ -142,6 +160,11 @@ class ActivityUpdateRequest(BaseModel):
     location_address: Optional[str] = Field(default=None, max_length=255)
     location_latitude: Optional[float] = None
     location_longitude: Optional[float] = None
+
+    @field_validator("name", "remark", mode="before")
+    @classmethod
+    def validate_required_text(cls, value: object, info) -> object:
+        return _validate_required_text(value, info.field_name)
 
     @field_validator("activity_type")
     @classmethod

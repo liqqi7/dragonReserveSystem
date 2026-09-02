@@ -419,8 +419,7 @@ function enrichSingleActivity(rawItem, typeStyles, myUserId, myNickname, now) {
     activity.status === "未开始" &&
     !activity.isSignupClosed &&
     activity.signupEnabled !== false &&
-    !activity.isFull &&
-    !activity.hasSignedUp;
+    !activity.isFull;
 
   if (activity.status === "已取消") {
     activity.detailStatusTag = "已取消";

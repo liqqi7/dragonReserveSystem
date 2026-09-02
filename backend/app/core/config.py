@@ -47,6 +47,13 @@ class Settings(BaseSettings):
     wechat_code2session_url: str = "https://api.weixin.qq.com/sns/jscode2session"
     bgg_api_token: str = ""
     bgg_api_base_url: str = "https://boardgamegeek.com/xmlapi2"
+    qweather_developer_id: str = ""
+    qweather_project_id: str = ""
+    qweather_credential_id: str = ""
+    qweather_api_host: str = "n46cdr3rep.re.qweatherapi.com"
+    qweather_private_key_path: str = "secrets/qweather-ed25519-private.pem"
+    qweather_timeout_seconds: float = 8.0
+    qweather_cache_seconds: int = 1800
     public_base_url: str = ""
     media_root: str = "storage"
     media_url_prefix: str = "/media"

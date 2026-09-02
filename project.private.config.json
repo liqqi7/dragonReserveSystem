@@ -1,6 +1,6 @@
 {
   "libVersion": "3.14.2",
-  "projectname": "dragonReserveSystem",
+  "projectname": "%E5%B0%8F%E7%A8%8B%E5%BA%8F%E6%9C%AC%E4%BD%93",
   "setting": {
     "urlCheck": false,
     "coverView": false,
@@ -17,5 +17,22 @@
     "checkInvalidKey": true,
     "ignoreDevUnusedFiles": false,
     "bigPackageSizeSupport": false
+  },
+  "condition": {
+    "miniprogram": {
+      "list": [
+        {
+          "name": "pages/chwazi/chwazi",
+          "pathName": "pages/chwazi/chwazi",
+          "query": "",
+          "scene": null,
+          "launchMode": "default",
+          "partialCompile": {
+            "enabled": true,
+            "pages": []
+          }
+        }
+      ]
+    }
   }
 }
