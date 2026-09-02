@@ -38,12 +38,39 @@ test("cards do not apply native press opacity during horizontal paging", () => {
   assert.doesNotMatch(fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8"), /\.card-press/);
 });
 
+test("home sections match the prototype title and module spacing", () => {
+  const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");
+
+  assert.match(wxss, /\.group-section\s*\{[^}]*margin-bottom:\s*0;/s);
+  assert.match(wxss, /\.group-header\s*\{[^}]*height:\s*53\.85rpx;/s);
+  assert.match(wxss, /\.large-cards-row\s*\{[^}]*padding:\s*23\.08rpx 38\.46rpx 38\.46rpx;/s);
+  assert.match(wxss, /\.small-cards-row\s*\{[^}]*padding:\s*23\.08rpx 38\.46rpx 38\.46rpx;/s);
+});
+
+test("large card matches the prototype geometry and typography", () => {
+  const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");
+
+  assert.match(wxss, /\.large-card\s*\{[^}]*width:\s*530\.77rpx;[^}]*height:\s*707\.69rpx;[^}]*border-radius:\s*30\.77rpx;/s);
+  assert.match(wxss, /\.large-card\s*\{[^}]*box-shadow:\s*0 11\.54rpx 38\.46rpx rgba\(0, 0, 0, 0\.10\);/s);
+  assert.match(wxss, /\.card-datetime-label\s*\{[^}]*font-size:\s*26\.92rpx;[^}]*font-weight:\s*400;/s);
+  assert.match(wxss, /\.glass-bottom\s*\{[^}]*padding:\s*31\.4rpx;/s);
+  assert.match(wxss, /\.glass-content\s*\{[^}]*gap:\s*7\.69rpx;/s);
+  assert.match(wxss, /\.glass-remark\s*\{[^}]*line-height:\s*33\.15rpx;[^}]*height:\s*33\.15rpx;/s);
+  assert.match(wxss, /\.glass-meta-row\s*\{[^}]*height:\s*33\.15rpx;/s);
+  assert.match(wxss, /\.glass-meta-text\s*\{[^}]*line-height:\s*33\.15rpx;/s);
+});
+
 test("large-card glass panel reserves the remark row when remark is empty", () => {
   assert.match(wxml, /<text class="glass-remark">\{\{item\.remark \|\| ''\}\}<\/text>/);
   const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");
-  assert.match(wxss, /\.glass-bottom \{[\s\S]*padding: 30\.77rpx;/);
   assert.doesNotMatch(wxss, /\.glass-bottom \{[\s\S]*height: 188\.46rpx;/);
-  assert.match(wxss, /\.glass-remark \{[\s\S]*height: 27\.69rpx;/);
+  assert.match(wxss, /\.glass-remark \{[\s\S]*height: 33\.15rpx;/);
+});
+
+test("large-card meta icons use the prototype Lucide assets", () => {
+  assert.match(wxml, /src="\/images\/icon-home-card-location\.svg"/);
+  assert.match(wxml, /src="\/images\/icon-home-card-people\.svg"/);
+  assert.match(wxml, /class="large-card large-card--\{\{item\.activityType\}\}-\{\{item\.activityStyleKey\}\}"/);
 });
 
 test("large-card glass uses a pre-rendered static image with the black gradient", () => {
@@ -60,7 +87,8 @@ test("large-card glass uses a pre-rendered static image with the black gradient"
   assert.match(wxml, /class="glass-tint-layer"/);
   assert.match(wxml, /class="glass-content"/);
   assert.match(glassSection, /\.glass-static-blur-layer\s*\{[\s\S]*top: 0;[\s\S]*bottom: 0;[\s\S]*overflow: hidden;[\s\S]*border-bottom-left-radius: inherit;[\s\S]*-webkit-mask-image:/);
-  assert.match(glassSection, /\.glass-static-blur-stage\s*\{[\s\S]*left: 0;[\s\S]*top: -537\.69rpx;[\s\S]*width: 530\.77rpx;[\s\S]*height: 715\.38rpx;/);
-  assert.match(glassSection, /background: linear-gradient\(180deg, rgba\(0,0,0,0\.102\) 0%, rgba\(0,0,0,0\.302\) 100%\)/);
+  assert.match(glassSection, /\.glass-static-blur-stage\s*\{[\s\S]*left: 0;[\s\S]*bottom: 0;[\s\S]*width: 530\.77rpx;[\s\S]*height: 707\.69rpx;/);
+  assert.match(glassSection, /background: linear-gradient\(180deg, rgba\(0,0,0,0\.10\) 0%, rgba\(0,0,0,0\.30\) 100%\)/);
+  assert.match(glassSection, /\.large-card--boardgame-boardgame-default \.glass-tint-layer\s*\{[\s\S]*rgba\(0,0,0,0\.20\)[\s\S]*rgba\(0,0,0,0\.40\)/);
   assert.equal((glassSection.match(/(?:^|[;{}\s])(?:-webkit-)?(?:backdrop-)?filter\s*:/gm) || []).length, 0);
 });

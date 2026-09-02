@@ -1,11 +1,10 @@
 const app = getApp();
 const activityService = require("../../services/activity");
+const weatherService = require("../../services/weather");
 const authService = require("../../services/auth");
 const userService = require("../../services/user");
 const {
   enrichSingleActivity,
-  formatDetailTimeRange,
-  formatLocationLine,
   DEFAULT_AVATAR
 } = require("../../utils/activityEnrich");
 const { buildActivityShareAppMessageOptions } = require("../../utils/shareActivity");
@@ -13,6 +12,18 @@ const { isDefaultNickname, isDefaultAvatar } = require("../../utils/profileUtils
 const { orderParticipantsForDrawerRecentFirst } = require("../../utils/participantSort");
 const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
 const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
+const { getBottomSafeAreaRpx, getWindowInfoCompat } = require("../../utils/safeArea");
+const {
+  parseLocalDateTime,
+  formatActivityDate,
+  formatActivityTime,
+  truncateActivityTitle,
+  formatHeroMeta,
+  calculateDistanceMeters,
+  formatDistance,
+  buildWeatherView,
+  resolvePrimaryAction
+} = require("../../utils/activityDetail");
 
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
 const PROFILE_EDIT_DEFAULT_AVATAR = "/images/default-avatar.svg";
@@ -47,16 +58,32 @@ function normalizeProfileAvatarForModal(url) {
   return value;
 }
 
-const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 const PARTICIPANT_PREVIEW_MAX = 14;
 const PARTICIPANTS_MORE_ICON = "/images/icon-participants-more.png";
+const LOCATION_MAP_MARKER_ICON = "/images/icon-activity-map-marker.png";
+const LOCATION_MAP_MARKER_DESIGN_SIZE_PX = 54;
+const LOCATION_MAP_MARKER_ANCHOR_Y = 23 / 54;
+
+function buildLocationMapMarkers(latitude, longitude, windowWidthPx) {
+  const viewportWidth = Number(windowWidthPx) > 0 ? Number(windowWidthPx) : 390;
+  const markerSizePx = Math.max(1, Math.round(LOCATION_MAP_MARKER_DESIGN_SIZE_PX * viewportWidth / 390));
+  return [{
+    id: 1,
+    latitude,
+    longitude,
+    iconPath: LOCATION_MAP_MARKER_ICON,
+    width: markerSizePx,
+    height: markerSizePx,
+    anchor: { x: 0.5, y: LOCATION_MAP_MARKER_ANCHOR_Y }
+  }];
+}
 
 Page({
   data: {
     statusBarHeight: 20,
     navBarHeight: 64,
-    safeBottom: 0,
-    bottomBarHeight: 120,
+    safeBottomRpx: 0,
+    bottomBarHeightRpx: 107.69,
     activityId: "",
     activity: null,
     loading: true,
@@ -68,21 +95,31 @@ Page({
     participantPreview: [],
     heroCardAvatars: [],
     participantDrawerList: [],
-    participantCountText: "",
+    participantCurrentText: "0",
+    participantMaxText: "",
+    participantHasLimit: false,
     isCheckinWindowOpen: false,
-    timeRangeText: "",
-    locationText: "",
-    countdownVisible: false,
-    cdDays: 0,
-    cdHours: 0,
-    cdMinutes: 0,
-    cdSeconds: 0,
-    cdHoursPad: "00",
-    cdMinutesPad: "00",
-    cdSecondsPad: "00",
-    pigeonList: [],
-    pigeonPreviewList: [],
-    showPigeonDrawer: false,
+    activityDateText: "—",
+    activityTimeText: "—",
+    heroMetaText: "",
+    activityTitleText: "",
+    detailStatusClass: "status-pill-signup",
+    locationDistanceText: "",
+    locationMapAvailable: false,
+    locationMapLatitude: 0,
+    locationMapLongitude: 0,
+    locationMapMarkers: [],
+    weather: {
+      loading: true,
+      available: false,
+      message: "天气加载中…",
+      attribution: "天气服务驱动 by QWeather"
+    },
+    remarkExpanded: false,
+    remarkExpandable: false,
+    primaryActionLabel: "已停止报名",
+    primaryActionDisabled: true,
+    primaryActionType: "none",
     sharePreviewImageUrl: "",
     sharePreviewLoading: false,
     showActivityForm: false,
@@ -96,27 +133,30 @@ Page({
     signupProfileCanSubmit: false
   },
 
-  _countdownTimer: null,
   _activityTypeStyles: [],
+  _weatherRequestId: 0,
+  _locationRequestId: 0,
   _hasShownOnce: false,
   _sharePreviewGen: 0,
+  _windowWidthPx: 390,
 
   onLoad(options) {
     const id = (options && options.id) || "";
     try {
-      const win = wx.getWindowInfo();
+      const win = getWindowInfoCompat();
       const statusBarHeight = win.statusBarHeight || 20;
-      const safeBottom = (win.safeAreaInsets && win.safeAreaInsets.bottom) || 0;
-      const bottomBarPx = Math.round(72 + safeBottom);
+      this._windowWidthPx = Number(win.windowWidth) > 0 ? Number(win.windowWidth) : 390;
+      const safeBottomRpx = getBottomSafeAreaRpx();
       this.setData({
         statusBarHeight,
         navBarHeight: statusBarHeight + 44,
-        safeBottom,
-        bottomBarHeight: bottomBarPx,
+        safeBottomRpx,
+        bottomBarHeightRpx: Math.round((107.69 + safeBottomRpx) * 100) / 100,
         activityId: id
       });
     } catch (e) {
-      this.setData({ activityId: id, bottomBarHeight: 120, safeBottom: 0 });
+      this._windowWidthPx = 390;
+      this.setData({ activityId: id, bottomBarHeightRpx: 107.69, safeBottomRpx: 0 });
     }
 
     if (!id) {
@@ -143,12 +183,9 @@ Page({
     this.refreshDetail({ silent: true });
   },
 
-  onHide() {
-    this.stopCountdownTimer();
-  },
-
   onUnload() {
-    this.stopCountdownTimer();
+    this._weatherRequestId += 1;
+    this._locationRequestId += 1;
   },
 
   syncUser() {
@@ -346,14 +383,13 @@ Page({
     }
     const max = activity.maxParticipants;
     const n = (activity.participants || []).length;
-    const participantCountText =
-      max != null ? `${n}/${max}` : n > 0 ? `${n}` : "0";
+    const participantCurrentText = `${n}`;
+    const participantMaxText = max != null ? `${max}` : "";
+    const participantHasLimit = max != null;
     let isCheckinWindowOpen = false;
-    if (activity && activity.startTime) {
-      const startAt = new Date(String(activity.startTime).replace(" ", "T") + ":00");
-      if (!isNaN(startAt.getTime())) {
-        isCheckinWindowOpen = Date.now() >= startAt.getTime() - 60 * 60 * 1000;
-      }
+    const startAt = parseLocalDateTime(activity.startTime);
+    if (startAt) {
+      isCheckinWindowOpen = Date.now() >= startAt.getTime() - 60 * 60 * 1000;
     }
 
     const rawParts = orderParticipantsForDrawerRecentFirst(activity.participants || []);
@@ -379,49 +415,181 @@ Page({
       };
     });
 
-    let pigeonList = [];
-    if (activity.status === "已结束") {
-      const parts = activity.participants || [];
-      parts.forEach((p, i) => {
-        if (typeof p === "string") {
-          pigeonList.push({
-            name: p,
-            avatarUrl: DEFAULT_AVATAR,
-            pigeonKey: `pigeon-str-${i}`
-          });
-        } else if (p && typeof p === "object" && !p.checkedInAt) {
-          pigeonList.push({
-            name: p.name || "未命名",
-            avatarUrl: p.avatarUrl || DEFAULT_AVATAR,
-            pigeonKey: p._id ? `pigeon-${p._id}` : `pigeon-obj-${i}`
-          });
-        }
-      });
-    }
-
-    const pigeonPreviewList =
-      pigeonList.length > 0 ? pigeonList.slice(0, 24) : [];
     const heroCardAvatars = Array.isArray(activity.cardAvatars)
       ? activity.cardAvatars.slice(-3)
       : [];
+    const primaryAction = resolvePrimaryAction(activity, isCheckinWindowOpen);
+    const remark = String(activity.remark || "").trim();
+    const detailStatusClass = activity.detailStatusTag === "进行中"
+      ? "status-pill-ongoing"
+      : (["已结束", "已取消", "已删除"].includes(activity.detailStatusTag)
+        ? "status-pill-ended"
+        : "status-pill-signup");
+    const rawLocationMapLatitude = activity.locationLatitude;
+    const rawLocationMapLongitude = activity.locationLongitude;
+    const locationMapLatitude = Number(rawLocationMapLatitude);
+    const locationMapLongitude = Number(rawLocationMapLongitude);
+    const locationMapAvailable =
+      rawLocationMapLatitude !== null &&
+      rawLocationMapLatitude !== undefined &&
+      rawLocationMapLatitude !== "" &&
+      rawLocationMapLongitude !== null &&
+      rawLocationMapLongitude !== undefined &&
+      rawLocationMapLongitude !== "" &&
+      Number.isFinite(locationMapLatitude) &&
+      Number.isFinite(locationMapLongitude) &&
+      locationMapLatitude >= -90 &&
+      locationMapLatitude <= 90 &&
+      locationMapLongitude >= -180 &&
+      locationMapLongitude <= 180;
 
     this.setData({
       activity,
       heroCardAvatars,
       participantPreview: list,
       participantDrawerList,
-      participantCountText,
+      participantCurrentText,
+      participantMaxText,
+      participantHasLimit,
       activityParticipantCount: n,
       locationDisabled: (activity.checkinCount || 0) > 0,
       isCheckinWindowOpen,
-      timeRangeText: formatDetailTimeRange(activity) || "—",
-      locationText: formatLocationLine(activity),
-      pigeonList,
-      pigeonPreviewList
+      activityDateText: formatActivityDate(activity.startTime),
+      activityTimeText: formatActivityTime(activity.startTime, activity.endTime),
+      heroMetaText: formatHeroMeta(activity),
+      activityTitleText: truncateActivityTitle(activity.name),
+      detailStatusClass,
+      locationMapAvailable,
+      locationMapLatitude: locationMapAvailable ? locationMapLatitude : 0,
+      locationMapLongitude: locationMapAvailable ? locationMapLongitude : 0,
+      locationMapMarkers: locationMapAvailable
+        ? buildLocationMapMarkers(locationMapLatitude, locationMapLongitude, this._windowWidthPx)
+        : [],
+      remarkExpanded: false,
+      remarkExpandable: false,
+      primaryActionLabel: primaryAction.label,
+      primaryActionDisabled: primaryAction.disabled,
+      primaryActionType: primaryAction.action,
+      locationDistanceText: "",
+      weather: {
+        loading: true,
+        available: false,
+        message: "天气加载中…",
+        attribution: "天气服务驱动 by QWeather"
+      }
+    }, () => {
+      this.updateRemarkOverflow();
     });
-    this.updateCountdown();
-    this.startCountdownTimer();
     this.refreshSharePreview(activity && activity._id);
+    this.loadLocationDistance(activity);
+    this.loadWeather(activity);
+  },
+
+  updateRemarkOverflow() {
+    const remark = String(this.data.activity && this.data.activity.remark || "").trim();
+    if (!remark || !wx.createSelectorQuery) {
+      if (this.data.remarkExpandable) this.setData({ remarkExpandable: false, remarkExpanded: false });
+      return;
+    }
+    const measure = () => {
+      const query = wx.createSelectorQuery();
+      query.select(".hero-remark-row").boundingClientRect();
+      query.select(".hero-remark-measure").boundingClientRect();
+      query.select(".remark-toggle-measure").boundingClientRect();
+      query.exec((rects) => {
+        const rowRect = rects && rects[0];
+        const textRect = rects && rects[1];
+        const toggleRect = rects && rects[2];
+        if (!rowRect || !textRect || !toggleRect) return;
+        const toggleWidth = Math.max(0, Number(toggleRect.width) || 0);
+        const availableTextWidth = Math.max(0, rowRect.width - toggleWidth - 7.69);
+        const remarkExpandable = textRect.width > availableTextWidth + 0.5;
+        if (remarkExpandable !== this.data.remarkExpandable) {
+          this.setData({ remarkExpandable, remarkExpanded: false });
+        }
+      });
+    };
+    if (wx.nextTick) wx.nextTick(measure);
+    else setTimeout(measure, 0);
+  },
+
+  loadLocationDistance(activity) {
+    const latitude = Number(activity && activity.locationLatitude);
+    const longitude = Number(activity && activity.locationLongitude);
+    const requestId = ++this._locationRequestId;
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || !wx.getLocation) {
+      this.setData({ locationDistanceText: "" });
+      return;
+    }
+    wx.getLocation({
+      type: "gcj02",
+      success: (result) => {
+        if (requestId !== this._locationRequestId) return;
+        const distance = calculateDistanceMeters(
+          result.latitude,
+          result.longitude,
+          latitude,
+          longitude
+        );
+        this.setData({ locationDistanceText: formatDistance(distance) });
+      },
+      fail: () => {
+        if (requestId === this._locationRequestId) {
+          this.setData({ locationDistanceText: "" });
+        }
+      }
+    });
+  },
+
+  loadWeather(activity) {
+    const longitude = Number(activity && activity.locationLongitude);
+    const latitude = Number(activity && activity.locationLatitude);
+    const start = parseLocalDateTime(activity && activity.startTime);
+    const requestId = ++this._weatherRequestId;
+    if (!Number.isFinite(longitude) || !Number.isFinite(latitude) || !start) {
+      this.setData({ weather: buildWeatherView(null) });
+      return;
+    }
+    const date = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`;
+    weatherService
+      .getActivityWeather({ longitude, latitude, date })
+      .then((result) => {
+        if (requestId !== this._weatherRequestId) return;
+        this.setData({ weather: buildWeatherView(result) });
+      })
+      .catch(() => {
+        if (requestId !== this._weatherRequestId) return;
+        this.setData({ weather: buildWeatherView(null) });
+      });
+  },
+
+  toggleRemark() {
+    if (!this.data.remarkExpandable) return;
+    this.setData({ remarkExpanded: !this.data.remarkExpanded });
+  },
+
+  openLocation() {
+    const activity = this.data.activity;
+    const latitude = Number(activity && activity.locationLatitude);
+    const longitude = Number(activity && activity.locationLongitude);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      wx.showToast({ title: "该活动暂无可导航地点", icon: "none" });
+      return;
+    }
+    wx.openLocation({
+      latitude,
+      longitude,
+      name: activity.locationName || "活动地点",
+      address: activity.locationAddress || "",
+      scale: 16
+    });
+  },
+
+  onTapPrimaryAction() {
+    if (this.data.primaryActionDisabled) return;
+    if (this.data.primaryActionType === "signup") return this.onTapSignup();
+    if (this.data.primaryActionType === "cancel") return this.onTapCancelSignup();
+    if (this.data.primaryActionType === "checkin") return this.onTapCheckin();
   },
 
   refreshSharePreview(activityId) {
@@ -453,50 +621,6 @@ Page({
           sharePreviewLoading: false
         });
       });
-  },
-
-  updateCountdown() {
-    const activity = this.data.activity;
-    if (!activity || !activity.signupDeadline) {
-      this.setData({ countdownVisible: false });
-      return;
-    }
-    const end = new Date(activity.signupDeadline.replace(" ", "T") + ":00").getTime();
-    if (isNaN(end) || Date.now() >= end) {
-      this.setData({ countdownVisible: false });
-      this.stopCountdownTimer();
-      return;
-    }
-    const diff = end - Date.now();
-    const cdDays = Math.floor(diff / 86400000);
-    const cdHours = Math.floor((diff % 86400000) / 3600000);
-    const cdMinutes = Math.floor((diff % 3600000) / 60000);
-    const cdSeconds = Math.floor((diff % 60000) / 1000);
-    this.setData({
-      countdownVisible: true,
-      cdDays,
-      cdHours,
-      cdMinutes,
-      cdSeconds,
-      cdHoursPad: pad(cdHours),
-      cdMinutesPad: pad(cdMinutes),
-      cdSecondsPad: pad(cdSeconds)
-    });
-  },
-
-  startCountdownTimer() {
-    this.stopCountdownTimer();
-    if (!this.data.countdownVisible) return;
-    this._countdownTimer = setInterval(() => {
-      this.updateCountdown();
-    }, 1000);
-  },
-
-  stopCountdownTimer() {
-    if (this._countdownTimer) {
-      clearInterval(this._countdownTimer);
-      this._countdownTimer = null;
-    }
   },
 
   onTapBack() {

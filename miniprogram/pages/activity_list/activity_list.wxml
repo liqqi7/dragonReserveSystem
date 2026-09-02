@@ -57,7 +57,7 @@
             >
               <text class="card-datetime-label">{{item.cardDateTimeLabel || item.startTime}}</text>
               <!-- 大卡片 -->
-              <view class="large-card">
+              <view class="large-card large-card--{{item.activityType}}-{{item.activityStyleKey}}">
                 <image
                   wx:if="{{item.largeCardBgImageUrl}}"
                   class="card-image-bg"
@@ -137,11 +137,11 @@
                     <text class="glass-remark">{{item.remark || ''}}</text>
                     <view class="glass-meta-row">
                       <view wx:if="{{item.locationName}}" class="glass-meta-item">
-                        <image class="glass-meta-icon-img" src="/images/icon-location.png" mode="aspectFit" />
+                        <image class="glass-meta-icon-img" src="/images/icon-home-card-location.svg" mode="aspectFit" />
                         <text class="glass-meta-text">{{item.locationName}}</text>
                       </view>
                       <view class="glass-meta-item">
-                        <image class="glass-meta-icon-img" src="/images/icon-people.png" mode="aspectFit" />
+                        <image class="glass-meta-icon-img" src="/images/icon-home-card-people.svg" mode="aspectFit" />
                         <text class="glass-meta-text" wx:if="{{item.maxParticipants != null}}">{{item.participants.length}}/{{item.maxParticipants}} 人</text>
                         <text class="glass-meta-text" wx:elif="{{item.participants.length > 0}}">{{item.participants.length}} 人</text>
                         <text class="glass-meta-text" wx:else>0 人</text>

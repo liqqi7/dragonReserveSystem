@@ -175,6 +175,84 @@ def test_admin_can_create_list_get_update_delete_activity(client, admin_headers)
     assert list_after_delete.json() == []
 
 
+def test_activity_name_and_remark_constraints(client, admin_headers) -> None:
+    start_time = datetime.utcnow() + timedelta(days=2)
+    end_time = start_time + timedelta(hours=2)
+    base_payload = {
+        "name": "一二三四五六七八九十",
+        "remark": "活动说明",
+        "start_time": start_time.isoformat(),
+        "end_time": end_time.isoformat(),
+    }
+
+    valid_response = client.post("/api/v1/activities", headers=admin_headers, json=base_payload)
+    assert valid_response.status_code == 201
+    activity_id = valid_response.json()["id"]
+
+    too_long_name = client.post(
+        "/api/v1/activities",
+        headers=admin_headers,
+        json={**base_payload, "name": "一二三四五六七八九十甲"},
+    )
+    assert too_long_name.status_code == 422
+
+    missing_remark = client.post(
+        "/api/v1/activities",
+        headers=admin_headers,
+        json={key: value for key, value in base_payload.items() if key != "remark"},
+    )
+    assert missing_remark.status_code == 422
+
+    blank_remark = client.post(
+        "/api/v1/activities",
+        headers=admin_headers,
+        json={**base_payload, "remark": "   "},
+    )
+    assert blank_remark.status_code == 422
+
+    max_length_remark = client.post(
+        "/api/v1/activities",
+        headers=admin_headers,
+        json={**base_payload, "remark": "备" * 120},
+    )
+    assert max_length_remark.status_code == 201
+
+    too_long_remark = client.post(
+        "/api/v1/activities",
+        headers=admin_headers,
+        json={**base_payload, "remark": "备" * 121},
+    )
+    assert too_long_remark.status_code == 422
+
+    update_too_long_name = client.patch(
+        f"/api/v1/activities/{activity_id}",
+        headers=admin_headers,
+        json={"name": "一二三四五六七八九十甲"},
+    )
+    assert update_too_long_name.status_code == 422
+
+    update_blank_remark = client.patch(
+        f"/api/v1/activities/{activity_id}",
+        headers=admin_headers,
+        json={"remark": "   "},
+    )
+    assert update_blank_remark.status_code == 422
+
+    update_too_long_remark = client.patch(
+        f"/api/v1/activities/{activity_id}",
+        headers=admin_headers,
+        json={"remark": "备" * 121},
+    )
+    assert update_too_long_remark.status_code == 422
+
+    partial_update = client.patch(
+        f"/api/v1/activities/{activity_id}",
+        headers=admin_headers,
+        json={"max_participants": 20},
+    )
+    assert partial_update.status_code == 200
+
+
 def test_my_activities_requires_auth(client) -> None:
     response = client.get("/api/v1/activities/me/signed-up")
 
@@ -267,6 +345,7 @@ def test_non_admin_cannot_create_activity(client, user_headers) -> None:
         headers=user_headers,
         json={
             "name": "普通用户建活动",
+            "remark": "权限测试",
             "start_time": start_time.isoformat(),
             "end_time": end_time.isoformat(),
         },
@@ -294,6 +373,7 @@ def test_creator_auto_signed_up_on_create(client, admin_headers) -> None:
         headers=admin_headers,
         json={
             "name": "自动报名活动",
+            "remark": "自动报名测试",
             "start_time": start_time.isoformat(),
             "end_time": end_time.isoformat(),
         },

@@ -20,7 +20,7 @@ from app.services.activity_type_style_service import get_activity_style
 settings = get_settings()
 MEDIA_ROOT = Path(settings.media_root).resolve()
 CARD_GLASS_CACHE_DIR = MEDIA_ROOT / "card-glass"
-CARD_GLASS_RENDER_VERSION = "v1"
+CARD_GLASS_RENDER_VERSION = "v2"
 CARD_GLASS_REMOTE_IMAGE_TIMEOUT = 8.0
 # Pencil 13px blur at a 297.23px rendered card width.
 CARD_GLASS_BLUR_RADIUS_RATIO = 13 / (530.77 * 420 / 750)

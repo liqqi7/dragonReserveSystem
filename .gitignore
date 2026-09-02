@@ -38,3 +38,15 @@ backend/migration_backups/
 backend/test-request.log
 # WeChat miniprogram local config (do not commit env-specific base URLs)
 miniprogram/services/config.js
+
+# Backend private keys and secrets
+backend/secrets/
+
+# WeChat DevTools private project settings
+/project.private.config.json
+
+# Local runtime data
+/storage/
+
+# Pencil temporary previews
+/prototype/.tmp-*/

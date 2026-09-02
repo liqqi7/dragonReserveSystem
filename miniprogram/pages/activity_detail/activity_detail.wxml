@@ -1,238 +1,212 @@
 <view class="page-wrap">
-  <scroll-view
+  <view
     class="main-scroll"
-    scroll-y="true"
-    show-scrollbar="false"
-    enhanced="true"
-    style="height: calc(100vh - {{bottomBarHeight}}px)"
+    style="height: calc(100vh - {{bottomBarHeightRpx}}rpx)"
   >
-    <image class="page-watermark" src="../../images/activity-home-logo.png" mode="aspectFit" />
-
-    <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px">
-      <view class="navbar-inner">
-        <view class="nav-back" hover-class="nav-back-hover" hover-stay-time="80" bindtap="onTapBack">
-          <text class="nav-back-icon">‹</text>
-        </view>
-        <text class="navbar-title">龙城预约系统</text>
-        <view class="nav-placeholder"></view>
-      </view>
-    </view>
-
-    <view wx:if="{{loading}}" class="state-block">
+    <view wx:if="{{loading}}" class="state-block state-block-full">
       <text class="state-text">加载中…</text>
     </view>
-    <view wx:elif="{{loadError}}" class="state-block">
+    <view wx:elif="{{loadError}}" class="state-block state-block-full">
       <text class="state-text">{{loadError}}</text>
       <button class="retry-btn" bindtap="refreshDetail">重试</button>
     </view>
 
     <block wx:elif="{{activity}}">
-      <view class="detail-body">
-        <view class="hero-wrap">
-          <view class="hero-media">
-            <image
-              wx:if="{{activity.largeCardBgImageUrl && !activity.bgVideoUrl}}"
-              class="hero-img"
-              src="{{activity.largeCardBgImageUrl}}"
-              mode="aspectFill"
+      <view id="qaActivityDetailHero" class="immersive-hero">
+        <image
+          wx:if="{{activity.largeCardBgImageUrl && !activity.bgVideoUrl}}"
+          class="hero-img"
+          src="{{activity.largeCardBgImageUrl}}"
+          mode="aspectFill"
+        />
+        <video
+          wx:if="{{activity.bgVideoUrl}}"
+          class="hero-video"
+          src="{{activity.bgVideoUrl}}"
+          objectFit="cover"
+          autoplay="{{true}}"
+          loop="{{true}}"
+          muted="{{true}}"
+          controls="{{false}}"
+          show-center-play-btn="{{false}}"
+          show-play-btn="{{false}}"
+        />
+        <view wx:if="{{activity.showAvatarCluster}}" class="hero-avatar-cluster">
+          <view wx:if="{{heroCardAvatars.length >= 1}}" class="hero-avatar hero-avatar-tl">
+            <image class="hero-cluster-avatar" src="{{heroCardAvatars[heroCardAvatars.length - 1].url}}" mode="aspectFill" />
+          </view>
+          <view wx:if="{{heroCardAvatars.length >= 2}}" class="hero-avatar hero-avatar-tr">
+            <image class="hero-cluster-avatar" src="{{heroCardAvatars[heroCardAvatars.length - 2].url}}" mode="aspectFill" />
+          </view>
+          <view wx:if="{{heroCardAvatars.length >= 3}}" class="hero-avatar hero-avatar-mid">
+            <image class="hero-cluster-avatar" src="{{heroCardAvatars[heroCardAvatars.length - 3].url}}" mode="aspectFill" />
+          </view>
+        </view>
+        <view wx:if="{{!activity.largeCardBgImageUrl && !activity.bgVideoUrl}}" class="hero-placeholder"></view>
+        <view class="hero-shade"></view>
+
+        <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px">
+          <view class="navbar-inner">
+            <view class="nav-back" hover-class="nav-back-hover" hover-stay-time="80" bindtap="onTapBack">
+              <image class="nav-back-icon" src="/images/activity-detail-chevron-left.svg" mode="aspectFit" />
+            </view>
+            <text class="navbar-title">活动详情</text>
+            <view class="nav-placeholder"></view>
+          </view>
+        </view>
+
+        <view class="hero-copy">
+          <view class="hero-status-row">
+            <view class="status-pill {{detailStatusClass}}">{{activity.detailStatusTag}}</view>
+            <text class="hero-meta">{{heroMetaText}}</text>
+          </view>
+          <text class="hero-title">{{activityTitleText}}</text>
+          <view wx:if="{{activity.remark}}" class="hero-remark-row" bindtap="toggleRemark">
+            <text class="hero-remark {{remarkExpanded ? 'hero-remark-expanded' : ''}}">{{activity.remark}}</text>
+            <view wx:if="{{remarkExpandable}}" class="remark-toggle">
+              <text class="remark-toggle-text">{{remarkExpanded ? '收起' : '展开'}}</text>
+              <image
+                class="remark-chevron"
+                src="{{remarkExpanded ? '/images/activity-detail-chevron-up.svg' : '/images/activity-detail-chevron-down.svg'}}"
+                mode="aspectFit"
+              />
+            </view>
+          </view>
+          <text wx:if="{{activity.remark}}" class="hero-remark-measure">{{activity.remark}}</text>
+          <view wx:if="{{activity.remark}}" class="remark-toggle-measure">
+            <text class="remark-toggle-text">展开</text>
+            <image class="remark-chevron" src="/images/activity-detail-chevron-down.svg" mode="aspectFit" />
+          </view>
+        </view>
+      </view>
+
+      <view id="qaActivityDetailContent" class="detail-panel">
+        <view class="section-title-row">
+          <text class="section-title">基本信息</text>
+        </view>
+        <view class="facts-row">
+          <view class="fact-item">
+            <text class="fact-label">日期</text>
+            <text class="fact-value">{{activityDateText}}</text>
+          </view>
+          <view class="fact-divider"></view>
+          <view class="fact-item fact-item-time">
+            <text class="fact-label">时间</text>
+            <text class="fact-value fact-value-time">{{activityTimeText}}</text>
+          </view>
+          <view class="fact-divider"></view>
+          <view class="fact-item fact-participants" bindtap="openParticipantsDrawer">
+            <text class="fact-label">报名人数</text>
+            <view class="fact-participant-value">
+              <text class="participant-current">{{participantCurrentText}}</text>
+              <text wx:if="{{participantHasLimit}}" class="participant-separator">/</text>
+              <text class="participant-limit">{{participantHasLimit ? participantMaxText + ' 人' : '人'}}</text>
+              <image class="fact-chevron" src="/images/activity-detail-chevron-right.svg" mode="aspectFit" />
+            </view>
+          </view>
+        </view>
+
+        <view id="qaActivityLocationCard" class="location-card">
+          <view class="map-preview">
+            <map
+              wx:if="{{locationMapAvailable}}"
+              id="qaActivityLocationMap"
+              class="location-map"
+              latitude="{{locationMapLatitude}}"
+              longitude="{{locationMapLongitude}}"
+              scale="10"
+              show-location="{{false}}"
+              enable-scroll="{{false}}"
+              enable-zoom="{{false}}"
+              enable-rotate="{{false}}"
+              enable-overlooking="{{false}}"
+              markers="{{locationMapMarkers}}"
             />
-            <video
-              wx:if="{{activity.bgVideoUrl}}"
-              class="hero-video"
-              src="{{activity.bgVideoUrl}}"
-              objectFit="cover"
-              autoplay="{{true}}"
-              loop="{{true}}"
-              muted="{{true}}"
-              controls="{{false}}"
-              show-center-play-btn="{{false}}"
-              show-play-btn="{{false}}"
-            />
-            <view wx:if="{{activity.showAvatarCluster}}" class="hero-avatar-cluster">
-              <view wx:if="{{heroCardAvatars.length >= 1}}" class="hero-avatar-tl">
-                <image
-                  class="hero-cluster-avatar"
-                  src="{{heroCardAvatars[heroCardAvatars.length - 1].url}}"
-                  mode="aspectFill"
-                />
-              </view>
-              <view wx:if="{{heroCardAvatars.length >= 2}}" class="hero-avatar-tr">
-                <image
-                  class="hero-cluster-avatar"
-                  src="{{heroCardAvatars[heroCardAvatars.length - 2].url}}"
-                  mode="aspectFill"
-                />
-              </view>
-              <view wx:if="{{heroCardAvatars.length >= 3}}" class="hero-avatar-mid">
-                <image
-                  class="hero-cluster-avatar"
-                  src="{{heroCardAvatars[heroCardAvatars.length - 3].url}}"
-                  mode="aspectFill"
-                />
-              </view>
-            </view>
-            <view wx:if="{{!activity.largeCardBgImageUrl && !activity.bgVideoUrl}}" class="hero-placeholder"></view>
-          </view>
-        </view>
-
-        <view class="tag-row">
-          <view class="tag tag-type">{{activity.typeDisplayName}}</view>
-          <view class="tag tag-status">{{activity.detailStatusTag}}</view>
-        </view>
-
-        <text class="detail-title">{{activity.name}}</text>
-
-        <view
-          wx:if="{{activity.status === '已结束' && pigeonList.length > 0}}"
-          class="pigeon-card"
-          hover-class="pigeon-card-hover"
-          hover-stay-time="80"
-          bindtap="openPigeonDrawer"
-        >
-          <view class="pigeon-card-head">
-            <view class="pigeon-head-main">
-              <text class="pigeon-card-title">鸽子名单</text>
-              <view class="pigeon-count-pill">未打卡{{pigeonList.length}}人</view>
-            </view>
-            <view wx:if="{{pigeonList.length}}" class="pigeon-head-arrow">›</view>
-          </view>
-          <block wx:if="{{pigeonList.length}}">
-            <scroll-view
-              class="pigeon-strip"
-              scroll-x="{{true}}"
-              enhanced="{{true}}"
-              show-scrollbar="{{false}}"
-              enable-flex="{{true}}"
-            >
-              <view class="pigeon-strip-inner">
-                <view
-                  wx:for="{{pigeonPreviewList}}"
-                  wx:key="pigeonKey"
-                  wx:for-item="pItem"
-                  class="pigeon-cell"
-                >
-                  <view class="pigeon-avatar-wrap">
-                    <image class="pigeon-avatar-lg" src="{{pItem.avatarUrl}}" mode="aspectFill" />
-                    <view class="pigeon-ribbon">小鸽子</view>
-                  </view>
-                  <text class="pigeon-cell-name">{{pItem.name}}</text>
-                </view>
-              </view>
-            </scroll-view>
-          </block>
-          <text wx:else class="pigeon-empty">全员已签到</text>
-        </view>
-
-        <view wx:if="{{countdownVisible}}" class="countdown-card">
-          <text class="countdown-label">报名仅剩</text>
-          <view class="countdown-digits">
-            <view class="cd-num-box"><text class="cd-num">{{cdDays}}</text></view>
-            <text class="cd-unit-suffix">天</text>
-            <text class="cd-colon">:</text>
-            <view class="cd-num-box"><text class="cd-num">{{cdHoursPad}}</text></view>
-            <text class="cd-colon">:</text>
-            <view class="cd-num-box"><text class="cd-num">{{cdMinutesPad}}</text></view>
-            <text class="cd-colon">:</text>
-            <view class="cd-num-box"><text class="cd-num">{{cdSecondsPad}}</text></view>
-          </view>
-        </view>
-
-        <view class="info-card">
-          <view class="info-row">
-            <image class="info-icon" src="/images/icon-detail-time.png" mode="aspectFit" />
-            <text class="info-label">活动时间</text>
-            <text class="info-value">{{timeRangeText}}</text>
-          </view>
-          <view class="info-row">
-            <image class="info-icon" src="/images/icon-detail-location.png" mode="aspectFit" />
-            <text class="info-label">活动地点</text>
-            <text class="info-value">{{locationText}}</text>
-          </view>
-          <view class="info-row info-row-tap" bindtap="openParticipantsDrawer">
-            <image class="info-icon" src="/images/icon-detail-people.png" mode="aspectFit" />
-            <text class="info-label">参与人</text>
-            <view class="participant-preview">
-              <view class="avatar-stack">
-                <image
-                  wx:for="{{participantPreview}}"
-                  wx:key="pKey"
-                  class="stack-avatar {{index > 0 ? 'stack-avatar-overlap' : ''}}"
-                  style="z-index: {{15 - index}};"
-                  src="{{item.url}}"
-                  mode="{{item.pKey === 'more' ? 'aspectFit' : 'aspectFill'}}"
-                />
-              </view>
-            </view>
-            <view class="participant-row-tail">
-              <text class="participant-count">{{participantCountText}}</text>
-              <text class="chevron">›</text>
+            <view wx:else class="map-empty">
+              <text class="map-empty-text">暂无地图信息</text>
             </view>
           </view>
-          <view wx:if="{{activity.remark}}" class="info-row info-row-top">
-            <image class="info-icon" src="/images/icon-detail-intro.png" mode="aspectFit" />
-            <text class="info-label">活动简介</text>
-            <text class="info-value info-remark">{{activity.remark}}</text>
+          <view class="location-meta">
+            <view class="location-copy">
+              <view class="location-name-row">
+                <text class="location-name">{{activity.locationName || '活动地点待定'}}</text>
+                <text wx:if="{{locationDistanceText}}" class="location-distance">{{locationDistanceText}}</text>
+              </view>
+              <text class="location-address">{{activity.locationAddress || '暂无详细地址'}}</text>
+            </view>
+            <view class="navigate-button" hover-class="navigate-button-hover" bindtap="openLocation">
+              <image class="navigate-icon" src="/images/icon-navigation.svg" mode="aspectFit" />
+              <text>导航</text>
+            </view>
           </view>
         </view>
 
-        <view class="scroll-bottom-spacer"></view>
+        <view id="qaActivityWeatherCard" class="weather-card">
+          <view wx:if="{{weather.loading}}" class="weather-unavailable">
+            <text class="weather-unavailable-message">天气加载中…</text>
+          </view>
+          <view wx:elif="{{weather.available}}" class="weather-content">
+            <view class="weather-summary">
+              <view class="weather-icon-wrap">
+                <image class="weather-icon" src="{{weather.icon}}" mode="aspectFit" />
+              </view>
+              <view class="weather-main-copy">
+                <text class="weather-temperature">{{weather.temperature}}</text>
+                <text class="weather-condition">{{weather.condition}}</text>
+              </view>
+            </view>
+            <view class="weather-divider"></view>
+            <view class="weather-metrics">
+              <view class="weather-metric">
+                <image class="weather-metric-icon" src="/images/weather-humidity.svg" mode="aspectFit" />
+                <text class="weather-metric-value weather-metric-value-humidity">{{weather.humidity}}</text>
+                <text class="weather-metric-label">空气湿度</text>
+              </view>
+              <view class="weather-metric">
+                <image class="weather-metric-icon" src="/images/weather-wind.svg" mode="aspectFit" />
+                <text class="weather-metric-value">{{weather.wind}}</text>
+                <text class="weather-metric-label">风向风速</text>
+              </view>
+              <view class="weather-metric">
+                <image class="weather-metric-icon" src="/images/weather-air-quality.svg" mode="aspectFit" />
+                <text class="weather-metric-value">{{weather.airQuality}}</text>
+                <text class="weather-metric-label">空气质量</text>
+              </view>
+            </view>
+          </view>
+          <view wx:else class="weather-unavailable">
+            <text class="weather-unavailable-message">{{weather.message}}</text>
+          </view>
+          <view wx:if="{{weather.available}}" class="weather-attribution"><text class="weather-attribution-text">{{weather.attribution}}</text></view>
+        </view>
       </view>
     </block>
-  </scroll-view>
+  </view>
 
-  <view wx:if="{{activity}}" class="bottom-bar" style="padding-bottom: {{safeBottom}}px">
+  <view wx:if="{{activity}}" id="qaActivityDetailBottomBar" class="bottom-bar" style="padding-bottom: {{safeBottomRpx}}rpx">
     <view class="bottom-inner">
       <button
-        wx:if="{{sharePreviewLoading}}"
-        type="default"
-        class="bottom-secondary bottom-secondary-share bottom-secondary-share-pending"
-        disabled="{{true}}"
-      >生成中…</button>
-      <button
-        wx:else
-        type="default"
-        class="bottom-secondary bottom-secondary-share"
-        open-type="share"
-        hover-class="bottom-secondary-hover"
-      >分享</button>
+        class="bottom-icon-button bottom-icon-button-share {{(!isAdmin || activity.status === '已取消') ? 'bottom-icon-button-wide' : ''}} {{sharePreviewLoading ? 'bottom-icon-button-disabled' : ''}}"
+        open-type="{{sharePreviewLoading ? '' : 'share'}}"
+        disabled="{{sharePreviewLoading}}"
+        hover-class="bottom-button-hover"
+      >
+        <image class="bottom-button-icon" src="/images/icon-share.svg" mode="aspectFit" />
+      </button>
       <button
         wx:if="{{isAdmin && activity.status !== '已取消'}}"
-        class="bottom-secondary"
-        hover-class="bottom-secondary-hover"
+        class="bottom-icon-button bottom-icon-button-edit"
+        hover-class="bottom-button-hover"
         bindtap="openAdminEdit"
-      >编辑</button>
-      <view class="bottom-cta-wrap">
-        <block wx:if="{{activity.status === '未开始' || activity.status === '进行中'}}">
-          <button
-            wx:if="{{!activity.hasSignedUp}}"
-            class="bottom-primary {{activity.isSignupClosed || activity.isFull ? 'bottom-primary-disabled' : ''}}"
-            hover-class="{{activity.isSignupClosed || activity.isFull ? 'bottom-primary-disabled' : 'bottom-primary-hover'}}"
-            bindtap="onTapSignup"
-          >立即报名</button>
-          <button
-            wx:elif="{{activity.hasSignedUp && !activity.hasCheckedIn && !isCheckinWindowOpen}}"
-            class="bottom-primary"
-            hover-class="bottom-primary-hover"
-            bindtap="onTapCancelSignup"
-          >取消报名</button>
-          <button
-            wx:elif="{{activity.hasSignedUp && !activity.hasCheckedIn && isCheckinWindowOpen}}"
-            class="bottom-primary"
-            hover-class="bottom-primary-hover"
-            bindtap="onTapCheckin"
-          >签到</button>
-          <button
-            wx:elif="{{activity.hasSignedUp && activity.hasCheckedIn}}"
-            class="bottom-primary bottom-primary-disabled"
-            disabled="true"
-          >已签到</button>
-        </block>
-        <button
-          wx:else
-          class="bottom-primary bottom-primary-disabled"
-          disabled="true"
-        >{{activity.status === '已取消' ? '已取消' : '已结束'}}</button>
-      </view>
+      >
+        <image class="bottom-button-icon" src="/images/icon-edit.svg" mode="aspectFit" />
+      </button>
+      <button
+        class="bottom-primary {{primaryActionDisabled ? 'bottom-primary-disabled' : ''}}"
+        disabled="{{primaryActionDisabled}}"
+        hover-class="bottom-primary-hover"
+        bindtap="onTapPrimaryAction"
+      >{{primaryActionLabel}}</button>
     </view>
   </view>
 
@@ -256,7 +230,7 @@
       class="participants-drawer-sheet"
       catchtap="stopPropagation"
       catchtouchmove="stopPropagation"
-      style="padding-bottom: {{safeBottom}}px"
+      style="padding-bottom: {{safeBottomRpx}}rpx"
     >
       <view class="participants-drawer-header">
         <view class="participants-drawer-title-block">
@@ -315,36 +289,6 @@
     </view>
   </view>
 
-  <view wx:if="{{showPigeonDrawer}}" class="participants-drawer-root pigeon-drawer-layer">
-    <view class="participants-drawer-mask" catchtouchmove="stopPropagation" bindtap="closePigeonDrawer"></view>
-    <view
-      class="participants-drawer-sheet"
-      catchtap="stopPropagation"
-      catchtouchmove="stopPropagation"
-      style="padding-bottom: {{safeBottom}}px"
-    >
-      <view class="participants-drawer-header">
-        <view class="participants-drawer-title-block">
-          <text class="participants-drawer-title">未打卡名单</text>
-        </view>
-        <text class="close-btn" bindtap="closePigeonDrawer">×</text>
-      </view>
-      <scroll-view scroll-y="{{true}}" class="participants-drawer-body">
-        <view
-          wx:for="{{pigeonList}}"
-          wx:key="pigeonKey"
-          wx:for-item="pItem"
-          class="pigeon-modal-row"
-        >
-          <image class="pigeon-modal-avatar" src="{{pItem.avatarUrl}}" mode="aspectFill" />
-          <text class="pigeon-modal-name">{{pItem.name}}</text>
-        </view>
-        <view class="participants-drawer-body-pad"></view>
-      </scroll-view>
-    </view>
-  </view>
-
-  <!-- 报名前资料完善：本页弹窗，不跳转「我的」 -->
   <view wx:if="{{showSignupProfileModal}}" class="signup-profile-overlay" catchtouchmove="stopPropagation">
     <view class="signup-profile-modal-bg" bindtap="closeSignupProfileModal"></view>
     <view class="signup-profile-modal-sheet" catchtap="stopPropagation" catchtouchmove="stopPropagation">
@@ -365,22 +309,12 @@
         </view>
         <view class="signup-profile-form-item">
           <view class="signup-profile-label">昵称</view>
-          <input
-            type="text"
-            class="signup-profile-input"
-            placeholder="请输入昵称"
-            value="{{signupProfileNickname}}"
-            bindinput="onSignupProfileNicknameInput"
-          />
+          <input type="text" class="signup-profile-input" placeholder="请输入昵称" value="{{signupProfileNickname}}" bindinput="onSignupProfileNicknameInput" />
         </view>
       </view>
       <view class="signup-profile-modal-footer">
         <button class="signup-profile-btn signup-profile-btn-default" bindtap="closeSignupProfileModal">取消</button>
-        <button
-          class="signup-profile-btn signup-profile-btn-primary {{!signupProfileCanSubmit ? 'signup-profile-btn-disabled' : ''}}"
-          bindtap="saveSignupProfile"
-          disabled="{{!signupProfileCanSubmit}}"
-        >保存</button>
+        <button class="signup-profile-btn signup-profile-btn-primary {{!signupProfileCanSubmit ? 'signup-profile-btn-disabled' : ''}}" bindtap="saveSignupProfile" disabled="{{!signupProfileCanSubmit}}">保存</button>
       </view>
     </view>
   </view>

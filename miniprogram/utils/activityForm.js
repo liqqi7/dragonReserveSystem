@@ -3,8 +3,8 @@ const { roundUpToMinuteStep, formatDate, formatTime } = require("./dateTimePicke
 const DEFAULT_ACTIVITY_TYPE = "other";
 const DEFAULT_CREATE_ACTIVITY_TYPE = "badminton";
 const DEFAULT_MAX_PARTICIPANTS = 12;
-const MAX_NAME_LENGTH = 30;
-const MAX_REMARK_LENGTH = 200;
+const MAX_NAME_LENGTH = 10;
+const MAX_REMARK_LENGTH = 120;
 
 function splitDateTime(value, fallback = {}) {
   const text = String(value || "").trim();
@@ -122,6 +122,7 @@ function validateActivityForm(form, options = {}) {
 
   if (!name) return { ok: false, message: "请输入活动名称" };
   if (name.length > MAX_NAME_LENGTH) return { ok: false, message: `活动名称不能超过 ${MAX_NAME_LENGTH} 个字` };
+  if (!remark) return { ok: false, message: "请输入活动备注" };
   if (remark.length > MAX_REMARK_LENGTH) return { ok: false, message: `活动备注不能超过 ${MAX_REMARK_LENGTH} 个字` };
 
   const start = toLocalDateTime(form.startDate, form.startTime);

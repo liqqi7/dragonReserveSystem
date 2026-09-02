@@ -1,9 +1,10 @@
 /**
  * 读取微信运行时底部安全区，并统一换算成 rpx。
- * 原型底部安全区为 390px 画布下的 38px，即 73.07692rpx。
- * 真实设备上报值优先；仅 Android 明确上报 0 时使用原型安全区兜底。
+ * 原型底部设计保留区为 390px 画布下的 24px，即 46.15385rpx。
+ * 真实设备上报值优先；仅 Android 明确上报 0 时使用这块设计留白兜底。
+ * Android 的兜底不是系统安全区，也不展示 iOS Home Indicator。
  */
-const ANDROID_BOTTOM_SAFE_AREA_FALLBACK_RPX = 73.07692;
+const ANDROID_BOTTOM_SAFE_AREA_FALLBACK_RPX = 46.15385;
 
 function getWindowInfoCompat() {
   try {

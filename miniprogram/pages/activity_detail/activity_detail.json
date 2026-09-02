@@ -2,5 +2,6 @@
   "navigationStyle": "custom",
   "usingComponents": {
     "activity-form-sheet": "../../components/activity-form-sheet/index"
-  }
+  },
+  "disableScroll": true
 }

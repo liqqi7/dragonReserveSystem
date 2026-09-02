@@ -4,6 +4,7 @@ const {
   DEFAULT_ACTIVITY_TYPE,
   DEFAULT_CREATE_ACTIVITY_TYPE,
   MAX_NAME_LENGTH,
+  MAX_REMARK_LENGTH,
   buildCreateForm,
   buildEditForm,
   applyStartDateTime,
@@ -20,18 +21,34 @@ test("create defaults to badminton without changing the edit fallback", () => {
   assert.equal(buildActivityPayload({ ...buildCreateForm(new Date(2026, 7, 17, 10, 0, 0)), activityType: "" }, { mode: "create" }).activity_type, "badminton");
 });
 
-test("activity name limit is 30 characters", () => {
-  assert.equal(MAX_NAME_LENGTH, 30);
+test("activity name limit is 10 characters", () => {
+  assert.equal(MAX_NAME_LENGTH, 10);
 
   const now = new Date(2026, 7, 16, 10, 0, 0);
   const base = {
     ...buildCreateForm(now),
     startDate: "2026-08-16", startTime: "12:00",
     endDate: "2026-08-16", endTime: "13:00",
+    signupDeadlineDate: "2026-08-16", signupDeadlineTime: "11:00",
+    remark: "活动说明"
+  };
+  assert.equal(validateActivityForm({ ...base, name: "活".repeat(10) }, { mode: "create", now }).ok, true);
+  assert.match(validateActivityForm({ ...base, name: "活".repeat(11) }, { mode: "create", now }).message, /不能超过 10 个字/);
+});
+
+test("activity remark limit is 120 characters", () => {
+  assert.equal(MAX_REMARK_LENGTH, 120);
+
+  const now = new Date(2026, 7, 16, 10, 0, 0);
+  const base = {
+    ...buildCreateForm(now),
+    name: "羽毛球",
+    startDate: "2026-08-16", startTime: "12:00",
+    endDate: "2026-08-16", endTime: "13:00",
     signupDeadlineDate: "2026-08-16", signupDeadlineTime: "11:00"
   };
-  assert.equal(validateActivityForm({ ...base, name: "活".repeat(30) }, { mode: "create", now }).ok, true);
-  assert.match(validateActivityForm({ ...base, name: "活".repeat(31) }, { mode: "create", now }).message, /不能超过 30 个字/);
+  assert.equal(validateActivityForm({ ...base, remark: "备".repeat(120) }, { mode: "create", now }).ok, true);
+  assert.match(validateActivityForm({ ...base, remark: "备".repeat(121) }, { mode: "create", now }).message, /不能超过 120 个字/);
 });
 
 test("buildCreateForm uses rounded +2h/+1h/-1h defaults", () => {
@@ -77,12 +94,15 @@ test("validation checks text, time and participant limits", () => {
   const valid = {
     ...buildCreateForm(now),
     name: "羽毛球",
+    remark: "活动说明",
     startDate: "2026-08-16", startTime: "12:00",
     endDate: "2026-08-16", endTime: "13:00",
     signupDeadlineDate: "2026-08-16", signupDeadlineTime: "11:00"
   };
   assert.equal(validateActivityForm(valid, { mode: "create", now }).ok, true);
   assert.match(validateActivityForm({ ...valid, name: "" }, { mode: "create", now }).message, /活动名称/);
+  assert.match(validateActivityForm({ ...valid, remark: "" }, { mode: "create", now }).message, /请输入活动备注/);
+  assert.match(validateActivityForm({ ...valid, remark: "   " }, { mode: "edit", now }).message, /请输入活动备注/);
   assert.match(validateActivityForm({ ...valid, endTime: "11:00" }, { mode: "create", now }).message, /结束时间/);
   assert.match(validateActivityForm({ ...valid, signupDeadlineTime: "12:30" }, { mode: "create", now }).message, /报名截止/);
   assert.match(validateActivityForm({ ...valid, limitEnabled: true, maxParticipants: 1000 }, { mode: "create", now }).message, /999/);

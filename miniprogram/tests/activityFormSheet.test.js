@@ -200,10 +200,13 @@ test("form markup keeps prototype labels, placeholders and full-row tap targets"
   assert.match(wxml, /data-target="signupDeadlineTime"/);
   assert.match(wxml, />日期<\/text>/);
   assert.match(wxml, />时间<\/text>/);
-  assert.match(wxml, />活动备注（选填）<\/text>/);
+  assert.match(wxml, />活动备注<\/text>/);
+  assert.doesNotMatch(wxml, /活动备注（选填）/);
   assert.match(wxml, /placeholder="请输入活动名称"/);
   assert.match(wxml, /请选择活动地点/);
   assert.match(wxml, /placeholder="请输入活动备注"/);
+  assert.match(wxml, /<textarea[^>]*maxlength="{{maxRemarkLength}}"[^>]*>/);
+  assert.match(js, /maxRemarkLength:\s*MAX_REMARK_LENGTH/);
   assert.match(wxml, /<textarea[^>]*style="height: {{remarkTextareaHeight}}rpx;"[^>]*bindinput="onRemarkInput"[^>]*bindblur="onRemarkBlur"[^>]*bindlinechange="onRemarkLineChange"[^>]*auto-height="{{false}}"[^>]*disable-default-padding="{{true}}"[^>]*\/>/);
   assert.match(wxml, /<textarea[^>]*disable-default-padding="{{true}}"[^>]*\/>/);
   assert.match(wxml, /<textarea[^>]*show-confirm-bar="{{false}}"[^>]*\/>/);

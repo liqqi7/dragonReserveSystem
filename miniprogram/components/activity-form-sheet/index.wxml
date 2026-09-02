@@ -126,7 +126,7 @@
         </view>
 
         <view class="bento-card bento-card--full input-card textarea-card {{!isEdit && form.remark ? 'create-completed-field' : ''}}">
-          <text class="bento-label bento-label--strong">活动备注（选填）</text>
+          <text class="bento-label bento-label--strong">活动备注</text>
           <textarea class="bento-textarea" style="height: {{remarkTextareaHeight}}rpx;" value="{{form.remark}}" maxlength="{{maxRemarkLength}}" placeholder="请输入活动备注" placeholder-class="bento-placeholder" bindinput="onRemarkInput" bindblur="onRemarkBlur" bindlinechange="onRemarkLineChange" auto-height="{{false}}" show-confirm-bar="{{false}}" disable-default-padding="{{true}}" adjust-position="{{true}}" cursor-spacing="120" />
           <view class="textarea-count-row">
             <text class="input-count">{{remarkCount}}/{{maxRemarkLength}}</text>
