@@ -3,6 +3,7 @@ const {
   ACTION_AREA_WIDTH_RPX,
   SWIPE_OPEN_THRESHOLD_RATIO,
   clamp,
+  getSwipeSettledState,
   formatCheckinParts,
   buildProgressView,
   getMaxHeightRpx
@@ -160,9 +161,9 @@ Component({
       const endOffsetX = Number.isFinite(gesture.currentOffsetX)
         ? gesture.currentOffsetX
         : (row.offsetX || 0);
-      const open = Math.abs(endOffsetX) >= ACTION_WIDTH_RPX * SWIPE_OPEN_THRESHOLD_RATIO;
+      const settledState = getSwipeSettledState(gesture.startOffsetX, endOffsetX);
       const rows = this.data.rows.map((item, index) => index === gesture.index
-        ? { ...item, offsetX: open ? -ACTION_WIDTH_RPX : 0, actionOpen: open }
+        ? { ...item, ...settledState }
         : item);
       this.setData({ rows });
     },

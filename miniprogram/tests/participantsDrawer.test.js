@@ -163,16 +163,38 @@ test("touchend uses the latest gesture offset instead of stale setData rows", ()
   assert.match(js, /const endOffsetX = Number\.isFinite\(gesture\.currentOffsetX\)/);
 });
 
+test("an open row closes after a short right swipe without changing the left-open threshold", () => {
+  const openOffset = -definition.ACTION_WIDTH_RPX;
+  assert.deepEqual(definition.getSwipeSettledState(openOffset, openOffset + 40), {
+    offsetX: openOffset,
+    actionOpen: true
+  });
+  assert.deepEqual(definition.getSwipeSettledState(openOffset, openOffset + 50), {
+    offsetX: 0,
+    actionOpen: false
+  });
+  assert.deepEqual(definition.getSwipeSettledState(0, -90), {
+    offsetX: openOffset,
+    actionOpen: true
+  });
+  assert.deepEqual(definition.getSwipeSettledState(0, -50), {
+    offsetX: 0,
+    actionOpen: false
+  });
+});
+
 test("swipe action width and threshold stay in RPX and close other rows", () => {
   assert.equal(definition.ACTION_WIDTH_RPX, 323.08);
   assert.equal(definition.ACTION_AREA_WIDTH_RPX, 315.38);
   assert.equal(definition.SWIPE_OPEN_THRESHOLD_RATIO, 0.25);
+  assert.equal(definition.SWIPE_CLOSE_THRESHOLD_RATIO, 0.15);
   assert.match(wxml, /translate3d\(\{\{row\.offsetX\}\}rpx/);
   assert.match(js, /const dxRpx = dx \* getRpxPerPx\(\)/);
   assert.match(js, /actionWidthRpx: ACTION_AREA_WIDTH_RPX/);
   assert.match(js, /bodyMaxHeightRpx: 1253\.85/);
   assert.match(js, /fixedChromeRpx = 130\.77/);
   assert.match(js, /clamp\(gesture\.startOffsetX \+ dxRpx, -ACTION_WIDTH_RPX, 0\)/);
+  assert.match(js, /getSwipeSettledState\(gesture\.startOffsetX, endOffsetX\)/);
   assert.match(js, /this\.closeOpenRows\(index\)/);
   assert.match(wxss, /\.participant-actions\s*\{[^}]*right:\s*0;[^}]*bottom:\s*0;/s);
   assert.match(wxss, /\.participant-actions\s*\{[^}]*gap:\s*7\.69rpx;/s);

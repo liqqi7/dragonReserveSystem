@@ -1,6 +1,8 @@
 const ACTION_WIDTH_RPX = 323.08;
 const ACTION_AREA_WIDTH_RPX = 315.38;
 const SWIPE_OPEN_THRESHOLD_RATIO = 0.25;
+// 已展开行右滑回收只需移动操作区宽度的 15%，避免沿用“从关闭态打开”的全局阈值。
+const SWIPE_CLOSE_THRESHOLD_RATIO = 0.15;
 const DRAWER_MAX_HEIGHT_RATIO = 0.85;
 const DEFAULT_MAX_HEIGHT_RPX = 1384.62;
 
@@ -20,6 +22,20 @@ function getMaxHeightRpx() {
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+function getSwipeSettledState(startOffsetX, endOffsetX) {
+  const startedOpen = Number(startOffsetX) < 0;
+  const movedRightRpx = Number(endOffsetX) - Number(startOffsetX);
+  const openThresholdRpx = ACTION_WIDTH_RPX * SWIPE_OPEN_THRESHOLD_RATIO;
+  const closeThresholdRpx = ACTION_WIDTH_RPX * SWIPE_CLOSE_THRESHOLD_RATIO;
+  const actionOpen = startedOpen
+    ? movedRightRpx < closeThresholdRpx
+    : Math.abs(Number(endOffsetX) || 0) >= openThresholdRpx;
+  return {
+    offsetX: actionOpen ? -ACTION_WIDTH_RPX : 0,
+    actionOpen
+  };
 }
 
 function formatCheckinParts(value) {
@@ -66,7 +82,9 @@ module.exports = {
   DEFAULT_MAX_HEIGHT_RPX,
   getMaxHeightRpx,
   SWIPE_OPEN_THRESHOLD_RATIO,
+  SWIPE_CLOSE_THRESHOLD_RATIO,
   clamp,
+  getSwipeSettledState,
   formatCheckinParts,
   buildProgressView,
   hasParticipantLimit
