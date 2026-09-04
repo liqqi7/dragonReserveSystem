@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """Activity schemas."""
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -58,6 +58,8 @@ class ActivityParticipantResponse(BaseModel):
     checkin_method: Optional[str]
     checkin_lat: Optional[float]
     checkin_lng: Optional[float]
+    checkin_location_name: Optional[str]
+    checkin_address: Optional[str]
     created_at: datetime
 
 
@@ -91,6 +93,34 @@ class ActivityResponse(BaseModel):
     def default_activity_type(cls, value: Optional[str]) -> str:
         normalized = _normalize_activity_type(value)
         return normalized or "other"
+
+
+class ActivityWeatherResponse(BaseModel):
+    """Server-persisted weather state for an activity detail response."""
+
+    available: bool
+    status: str
+    reason: Optional[str] = None
+    date: Optional[date] = None
+    temperature: Optional[int | float] = None
+    temperature_min: Optional[int | float] = None
+    temperature_max: Optional[int | float] = None
+    condition: str = ""
+    icon_code: str = ""
+    humidity: Optional[int | float] = None
+    wind_direction: str = ""
+    wind_scale: str = ""
+    air_quality: Optional[str] = None
+    attribution: str
+    fetched_at: Optional[datetime] = None
+    valid_until: Optional[datetime] = None
+    stale: bool = False
+
+
+class ActivityDetailResponse(ActivityResponse):
+    """Activity detail payload; list payloads intentionally omit weather."""
+
+    weather: ActivityWeatherResponse
 
 
 class ActivityCreateRequest(BaseModel):

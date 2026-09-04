@@ -1,6 +1,5 @@
 const app = getApp();
 const activityService = require("../../services/activity");
-const weatherService = require("../../services/weather");
 const authService = require("../../services/auth");
 const userService = require("../../services/user");
 const {
@@ -13,6 +12,7 @@ const { orderParticipantsForDrawerRecentFirst } = require("../../utils/participa
 const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
 const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
 const { getBottomSafeAreaRpx, getWindowInfoCompat } = require("../../utils/safeArea");
+const { resolveActivityWeather } = require("../../utils/activityWeatherCache");
 const {
   parseLocalDateTime,
   formatActivityDate,
@@ -134,7 +134,6 @@ Page({
   },
 
   _activityTypeStyles: [],
-  _weatherRequestId: 0,
   _locationRequestId: 0,
   _hasShownOnce: false,
   _sharePreviewGen: 0,
@@ -184,7 +183,6 @@ Page({
   },
 
   onUnload() {
-    this._weatherRequestId += 1;
     this._locationRequestId += 1;
   },
 
@@ -401,7 +399,10 @@ Page({
           name: p,
           userId: null,
           avatarUrl: DEFAULT_AVATAR,
-          checkedInAt: ""
+          checkedInAt: "",
+          checkedInAtRaw: "",
+          checkinLocationName: "",
+          checkinAddress: ""
         };
       }
       const o = p && typeof p === "object" ? p : {};
@@ -411,7 +412,10 @@ Page({
         name: o.name || "未命名",
         userId: o.userId != null ? o.userId : null,
         avatarUrl: o.avatarUrl || DEFAULT_AVATAR,
-        checkedInAt: o.checkedInAt || ""
+        checkedInAt: o.checkedInAt || "",
+        checkedInAtRaw: o.checkedInAtRaw || "",
+        checkinLocationName: o.checkinLocationName || "",
+        checkinAddress: o.checkinAddress || ""
       };
     });
 
@@ -471,18 +475,12 @@ Page({
       primaryActionDisabled: primaryAction.disabled,
       primaryActionType: primaryAction.action,
       locationDistanceText: "",
-      weather: {
-        loading: true,
-        available: false,
-        message: "天气加载中…",
-        attribution: "天气服务驱动 by QWeather"
-      }
+      weather: buildWeatherView(resolveActivityWeather(activity))
     }, () => {
       this.updateRemarkOverflow();
     });
     this.refreshSharePreview(activity && activity._id);
     this.loadLocationDistance(activity);
-    this.loadWeather(activity);
   },
 
   updateRemarkOverflow() {
@@ -539,28 +537,6 @@ Page({
         }
       }
     });
-  },
-
-  loadWeather(activity) {
-    const longitude = Number(activity && activity.locationLongitude);
-    const latitude = Number(activity && activity.locationLatitude);
-    const start = parseLocalDateTime(activity && activity.startTime);
-    const requestId = ++this._weatherRequestId;
-    if (!Number.isFinite(longitude) || !Number.isFinite(latitude) || !start) {
-      this.setData({ weather: buildWeatherView(null) });
-      return;
-    }
-    const date = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`;
-    weatherService
-      .getActivityWeather({ longitude, latitude, date })
-      .then((result) => {
-        if (requestId !== this._weatherRequestId) return;
-        this.setData({ weather: buildWeatherView(result) });
-      })
-      .catch(() => {
-        if (requestId !== this._weatherRequestId) return;
-        this.setData({ weather: buildWeatherView(null) });
-      });
   },
 
   toggleRemark() {
@@ -746,6 +722,20 @@ Page({
     });
   },
 
+  showSignupPermissionDenied() {
+    wx.showModal({
+      title: "暂无报名权限",
+      content: "当前账号没有报名权限，请前往「我的」页面查看",
+      cancelText: "取消",
+      confirmText: "去我的",
+      success: (res) => {
+        if (res.confirm) {
+          wx.switchTab({ url: "/pages/profile/profile" });
+        }
+      }
+    });
+  },
+
   directSignup(activity) {
     if (activity.status === "已结束" || activity.status === "已取消" || activity.status === "已流局") {
       wx.showToast({ title: "该活动已结束或已取消", icon: "none" });
@@ -791,6 +781,11 @@ Page({
             });
         }
       });
+      return;
+    }
+    const userRole = app.globalData.userRole || wx.getStorageSync("userRole") || "guest";
+    if (userRole !== "admin") {
+      this.showSignupPermissionDenied();
       return;
     }
     const nickname = app.globalData.userProfile?.nickname?.trim();
@@ -880,9 +875,10 @@ Page({
   },
 
   removeParticipant(e) {
-    const participantId = e.currentTarget.dataset.id;
-    const name = e.currentTarget.dataset.name;
-    const isSelf = !!e.currentTarget.dataset.self;
+    const payload = e && e.detail ? e.detail : ((e && e.currentTarget && e.currentTarget.dataset) || {});
+    const participantId = payload.id;
+    const name = payload.name;
+    const isSelf = !!payload.self;
     const activity = this.data.activity;
     if (!activity) return;
 
@@ -890,7 +886,7 @@ Page({
       title: isSelf ? "确认取消报名" : "确认删除",
       content: isSelf
         ? `确定要取消活动「${activity.name}」的报名吗？`
-        : `确定要删除「${name}」吗？如果该成员在记账明细中，相关记录也会被删除。`,
+        : `确定要删除「${name}」吗？该成员的报名记录将被删除。`,
       success: (res) => {
         if (res.confirm) this.doRemoveParticipant(participantId, name, activity, isSelf);
       }
@@ -918,8 +914,9 @@ Page({
   },
 
   adminRetroCheckin(e) {
-    const participantId = e.currentTarget.dataset.id;
-    const name = e.currentTarget.dataset.name;
+    const payload = e && e.detail ? e.detail : ((e && e.currentTarget && e.currentTarget.dataset) || {});
+    const participantId = payload.id;
+    const name = payload.name;
     const activity = this.data.activity;
     if (!activity || !activity._id || !participantId) return;
 
@@ -946,8 +943,9 @@ Page({
   },
 
   adminCancelCheckin(e) {
-    const participantId = e.currentTarget.dataset.id;
-    const name = e.currentTarget.dataset.name;
+    const payload = e && e.detail ? e.detail : ((e && e.currentTarget && e.currentTarget.dataset) || {});
+    const participantId = payload.id;
+    const name = payload.name;
     const activity = this.data.activity;
     if (!activity || !activity._id || !participantId) return;
 

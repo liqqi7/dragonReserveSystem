@@ -52,6 +52,11 @@ class Activity(Base):
         back_populates="activity",
         cascade="all, delete-orphan",
     )
+    weather_snapshot: Mapped[Optional["ActivityWeatherSnapshot"]] = relationship(
+        back_populates="activity",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
 
 
 class ActivityParticipant(Base):
@@ -73,6 +78,8 @@ class ActivityParticipant(Base):
     checkin_method: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
     checkin_lat: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     checkin_lng: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    checkin_location_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    checkin_address: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,

@@ -13,11 +13,13 @@ from sqlalchemy.orm import Session, selectinload
 from app.core.config import get_settings
 from app.core.exceptions import ConflictError, NotFoundError, ValidationAppError
 from app.models import Activity, ActivityParticipant, User
+from app.services.activity_weather_service import ensure_weather_snapshot, invalidate_weather_snapshot
 from app.schemas.activity import (
     ActivityCheckinRequest,
     ActivityCreateRequest,
     ActivityUpdateRequest,
 )
+from app.services.amap_service import ReverseGeocodeResult, reverse_geocode
 from app.services.activity_type_style_service import (
     get_activity_style,
     list_available_style_keys_in_order,
@@ -199,6 +201,7 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
         display_avatar_url=created_by.avatar_url,
     )
     db.add(creator_participant)
+    ensure_weather_snapshot(db, activity)
 
     db.commit()
     db.refresh(activity)
@@ -210,6 +213,11 @@ def update_activity(db: Session, activity: Activity, payload: ActivityUpdateRequ
 
     data = payload.model_dump(exclude_unset=True)
     prev_type = activity.activity_type
+    weather_source_changed = any(
+        key in data and getattr(activity, key) != value
+        for key, value in data.items()
+        if key in {"start_time", "location_latitude", "location_longitude"}
+    )
     for key, value in data.items():
         setattr(activity, key, value)
 
@@ -243,6 +251,8 @@ def update_activity(db: Session, activity: Activity, payload: ActivityUpdateRequ
         raise ValidationAppError("signup_deadline must be earlier than or equal to start_time")
 
     _sync_activity_status(activity, _app_now())
+    if weather_source_changed:
+        invalidate_weather_snapshot(db, activity)
 
     db.add(activity)
     db.commit()
@@ -375,6 +385,8 @@ def admin_checkin_participant(
     participant.checkin_method = "admin"
     participant.checkin_lat = None
     participant.checkin_lng = None
+    participant.checkin_location_name = None
+    participant.checkin_address = None
     db.add(participant)
     db.commit()
     db.refresh(participant)
@@ -409,6 +421,8 @@ def admin_cancel_checkin_participant(
     participant.checkin_method = None
     participant.checkin_lat = None
     participant.checkin_lng = None
+    participant.checkin_location_name = None
+    participant.checkin_address = None
     db.add(participant)
     db.commit()
     db.refresh(participant)
@@ -461,10 +475,18 @@ def checkin_activity(
     if distance > settings.checkin_radius_meters:
         raise ValidationAppError("You are outside the allowed check-in radius")
 
+    try:
+        reverse_geocode_result = reverse_geocode(lat=payload.lat, lng=payload.lng)
+    except Exception:
+        # Reverse geocoding is supplemental: a provider failure must never block check-in.
+        reverse_geocode_result = ReverseGeocodeResult()
+
     participant.checked_in_at = _app_now()
     participant.checkin_method = "location"
     participant.checkin_lat = payload.lat
     participant.checkin_lng = payload.lng
+    participant.checkin_location_name = reverse_geocode_result.location_name
+    participant.checkin_address = reverse_geocode_result.address
     db.add(participant)
     db.commit()
     db.refresh(participant)

@@ -86,6 +86,14 @@ test("weather unavailable state is independent from location state", () => {
   });
 });
 
+test("detail weather is read from the activity detail snapshot without a second weather request", () => {
+  assert.match(js, /resolveActivityWeather\(activity\)/);
+  assert.match(js, /weather: buildWeatherView\(resolveActivityWeather\(activity\)\)/);
+  assert.doesNotMatch(js, /weatherService/);
+  assert.doesNotMatch(js, /getActivityWeather\s*\(/);
+  assert.doesNotMatch(js, /loadWeather\s*\(/);
+});
+
 test("primary action keeps signup, cancel, checkin and disabled business states", () => {
   assert.deepEqual(detail.resolvePrimaryAction({ status: "未开始", hasSignedUp: false }, false), {
     label: "立即报名", disabled: false, action: "signup"
@@ -101,6 +109,12 @@ test("primary action keeps signup, cancel, checkin and disabled business states"
   });
 });
 
+test("signup permission is enforced before the signup request and guides ordinary users to Profile", () => {
+  assert.match(js, /showSignupPermissionDenied\(\)\s*\{[\s\S]*?title:\s*"暂无报名权限"[\s\S]*?confirmText:\s*"去我的"[\s\S]*?wx\.switchTab\(\{\s*url:\s*"\/pages\/profile\/profile"\s*\}\)/);
+  assert.match(js, /const userRole = app\.globalData\.userRole \|\| wx\.getStorageSync\("userRole"\) \|\| "guest";\s*if \(userRole !== "admin"\) \{\s*this\.showSignupPermissionDenied\(\);\s*return;/s);
+  assert.ok(js.indexOf('if (userRole !== "admin")') < js.indexOf('.signupActivity(activity._id)'));
+});
+
 test("activity detail keeps QA anchors and the existing participants drawer", () => {
   for (const id of [
     "qaActivityDetailHero",
@@ -112,8 +126,13 @@ test("activity detail keeps QA anchors and the existing participants drawer", ()
     assert.match(wxml, new RegExp(`id="${id}"`));
   }
   assert.match(wxml, /bindtap="openParticipantsDrawer"/);
-  assert.match(wxml, /class="participants-drawer-sheet"/);
-  assert.match(wxml, /participantDrawerList/);
+  assert.match(wxml, /<participants-drawer/);
+  assert.match(wxml, /id="qaParticipantsDrawer"/);
+  assert.match(wxml, /visible="\{\{showParticipantsDrawer\}\}"/);
+  assert.match(wxml, /participants="\{\{participantDrawerList\}\}"/);
+  assert.match(wxml, /bindretrocheckin="adminRetroCheckin"/);
+  assert.match(wxml, /bindcancelcheckin="adminCancelCheckin"/);
+  assert.match(wxml, /bindremove="removeParticipant"/);
 });
 
 test("activity detail removes the legacy countdown and standalone pigeon sections", () => {
@@ -146,6 +165,10 @@ test("signup status remains global after the current user has signed up", () => 
   assert.equal(activity.detailStatusTag, "报名中");
 });
 
+test("activity detail top navigation has no text title", () => {
+  assert.doesNotMatch(wxml, /<text class="navbar-title">活动详情<\/text>/);
+});
+
 test("basic information header has no right-side status text", () => {
   assert.match(wxml, /class="hero-status-row"/);
   assert.match(wxml, /class="status-pill \{\{detailStatusClass\}\}"/);
@@ -166,7 +189,9 @@ test("activity detail locks the viewport instead of exposing page overscroll", (
   assert.doesNotMatch(wxml, /class="scroll-bottom-spacer"/);
   assert.match(wxss, /^page\s*\{[^}]*height:\s*100%;[^}]*overflow:\s*hidden;/s);
   assert.match(wxss, /\.page-wrap\s*\{[^}]*height:\s*100vh;[^}]*overflow:\s*hidden;/s);
-  assert.match(wxss, /\.main-scroll\s*\{[^}]*overflow:\s*hidden;/s);
+  assert.match(wxss, /\.main-scroll\s*\{[^}]*overflow:\s*hidden;[^}]*display:\s*flex;[^}]*flex-direction:\s*column;/s);
+  assert.match(wxss, /\.immersive-hero\s*\{[^}]*height:\s*750rpx;[^}]*flex:\s*1 1 750rpx;[^}]*min-height:\s*0;/s);
+  assert.match(wxss, /\.detail-panel\s*\{[^}]*flex:\s*0 0 auto;/s);
 });
 
 test("activity location uses a native coordinate marker instead of a viewport cover layer", () => {
@@ -250,23 +275,25 @@ test("prototype key sizes, colors, typography and action layout do not regress",
   assert.match(wxss, /\.hero-title\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;/s);
   assert.doesNotMatch(wxss, /\.section-assist(?:-text)?\s*\{/);
   assert.match(wxss, /\.hero-copy\s*\{[^}]*gap:\s*23\.08rpx;/s);
-  assert.match(wxss, /\.facts-row\s*\{[^}]*height:\s*78\.85rpx;[^}]*padding:\s*0 23\.08rpx;/s);
-  assert.match(wxss, /\.fact-item\s*\{[^}]*height:\s*78\.85rpx;/s);
+  assert.match(wxss, /\.section-title\s*\{[^}]*font-size:\s*34\.62rpx;[^}]*font-weight:\s*700;/s);
+  assert.match(wxss, /\.facts-row\s*\{[^}]*height:\s*84\.62rpx;[^}]*padding:\s*0;[^}]*justify-content:\s*center;[^}]*gap:\s*23\.08rpx;/s);
+  assert.match(wxss, /\.fact-item\s*\{[^}]*height:\s*84\.62rpx;/s);
   assert.match(wxss, /\.nav-back-icon\s*\{[^}]*width:\s*34\.62rpx;[^}]*height:\s*34\.62rpx;/s);
-  assert.match(wxss, /\.fact-item\s*\{[^}]*padding:\s*0 15\.38rpx;[^}]*gap:\s*7\.69rpx;/s);
+  assert.match(wxss, /\.fact-item\s*\{[^}]*padding:\s*0;[^}]*gap:\s*7\.69rpx;/s);
   assert.match(wxml, /class="fact-item fact-item-time"/);
-  assert.match(wxss, /\.fact-item-time\s*\{[^}]*padding-left:\s*15\.38rpx;/s);
-  assert.match(wxss, /\.fact-label\s*\{[^}]*font-size:\s*23\.08rpx;[^}]*font-weight:\s*500;[^}]*line-height:\s*34\.62rpx;/s);
-  assert.match(wxss, /\.fact-value,[\s\S]*?\{[^}]*font-size:\s*26\.92rpx;[^}]*font-weight:\s*600;[^}]*line-height:\s*42\.31rpx;/s);
-  assert.match(wxss, /\.participant-separator\s*\{[^}]*font-size:\s*23\.08rpx;[^}]*font-weight:\s*500;[^}]*line-height:\s*34\.62rpx;/s);
-  assert.match(wxss, /\.fact-participants\s*\{[^}]*flex:\s*0 0 211\.54rpx;/s);
+  assert.match(wxss, /\.fact-item:first-child\s*\{[^}]*flex:\s*0 0 184\.62rpx;/s);
+  assert.match(wxss, /\.fact-item-time\s*\{[^}]*flex:\s*0 0 196\.15rpx;/s);
+  assert.match(wxss, /\.fact-label\s*\{[^}]*font-size:\s*23\.08rpx;[^}]*font-weight:\s*500;[^}]*line-height:\s*32\.69rpx;/s);
+  assert.match(wxss, /\.fact-value,[\s\S]*?\{[^}]*font-size:\s*30\.77rpx;[^}]*font-weight:\s*600;[^}]*line-height:\s*44\.23rpx;/s);
+  assert.match(wxss, /\.participant-separator\s*\{[^}]*font-size:\s*30\.77rpx;[^}]*font-weight:\s*500;[^}]*line-height:\s*44\.23rpx;/s);
+  assert.match(wxss, /\.fact-participants\s*\{[^}]*flex:\s*0 0 180\.77rpx;/s);
   assert.match(wxss, /\.location-card\s*\{[^}]*height:\s*388\.46rpx;/s);
   assert.match(wxss, /\.location-name\s*\{[^}]*font-size:\s*26\.92rpx;/s);
   assert.match(wxss, /\.location-distance,\s*\n\.location-address\s*\{[^}]*font-size:\s*23\.08rpx;/s);
   assert.match(wxss, /\.location-address\s*\{[^}]*font-weight:\s*400;[^}]*line-height:\s*1\.3;/s);
   assert.match(wxss, /\.navigate-button\s*\{[^}]*width:\s*130\.77rpx;[^}]*height:\s*69\.23rpx;[^}]*border-radius:\s*23\.08rpx;/s);
   assert.match(wxss, /\.weather-card\s*\{[^}]*height:\s*192\.31rpx;/s);
-  assert.match(wxss, /\.weather-metric-value\s*\{[^}]*height:\s*32\.31rpx;[^}]*line-height:\s*32\.31rpx;/s);
+  assert.match(wxss, /\.weather-metric-value\s*\{[^}]*height:\s*23\.08rpx;[^}]*font-size:\s*23\.08rpx;[^}]*line-height:\s*1;/s);
   assert.match(wxss, /\.weather-metric-label\s*\{[^}]*font-size:\s*19\.23rpx;[^}]*font-weight:\s*500;[^}]*line-height:\s*1\.4;/s);
   assert.match(wxss, /\.weather-unavailable-message\s*\{[^}]*font-size:\s*23\.08rpx;[^}]*font-weight:\s*400;/s);
   assert.match(wxss, /\.weather-attribution\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*flex-end;/s);

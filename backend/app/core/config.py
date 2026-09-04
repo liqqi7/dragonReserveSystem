@@ -54,6 +54,15 @@ class Settings(BaseSettings):
     qweather_private_key_path: str = "secrets/qweather-ed25519-private.pem"
     qweather_timeout_seconds: float = 8.0
     qweather_cache_seconds: int = 1800
+    qweather_refresh_far_hours: int = 12
+    qweather_refresh_near_hours: int = 6
+    qweather_air_refresh_near_hours: int = 3
+    qweather_stale_max_hours: int = 24
+    qweather_refresh_batch_size: int = 100
+    qweather_refresh_max_concurrency: int = 2
+    amap_web_service_key: str = ""
+    amap_regeocode_url: str = "https://restapi.amap.com/v3/geocode/regeo"
+    amap_timeout_seconds: float = 5.0
     public_base_url: str = ""
     media_root: str = "storage"
     media_url_prefix: str = "/media"

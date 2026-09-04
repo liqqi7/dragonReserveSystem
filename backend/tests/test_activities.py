@@ -355,13 +355,20 @@ def test_non_admin_cannot_create_activity(client, user_headers) -> None:
     assert response.json()["code"] == "PERMISSION_DENIED"
 
 
-def test_user_can_signup_and_cancel_signup(client, sample_activity, user_headers) -> None:
-    signup_response = client.post(f"/api/v1/activities/{sample_activity.id}/signup", headers=user_headers)
+def test_admin_can_signup_and_cancel_signup(client, sample_activity, admin_headers) -> None:
+    signup_response = client.post(f"/api/v1/activities/{sample_activity.id}/signup", headers=admin_headers)
     assert signup_response.status_code == 200
     assert signup_response.json()["status"] == "signed_up"
 
-    cancel_response = client.delete(f"/api/v1/activities/{sample_activity.id}/signup", headers=user_headers)
+    cancel_response = client.delete(f"/api/v1/activities/{sample_activity.id}/signup", headers=admin_headers)
     assert cancel_response.status_code == 204
+
+
+def test_non_admin_cannot_signup(client, sample_activity, user_headers) -> None:
+    response = client.post(f"/api/v1/activities/{sample_activity.id}/signup", headers=user_headers)
+
+    assert response.status_code == 403
+    assert response.json()["code"] == "PERMISSION_DENIED"
 
 
 def test_creator_auto_signed_up_on_create(client, admin_headers) -> None:
@@ -385,7 +392,7 @@ def test_creator_auto_signed_up_on_create(client, admin_headers) -> None:
     assert len(activity["participants"]) == 1
 
 
-def test_unlimited_capacity_allows_many_signups(client, db_session, admin_user, user_headers) -> None:
+def test_unlimited_capacity_allows_admin_signup(client, db_session, admin_user, admin_headers) -> None:
     from app.models import Activity
 
     start_time = datetime.now(APP_TIME_ZONE).replace(tzinfo=None) + timedelta(hours=1)
@@ -411,7 +418,7 @@ def test_unlimited_capacity_allows_many_signups(client, db_session, admin_user, 
     db_session.refresh(activity)
 
     # 先报名一次
-    response1 = client.post(f"/api/v1/activities/{activity.id}/signup", headers=user_headers)
+    response1 = client.post(f"/api/v1/activities/{activity.id}/signup", headers=admin_headers)
     assert response1.status_code == 200
 
     # 伪造另一个用户报名，验证不会触发人数上限（这里只是覆盖逻辑，不检查重复用户）
@@ -421,7 +428,7 @@ def test_unlimited_capacity_allows_many_signups(client, db_session, admin_user, 
     db_session.commit()
 
 
-def test_signup_disabled_returns_validation_error(client, db_session, admin_user, normal_user, user_headers) -> None:
+def test_signup_disabled_returns_validation_error(client, db_session, admin_user, normal_user, admin_headers) -> None:
     from app.models import Activity
 
     start_time = datetime.utcnow() + timedelta(hours=1)
@@ -445,7 +452,7 @@ def test_signup_disabled_returns_validation_error(client, db_session, admin_user
     db_session.commit()
     db_session.refresh(activity)
 
-    response = client.post(f"/api/v1/activities/{activity.id}/signup", headers=user_headers)
+    response = client.post(f"/api/v1/activities/{activity.id}/signup", headers=admin_headers)
     assert response.status_code == 422
     assert response.json()["code"] == "VALIDATION_ERROR"
 
@@ -640,8 +647,16 @@ def test_user_cannot_remove_other_participant(
     assert response.status_code == 422
 
 
-def test_duplicate_signup_returns_conflict(client, signed_up_activity, user_headers) -> None:
-    response = client.post(f"/api/v1/activities/{signed_up_activity.id}/signup", headers=user_headers)
+def test_duplicate_admin_signup_returns_conflict(client, db_session, sample_activity, admin_user, admin_headers) -> None:
+    db_session.add(ActivityParticipant(
+        activity_id=sample_activity.id,
+        user_id=admin_user.id,
+        display_nickname=admin_user.nickname,
+        display_avatar_url=admin_user.avatar_url,
+    ))
+    db_session.commit()
+
+    response = client.post(f"/api/v1/activities/{sample_activity.id}/signup", headers=admin_headers)
 
     assert response.status_code == 409
     assert response.json()["code"] == "CONFLICT"
@@ -685,7 +700,7 @@ def test_checkin_outside_radius_returns_validation_error(
     assert response.json()["code"] == "VALIDATION_ERROR"
 
 
-def test_signup_after_deadline_returns_validation_error(client, db_session, admin_user, normal_user, user_headers) -> None:
+def test_signup_after_deadline_returns_validation_error(client, db_session, admin_user, normal_user, admin_headers) -> None:
     start_time = datetime.utcnow() - timedelta(hours=1)
     end_time = start_time + timedelta(hours=2)
     from app.models import Activity
@@ -708,7 +723,7 @@ def test_signup_after_deadline_returns_validation_error(client, db_session, admi
     db_session.commit()
     db_session.refresh(activity)
 
-    response = client.post(f"/api/v1/activities/{activity.id}/signup", headers=user_headers)
+    response = client.post(f"/api/v1/activities/{activity.id}/signup", headers=admin_headers)
 
     assert response.status_code == 422
     assert response.json()["code"] == "VALIDATION_ERROR"

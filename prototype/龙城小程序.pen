@@ -6723,7 +6723,7 @@
                       "fill": "#7C2D12",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "字号按使用层级分为：一级页面的页面标题 24px / 34px（如“首页”“排行榜”）；一级页面里的一级标题 20px / 28px（如“我已报名”“近 12 周活跃度”）；二级页面的页面标题 20px / 28px（如“活动详情”）。",
+                      "content": "字号按使用层级分为：一级页面的页面标题 24px / 34px（如“首页”“排行榜”）；一级页面里的一级标题 20px / 28px（如“我已报名”“近 12 周活跃度”）；二级页面的页面标题 20px / 28px（如“活动详情”）；抽屉标题、卡片标题与强调正文使用 16px / 24px。",
                       "lineHeight": 1.5,
                       "fontFamily": "Noto Sans SC",
                       "fontSize": 12,
@@ -6737,7 +6737,7 @@
                   "name": "字号层级表",
                   "clip": true,
                   "width": "fill_container",
-                  "height": 352,
+                  "height": 396,
                   "fill": "#FFFFFF",
                   "cornerRadius": 10,
                   "stroke": "#E5E7EB",
@@ -6747,7 +6747,7 @@
                       "type": "frame",
                       "id": "I1mjD",
                       "name": "文字层级",
-                      "width": 170,
+                      "width": "fill_container",
                       "height": "fill_container",
                       "layout": "vertical",
                       "children": [
@@ -6900,8 +6900,38 @@
                         },
                         {
                           "type": "frame",
+                          "id": "esKLC",
+                          "name": "层级 / Token · 5 · 16px",
+                          "width": "fill_container",
+                          "height": 44,
+                          "fill": "#FFFFFF",
+                          "stroke": "#F0F0F0",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "padding": [
+                            0,
+                            8
+                          ],
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "QaUWF",
+                              "fill": "#111827",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "重点正文与卡片标题",
+                              "textAlignVertical": "middle",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
                           "id": "mfqjQ",
-                          "name": "层级 / Token · 5",
+                          "name": "层级 / Token · 6",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -6931,7 +6961,7 @@
                         {
                           "type": "frame",
                           "id": "KZntu",
-                          "name": "层级 / Token · 6",
+                          "name": "层级 / Token · 7",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -6961,7 +6991,7 @@
                         {
                           "type": "frame",
                           "id": "EbFdT",
-                          "name": "层级 / Token · 7",
+                          "name": "层级 / Token · 8",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -7151,8 +7181,39 @@
                         },
                         {
                           "type": "frame",
+                          "id": "k1Bzo8",
+                          "name": "示例 · 5 · 16px",
+                          "width": "fill_container",
+                          "height": 44,
+                          "fill": "#FFFFFF",
+                          "stroke": "#F0F0F0",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "padding": [
+                            0,
+                            8
+                          ],
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "nnwDF",
+                              "fill": "#111827",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "新建活动",
+                              "lineHeight": 1.5,
+                              "textAlignVertical": "middle",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 16,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
                           "id": "FAOSC",
-                          "name": "示例 · 5",
+                          "name": "示例 · 6",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -7183,7 +7244,7 @@
                         {
                           "type": "frame",
                           "id": "x1XGU",
-                          "name": "示例 · 6",
+                          "name": "示例 · 7",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -7214,7 +7275,7 @@
                         {
                           "type": "frame",
                           "id": "C3sQG",
-                          "name": "示例 · 7",
+                          "name": "示例 · 8",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -7248,7 +7309,7 @@
                       "type": "frame",
                       "id": "wIVpY",
                       "name": "字号与行高",
-                      "width": 100,
+                      "width": "fill_container",
                       "height": "fill_container",
                       "layout": "vertical",
                       "children": [
@@ -7401,8 +7462,38 @@
                         },
                         {
                           "type": "frame",
+                          "id": "bKQJg",
+                          "name": "字号 / 行高 · 5 · 16px",
+                          "width": "fill_container",
+                          "height": 44,
+                          "fill": "#FFFFFF",
+                          "stroke": "#F0F0F0",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "padding": [
+                            0,
+                            8
+                          ],
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "n3EYow",
+                              "fill": "#374151",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "16 / 24",
+                              "textAlignVertical": "middle",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
                           "id": "PmITA",
-                          "name": "字号 / 行高 · 5",
+                          "name": "字号 / 行高 · 6",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -7432,7 +7523,7 @@
                         {
                           "type": "frame",
                           "id": "GLZDx",
-                          "name": "字号 / 行高 · 6",
+                          "name": "字号 / 行高 · 7",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -7462,7 +7553,7 @@
                         {
                           "type": "frame",
                           "id": "MTLXW",
-                          "name": "字号 / 行高 · 7",
+                          "name": "字号 / 行高 · 8",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -7495,7 +7586,7 @@
                       "type": "frame",
                       "id": "v51VO",
                       "name": "建议字重",
-                      "width": 88,
+                      "width": "fill_container",
                       "height": "fill_container",
                       "layout": "vertical",
                       "children": [
@@ -7648,8 +7739,38 @@
                         },
                         {
                           "type": "frame",
+                          "id": "Fg4de",
+                          "name": "建议字重 · 5 · 16px",
+                          "width": "fill_container",
+                          "height": 44,
+                          "fill": "#FFFFFF",
+                          "stroke": "#F0F0F0",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "padding": [
+                            0,
+                            8
+                          ],
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "uBLhG",
+                              "fill": "#374151",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "600 / 700",
+                              "textAlignVertical": "middle",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
                           "id": "KeiWi",
-                          "name": "建议字重 · 5",
+                          "name": "建议字重 · 6",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -7679,7 +7800,7 @@
                         {
                           "type": "frame",
                           "id": "C8MZ1",
-                          "name": "建议字重 · 6",
+                          "name": "建议字重 · 7",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -7709,7 +7830,7 @@
                         {
                           "type": "frame",
                           "id": "i1EpBT",
-                          "name": "建议字重 · 7",
+                          "name": "建议字重 · 8",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -7742,7 +7863,7 @@
                       "type": "frame",
                       "id": "LbWuu",
                       "name": "使用场景",
-                      "width": 330,
+                      "width": "fill_container",
                       "height": "fill_container",
                       "layout": "vertical",
                       "children": [
@@ -7895,8 +8016,38 @@
                         },
                         {
                           "type": "frame",
+                          "id": "EuxS6",
+                          "name": "使用场景 · 5 · 16px",
+                          "width": "fill_container",
+                          "height": 44,
+                          "fill": "#FFFFFF",
+                          "stroke": "#F0F0F0",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "padding": [
+                            0,
+                            8
+                          ],
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "t8Ft7w",
+                              "fill": "#4B5563",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "抽屉标题、卡片标题、重点操作与强调正文",
+                              "textAlignVertical": "middle",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
                           "id": "QxOzt",
-                          "name": "使用场景 · 5",
+                          "name": "使用场景 · 6",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -7926,7 +8077,7 @@
                         {
                           "type": "frame",
                           "id": "m428K",
-                          "name": "使用场景 · 6",
+                          "name": "使用场景 · 7",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -7956,7 +8107,7 @@
                         {
                           "type": "frame",
                           "id": "Jz9al",
-                          "name": "使用场景 · 7",
+                          "name": "使用场景 · 8",
                           "width": "fill_container",
                           "height": 44,
                           "fill": "#FFFFFF",
@@ -10326,7 +10477,7 @@
                           "lineHeight": 1.5,
                           "textAlignVertical": "middle",
                           "fontFamily": "Noto Sans SC",
-                          "fontSize": 16,
+                          "fontSize": 18,
                           "fontWeight": "700"
                         },
                         {
@@ -21335,7 +21486,7 @@
                           "reusable": true,
                           "width": 358,
                           "layout": "vertical",
-                          "gap": 8,
+                          "gap": 12,
                           "children": [
                             {
                               "id": "Vb4Ql",
@@ -21365,37 +21516,27 @@
                             },
                             {
                               "type": "frame",
-                              "id": "GWnDY",
-                              "name": "基本信息数据栏",
-                              "width": "fill_container",
+                              "id": "gzGW9",
+                              "name": "Frame 1142815185",
+                              "width": 358,
                               "layout": "vertical",
                               "gap": 8,
-                              "padding": [
-                                0,
-                                12
-                              ],
-                              "justifyContent": "center",
                               "children": [
                                 {
                                   "type": "frame",
                                   "id": "G7ysO",
                                   "name": "日期时间与报名人数",
                                   "width": "fill_container",
+                                  "gap": 12,
+                                  "justifyContent": "center",
                                   "alignItems": "center",
                                   "children": [
                                     {
                                       "type": "frame",
                                       "id": "Z5JbS",
                                       "name": "日期",
-                                      "width": "fill_container",
                                       "layout": "vertical",
                                       "gap": 4,
-                                      "padding": [
-                                        0,
-                                        8,
-                                        0,
-                                        0
-                                      ],
                                       "justifyContent": "center",
                                       "children": [
                                         {
@@ -21415,7 +21556,7 @@
                                           "fill": "#111827",
                                           "content": "8月31日 周一",
                                           "fontFamily": "Noto Sans SC",
-                                          "fontSize": 14,
+                                          "fontSize": 16,
                                           "fontWeight": "600"
                                         }
                                       ]
@@ -21432,14 +21573,8 @@
                                       "type": "frame",
                                       "id": "tugfU",
                                       "name": "时间",
-                                      "width": "fill_container",
-                                      "height": 38,
                                       "layout": "vertical",
                                       "gap": 4,
-                                      "padding": [
-                                        0,
-                                        8
-                                      ],
                                       "justifyContent": "center",
                                       "children": [
                                         {
@@ -21457,9 +21592,13 @@
                                           "id": "gSqgi",
                                           "name": "时间数值",
                                           "fill": "#111827",
+                                          "textGrowth": "fixed-width-height",
+                                          "width": 102,
+                                          "height": "fit_content(23)",
                                           "content": "16:30 - 19:00",
+                                          "textAlignVertical": "middle",
                                           "fontFamily": "Inter",
-                                          "fontSize": 14,
+                                          "fontSize": 16,
                                           "fontWeight": "600"
                                         }
                                       ]
@@ -21476,15 +21615,8 @@
                                       "type": "frame",
                                       "id": "TwYGE",
                                       "name": "报名人数",
-                                      "width": 110,
                                       "layout": "vertical",
                                       "gap": 4,
-                                      "padding": [
-                                        0,
-                                        0,
-                                        0,
-                                        8
-                                      ],
                                       "justifyContent": "center",
                                       "children": [
                                         {
@@ -21509,11 +21641,9 @@
                                               "id": "KccYm",
                                               "name": "已报名人数",
                                               "fill": "#111827",
-                                              "textGrowth": "fixed-width",
-                                              "width": 17,
                                               "content": "18 ",
                                               "fontFamily": "Noto Sans SC",
-                                              "fontSize": 14,
+                                              "fontSize": 16,
                                               "fontWeight": "600"
                                             },
                                             {
@@ -21526,7 +21656,7 @@
                                               "content": "/",
                                               "textAlign": "center",
                                               "fontFamily": "Noto Sans SC",
-                                              "fontSize": 12,
+                                              "fontSize": 16,
                                               "fontWeight": "500"
                                             },
                                             {
@@ -21536,7 +21666,7 @@
                                               "fill": "#111827",
                                               "content": "24 人",
                                               "fontFamily": "Noto Sans SC",
-                                              "fontSize": 14,
+                                              "fontSize": 16,
                                               "fontWeight": "600"
                                             },
                                             {
@@ -21555,487 +21685,234 @@
                                       ]
                                     }
                                   ]
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "TA7bR",
-                              "name": "活动地点地图卡片",
-                              "clip": true,
-                              "width": "fill_container",
-                              "height": 202,
-                              "fill": "#FFFFFF",
-                              "cornerRadius": 16,
-                              "stroke": "#E5E7EB",
-                              "strokeWidth": 1,
-                              "layout": "vertical",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "dCHAG",
-                                  "name": "地图预览区域",
-                                  "clip": true,
-                                  "width": "fill_container",
-                                  "height": 148,
-                                  "fill": "#EEF3E8",
-                                  "layout": "none",
-                                  "children": [
-                                    {
-                                      "type": "rectangle",
-                                      "cornerRadius": 24,
-                                      "id": "N5o1cL",
-                                      "x": 242,
-                                      "y": 0,
-                                      "name": "地图水域",
-                                      "fill": "#DCECF4",
-                                      "width": 116,
-                                      "height": 148
-                                    },
-                                    {
-                                      "type": "rectangle",
-                                      "cornerRadius": 8,
-                                      "id": "Vuj2h",
-                                      "x": 0,
-                                      "y": 70,
-                                      "name": "地图主路横向",
-                                      "fill": "#FFFFFF",
-                                      "width": 358,
-                                      "height": 12
-                                    },
-                                    {
-                                      "type": "rectangle",
-                                      "cornerRadius": 8,
-                                      "id": "fVjP6",
-                                      "x": 116,
-                                      "y": 0,
-                                      "name": "地图主路纵向",
-                                      "rotation": -18,
-                                      "fill": "#FFFFFF",
-                                      "width": 10,
-                                      "height": 148
-                                    },
-                                    {
-                                      "type": "rectangle",
-                                      "cornerRadius": 8,
-                                      "id": "ssGgf",
-                                      "x": 18,
-                                      "y": 118,
-                                      "name": "地图辅路",
-                                      "rotation": 5,
-                                      "fill": "#FFFFFFCC",
-                                      "width": 238,
-                                      "height": 6
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "yzu8y",
-                                      "x": 20,
-                                      "y": 20,
-                                      "name": "地图道路文字",
-                                      "fill": "#4B5563",
-                                      "content": "环球影城",
-                                      "fontFamily": "Noto Sans SC",
-                                      "fontSize": 10,
-                                      "fontWeight": "600"
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "aXZ0R",
-                                      "x": 166,
-                                      "y": 51,
-                                      "name": "活动地点标记",
-                                      "width": 38,
-                                      "height": 46,
-                                      "layout": "vertical",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "HGrp1",
-                                          "name": "地点标记图标底",
-                                          "width": 34,
-                                          "height": 34,
-                                          "fill": "#FF9800",
-                                          "cornerRadius": 17,
-                                          "stroke": "#FFFFFF",
-                                          "strokeWidth": 3,
-                                          "justifyContent": "center",
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "bx82z",
-                                              "name": "地点标记图标",
-                                              "width": 17,
-                                              "height": 17,
-                                              "icon": "map-pin",
-                                              "library": "lucide",
-                                              "weight": 700,
-                                              "fill": "#FFFFFF"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "ellipse",
-                                          "id": "qyMJd",
-                                          "name": "地点标记投影",
-                                          "fill": "#00000024",
-                                          "width": 14,
-                                          "height": 5
-                                        }
-                                      ]
-                                    }
-                                  ]
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "XSc0q",
-                                  "name": "地点与导航信息",
+                                  "id": "TA7bR",
+                                  "name": "活动地点地图卡片",
+                                  "clip": true,
                                   "width": "fill_container",
-                                  "height": 54,
-                                  "gap": 8,
-                                  "padding": [
-                                    8,
-                                    12
-                                  ],
-                                  "alignItems": "center",
+                                  "height": 202,
+                                  "fill": "#FFFFFF",
+                                  "cornerRadius": 16,
+                                  "stroke": "#E5E7EB",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
                                   "children": [
                                     {
                                       "type": "frame",
-                                      "id": "E5C2m",
-                                      "name": "地点距离文字组",
+                                      "id": "dCHAG",
+                                      "name": "地图预览区域",
+                                      "clip": true,
                                       "width": "fill_container",
-                                      "layout": "vertical",
-                                      "gap": 4,
+                                      "height": 148,
+                                      "fill": "#EEF3E8",
+                                      "layout": "none",
                                       "children": [
                                         {
-                                          "type": "frame",
-                                          "id": "D6VUv",
-                                          "name": "地点简称与距离",
-                                          "gap": 8,
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "text",
-                                              "id": "yG0To",
-                                              "name": "活动地点名称",
-                                              "fill": "#111827",
-                                              "content": "环球影城一二三四一二三四...",
-                                              "fontFamily": "Noto Sans SC",
-                                              "fontSize": 14,
-                                              "fontWeight": "700"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "c6C9gZ",
-                                              "name": "距离简称",
-                                              "fill": "#4B5563",
-                                              "content": "约 2.4km",
-                                              "fontFamily": "Noto Sans SC",
-                                              "fontSize": 12,
-                                              "fontWeight": "500"
-                                            }
-                                          ]
+                                          "type": "rectangle",
+                                          "cornerRadius": 24,
+                                          "id": "N5o1cL",
+                                          "x": 242,
+                                          "y": 0,
+                                          "name": "地图水域",
+                                          "fill": "#DCECF4",
+                                          "width": 116,
+                                          "height": 148
+                                        },
+                                        {
+                                          "type": "rectangle",
+                                          "cornerRadius": 8,
+                                          "id": "Vuj2h",
+                                          "x": 0,
+                                          "y": 70,
+                                          "name": "地图主路横向",
+                                          "fill": "#FFFFFF",
+                                          "width": 358,
+                                          "height": 12
+                                        },
+                                        {
+                                          "type": "rectangle",
+                                          "cornerRadius": 8,
+                                          "id": "fVjP6",
+                                          "x": 116,
+                                          "y": 0,
+                                          "name": "地图主路纵向",
+                                          "rotation": -18,
+                                          "fill": "#FFFFFF",
+                                          "width": 10,
+                                          "height": 148
+                                        },
+                                        {
+                                          "type": "rectangle",
+                                          "cornerRadius": 8,
+                                          "id": "ssGgf",
+                                          "x": 18,
+                                          "y": 118,
+                                          "name": "地图辅路",
+                                          "rotation": 5,
+                                          "fill": "#FFFFFFCC",
+                                          "width": 238,
+                                          "height": 6
                                         },
                                         {
                                           "type": "text",
-                                          "id": "k9Ol3w",
-                                          "name": "活动详细地址",
+                                          "id": "yzu8y",
+                                          "x": 20,
+                                          "y": 20,
+                                          "name": "地图道路文字",
                                           "fill": "#4B5563",
-                                          "textGrowth": "fixed-width",
-                                          "width": "fill_container",
-                                          "content": "北京市通州区东六环加州C小镇南侧400米一二...",
-                                          "lineHeight": 1.3,
+                                          "content": "环球影城",
                                           "fontFamily": "Noto Sans SC",
-                                          "fontSize": 12,
-                                          "fontWeight": "normal"
+                                          "fontSize": 10,
+                                          "fontWeight": "600"
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "aXZ0R",
+                                          "x": 166,
+                                          "y": 51,
+                                          "name": "活动地点标记",
+                                          "width": 38,
+                                          "height": 46,
+                                          "layout": "vertical",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "HGrp1",
+                                              "name": "地点标记图标底",
+                                              "width": 34,
+                                              "height": 34,
+                                              "fill": "#FF9800",
+                                              "cornerRadius": 17,
+                                              "stroke": "#FFFFFF",
+                                              "strokeWidth": 3,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "bx82z",
+                                                  "name": "地点标记图标",
+                                                  "width": 17,
+                                                  "height": 17,
+                                                  "icon": "map-pin",
+                                                  "library": "lucide",
+                                                  "weight": 700,
+                                                  "fill": "#FFFFFF"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "ellipse",
+                                              "id": "qyMJd",
+                                              "name": "地点标记投影",
+                                              "fill": "#00000024",
+                                              "width": 14,
+                                              "height": 5
+                                            }
+                                          ]
                                         }
                                       ]
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "Pow1c",
-                                      "name": "导航按钮",
-                                      "width": 68,
-                                      "height": 36,
-                                      "fill": "#FFF3E0",
-                                      "cornerRadius": 12,
-                                      "gap": 4,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "n94xE",
-                                          "name": "导航按钮图标",
-                                          "width": 15,
-                                          "height": 15,
-                                          "icon": "navigation",
-                                          "library": "lucide",
-                                          "weight": 700,
-                                          "fill": "#FF9800"
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "iC20W",
-                                          "name": "导航按钮文字",
-                                          "fill": "#FF9800",
-                                          "content": "导航",
-                                          "fontFamily": "Noto Sans SC",
-                                          "fontSize": 14,
-                                          "fontWeight": "700"
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "rZ8LJ",
-                              "name": "活动天气 · 五项紧凑长条",
-                              "clip": true,
-                              "width": 358,
-                              "fill": "#ffffffff",
-                              "cornerRadius": 16,
-                              "stroke": "#E5E7EB",
-                              "strokeWidth": 1,
-                              "layout": "vertical",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "TZ3E5",
-                                  "name": "天气数据主体",
-                                  "width": "fill_container",
-                                  "height": 74,
-                                  "layout": "none",
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "XzdiL",
-                                      "x": 12,
-                                      "y": 8,
-                                      "name": "天气主信息",
-                                      "width": 120,
-                                      "height": 58,
-                                      "gap": 12,
+                                      "id": "XSc0q",
+                                      "name": "地点与导航信息",
+                                      "width": "fill_container",
+                                      "height": 54,
+                                      "gap": 8,
                                       "padding": [
-                                        0,
-                                        8
+                                        8,
+                                        12
                                       ],
                                       "alignItems": "center",
                                       "children": [
                                         {
                                           "type": "frame",
-                                          "id": "l2jYP",
-                                          "name": "天气图标底",
-                                          "width": 42,
-                                          "height": 42,
-                                          "fill": "#FFF3E0",
-                                          "cornerRadius": 12,
-                                          "justifyContent": "center",
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "F6RJvi",
-                                              "name": "晴间多云图标",
-                                              "width": 24,
-                                              "height": 24,
-                                              "icon": "cloud-sun",
-                                              "library": "lucide",
-                                              "weight": 600,
-                                              "fill": "#FF9800"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "T4HXp",
-                                          "name": "气温与天气",
+                                          "id": "E5C2m",
+                                          "name": "地点距离文字组",
                                           "width": "fill_container",
                                           "layout": "vertical",
                                           "gap": 4,
-                                          "justifyContent": "center",
                                           "children": [
                                             {
-                                              "type": "text",
-                                              "id": "KjLB4",
-                                              "name": "气温数值",
-                                              "fill": "#111827",
-                                              "content": "24°",
-                                              "fontFamily": "Inter",
-                                              "fontSize": 20,
-                                              "fontWeight": "700"
+                                              "type": "frame",
+                                              "id": "D6VUv",
+                                              "name": "地点简称与距离",
+                                              "gap": 8,
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "yG0To",
+                                                  "name": "活动地点名称",
+                                                  "fill": "#111827",
+                                                  "content": "环球影城一二三四一二三四...",
+                                                  "fontFamily": "Noto Sans SC",
+                                                  "fontSize": 14,
+                                                  "fontWeight": "700"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "c6C9gZ",
+                                                  "name": "距离简称",
+                                                  "fill": "#4B5563",
+                                                  "content": "约 2.4km",
+                                                  "fontFamily": "Noto Sans SC",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "500"
+                                                }
+                                              ]
                                             },
                                             {
                                               "type": "text",
-                                              "id": "w3Ubhl",
-                                              "name": "天气数值",
+                                              "id": "k9Ol3w",
+                                              "name": "活动详细地址",
                                               "fill": "#4B5563",
                                               "textGrowth": "fixed-width",
                                               "width": "fill_container",
-                                              "content": "晴间多云",
+                                              "content": "北京市通州区东六环加州C小镇南侧400米一二...",
+                                              "lineHeight": 1.3,
                                               "fontFamily": "Noto Sans SC",
-                                              "fontSize": 10,
-                                              "fontWeight": "600"
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "rectangle",
-                                      "id": "wTRZQ",
-                                      "x": 140,
-                                      "y": 16,
-                                      "name": "天气分隔线",
-                                      "fill": "#E5E7EB",
-                                      "width": 1,
-                                      "height": 42
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "BCnwg",
-                                      "x": 149,
-                                      "y": 8,
-                                      "name": "天气环境指标",
-                                      "width": 197,
-                                      "height": 58,
-                                      "gap": 4,
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "RisiR",
-                                          "name": "湿度指标",
-                                          "width": "fill_container",
-                                          "height": "fill_container",
-                                          "layout": "vertical",
-                                          "gap": 4,
-                                          "justifyContent": "center",
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "tXrji",
-                                              "name": "湿度图标",
-                                              "width": 14,
-                                              "height": 14,
-                                              "icon": "droplets",
-                                              "library": "lucide",
-                                              "weight": 500,
-                                              "fill": "#4B5563"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "jOsrS",
-                                              "name": "湿度数值",
-                                              "fill": "#111827",
-                                              "content": "58%",
-                                              "fontFamily": "Inter",
                                               "fontSize": 12,
-                                              "fontWeight": "700"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "y70kN",
-                                              "name": "湿度标签",
-                                              "fill": "#9CA3AF",
-                                              "content": "空气湿度",
-                                              "fontFamily": "Noto Sans SC",
-                                              "fontSize": 10,
-                                              "fontWeight": "500"
+                                              "fontWeight": "normal"
                                             }
                                           ]
                                         },
                                         {
                                           "type": "frame",
-                                          "id": "iCrOO",
-                                          "name": "风向风速指标",
-                                          "width": "fill_container",
-                                          "height": "fill_container",
-                                          "layout": "vertical",
+                                          "id": "Pow1c",
+                                          "name": "导航按钮",
+                                          "width": 68,
+                                          "height": 36,
+                                          "fill": "#FFF3E0",
+                                          "cornerRadius": 12,
                                           "gap": 4,
                                           "justifyContent": "center",
                                           "alignItems": "center",
                                           "children": [
                                             {
                                               "type": "icon",
-                                              "id": "vQrLD",
-                                              "name": "风向图标",
-                                              "width": 14,
-                                              "height": 14,
+                                              "id": "n94xE",
+                                              "name": "导航按钮图标",
+                                              "width": 15,
+                                              "height": 15,
                                               "icon": "navigation",
                                               "library": "lucide",
-                                              "weight": 500,
-                                              "fill": "#4B5563"
+                                              "weight": 700,
+                                              "fill": "#FF9800"
                                             },
                                             {
                                               "type": "text",
-                                              "id": "fPRoQ",
-                                              "name": "风向风速数值",
-                                              "fill": "#111827",
-                                              "content": "东南风 2级",
+                                              "id": "iC20W",
+                                              "name": "导航按钮文字",
+                                              "fill": "#FF9800",
+                                              "content": "导航",
                                               "fontFamily": "Noto Sans SC",
-                                              "fontSize": 10,
+                                              "fontSize": 14,
                                               "fontWeight": "700"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "l1Exx",
-                                              "name": "风向风速标签",
-                                              "fill": "#9CA3AF",
-                                              "content": "风向风速",
-                                              "fontFamily": "Noto Sans SC",
-                                              "fontSize": 10,
-                                              "fontWeight": "500"
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "type": "frame",
-                                          "id": "lz1Z8",
-                                          "name": "空气质量指标",
-                                          "width": "fill_container",
-                                          "height": "fill_container",
-                                          "layout": "vertical",
-                                          "gap": 4,
-                                          "justifyContent": "center",
-                                          "alignItems": "center",
-                                          "children": [
-                                            {
-                                              "type": "icon",
-                                              "id": "Z6qG3",
-                                              "name": "空气质量图标",
-                                              "width": 14,
-                                              "height": 14,
-                                              "icon": "leaf",
-                                              "library": "lucide",
-                                              "weight": 500,
-                                              "fill": "#4B5563"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "NVqTS",
-                                              "name": "空气质量数值",
-                                              "fill": "#111827",
-                                              "content": "优 32",
-                                              "fontFamily": "Noto Sans SC",
-                                              "fontSize": 10,
-                                              "fontWeight": "700"
-                                            },
-                                            {
-                                              "type": "text",
-                                              "id": "Ixx91",
-                                              "name": "空气质量标签",
-                                              "fill": "#9CA3AF",
-                                              "content": "空气质量",
-                                              "fontFamily": "Noto Sans SC",
-                                              "fontSize": 10,
-                                              "fontWeight": "500"
                                             }
                                           ]
                                         }
@@ -22045,31 +21922,297 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "IQM2U",
-                                  "name": "天气服务来源区",
+                                  "id": "rZ8LJ",
+                                  "name": "活动天气 · 五项紧凑长条",
+                                  "clip": true,
                                   "width": "fill_container",
-                                  "fill": "#fafafa",
-                                  "stroke": "#F3F4F6",
-                                  "strokeWidth": {
-                                    "top": 1
-                                  },
-                                  "padding": [
-                                    8,
-                                    16
-                                  ],
-                                  "justifyContent": "end",
-                                  "alignItems": "center",
+                                  "fill": "#ffffffff",
+                                  "cornerRadius": 16,
+                                  "stroke": "#E5E7EB",
+                                  "strokeWidth": 1,
+                                  "layout": "vertical",
                                   "children": [
                                     {
-                                      "type": "text",
-                                      "id": "u1O4s",
-                                      "name": "天气服务来源文案",
-                                      "fill": "#9CA3AF",
-                                      "content": "天气服务驱动 by QWeather",
-                                      "lineHeight": 1,
-                                      "fontFamily": "Noto Sans SC",
-                                      "fontSize": 10,
-                                      "fontWeight": "normal"
+                                      "type": "frame",
+                                      "id": "TZ3E5",
+                                      "name": "天气数据主体",
+                                      "width": "fill_container",
+                                      "height": 74,
+                                      "layout": "none",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "XzdiL",
+                                          "x": 12,
+                                          "y": 8,
+                                          "name": "天气主信息",
+                                          "width": 120,
+                                          "height": 58,
+                                          "gap": 12,
+                                          "padding": [
+                                            0,
+                                            8
+                                          ],
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "l2jYP",
+                                              "name": "天气图标底",
+                                              "width": 42,
+                                              "height": 42,
+                                              "fill": "#FFF3E0",
+                                              "cornerRadius": 12,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "F6RJvi",
+                                                  "name": "晴间多云图标",
+                                                  "width": 24,
+                                                  "height": 24,
+                                                  "icon": "cloud-sun",
+                                                  "library": "lucide",
+                                                  "weight": 600,
+                                                  "fill": "#FF9800"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "T4HXp",
+                                              "name": "气温与天气",
+                                              "width": "fill_container",
+                                              "layout": "vertical",
+                                              "gap": 4,
+                                              "justifyContent": "center",
+                                              "children": [
+                                                {
+                                                  "type": "text",
+                                                  "id": "KjLB4",
+                                                  "name": "气温数值",
+                                                  "fill": "#111827",
+                                                  "content": "24°",
+                                                  "fontFamily": "Inter",
+                                                  "fontSize": 20,
+                                                  "fontWeight": "700"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "w3Ubhl",
+                                                  "name": "天气数值",
+                                                  "fill": "#4B5563",
+                                                  "textGrowth": "fixed-width",
+                                                  "width": "fill_container",
+                                                  "content": "晴间多云",
+                                                  "fontFamily": "Noto Sans SC",
+                                                  "fontSize": 10,
+                                                  "fontWeight": "600"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "rectangle",
+                                          "id": "wTRZQ",
+                                          "x": 140,
+                                          "y": 16,
+                                          "name": "天气分隔线",
+                                          "fill": "#E5E7EB",
+                                          "width": 1,
+                                          "height": 42
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "BCnwg",
+                                          "x": 149,
+                                          "y": 8,
+                                          "name": "天气环境指标",
+                                          "width": 197,
+                                          "height": 58,
+                                          "gap": 4,
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "frame",
+                                              "id": "RisiR",
+                                              "name": "湿度指标",
+                                              "width": "fill_container",
+                                              "height": "fill_container",
+                                              "layout": "vertical",
+                                              "gap": 4,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "tXrji",
+                                                  "name": "湿度图标",
+                                                  "width": 14,
+                                                  "height": 14,
+                                                  "icon": "droplets",
+                                                  "library": "lucide",
+                                                  "weight": 500,
+                                                  "fill": "#4B5563"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "jOsrS",
+                                                  "name": "湿度数值",
+                                                  "fill": "#111827",
+                                                  "textGrowth": "fixed-width-height",
+                                                  "width": 28,
+                                                  "height": "fit_content(13)",
+                                                  "content": "58%",
+                                                  "lineHeight": 1,
+                                                  "textAlignVertical": "middle",
+                                                  "fontFamily": "Inter",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "700"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "y70kN",
+                                                  "name": "湿度标签",
+                                                  "fill": "#9CA3AF",
+                                                  "content": "空气湿度",
+                                                  "fontFamily": "Noto Sans SC",
+                                                  "fontSize": 10,
+                                                  "fontWeight": "500"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "iCrOO",
+                                              "name": "风向风速指标",
+                                              "width": "fill_container",
+                                              "height": "fill_container",
+                                              "layout": "vertical",
+                                              "gap": 4,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "vQrLD",
+                                                  "name": "风向图标",
+                                                  "width": 14,
+                                                  "height": 14,
+                                                  "icon": "navigation",
+                                                  "library": "lucide",
+                                                  "weight": 500,
+                                                  "fill": "#4B5563"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "fPRoQ",
+                                                  "name": "风向风速数值",
+                                                  "fill": "#111827",
+                                                  "textGrowth": "fixed-width",
+                                                  "width": 59,
+                                                  "content": "东南风 2级",
+                                                  "lineHeight": 1,
+                                                  "textAlignVertical": "middle",
+                                                  "fontFamily": "Inter",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "700"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "l1Exx",
+                                                  "name": "风向风速标签",
+                                                  "fill": "#9CA3AF",
+                                                  "content": "风向风速",
+                                                  "fontFamily": "Noto Sans SC",
+                                                  "fontSize": 10,
+                                                  "fontWeight": "500"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
+                                              "id": "lz1Z8",
+                                              "name": "空气质量指标",
+                                              "width": "fill_container",
+                                              "height": "fill_container",
+                                              "layout": "vertical",
+                                              "gap": 4,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "Z6qG3",
+                                                  "name": "空气质量图标",
+                                                  "width": 14,
+                                                  "height": 14,
+                                                  "icon": "leaf",
+                                                  "library": "lucide",
+                                                  "weight": 500,
+                                                  "fill": "#4B5563"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "NVqTS",
+                                                  "name": "空气质量数值",
+                                                  "fill": "#111827",
+                                                  "textGrowth": "fixed-width",
+                                                  "width": 31,
+                                                  "content": "优 32",
+                                                  "lineHeight": 1,
+                                                  "textAlignVertical": "middle",
+                                                  "fontFamily": "Inter",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "700"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "Ixx91",
+                                                  "name": "空气质量标签",
+                                                  "fill": "#9CA3AF",
+                                                  "content": "空气质量",
+                                                  "fontFamily": "Noto Sans SC",
+                                                  "fontSize": 10,
+                                                  "fontWeight": "500"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "IQM2U",
+                                      "name": "天气服务来源区",
+                                      "width": "fill_container",
+                                      "fill": "#fafafa",
+                                      "stroke": "#F3F4F6",
+                                      "strokeWidth": {
+                                        "top": 1
+                                      },
+                                      "padding": [
+                                        8,
+                                        16
+                                      ],
+                                      "justifyContent": "end",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "text",
+                                          "id": "u1O4s",
+                                          "name": "天气服务来源文案",
+                                          "fill": "#9CA3AF",
+                                          "content": "天气服务驱动 by QWeather",
+                                          "lineHeight": 1,
+                                          "fontFamily": "Noto Sans SC",
+                                          "fontSize": 10,
+                                          "fontWeight": "normal"
+                                        }
+                                      ]
                                     }
                                   ]
                                 }
@@ -22106,38 +22249,6 @@
                           "descendants": {
                             "Vb4Ql/Q3a1B": {
                               "enabled": false
-                            },
-                            "c6C9gZ": {
-                              "enabled": false
-                            },
-                            "rZ8LJ": {
-                              "type": "frame",
-                              "id": "Vxfue",
-                              "name": "天气不可用提示区",
-                              "width": "fill_container",
-                              "height": 100,
-                              "fill": "#FFFFFFFF",
-                              "cornerRadius": 16,
-                              "stroke": "#E5E7EB",
-                              "strokeWidth": 1,
-                              "padding": [
-                                0,
-                                16
-                              ],
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "vcAJt",
-                                  "name": "天气不可用提示",
-                                  "fill": "#9CA3AF",
-                                  "content": "距离活动时间较远，暂不展示天气信息",
-                                  "fontFamily": "Noto Sans SC",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
-                                }
-                              ]
                             }
                           }
                         }
@@ -22170,19 +22281,6 @@
                           "descendants": {
                             "Vb4Ql/Q3a1B": {
                               "enabled": false
-                            },
-                            "KccYm": {
-                              "content": "18 ",
-                              "textGrowth": "auto"
-                            },
-                            "vSHSW": {
-                              "enabled": true
-                            },
-                            "oUgR6": {
-                              "enabled": true
-                            },
-                            "NVqTS": {
-                              "content": "—"
                             }
                           }
                         }
@@ -22917,13 +23015,15 @@
                       "id": "mdHcu",
                       "name": "底部功能栏组件",
                       "width": 2190,
-                      "layout": "vertical",
-                      "gap": 16,
+                      "height": 358,
+                      "layout": "none",
                       "children": [
                         {
                           "type": "frame",
                           "id": "D6LaHs",
-                          "name": "底部功能栏组件 · 单行展示",
+                          "x": 0,
+                          "y": 0,
+                          "name": "底部功能栏组件 · 基础操作",
                           "width": 2190,
                           "gap": 20,
                           "children": [
@@ -23206,10 +23306,26 @@
                                   ]
                                 }
                               ]
-                            },
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Ct6No",
+                          "layoutPosition": "absolute",
+                          "x": 0,
+                          "y": 207,
+                          "name": "底部功能栏组件 · 详情操作",
+                          "width": 2190,
+                          "height": 171,
+                          "layout": "none",
+                          "children": [
                             {
                               "type": "frame",
-                              "id": "UIMna",
+                              "id": "burDY",
+                              "layoutPosition": "absolute",
+                              "x": 0,
+                              "y": -50,
                               "name": "卡片 · 详情操作",
                               "width": 422,
                               "fill": "#00000000",
@@ -23382,7 +23498,10 @@
                             },
                             {
                               "type": "frame",
-                              "id": "uOkfg",
+                              "id": "Rsfhk",
+                              "layoutPosition": "absolute",
+                              "x": 442,
+                              "y": -50,
                               "name": "卡片 · 详情操作 · 无编辑",
                               "width": 422,
                               "fill": "#00000000",
@@ -23529,7 +23648,10 @@
                             },
                             {
                               "type": "frame",
-                              "id": "lDdUW",
+                              "id": "tTfis",
+                              "layoutPosition": "absolute",
+                              "x": 884,
+                              "y": -50,
                               "name": "卡片 · 详情操作 · 报名不可用",
                               "width": 422,
                               "fill": "#00000000",
@@ -23579,6 +23701,58 @@
                                   }
                                 }
                               ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "TFtZ5",
+                              "layoutPosition": "absolute",
+                              "x": 1326,
+                              "y": -50,
+                              "name": "卡片 · 详情操作 · 取消报名",
+                              "width": 422,
+                              "fill": "#00000000",
+                              "stroke": "#00000000",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 10,
+                              "padding": 16,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Y6Vwp",
+                                  "name": "取消报名标签",
+                                  "fill": "#111827",
+                                  "content": "详情操作 · 无编辑 · 取消报名",
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 14,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "MoPFX",
+                                  "name": "取消报名说明",
+                                  "fill": "#6B7280",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "用户点击立即报名并报名成功后使用，主按钮切换为取消报名。",
+                                  "lineHeight": 1.6,
+                                  "fontFamily": "Noto Sans SC",
+                                  "fontSize": 12,
+                                  "fontWeight": "normal"
+                                },
+                                {
+                                  "id": "NbwxR",
+                                  "type": "ref",
+                                  "reusable": true,
+                                  "ref": "mkywX",
+                                  "name": "component/小程序底部功能栏 · 详情操作 · 无编辑 · 取消报名",
+                                  "descendants": {
+                                    "sKWEW": {
+                                      "content": "取消报名"
+                                    }
+                                  }
+                                }
+                              ]
                             }
                           ]
                         }
@@ -23613,7 +23787,7 @@
                       "fill": "#6B7280",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "统一现场点名表内容的默认、左滑单操作、左滑双操作与无人报名状态；页面必须使用组件引用，表头与成员列表保持紧凑衔接。",
+                      "content": "统一现场点名表内容的默认、左滑取签删除、左滑补卡删除与无人报名状态；页面必须使用组件引用，表头与成员列表保持紧凑衔接。",
                       "lineHeight": 1.5,
                       "fontFamily": "Noto Sans SC",
                       "fontSize": 14,
@@ -25348,7 +25522,7 @@
                         {
                           "type": "frame",
                           "id": "IKcgY",
-                          "name": "状态展示 · 左滑单操作",
+                          "name": "状态展示 · 左滑取签删除",
                           "width": 390,
                           "layout": "vertical",
                           "gap": 8,
@@ -25356,9 +25530,9 @@
                             {
                               "type": "text",
                               "id": "iRva3",
-                              "name": "状态标签 · 左滑单操作",
+                              "name": "状态标签 · 左滑取签删除",
                               "fill": "#4B5563",
-                              "content": "左滑单操作",
+                              "content": "左滑取签 + 删除",
                               "fontFamily": "Noto Sans SC",
                               "fontSize": 14,
                               "fontWeight": "600"
@@ -25366,7 +25540,7 @@
                             {
                               "type": "frame",
                               "id": "Li595",
-                              "name": "component/现场点名表内容 · 左滑单操作",
+                              "name": "component/现场点名表内容 · 左滑取签删除",
                               "reusable": true,
                               "clip": true,
                               "width": 390,
@@ -25684,7 +25858,7 @@
                                         {
                                           "type": "frame",
                                           "id": "T5VYz",
-                                          "name": "点名记录 · 小北 · 分层左滑状态",
+                                          "name": "点名记录 · 小北 · 左滑取签删除状态",
                                           "clip": true,
                                           "width": "fill_container",
                                           "height": 64,
@@ -25694,10 +25868,50 @@
                                           "children": [
                                             {
                                               "type": "frame",
+                                              "id": "Ow8q4",
+                                              "x": 194,
+                                              "y": 0,
+                                              "name": "取签按钮",
+                                              "width": 80,
+                                              "height": 64,
+                                              "fill": "#FFF8ED",
+                                              "cornerRadius": 12,
+                                              "stroke": "#00000000",
+                                              "layout": "vertical",
+                                              "gap": 4,
+                                              "justifyContent": "center",
+                                              "alignItems": "center",
+                                              "children": [
+                                                {
+                                                  "type": "icon",
+                                                  "id": "LBXxt",
+                                                  "name": "取签图标",
+                                                  "width": 18,
+                                                  "height": 18,
+                                                  "icon": "clipboard-x",
+                                                  "library": "lucide",
+                                                  "weight": 300,
+                                                  "fill": "#F59E0B"
+                                                },
+                                                {
+                                                  "type": "text",
+                                                  "id": "fQffV",
+                                                  "name": "取签按钮文案",
+                                                  "fill": "#F59E0B",
+                                                  "content": "取签",
+                                                  "lineHeight": 1,
+                                                  "fontFamily": "Noto Sans SC",
+                                                  "fontSize": 12,
+                                                  "fontWeight": "normal"
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "type": "frame",
                                               "id": "E8bIqA",
                                               "x": 278,
                                               "y": 0,
-                                              "name": "分层操作轨 · 删除",
+                                              "name": "删除按钮",
                                               "width": 80,
                                               "height": 64,
                                               "fill": "#FFF5F5",
@@ -25735,9 +25949,9 @@
                                             {
                                               "type": "frame",
                                               "id": "hB3fA",
-                                              "x": -84,
+                                              "x": -168,
                                               "y": 0,
-                                              "name": "点名记录 · 小北 · 浮层前景",
+                                              "name": "点名记录 · 小北 · 左滑前景",
                                               "width": 358,
                                               "height": 64,
                                               "fill": "#FFFFFF",
@@ -27079,7 +27293,7 @@
                         {
                           "type": "frame",
                           "id": "SLOd3",
-                          "name": "状态展示 · 左滑双操作",
+                          "name": "状态展示 · 左滑补卡删除",
                           "width": 390,
                           "layout": "vertical",
                           "gap": 8,
@@ -27087,9 +27301,9 @@
                             {
                               "type": "text",
                               "id": "U4q4DQ",
-                              "name": "状态标签 · 左滑双操作",
+                              "name": "状态标签 · 左滑补卡删除",
                               "fill": "#4B5563",
-                              "content": "左滑双操作",
+                              "content": "左滑补卡 + 删除",
                               "fontFamily": "Noto Sans SC",
                               "fontSize": 14,
                               "fontWeight": "600"
@@ -27097,7 +27311,7 @@
                             {
                               "type": "frame",
                               "id": "SirYI",
-                              "name": "component/现场点名表内容 · 左滑双操作",
+                              "name": "component/现场点名表内容 · 左滑补卡删除",
                               "reusable": true,
                               "clip": true,
                               "width": 390,
@@ -27431,7 +27645,7 @@
                                               "name": "补卡按钮",
                                               "width": 80,
                                               "height": 64,
-                                              "fill": "#FFF8ED",
+                                              "fill": "#F0FDF4",
                                               "cornerRadius": 12,
                                               "stroke": "#00000000",
                                               "layout": "vertical",
@@ -27448,13 +27662,13 @@
                                                   "icon": "assignment_turned_in",
                                                   "library": "Material Symbols Rounded",
                                                   "weight": 300,
-                                                  "fill": "#F59E0B"
+                                                  "fill": "#16A34A"
                                                 },
                                                 {
                                                   "type": "text",
                                                   "id": "rC4Il",
                                                   "name": "补卡按钮文案",
-                                                  "fill": "#F59E0B",
+                                                  "fill": "#16A34A",
                                                   "content": "补卡",
                                                   "lineHeight": 1,
                                                   "fontFamily": "Noto Sans SC",
@@ -27733,6 +27947,7 @@
                                                   "width": "fill_container",
                                                   "content": "—",
                                                   "lineHeight": 1.5,
+                                                  "textAlign": "center",
                                                   "fontFamily": "Noto Sans SC",
                                                   "fontSize": 12,
                                                   "fontWeight": "normal"
@@ -27855,6 +28070,7 @@
                                                   "width": "fill_container",
                                                   "content": "—",
                                                   "lineHeight": 1.5,
+                                                  "textAlign": "center",
                                                   "fontFamily": "Noto Sans SC",
                                                   "fontSize": 12,
                                                   "fontWeight": "normal"
@@ -33423,6 +33639,7 @@
                   "height": "fit_content",
                   "gap": 8,
                   "x": 16,
+                  "y": 0,
                   "descendants": {
                     "n171p2": {
                       "fill": "#4B5563"
@@ -33462,6 +33679,7 @@
                   "height": "fit_content",
                   "gap": 8,
                   "x": 16,
+                  "y": 85,
                   "descendants": {
                     "n171p2": {
                       "content": "报名截止",
@@ -33559,6 +33777,7 @@
                   "width": "fill_container(358)",
                   "height": "fit_content",
                   "x": 16,
+                  "y": 230,
                   "descendants": {
                     "O7TYN": {
                       "layout": "horizontal",
@@ -33599,6 +33818,7 @@
                   "height": "fit_content",
                   "gap": 8,
                   "x": 16,
+                  "y": 290,
                   "descendants": {
                     "x05Jd": {
                       "fill": "#4B5563"
@@ -33620,7 +33840,8 @@
                   "name": "活动地点/未完成",
                   "width": "fill_container(358)",
                   "height": "fit_content",
-                  "x": 16
+                  "x": 16,
+                  "y": 359
                 },
                 {
                   "id": "SdZil",
@@ -33631,6 +33852,7 @@
                   "height": "fit_content",
                   "gap": 8,
                   "x": 16,
+                  "y": 426,
                   "descendants": {
                     "Q3vEL": {
                       "content": "活动备注",
@@ -69051,14 +69273,14 @@
           "ref": "n6MtSK",
           "name": "沉浸主视觉信息",
           "x": 20,
-          "y": 201,
+          "y": 194,
           "width": 350
         },
         {
           "type": "frame",
           "id": "sOhDG",
           "x": 0,
-          "y": 341,
+          "y": 334,
           "name": "活动详情吸底承接卡 · 上滑极限态",
           "width": 390,
           "fill": "#FFFFFF",
@@ -69860,14 +70082,14 @@
           "ref": "L1Y8qc",
           "name": "沉浸主视觉信息 · 副标题折叠",
           "x": 20,
-          "y": 201,
+          "y": 194,
           "width": 350
         },
         {
           "type": "frame",
           "id": "R6CWwi",
           "x": 0,
-          "y": 341,
+          "y": 334,
           "name": "活动详情吸底承接卡 · 上滑极限态",
           "width": 390,
           "fill": "#FFFFFF",
@@ -70675,7 +70897,7 @@
           "ref": "d468yw",
           "name": "沉浸主视觉信息 · 副标题展开",
           "x": 20,
-          "y": 101,
+          "y": 94,
           "width": 350,
           "descendants": {
             "VXGR9": {
@@ -70687,7 +70909,7 @@
           "type": "frame",
           "id": "MmQjW",
           "x": 0,
-          "y": 341,
+          "y": 334,
           "name": "活动详情吸底承接卡 · 上滑极限态",
           "width": 390,
           "fill": "#FFFFFF",
@@ -70720,9 +70942,6 @@
               "descendants": {
                 "Vb4Ql/Q3a1B": {
                   "width": 67
-                },
-                "Mlxzp": {
-                  "fontSize": 12
                 }
               }
             }
@@ -71540,9 +71759,6 @@
               "descendants": {
                 "Vb4Ql/Q3a1B": {
                   "width": 67
-                },
-                "TwYGE": {
-                  "width": 110
                 }
               }
             }
@@ -72239,6 +72455,7 @@
                   "height": "fit_content",
                   "gap": 8,
                   "x": 16,
+                  "y": 0,
                   "descendants": {
                     "n171p2": {
                       "fill": "#4B5563"
@@ -72276,6 +72493,7 @@
                   "height": "fit_content",
                   "gap": 8,
                   "x": 16,
+                  "y": 85,
                   "descendants": {
                     "n171p2": {
                       "content": "报名截止",
@@ -72358,6 +72576,7 @@
                   "width": "fill_container(358)",
                   "height": "fit_content",
                   "x": 16,
+                  "y": 230,
                   "descendants": {
                     "O7TYN": {
                       "layout": "horizontal",
@@ -72398,6 +72617,7 @@
                   "height": "fit_content",
                   "gap": 8,
                   "x": 16,
+                  "y": 290,
                   "descendants": {
                     "x05Jd": {
                       "fill": "#4B5563"
@@ -72419,7 +72639,8 @@
                   "name": "活动地点/已完成",
                   "width": "fill_container(358)",
                   "height": "fit_content",
-                  "x": 16
+                  "x": 16,
+                  "y": 359
                 },
                 {
                   "id": "TTCf0",
@@ -72430,6 +72651,7 @@
                   "height": "fit_content",
                   "gap": 8,
                   "x": 16,
+                  "y": 445,
                   "descendants": {
                     "Q3vEL": {
                       "content": "活动备注",
@@ -72821,9 +73043,6 @@
               "descendants": {
                 "Vb4Ql/Q3a1B": {
                   "width": 67
-                },
-                "TwYGE": {
-                  "width": 110
                 }
               }
             }
@@ -75175,7 +75394,7 @@
       "id": "qMC0v",
       "x": -1133,
       "y": 3292,
-      "name": "状态 · 参与人抽屉 · 现场点名 · 左滑删除",
+      "name": "状态 · 参与人抽屉 · 现场点名 · 左滑取签与删除",
       "clip": true,
       "width": 390,
       "height": 844,
@@ -75335,9 +75554,6 @@
               "descendants": {
                 "Vb4Ql/Q3a1B": {
                   "width": 67
-                },
-                "TwYGE": {
-                  "width": 110
                 }
               }
             }
@@ -76015,7 +76231,7 @@
               "id": "k5maT",
               "type": "ref",
               "ref": "Li595",
-              "name": "现场点名表内容/左滑单操作组件实例",
+              "name": "现场点名表内容/左滑取签删除组件实例",
               "layoutPosition": "absolute",
               "x": 0,
               "y": 76,
@@ -76216,9 +76432,6 @@
               "descendants": {
                 "Vb4Ql/Q3a1B": {
                   "width": 67
-                },
-                "TwYGE": {
-                  "width": 110
                 }
               }
             }
@@ -77097,9 +77310,6 @@
               "descendants": {
                 "Vb4Ql/Q3a1B": {
                   "width": 67
-                },
-                "TwYGE": {
-                  "width": 110
                 }
               }
             }
@@ -77777,7 +77987,7 @@
               "id": "RQxwg",
               "type": "ref",
               "ref": "SirYI",
-              "name": "现场点名表内容/左滑双操作组件实例",
+              "name": "现场点名表内容/左滑补卡删除组件实例",
               "layoutPosition": "absolute",
               "x": 0,
               "y": 76,
@@ -79448,9 +79658,6 @@
               "descendants": {
                 "Vb4Ql/Q3a1B": {
                   "width": 67
-                },
-                "TwYGE": {
-                  "width": 110
                 }
               }
             }
@@ -80150,305 +80357,6 @@
       ]
     },
     {
-      "type": "rectangle",
-      "id": "L88iV2",
-      "x": -1515,
-      "y": 2307,
-      "fill": {
-        "type": "image",
-        "enabled": true,
-        "url": "image-1.png",
-        "mode": "fill"
-      },
-      "width": 383,
-      "height": 138
-    },
-    {
-      "type": "frame",
-      "id": "PccYe",
-      "x": -1499.8650330888127,
-      "y": 2434.584430528026,
-      "name": "活动天气 · 五项紧凑长条",
-      "clip": true,
-      "width": 358,
-      "fill": "#ffffffff",
-      "cornerRadius": 16,
-      "stroke": "#E5E7EB",
-      "strokeWidth": 1,
-      "layout": "vertical",
-      "children": [
-        {
-          "type": "frame",
-          "id": "M9bGGs",
-          "name": "天气数据主体",
-          "width": "fill_container",
-          "height": 74,
-          "layout": "none",
-          "children": [
-            {
-              "type": "frame",
-              "id": "a0fPg",
-              "x": 12,
-              "y": 8,
-              "name": "天气主信息",
-              "width": 120,
-              "height": 58,
-              "gap": 12,
-              "padding": [
-                0,
-                8
-              ],
-              "alignItems": "center",
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "PakxH",
-                  "name": "天气图标底",
-                  "width": 42,
-                  "height": 42,
-                  "fill": "#FFF3E0",
-                  "cornerRadius": 12,
-                  "justifyContent": "center",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "FAmM3",
-                      "name": "晴间多云图标",
-                      "width": 24,
-                      "height": 24,
-                      "icon": "cloud-sun",
-                      "library": "lucide",
-                      "weight": 600,
-                      "fill": "#FF9800"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "hUksN",
-                  "name": "气温与天气",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 4,
-                  "justifyContent": "center",
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "jrXgt",
-                      "name": "气温数值",
-                      "fill": "#111827",
-                      "content": "24°",
-                      "fontFamily": "Inter",
-                      "fontSize": 20,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "wqWve",
-                      "name": "天气数值",
-                      "fill": "#4B5563",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "晴间多云",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 10,
-                      "fontWeight": "600"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "rectangle",
-              "id": "hveZr",
-              "x": 140,
-              "y": 16,
-              "name": "天气分隔线",
-              "fill": "#E5E7EB",
-              "width": 1,
-              "height": 42
-            },
-            {
-              "type": "frame",
-              "id": "ihQoK",
-              "x": 149,
-              "y": 8,
-              "name": "天气环境指标",
-              "width": 197,
-              "height": 58,
-              "gap": 4,
-              "alignItems": "center",
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "T0Bl0",
-                  "name": "湿度指标",
-                  "width": "fill_container",
-                  "height": "fill_container",
-                  "layout": "vertical",
-                  "gap": 4,
-                  "justifyContent": "center",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "UNeLs",
-                      "name": "湿度图标",
-                      "width": 14,
-                      "height": 14,
-                      "icon": "droplets",
-                      "library": "lucide",
-                      "weight": 500,
-                      "fill": "#4B5563"
-                    },
-                    {
-                      "type": "text",
-                      "id": "bX81l",
-                      "name": "湿度数值",
-                      "fill": "#111827",
-                      "content": "58%",
-                      "fontFamily": "Inter",
-                      "fontSize": 12,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "NTGHG",
-                      "name": "湿度标签",
-                      "fill": "#9CA3AF",
-                      "content": "空气湿度",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 10,
-                      "fontWeight": "500"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "XnEW0",
-                  "name": "风向风速指标",
-                  "width": "fill_container",
-                  "height": "fill_container",
-                  "layout": "vertical",
-                  "gap": 4,
-                  "justifyContent": "center",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "YmyJI",
-                      "name": "风向图标",
-                      "width": 14,
-                      "height": 14,
-                      "icon": "navigation",
-                      "library": "lucide",
-                      "weight": 500,
-                      "fill": "#4B5563"
-                    },
-                    {
-                      "type": "text",
-                      "id": "SqkT8",
-                      "name": "风向风速数值",
-                      "fill": "#111827",
-                      "content": "东南风 2级",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 10,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "iu5m1",
-                      "name": "风向风速标签",
-                      "fill": "#9CA3AF",
-                      "content": "风向风速",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 10,
-                      "fontWeight": "500"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "We28j",
-                  "name": "空气质量指标",
-                  "width": "fill_container",
-                  "height": "fill_container",
-                  "layout": "vertical",
-                  "gap": 4,
-                  "justifyContent": "center",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "IpIFq",
-                      "name": "空气质量图标",
-                      "width": 14,
-                      "height": 14,
-                      "icon": "leaf",
-                      "library": "lucide",
-                      "weight": 500,
-                      "fill": "#4B5563"
-                    },
-                    {
-                      "type": "text",
-                      "id": "i1eJC",
-                      "name": "空气质量数值",
-                      "fill": "#111827",
-                      "content": "优 32",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 10,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "HYCiF",
-                      "name": "空气质量标签",
-                      "fill": "#9CA3AF",
-                      "content": "空气质量",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 10,
-                      "fontWeight": "500"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "frame",
-          "id": "BRzly",
-          "name": "天气服务来源区",
-          "width": "fill_container",
-          "fill": "#fafafa",
-          "stroke": "#F3F4F6",
-          "strokeWidth": {
-            "top": 1
-          },
-          "padding": [
-            8,
-            16
-          ],
-          "justifyContent": "end",
-          "alignItems": "center",
-          "children": [
-            {
-              "type": "text",
-              "id": "styOw",
-              "name": "天气服务来源文案",
-              "fill": "#9CA3AF",
-              "content": "天气服务驱动 by QWeather",
-              "lineHeight": 1,
-              "fontFamily": "Noto Sans SC",
-              "fontSize": 10,
-              "fontWeight": "normal"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "type": "frame",
       "id": "nhpZv",
       "x": -1103,
@@ -80571,14 +80479,14 @@
           "ref": "n6MtSK",
           "name": "沉浸主视觉信息",
           "x": 20,
-          "y": 190,
+          "y": 194,
           "width": 350
         },
         {
           "type": "frame",
           "id": "l2LRaf",
           "x": 0,
-          "y": 330,
+          "y": 334,
           "name": "活动详情吸底承接卡 · 上滑极限态",
           "width": 390,
           "fill": "#FFFFFF",
@@ -80603,26 +80511,11 @@
           "padding": 16,
           "children": [
             {
-              "id": "GIuKc",
+              "id": "ngQ7F",
               "type": "ref",
               "ref": "O5XQF",
-              "name": "基本信息 · 轻量信息卡组",
-              "width": 358,
-              "gap": 12,
-              "descendants": {
-                "Vb4Ql/Q3a1B": {
-                  "width": 67
-                },
-                "gSqgi": {
-                  "fontSize": 14
-                },
-                "TwYGE": {
-                  "width": 110
-                },
-                "u1O4s": {
-                  "content": "天气服务驱动 by QWeather"
-                }
-              }
+              "x": 16,
+              "y": 16
             }
           ]
         },

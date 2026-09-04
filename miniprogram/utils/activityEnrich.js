@@ -265,8 +265,11 @@ function adaptParticipant(participant) {
     userId: participant.user_id != null ? String(participant.user_id) : null,
     avatarUrl: normalizeAvatarUrl(participant.display_avatar_url),
     checkedInAt: formatDateTime(participant.checked_in_at),
+    checkedInAtRaw: participant.checked_in_at || "",
     checkinLat: participant.checkin_lat,
     checkinLng: participant.checkin_lng,
+    checkinLocationName: participant.checkin_location_name || "",
+    checkinAddress: participant.checkin_address || "",
     signedUpAtMs: parseCreatedAtMs(participant.created_at)
   };
 }
@@ -293,6 +296,7 @@ function adaptActivity(item) {
     signupEnabled: item.signup_enabled !== false,
     activityType: rawType || "other",
     activityStyleKey: item.activity_style_key || "",
+    weather: item.weather && typeof item.weather === "object" ? item.weather : null,
     _rawActivityType: rawType
   };
 }
