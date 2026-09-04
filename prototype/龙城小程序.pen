@@ -27833,6 +27833,7 @@
                                                       "width": "fill_container",
                                                       "content": "—",
                                                       "lineHeight": 1.5,
+                                                      "textAlign": "center",
                                                       "fontFamily": "Noto Sans SC",
                                                       "fontSize": 12,
                                                       "fontWeight": "normal"
@@ -27917,6 +27918,7 @@
                                                   "width": "fill_container",
                                                   "content": "—",
                                                   "lineHeight": 1.5,
+                                                  "textAlign": "center",
                                                   "fontFamily": "Noto Sans SC",
                                                   "fontSize": 12,
                                                   "fontWeight": "normal"
@@ -28040,6 +28042,7 @@
                                                   "width": "fill_container",
                                                   "content": "—",
                                                   "lineHeight": 1.5,
+                                                  "textAlign": "center",
                                                   "fontFamily": "Noto Sans SC",
                                                   "fontSize": 12,
                                                   "fontWeight": "normal"
