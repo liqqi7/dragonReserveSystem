@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """Activity schemas."""
 
-from datetime import date, datetime
+from datetime import date as Date, datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -101,7 +101,7 @@ class ActivityWeatherResponse(BaseModel):
     available: bool
     status: str
     reason: Optional[str] = None
-    date: Optional[date] = None
+    date: Optional[Date] = None
     temperature: Optional[int | float] = None
     temperature_min: Optional[int | float] = None
     temperature_max: Optional[int | float] = None

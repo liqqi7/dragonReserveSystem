@@ -143,6 +143,25 @@ def test_activity_detail_returns_stable_pending_weather_without_upstream_request
     }
 
 
+def test_activity_detail_serializes_available_weather_date(client, db_session, admin_headers, admin_user) -> None:
+    activity = make_activity(db_session, admin_user)
+    snapshot = ensure_weather_snapshot(db_session, activity, now=NOW)
+    snapshot.status = "available"
+    snapshot.temperature = 24
+    snapshot.condition = "晴"
+    snapshot.icon_code = "100"
+    snapshot.last_success_at = NOW
+    snapshot.valid_until = NOW + timedelta(hours=6)
+    db_session.commit()
+
+    response = client.get(f"/api/v1/activities/{activity.id}", headers=admin_headers)
+
+    assert response.status_code == 200
+    assert response.json()["weather"]["available"] is True
+    assert response.json()["weather"]["date"] == "2026-09-05"
+    assert response.json()["weather"]["temperature"] == 24
+
+
 def test_legacy_weather_endpoint_only_reads_persisted_snapshot(client, db_session, admin_user) -> None:
     activity = make_activity(db_session, admin_user)
     snapshot = ensure_weather_snapshot(db_session, activity, now=NOW)
