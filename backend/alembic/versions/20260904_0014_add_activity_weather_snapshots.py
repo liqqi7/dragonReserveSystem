@@ -18,7 +18,7 @@ depends_on = None
 def upgrade() -> None:
     op.create_table(
         "activity_weather_snapshots",
-        sa.Column("activity_id", sa.BigInteger(), nullable=False),
+        sa.Column("activity_id", sa.Integer(), nullable=False),
         sa.Column("target_date", sa.Date(), nullable=False),
         sa.Column("location_key", sa.String(length=64), nullable=False, server_default=""),
         sa.Column("source_latitude", sa.Float(), nullable=True),
