@@ -61,20 +61,39 @@
           </view>
           <text class="hero-title">{{activityTitleText}}</text>
           <view wx:if="{{activity.remark}}" class="hero-remark-row" bindtap="toggleRemark">
-            <text class="hero-remark {{remarkExpanded ? 'hero-remark-expanded' : ''}}">{{activity.remark}}</text>
+            <view
+              class="hero-remark-viewport"
+              style="height: {{remarkViewportHeightPx > 0 ? remarkViewportHeightPx + 'px' : '37.69rpx'}};"
+            >
+              <text
+                class="hero-remark"
+                overflow="ellipsis"
+                max-lines="{{remarkExpanded ? 999 : 1}}"
+              >{{activity.remark}}</text>
+            </view>
             <view wx:if="{{remarkExpandable}}" class="remark-toggle">
-              <text class="remark-toggle-text">{{remarkExpanded ? '收起' : '展开'}}</text>
-              <image
-                class="remark-chevron"
-                src="{{remarkExpanded ? '/images/activity-detail-chevron-up.svg' : '/images/activity-detail-chevron-down.svg'}}"
-                mode="aspectFit"
-              />
+              <view class="remark-toggle-label">
+                <text class="remark-toggle-text {{remarkExpanded ? 'remark-toggle-text-out-up' : 'remark-toggle-text-active'}}">展开</text>
+                <text class="remark-toggle-text {{remarkExpanded ? 'remark-toggle-text-active' : 'remark-toggle-text-out-down'}}">收起</text>
+              </view>
+              <view class="remark-chevron-rotator" style="transform: rotate({{remarkToggleRotationDeg}}deg);">
+                <view class="remark-chevron"></view>
+              </view>
             </view>
           </view>
-          <text wx:if="{{activity.remark}}" class="hero-remark-measure">{{activity.remark}}</text>
-          <view wx:if="{{activity.remark}}" class="remark-toggle-measure">
-            <text class="remark-toggle-text">展开</text>
-            <image class="remark-chevron" src="/images/activity-detail-chevron-down.svg" mode="aspectFit" />
+        </view>
+
+        <!-- 测量节点必须放在 hero-copy 外，避免 Skyline 将隐藏节点计入纵向 gap。 -->
+        <text wx:if="{{activity.remark}}" class="hero-remark-measure">{{activity.remark}}</text>
+        <text
+          wx:if="{{activity.remark}}"
+          class="hero-remark-full-measure"
+          style="width: {{remarkTextWidthPx}}px;"
+        >{{activity.remark}}</text>
+        <view wx:if="{{activity.remark}}" class="remark-toggle-measure">
+          <text class="remark-toggle-text">展开</text>
+          <view class="remark-chevron-rotator">
+            <view class="remark-chevron"></view>
           </view>
         </view>
       </view>
@@ -209,19 +228,35 @@
     </view>
   </view>
 
-  <activity-form-sheet
-    id="qaActivityFormSheet"
-    wx:if="{{showActivityForm && isAdmin && activity}}"
-    visible="{{true}}"
-    mode="edit"
-    activity="{{activity}}"
-    participant-count="{{activityParticipantCount}}"
-    location-disabled="{{locationDisabled}}"
-    submitting="{{activityFormSubmitting}}"
-    bindclose="closeActivityForm"
-    bindsubmit="submitActivityForm"
-    bindcancelactivity="cancelActivityFromForm"
-  />
+  <page-container
+    wx:if="{{activityFormContainerRendered && isAdmin && activity}}"
+    id="qaActivityEditContainer"
+    show="{{showActivityForm}}"
+    position="bottom"
+    overlay="{{true}}"
+    round="{{false}}"
+    duration="240"
+    close-on-slide-down="{{false}}"
+    overlay-style="background: rgba(23, 24, 20, 0.4);"
+    custom-style="height: 100%; background: transparent; border-radius: 0; overflow: hidden;"
+    bind:clickoverlay="closeActivityForm"
+    bind:afterleave="onActivityFormAfterLeave"
+  >
+    <activity-form-sheet
+      id="qaActivityFormSheet"
+      style="display: block; width: 100%; height: 100%;"
+      visible="{{showActivityForm}}"
+      route-embedded="{{true}}"
+      mode="edit"
+      activity="{{activity}}"
+      participant-count="{{activityParticipantCount}}"
+      location-disabled="{{locationDisabled}}"
+      submitting="{{activityFormSubmitting}}"
+      bindclose="closeActivityForm"
+      bindsubmit="submitActivityForm"
+      bindcancelactivity="cancelActivityFromForm"
+    />
+  </page-container>
 
   <participants-drawer
     id="qaParticipantsDrawer"

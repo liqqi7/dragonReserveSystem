@@ -6,11 +6,10 @@ const TAB_GLASS_TUNING = Object.freeze({
 });
 
 const ACTIVITY_LIST_ROUTE = "pages/activity_list/activity_list";
-const { getBottomSafeAreaRpx } = require("../utils/safeArea");
+const { getBottomSafeAreaRpx, getWindowInfoCompat } = require("../utils/safeArea");
 
 const TAB_URLS = [
   "/pages/activity_list/activity_list",
-  "/pages/activity_calendar/activity_calendar",
   "/pages/tools/tools",
   "/pages/history/history",
   "/pages/profile/profile"
@@ -37,6 +36,25 @@ function setGlobalTabSelected(selected) {
   } catch (e) {}
 }
 
+function vibrateTabSelection() {
+  if (typeof wx === "undefined" || typeof wx.vibrateShort !== "function") return;
+  const fallback = () => {
+    try { wx.vibrateShort(); } catch (e) {}
+  };
+  try {
+    wx.vibrateShort({ type: "light", fail: fallback });
+  } catch (e) {
+    fallback();
+  }
+}
+
+function getBottomSafeAreaCssPx() {
+  const info = getWindowInfoCompat();
+  const windowWidth = Number(info && info.windowWidth);
+  if (!(windowWidth > 0)) return 0;
+  return Math.round(getBottomSafeAreaRpx() * windowWidth / 750 * 100) / 100;
+}
+
 function syncSelectedFromCurrentRoute(component) {
   const state = getCurrentTabState();
   if (state.selected < 0) return state;
@@ -60,18 +78,24 @@ Component({
           this.setData({ selected });
         }
       } catch (e) {}
+    },
+
+    detached() {
+      if (this._tabEnterStartTimer) clearTimeout(this._tabEnterStartTimer);
+      this._tabEnterStartTimer = null;
     }
   },
 
   data: {
     selected: 0,
     isAdmin: false,
-    /** 由当前页 getTabBar().setData({ hidden }) 控制（如活动编辑弹窗打开时隐藏） */
+    /** 供全屏弹层控制；重新显示时可选择执行一次自底向上的入场。 */
     hidden: false,
+    entering: false,
     tabGlassBlurRadiusRpx: TAB_GLASS_TUNING.blurRadiusRpx,
     tabGlassBlurOpacity: TAB_GLASS_TUNING.blurLayerOpacity,
     tabGlassFillOpacity: TAB_GLASS_TUNING.whiteFillOpacity,
-    safeBottomRpx: 0
+    safeBottomPx: 0
   },
 
   pageLifetimes: {
@@ -90,10 +114,43 @@ Component({
   },
 
   methods: {
+    setHidden(hidden, { animate = false } = {}) {
+      const nextHidden = !!hidden;
+      if (this._tabEnterStartTimer) {
+        clearTimeout(this._tabEnterStartTimer);
+        this._tabEnterStartTimer = null;
+      }
+
+      if (nextHidden) {
+        if (!this.data.hidden || this.data.entering) {
+          this.setData({ hidden: true, entering: false });
+        }
+        return;
+      }
+
+      if (!animate) {
+        if (this.data.hidden || this.data.entering) {
+          this.setData({ hidden: false, entering: false });
+        }
+        return;
+      }
+
+      this.setData({ hidden: false, entering: true }, () => {
+        const startEntrance = () => {
+          this._tabEnterStartTimer = setTimeout(() => {
+            this._tabEnterStartTimer = null;
+            if (!this.data.hidden) this.setData({ entering: false });
+          }, 16);
+        };
+        if (typeof wx !== "undefined" && typeof wx.nextTick === "function") wx.nextTick(startEntrance);
+        else startEntrance();
+      });
+    },
+
     syncBottomSafeArea() {
-      const safeBottomRpx = getBottomSafeAreaRpx();
-      if (safeBottomRpx !== Number(this.data.safeBottomRpx)) {
-        this.setData({ safeBottomRpx });
+      const safeBottomPx = getBottomSafeAreaCssPx();
+      if (safeBottomPx !== Number(this.data.safeBottomPx)) {
+        this.setData({ safeBottomPx });
       }
     },
 
@@ -119,6 +176,7 @@ Component({
       setGlobalTabSelected(index);
       wx.switchTab({
         url: TAB_URLS[index],
+        success: vibrateTabSelection,
         fail: () => setGlobalTabSelected(previousSelected)
       });
     }

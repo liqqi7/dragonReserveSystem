@@ -1,32 +1,7 @@
-@keyframes participants-drawer-mask-enter {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes participants-drawer-sheet-enter {
-  from { transform: translate3d(0, 100%, 0); }
-  to { transform: translate3d(0, 0, 0); }
-}
-
-.drawer-root {
-  position: fixed;
-  inset: 0;
-  z-index: 1230;
-}
-
-.drawer-mask {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  animation: participants-drawer-mask-enter 0.18s ease-out both;
-}
-
 .drawer-sheet {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: auto;
+  position: relative;
+  width: 100%;
+  height: 100%;
   min-height: 0;
   background: #f5f5f5;
   border-radius: 46.15rpx 46.15rpx 0 0;
@@ -35,25 +10,23 @@
   flex-direction: column;
   box-sizing: border-box;
   box-shadow: 0 -9.62rpx 34.62rpx rgba(65, 74, 138, 0.08);
-  animation: participants-drawer-sheet-enter 0.24s ease-out both;
-  will-change: transform;
 }
 
 .drawer-handle-zone {
   flex: 0 0 auto;
   width: 100%;
   height: 53.85rpx;
-  padding-top: 15.38rpx;
+  padding-top: 32rpx;
   box-sizing: border-box;
   display: flex;
   justify-content: center;
 }
 
 .drawer-handle {
-  width: 73.08rpx;
-  height: 7.69rpx;
-  border-radius: 3.85rpx;
-  background: #9ca3af;
+  width: 72rpx;
+  height: 8rpx;
+  border-radius: 4rpx;
+  background: #d1d5db;
 }
 
 .drawer-header {
@@ -87,11 +60,13 @@
 }
 
 .drawer-body {
-  flex: 0 1 auto;
-  height: auto;
+  flex: 1 1 0;
+  height: 0;
   min-height: 0;
   width: 100%;
-  padding: 0 30.77rpx;
+  padding: 15.38rpx 30.77rpx 0;
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
 }
 
@@ -176,8 +151,13 @@
 }
 
 .participants-table {
+  flex: 1 1 0;
+  height: 0;
+  min-height: 0;
   width: 100%;
   margin-top: 15.38rpx;
+  display: flex;
+  flex-direction: column;
 }
 
 .drawer-table-head {
@@ -220,10 +200,12 @@
   box-sizing: border-box;
 }
 
-.participant-list {
-  display: flex;
-  flex-direction: column;
-  gap: 7.69rpx;
+.participant-list-scroll {
+  flex: 1 1 0;
+  height: 0;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .participant-row-wrap {
@@ -232,6 +214,10 @@
   height: 123.08rpx;
   overflow: hidden;
   border-radius: 23.08rpx;
+}
+
+.participant-row-wrap--spaced {
+  margin-bottom: 7.69rpx;
 }
 
 .participant-actions {

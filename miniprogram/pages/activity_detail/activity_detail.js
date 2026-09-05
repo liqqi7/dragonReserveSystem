@@ -116,12 +116,18 @@ Page({
       attribution: "天气服务驱动 by QWeather"
     },
     remarkExpanded: false,
+    remarkToggleRotationDeg: 0,
     remarkExpandable: false,
+    remarkTextWidthPx: 0,
+    remarkCollapsedHeightPx: 0,
+    remarkExpandedHeightPx: 0,
+    remarkViewportHeightPx: 0,
     primaryActionLabel: "已停止报名",
     primaryActionDisabled: true,
     primaryActionType: "none",
     sharePreviewImageUrl: "",
     sharePreviewLoading: false,
+    activityFormContainerRendered: false,
     showActivityForm: false,
     activityFormSubmitting: false,
     locationDisabled: false,
@@ -470,7 +476,12 @@ Page({
         ? buildLocationMapMarkers(locationMapLatitude, locationMapLongitude, this._windowWidthPx)
         : [],
       remarkExpanded: false,
+      remarkToggleRotationDeg: 0,
       remarkExpandable: false,
+      remarkTextWidthPx: 0,
+      remarkCollapsedHeightPx: 0,
+      remarkExpandedHeightPx: 0,
+      remarkViewportHeightPx: 0,
       primaryActionLabel: primaryAction.label,
       primaryActionDisabled: primaryAction.disabled,
       primaryActionType: primaryAction.action,
@@ -486,7 +497,9 @@ Page({
   updateRemarkOverflow() {
     const remark = String(this.data.activity && this.data.activity.remark || "").trim();
     if (!remark || !wx.createSelectorQuery) {
-      if (this.data.remarkExpandable) this.setData({ remarkExpandable: false, remarkExpanded: false });
+      if (this.data.remarkExpandable) {
+        this.setData({ remarkExpandable: false, remarkExpanded: false, remarkToggleRotationDeg: 0 });
+      }
       return;
     }
     const measure = () => {
@@ -501,10 +514,31 @@ Page({
         if (!rowRect || !textRect || !toggleRect) return;
         const toggleWidth = Math.max(0, Number(toggleRect.width) || 0);
         const availableTextWidth = Math.max(0, rowRect.width - toggleWidth - 7.69);
-        const remarkExpandable = textRect.width > availableTextWidth + 0.5;
-        if (remarkExpandable !== this.data.remarkExpandable) {
-          this.setData({ remarkExpandable, remarkExpanded: false });
-        }
+        const collapsedHeight = Math.max(0, Number(textRect.height) || 0);
+        const widthOverflows = textRect.width > availableTextWidth + 0.5;
+        this.setData({
+          remarkTextWidthPx: availableTextWidth,
+          remarkCollapsedHeightPx: collapsedHeight,
+          remarkViewportHeightPx: collapsedHeight
+        }, () => {
+          const fullQuery = wx.createSelectorQuery();
+          fullQuery.select(".hero-remark-full-measure").boundingClientRect();
+          fullQuery.exec((fullRects) => {
+            const fullRect = fullRects && fullRects[0];
+            const expandedHeight = Math.max(
+              collapsedHeight,
+              Number(fullRect && fullRect.height) || collapsedHeight
+            );
+            const remarkExpandable = widthOverflows || expandedHeight > collapsedHeight + 0.5;
+            this.setData({
+              remarkExpandable,
+              remarkExpanded: false,
+              remarkToggleRotationDeg: 0,
+              remarkExpandedHeightPx: expandedHeight,
+              remarkViewportHeightPx: remarkExpandable ? collapsedHeight : expandedHeight
+            });
+          });
+        });
       });
     };
     if (wx.nextTick) wx.nextTick(measure);
@@ -541,7 +575,14 @@ Page({
 
   toggleRemark() {
     if (!this.data.remarkExpandable) return;
-    this.setData({ remarkExpanded: !this.data.remarkExpanded });
+    const remarkExpanded = !this.data.remarkExpanded;
+    this.setData({
+      remarkExpanded,
+      remarkToggleRotationDeg: (Number(this.data.remarkToggleRotationDeg) || 0) + 180,
+      remarkViewportHeightPx: remarkExpanded
+        ? this.data.remarkExpandedHeightPx
+        : this.data.remarkCollapsedHeightPx
+    });
   },
 
   openLocation() {
@@ -618,17 +659,26 @@ Page({
 
   openAdminEdit() {
     const activity = this.data.activity;
-    if (!activity || !activity._id || this.data.activityFormSubmitting) return;
+    if (!activity || !activity._id || this.data.showActivityForm || this.data.activityFormSubmitting) return;
     this.setData({
-      showActivityForm: true,
+      activityFormContainerRendered: true,
+      showActivityForm: false,
       activityFormSubmitting: false,
       locationDisabled: (activity.checkinCount || 0) > 0
+    }, () => {
+      wx.nextTick(() => this.setData({ showActivityForm: true }));
     });
   },
 
   closeActivityForm() {
     if (this.data.activityFormSubmitting) return;
     this.setData({ showActivityForm: false });
+  },
+
+  onActivityFormAfterLeave() {
+    if (!this.data.showActivityForm) {
+      this.setData({ activityFormContainerRendered: false });
+    }
   },
 
   submitActivityForm(e) {

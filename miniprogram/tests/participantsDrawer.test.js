@@ -14,23 +14,26 @@ function readSvg(name) {
 }
 
 test("participants drawer uses prototype RPX geometry and palette", () => {
-  assert.match(wxss, /height:\s*auto/);
   assert.match(wxss, /min-height:\s*0/);
-  assert.match(wxml, /max-height:\s*\{\{maxHeightRpx\}\}rpx/);
-  assert.match(wxml, /class="drawer-body"[^>]*style="max-height: \{\{bodyMaxHeightRpx\}\}rpx"/);
-  assert.match(wxss, /participants-drawer-sheet-enter/);
-  assert.match(wxss, /participants-drawer-mask-enter/);
+  assert.match(wxml, /custom-style="height: \{\{drawerHeightRpx\}\}rpx; max-height: \{\{maxHeightRpx\}\}rpx;[^\"]*border-radius: 46\.15rpx 46\.15rpx 0 0;/);
+  assert.match(wxml, /^<page-container\b/);
+  assert.match(wxml, /id="qaParticipantsDrawer"[\s\S]*show="{{containerVisible}}"[\s\S]*position="bottom"/);
+  assert.match(wxml, /overlay="{{true}}"[\s\S]*close-on-slide-down="{{false}}"[\s\S]*bind:clickoverlay="onMaskTap"/);
+  assert.doesNotMatch(wxml, /draggable-sheet|root-portal|worklet:onsizeupdate|associative-container/);
+  assert.match(wxss, /\.drawer-sheet\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;/s);
+  assert.match(wxss, /\.drawer-body\s*\{[^}]*flex:\s*1 1 0;[^}]*height:\s*0;[^}]*min-height:\s*0;[^}]*padding:\s*15\.38rpx\s+30\.77rpx\s+0;[^}]*display:\s*flex;[^}]*flex-direction:\s*column;/s);
+  assert.doesNotMatch(wxss, /participants-drawer-sheet-enter|participants-drawer-mask-enter|@keyframes/);
   assert.match(wxss, /border-radius:\s*46\.15rpx\s+46\.15rpx\s+0\s+0/);
   assert.match(wxss, /background:\s*#f5f5f5/);
-  assert.match(wxss, /width:\s*73\.08rpx/);
-  assert.match(wxss, /height:\s*7\.69rpx/);
-  assert.match(wxss, /background:\s*#9ca3af/);
+  assert.match(wxss, /\.drawer-handle-zone\s*\{[^}]*height:\s*53\.85rpx;[^}]*padding-top:\s*32rpx;/s);
+  assert.match(wxss, /\.drawer-handle\s*\{[^}]*width:\s*72rpx;[^}]*height:\s*8rpx;[^}]*border-radius:\s*4rpx;[^}]*background:\s*#d1d5db;/s);
   assert.match(wxss, /padding:\s*0\s+30\.77rpx/);
   assert.match(wxss, /\.drawer-title\s*\{[^}]*font-size:\s*38\.46rpx;[^}]*font-weight:\s*700;/s);
   assert.match(wxss, /\.checkin-progress-card\s*\{[^}]*height:\s*153\.85rpx;[^}]*padding:\s*23\.08rpx\s+30\.77rpx;[^}]*border-radius:\s*30\.77rpx;/s);
   assert.match(wxss, /\.participant-row-wrap\s*\{[^}]*height:\s*123\.08rpx;[^}]*border-radius:\s*23\.08rpx;/s);
   assert.match(wxss, /\.member-avatar\s*\{[^}]*width:\s*76\.92rpx;[^}]*height:\s*76\.92rpx;[^}]*border-radius:\s*50%;/s);
-  assert.match(wxss, /\.participant-list\s*\{[^}]*gap:\s*7\.69rpx;/s);
+  assert.match(wxss, /\.participant-list-scroll\s*\{[^}]*flex:\s*1 1 0;[^}]*height:\s*0;[^}]*min-height:\s*0;/s);
+  assert.match(wxss, /\.participant-row-wrap--spaced\s*\{[^}]*margin-bottom:\s*7\.69rpx;/s);
   assert.match(wxss, /\.progress-track\s*\{[^}]*height:\s*11\.54rpx;[^}]*border-radius:\s*5\.77rpx;[^}]*background:\s*#ffe0b2;/s);
   assert.match(wxss, /\.progress-complete\s*\{[^}]*background:\s*#ff9800;/s);
 });
@@ -50,9 +53,9 @@ test("drawer height follows the viewport and caps at 85 percent", () => {
 });
 
 test("swipe handlers are mounted once on the full row wrapper", () => {
-  const wrapper = wxml.match(/<view\s+\n?\s*wx:for="\{\{rows\}\}"[\s\S]*?<\/view>\s*<\/view>/);
+  const wrapper = wxml.match(/<view\s+\n?\s*wx:for="\{\{rows\}\}"[\s\S]*?<\/view>\s*<view class="drawer-body-bottom">/);
   assert.ok(wrapper);
-  assert.match(wrapper[0], /class="participant-row-wrap"/);
+  assert.match(wrapper[0], /class="participant-row-wrap\s/);
   assert.match(wrapper[0], /data-index="\{\{index\}\}"/);
   assert.match(wrapper[0], /bindtouchstart="onTouchStart"/);
   assert.match(wrapper[0], /bindtouchmove="onTouchMove"/);
@@ -61,6 +64,20 @@ test("swipe handlers are mounted once on the full row wrapper", () => {
   const actions = wxml.match(/<view\s+class="participant-actions"[\s\S]*?<\/view>\s*<view\s+class="participant-row"/);
   assert.ok(actions);
   assert.doesNotMatch(actions[0], /bindtouch(start|move|end|cancel)="onTouch/);
+});
+
+test("progress and table header stay fixed while only member rows scroll", () => {
+  assert.match(wxml, /<view class="drawer-body">[\s\S]*id="qaParticipantsProgress"[\s\S]*id="qaParticipantsTable"/);
+  assert.match(wxml, /<view class="drawer-table-head">[\s\S]*<scroll-view[\s\S]*id="qaParticipantListScroll"/);
+  assert.match(wxml, /id="qaParticipantListScroll"[\s\S]*type="list"[\s\S]*scroll-y="\{\{memberListScrollEnabled\}\}"/);
+  assert.doesNotMatch(wxml, /<scroll-view[^>]*class="drawer-body"/);
+});
+
+test("horizontal row swipe temporarily locks vertical member scrolling", () => {
+  assert.match(wxml, /id="qaParticipantListScroll"[\s\S]*bounces="\{\{false\}\}"[\s\S]*min-drag-distance="18"/);
+  assert.match(js, /memberListScrollEnabled:\s*true/);
+  assert.match(js, /if \(!gesture\.horizontal\) return;[\s\S]*this\.setData\(\{ rows, memberListScrollEnabled: false \}\);/);
+  assert.match(js, /this\.setData\(\{ rows, memberListScrollEnabled: true \}\);/);
 });
 
 test("participant progress formats limited and unlimited activities", () => {

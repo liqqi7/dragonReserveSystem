@@ -30,6 +30,8 @@ const ENDED_ACTIVITY_PAGE_SIZE = 5;
 const CACHE_METADATA_TTL_MS = 60 * 1000;
 /** 须与 wxml 中 refresher-threshold 一致 */
 const MAIN_REFRESH_THRESHOLD_PX = 80;
+const COLD_START_CARD_ENTRANCE_DELAY_MS = 400;
+const COLD_START_CARD_ENTRANCE_FRAME_MS = 17;
 const DEFAULT_ACTIVITY_TYPE_STYLES = [
   {
     key: "badminton",
@@ -246,48 +248,6 @@ function resolveStyleByTypeAndKey(typeKey, styleKey, typeStyleMap) {
   return firstKey ? styleMap[firstKey] : null;
 }
 
-// Gesture tuning presets for card swipe vs page vertical scroll.
-const GESTURE_PRESETS = {
-  // Prefer page vertical scroll; horizontal swipe requires clearer intent.
-  verticalFirst: {
-    directionStartPx: 6,
-    verticalDominanceRatio: 1.35,
-    quickFlickDurationMs: 260,
-    quickFlickDistancePx: 18
-  },
-  // Balanced default between horizontal card swipe and vertical page scroll.
-  balanced: {
-    directionStartPx: 4,
-    verticalDominanceRatio: 1.6,
-    quickFlickDurationMs: 280,
-    quickFlickDistancePx: 16
-  },
-  // Prefer horizontal card swipe; easier to trigger card movement.
-  horizontalFirst: {
-    directionStartPx: 3,
-    verticalDominanceRatio: 2.0,
-    quickFlickDurationMs: 300,
-    quickFlickDistancePx: 15
-  }
-};
-const ACTIVE_GESTURE_PRESET = "balanced";
-const GESTURE_TUNING = {
-  ...GESTURE_PRESETS[ACTIVE_GESTURE_PRESET],
-  directionStartPx: 4,
-  // A diagonal drag should remain a page scroll unless its horizontal intent is clear.
-  verticalDominanceRatio: 0.8,
-  quickFlickDurationMs: 320,
-  quickFlickDistancePx: 14
-};
-// Keep a checkpoint of prior smoothness settings for quick rollback.
-const SWIPE_MOVE_SMOOTHING = {
-  // checkpoint-1: { updateIntervalMs: 16, minStepPx: 1, maxStepPxPerFrame: Infinity }
-  // checkpoint-2: { updateIntervalMs: 8, minStepPx: 2, maxStepPxPerFrame: Infinity }
-  updateIntervalMs: 16,
-  minStepPx: 0,
-  maxStepPxPerFrame: Infinity
-};
-
 function normalizeAvatarUrl(url) {
   const value = (url && String(url).trim()) || "";
   if (!value) return DEFAULT_AVATAR;
@@ -419,20 +379,15 @@ Page({
     activityList: [],
     filteredList: [],
     groupedActivities: { joined: [], accepting: [], notStarted: [], ended: [] },
+    groupSectionVisibility: { joined: false, accepting: false, notStarted: false, ended: false },
     allEndedActivities: [],
     endedHasMore: false,
     endedLoadingMore: false,
     statusBarHeight: 0,
     navBarHeight: 0,
-    groupOffset: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
     focusedCardIndex: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
-    groupUseTransition: false,
-    mainScrollEnabled: true,
     mainRefresherTriggered: false,
     mainRefresherHint: "下拉刷新",
-    isGroupSwiping: false,
-    showActivityForm: false,
-    activityFormSubmitting: false,
     myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
     myNickname: "", // 当前用户昵称（userId 为空时的回退，兼容旧数据）
     locationDisabled: false,
@@ -443,10 +398,21 @@ Page({
     activityTypeStyles: DEFAULT_ACTIVITY_TYPE_STYLES,
     activityTypeOptionLabels: DEFAULT_ACTIVITY_TYPE_STYLES.map((item) => item.display_name || item.key),
     activityTypeOptionValues: DEFAULT_ACTIVITY_TYPE_STYLES.map((item) => normalizeTypeKey(item.key)).filter(Boolean),
+    cardEntranceState: "idle",
+    cardEntranceStaggerMs: 200,
+    createFormContainerRendered: false,
+    showCreateForm: false,
+    createFormSubmitting: false,
     bottomSafeAreaRpx: 0
   },
 
   onLoad(options) {
+    this._homeFirstFrameReady = false;
+    this._cardEntranceNotBefore = 0;
+    this._pendingColdStartGroupedActivities = null;
+    this._coldStartCardEntranceStarted = false;
+    this._cardEntranceTimer = null;
+    this._cardEntranceFrameTimer = null;
     const aid = options && options.activityId;
     if (aid) {
       wx.redirectTo({
@@ -470,12 +436,18 @@ Page({
 
   },
 
+  onReady() {
+    this._homeFirstFrameReady = true;
+    this._cardEntranceNotBefore = Date.now() + COLD_START_CARD_ENTRANCE_DELAY_MS;
+    this._scheduleColdStartCardEntrance();
+  },
+
   onShow() {
     this._pageVisible = true;
     this._loadGeneration = (this._loadGeneration || 0) + 1;
     this.syncGuestState();
-    /** 上一轮切 Tab 时 onHide 里 getTabBar() 偶发不可用，会变成 hidden:true 一直回不去 */
-    this._setTabBarHidden(false);
+    /** 原生弹层也可能触发 show；一级抽屉仍存续时不得提前恢复 Tab。 */
+    this._setTabBarHidden(!!(this.data.createFormContainerRendered || this.data.showCreateForm));
     const isAdmin = app.globalData.userRole === "admin";
     const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
     const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
@@ -486,7 +458,7 @@ Page({
       selected: 0,
       isAdmin: app.globalData.userRole === "admin",
     });
-    this._syncTabBarVisibility();
+    this._scheduleColdStartCardEntrance();
   },
 
   loadActivityListByCachePolicy() {
@@ -538,6 +510,7 @@ Page({
   onHide() {
     this._pageVisible = false;
     this._loadGeneration = (this._loadGeneration || 0) + 1;
+    this._finishColdStartCardEntrance();
     this._clearCardMediaDiagnostics();
     calendarWarmup.cancelScheduledPrefetch();
     const self = this;
@@ -549,6 +522,11 @@ Page({
   onUnload() {
     this._pageVisible = false;
     this._loadGeneration = (this._loadGeneration || 0) + 1;
+    if (this._cardEntranceTimer) clearTimeout(this._cardEntranceTimer);
+    if (this._cardEntranceFrameTimer) clearTimeout(this._cardEntranceFrameTimer);
+    this._cardEntranceTimer = null;
+    this._cardEntranceFrameTimer = null;
+    this._pendingColdStartGroupedActivities = null;
     calendarWarmup.cancelScheduledPrefetch();
     this._clearCardMediaDiagnostics();
     const self = this;
@@ -557,17 +535,100 @@ Page({
     else flush();
   },
 
-  _setTabBarHidden(hidden) {
+  _setTabBarHidden(hidden, { animate = false } = {}) {
     if (typeof this.getTabBar !== "function") return;
     const tabBar = this.getTabBar();
     if (!tabBar || typeof tabBar.setData !== "function") return;
+    if (typeof tabBar.setHidden === "function") {
+      tabBar.setHidden(!!hidden, { animate: !!animate });
+      return;
+    }
     tabBar.setData({ hidden: !!hidden });
   },
 
-  _syncTabBarVisibility() {
-    this._setTabBarHidden(!!this.data.showActivityForm);
+  _hasRenderableCards(groupedActivities) {
+    const groups = groupedActivities || {};
+    return ["joined", "accepting", "notStarted", "ended"]
+      .some((group) => Array.isArray(groups[group]) && groups[group].length > 0);
   },
 
+  _buildGroupSectionVisibility(groupedActivities) {
+    const groups = groupedActivities || {};
+    return Object.keys(groups).reduce((visibility, group) => {
+      visibility[group] = Array.isArray(groups[group]) && groups[group].length > 0;
+      return visibility;
+    }, {});
+  },
+
+  _prepareColdStartCardPresentation(groupedActivities) {
+    const groupSectionVisibility = this._buildGroupSectionVisibility(groupedActivities);
+    if (!this._hasRenderableCards(groupedActivities) || this._coldStartCardEntranceStarted) {
+      return {
+        groupedActivities,
+        cardEntranceState: this.data.cardEntranceState || "idle",
+        groupSectionVisibility
+      };
+    }
+    this._pendingColdStartGroupedActivities = groupedActivities;
+    this._scheduleColdStartCardEntrance();
+    return {
+      groupedActivities: this.data.groupedActivities,
+      cardEntranceState: "idle",
+      groupSectionVisibility
+    };
+  },
+
+  _scheduleColdStartCardEntrance() {
+    if (
+      this._coldStartCardEntranceStarted ||
+      this._cardEntranceTimer ||
+      !this._homeFirstFrameReady ||
+      !this._pendingColdStartGroupedActivities ||
+      this._pageVisible === false
+    ) return;
+    const waitMs = Math.max(0, (this._cardEntranceNotBefore || Date.now()) - Date.now());
+    this._cardEntranceTimer = setTimeout(() => {
+      this._cardEntranceTimer = null;
+      this._revealColdStartCards();
+    }, waitMs);
+  },
+
+  _revealColdStartCards() {
+    if (
+      this._coldStartCardEntranceStarted ||
+      !this._pendingColdStartGroupedActivities ||
+      this._pageVisible === false
+    ) return;
+    const groupedActivities = this._pendingColdStartGroupedActivities;
+    this._pendingColdStartGroupedActivities = null;
+    this._coldStartCardEntranceStarted = true;
+    this.setData({ groupedActivities, cardEntranceState: "pending" }, () => {
+      const enter = () => {
+        if (this._pageVisible === false || this.data.cardEntranceState !== "pending") return;
+        this._cardEntranceFrameTimer = setTimeout(() => {
+          this._cardEntranceFrameTimer = null;
+          if (this._pageVisible === false || this.data.cardEntranceState !== "pending") return;
+          this.setData({ cardEntranceState: "entered" });
+        }, COLD_START_CARD_ENTRANCE_FRAME_MS);
+      };
+      if (typeof wx !== "undefined" && typeof wx.nextTick === "function") wx.nextTick(enter);
+      else enter();
+    });
+  },
+
+  _finishColdStartCardEntrance() {
+    if (this._cardEntranceTimer) {
+      clearTimeout(this._cardEntranceTimer);
+      this._cardEntranceTimer = null;
+    }
+    if (this._cardEntranceFrameTimer) {
+      clearTimeout(this._cardEntranceFrameTimer);
+      this._cardEntranceFrameTimer = null;
+    }
+    if (this._coldStartCardEntranceStarted && this.data.cardEntranceState === "pending") {
+      this.setData({ cardEntranceState: "entered" });
+    }
+  },
 
   _clearCardMediaDiagnostics() {
     if (this._cardMediaDiagWarnTimer) {
@@ -817,80 +878,6 @@ Page({
     }
   },
 
-  ensureGroupSnapMetrics() {
-    if (this._groupSnapMetricsReady) return;
-    const q = wx.createSelectorQuery();
-    q.selectAll(".large-cards-row .large-card-wrap").boundingClientRect();
-    q.selectAll(".small-cards-row .small-card-wrap").boundingClientRect();
-    q.exec((res) => {
-      const large = (res && res[0]) || [];
-      const small = (res && res[1]) || [];
-
-      const calcStep = (rects, fallback) => {
-        if (!Array.isArray(rects) || rects.length < 2) return fallback;
-        const lefts = rects
-          .map((r) => (r && typeof r.left === "number" ? Math.round(r.left * 100) / 100 : null))
-          .filter((v) => v != null);
-        const unique = Array.from(new Set(lefts)).sort((a, b) => a - b);
-        if (unique.length < 2) return fallback;
-        let minPositive = null;
-        for (let i = 1; i < unique.length; i += 1) {
-          const d = unique[i] - unique[i - 1];
-          if (d > 1 && (minPositive == null || d < minPositive)) {
-            minPositive = d;
-          }
-        }
-        return minPositive != null ? minPositive : fallback;
-      };
-
-      const largeStep = calcStep(large, 287);
-      const smallStep = calcStep(small, 190);
-
-      this._snapMeta = {
-        joined: { step: largeStep, index: 0, lastLeft: 0, maxIndex: Math.max(0, (this.data.groupedActivities.joined || []).length - 1) },
-        accepting: { step: smallStep, index: 0, lastLeft: 0, maxIndex: Math.max(0, (this.data.groupedActivities.accepting || []).length - 1) },
-        notStarted: { step: smallStep, index: 0, lastLeft: 0, maxIndex: Math.max(0, (this.data.groupedActivities.notStarted || []).length - 1) },
-        ended: { step: smallStep, index: 0, lastLeft: 0, maxIndex: Math.max(0, (this.data.groupedActivities.ended || []).length - 1) }
-      };
-      this._groupSnapMetricsReady = true;
-    });
-  },
-
-  onGroupScroll(e) {
-    // Kept for compatibility; gesture-driven paging no longer relies on scroll events.
-  },
-
-  applyGroupSnap(group, source, fallbackLeft) {
-    if (!group) return;
-    if (!this._snapMeta || !this._snapMeta[group]) this.ensureGroupSnapMetrics();
-    const meta = this._snapMeta && this._snapMeta[group];
-    if (!meta) return;
-
-    const currentLeft =
-      (typeof fallbackLeft === "number")
-        ? fallbackLeft
-        : (typeof meta.liveLeft === "number" ? meta.liveLeft : 0);
-    const step = meta.step || 1;
-    let nextIndex = Math.round(currentLeft / step);
-    nextIndex = Math.max(0, Math.min(meta.maxIndex, nextIndex));
-
-    const peekLeft = nextIndex > 0 && nextIndex < meta.maxIndex ? 10 : 0;
-    const nextLeft = Math.max(0, Math.round(nextIndex * step - peekLeft));
-
-    meta.index = nextIndex;
-    meta.lastLeft = nextLeft;
-    this.setData({
-      groupUseTransition: true,
-      [`groupOffset.${group}`]: nextLeft,
-      [`focusedCardIndex.${group}`]: nextIndex
-    });
-
-  },
-
-  onGroupScrollEnd(e) {
-    // Deprecated by gesture-driven paging.
-  },
-
   _syncVideoFocus(group, oldIndex, newIndex) {
     const previousIndex = typeof oldIndex === "number" ? oldIndex : 0;
     const nextIndex = typeof newIndex === "number" ? newIndex : previousIndex;
@@ -907,150 +894,20 @@ Page({
     }, 30);
   },
 
-  onGroupTouchStart(e) {
-    const group = e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.group : "";
-    if (!group) return;
-    if (!this._snapMeta || !this._snapMeta[group]) {
-      this.ensureGroupSnapMetrics();
-      return;
-    }
-    const t = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
-    const startX = t && typeof t.clientX === "number" ? t.clientX : null;
-    const startY = t && typeof t.clientY === "number" ? t.clientY : null;
-    const meta = this._snapMeta[group];
-    meta.touchStartX = startX;
-    meta.touchStartY = startY;
-    meta.touchLastX = startX;
-    meta.touchStartTime = Date.now();
-    meta.touchStartOffset = this.data.groupOffset[group] || 0;
-    meta.liveLeft = meta.touchStartOffset;
-    meta.touchMoveThrottleTs = 0;
-    meta.renderedOffset = meta.touchStartOffset;
-    meta.gestureDirection = null;
-    if (this.data.isGroupSwiping) {
-      this.setData({ isGroupSwiping: false });
-    }
-  },
-
-  onGroupTouchMove(e) {
-    const group = e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.group : "";
-    const meta = group && this._snapMeta ? this._snapMeta[group] : null;
-    if (!meta || meta.touchStartX == null) return;
-    const t = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
-    const currentX = t && typeof t.clientX === "number" ? t.clientX : null;
-    const currentY = t && typeof t.clientY === "number" ? t.clientY : null;
-    if (currentX == null) return;
-    meta.touchLastX = currentX;
-
-    if (meta.gestureDirection == null) {
-      const dx = Math.abs(currentX - meta.touchStartX);
-      const dy = currentY != null && meta.touchStartY != null ? Math.abs(currentY - meta.touchStartY) : 0;
-      if (dx > GESTURE_TUNING.directionStartPx || dy > GESTURE_TUNING.directionStartPx) {
-        meta.gestureDirection = dy > dx * GESTURE_TUNING.verticalDominanceRatio ? "vertical" : "horizontal";
-        if (meta.gestureDirection === "horizontal") {
-          // Rebase at lock point to avoid a first-frame jump.
-          meta.touchStartX = currentX;
-          meta.touchStartOffset = this.data.groupOffset[group] || 0;
-          meta.liveLeft = meta.touchStartOffset;
-          meta.renderedOffset = meta.touchStartOffset;
-          this.setData({ groupUseTransition: false, mainScrollEnabled: false, isGroupSwiping: true });
-        }
-      }
-    }
-
-    if (meta.gestureDirection !== "horizontal") return;
-
-    const deltaX = currentX - meta.touchStartX;
-    const baseOffset = meta.touchStartOffset || 0;
-    const maxOffset = Math.max(0, meta.maxIndex * (meta.step || 1));
-    const newOffset = Math.max(0, Math.min(maxOffset, baseOffset - deltaX));
-    const nextOffset = newOffset;
-    if (meta.renderedOffset == null) {
-      meta.renderedOffset = meta.touchStartOffset || 0;
-    }
-    if (Math.abs(nextOffset - meta.renderedOffset) < 0.25) {
-      return;
-    }
-    const now = Date.now();
-    if (
-      SWIPE_MOVE_SMOOTHING.updateIntervalMs > 0 &&
-      now - (meta.touchMoveThrottleTs || 0) < SWIPE_MOVE_SMOOTHING.updateIntervalMs
-    ) {
-      return;
-    }
-    meta.touchMoveThrottleTs = now;
-    meta.renderedOffset = nextOffset;
-    meta.liveLeft = nextOffset;
-    this.setData({ [`groupOffset.${group}`]: nextOffset });
-
-  },
-
-  onGroupTouchEnd(e) {
-    const group = e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.group : "";
-    const meta = group && this._snapMeta ? this._snapMeta[group] : null;
-    if (!meta) return;
-
-    if (meta.gestureDirection !== "horizontal") {
-      meta.gestureDirection = null;
-      if (this.data.isGroupSwiping) {
-        this.setData({ isGroupSwiping: false });
-      }
-      if (!this.data.mainScrollEnabled) {
-        this.setData({ mainScrollEnabled: true });
-      }
-      return;
-    }
-    meta.gestureDirection = null;
-
-    const t = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]);
-    const endX = t && typeof t.clientX === "number" ? t.clientX : (meta.touchLastX != null ? meta.touchLastX : null);
-    const startX = meta.touchStartX;
-    const touchDuration = Date.now() - (meta.touchStartTime || Date.now());
-    const deltaX = startX != null && endX != null ? endX - startX : 0;
-    const currentOffset = typeof meta.liveLeft === "number" ? meta.liveLeft : (this.data.groupOffset[group] || 0);
-    const step = meta.step || 1;
-
-    let targetIndex;
-    const isQuickFlick =
-      touchDuration < GESTURE_TUNING.quickFlickDurationMs &&
-      Math.abs(deltaX) > GESTURE_TUNING.quickFlickDistancePx;
-
-    if (isQuickFlick) {
-      const dir = deltaX < 0 ? 1 : -1;
-      targetIndex = Math.max(0, Math.min(meta.maxIndex, (meta.index || 0) + dir));
-    } else {
-      targetIndex = Math.round(currentOffset / step);
-      targetIndex = Math.max(0, Math.min(meta.maxIndex, targetIndex));
-    }
-
-    const peekLeft = (targetIndex > 0 && targetIndex < meta.maxIndex) ? 10 : 0;
-    const targetOffset = Math.max(0, Math.round(targetIndex * step - peekLeft));
-
-    const endedCardCount =
-      group === "ended" ? (this.data.groupedActivities.ended || []).length : 0;
-    const slidOntoEndedLoadStrip =
-      group === "ended" &&
-      !!this.data.endedHasMore &&
-      targetIndex === meta.maxIndex &&
-      meta.maxIndex === endedCardCount;
-
-    const prevVideoIndex = this.data.focusedCardIndex[group];
-    meta.index = targetIndex;
-    meta.lastLeft = targetOffset;
-    meta.liveLeft = targetOffset;
-    this.setData({
-      groupUseTransition: true,
-      mainScrollEnabled: true,
-      isGroupSwiping: false,
-      [`groupOffset.${group}`]: targetOffset,
-      [`focusedCardIndex.${group}`]: targetIndex
-    }, () => {
-      this._syncVideoFocus(group, prevVideoIndex, targetIndex);
-      if (slidOntoEndedLoadStrip) {
+  onGroupSwiperChange(e) {
+    const group = e.currentTarget && e.currentTarget.dataset
+      ? String(e.currentTarget.dataset.group || "")
+      : "";
+    if (!group || !Object.prototype.hasOwnProperty.call(this.data.focusedCardIndex, group)) return;
+    const current = Math.max(0, Math.floor(Number(e.detail && e.detail.current) || 0));
+    const previous = Number(this.data.focusedCardIndex[group]) || 0;
+    this.setData({ [`focusedCardIndex.${group}`]: current }, () => {
+      this._syncVideoFocus(group, previous, current);
+      const endedCount = (this.data.groupedActivities.ended || []).length;
+      if (group === "ended" && this.data.endedHasMore && current === endedCount) {
         this.loadMoreEndedActivities();
       }
     });
-
   },
 
   /** 「已结束」横向滑到末尾加载格或点击加载格 */
@@ -1250,13 +1107,10 @@ Page({
       ...this.data.groupedActivities,
       ended: visibleEnded
     };
-    this._groupSnapMetricsReady = false;
     this.setData({
       groupedActivities,
       endedHasMore,
       endedLoadingMore: false
-    }, () => {
-      this.ensureGroupSnapMetrics();
     });
   },
 
@@ -1278,23 +1132,21 @@ Page({
     const fullGroupedActivities = this.computeGroupedActivities(listWithFlags);
     const endedStream = this.buildEndedStreamState(fullGroupedActivities, ENDED_ACTIVITY_PAGE_SIZE);
     const groupedActivities = endedStream.groupedActivities;
-    this._groupSnapMetricsReady = false;
     const focusReset = { joined: 0, accepting: 0, notStarted: 0, ended: 0 };
+    const cardPresentation = this._prepareColdStartCardPresentation(groupedActivities);
     // 须在 setData 回调之前创建 session，否则缓存命中的首帧 bindload 可能早于回调，导致事件丢弃并误报 stalled（H1）
     this._startCardMediaDiagnostics(listWithFlags, groupedActivities, focusReset);
     this.setData({
       activityList: listWithFlags,
       filteredList: filtered,
-      groupedActivities,
+      groupedActivities: cardPresentation.groupedActivities,
       allEndedActivities: endedStream.allEndedActivities,
       endedHasMore: endedStream.endedHasMore,
       endedLoadingMore: false,
-      groupOffset: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
       focusedCardIndex: focusReset,
-      groupUseTransition: false
-    }, () => {
-      this.ensureGroupSnapMetrics();
-    });
+      cardEntranceState: cardPresentation.cardEntranceState,
+      groupSectionVisibility: cardPresentation.groupSectionVisibility
+    }, () => this._scheduleColdStartCardEntrance());
     return true;
   },
 
@@ -1316,24 +1168,22 @@ Page({
           const fullGroupedActivities = this.computeGroupedActivities(list);
           const endedStream = this.buildEndedStreamState(fullGroupedActivities, ENDED_ACTIVITY_PAGE_SIZE);
           const groupedActivities = endedStream.groupedActivities;
-          this._groupSnapMetricsReady = false;
           const focusReset = { joined: 0, accepting: 0, notStarted: 0, ended: 0 };
+          const cardPresentation = this._prepareColdStartCardPresentation(groupedActivities);
           if (!options.skipCardMediaDiagnostics) {
             this._startCardMediaDiagnostics(list, groupedActivities, focusReset);
           }
           this.setData({
             activityList: list,
             filteredList: filtered,
-            groupedActivities,
+            groupedActivities: cardPresentation.groupedActivities,
             allEndedActivities: endedStream.allEndedActivities,
             endedHasMore: endedStream.endedHasMore,
             endedLoadingMore: false,
-            groupOffset: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
             focusedCardIndex: focusReset,
-            groupUseTransition: false
-          }, () => {
-            this.ensureGroupSnapMetrics();
-          });
+            cardEntranceState: cardPresentation.cardEntranceState,
+            groupSectionVisibility: cardPresentation.groupSectionVisibility
+          }, () => this._scheduleColdStartCardEntrance());
           cacheManager.setCachedActivityList(list, this.data.myUserId || "");
 
           wx.nextTick(() => {
@@ -1585,40 +1435,53 @@ Page({
 
   // 管理员：首页只负责创建活动，编辑入口统一放在活动详情页。
   showCreateModal() {
-    if (this.data.activityFormSubmitting) return;
-    this.setData({ showActivityForm: true, activityFormSubmitting: false });
+    if (this.data.showCreateForm || this.data.createFormSubmitting) return;
     this._setTabBarHidden(true);
+    this.setData({
+      createFormContainerRendered: true,
+      showCreateForm: false,
+      createFormSubmitting: false
+    }, () => {
+      wx.nextTick(() => this.setData({ showCreateForm: true }));
+    });
   },
 
-  closeActivityForm() {
-    if (this.data.activityFormSubmitting) return;
-    this.setData({ showActivityForm: false }, () => this._syncTabBarVisibility());
+  closeCreateForm() {
+    if (this.data.createFormSubmitting) return;
+    this.setData({ showCreateForm: false });
+  },
+
+  onCreateFormAfterLeave() {
+    if (!this.data.showCreateForm) {
+      this.setData({ createFormContainerRendered: false });
+      this._setTabBarHidden(false, { animate: true });
+    }
   },
 
   submitCreateActivity(e) {
-    if (this.data.activityFormSubmitting) return;
+    if (this.data.createFormSubmitting) return;
     const payload = e && e.detail && e.detail.payload;
     if (!payload) {
       wx.showToast({ title: "活动信息缺失", icon: "none" });
       return;
     }
-    this.setData({ activityFormSubmitting: true });
+    this.setData({ createFormSubmitting: true });
     wx.showLoading({ title: "创建中...", mask: true });
-    activityService
-      .createActivity(payload)
+    activityService.createActivity(payload)
       .then(() => {
         wx.hideLoading();
         wx.showToast({ title: "创建成功", icon: "success" });
-        this.setData({ showActivityForm: false, activityFormSubmitting: false }, () => {
-          this._syncTabBarVisibility();
-          this.loadActivityList();
+        this.setData({
+          showCreateForm: false,
+          createFormSubmitting: false
         });
+        return this.loadActivityList();
       })
-      .catch((err) => {
-        console.error(err);
+      .catch((error) => {
+        console.error(error);
         wx.hideLoading();
-        this.setData({ activityFormSubmitting: false });
-        wx.showToast({ title: (err && err.message) || "创建失败", icon: "none" });
+        this.setData({ createFormSubmitting: false });
+        wx.showToast({ title: (error && error.message) || "创建失败", icon: "none" });
       });
   },
 

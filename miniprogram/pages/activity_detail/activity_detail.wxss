@@ -191,7 +191,8 @@ page {
   position: absolute;
   left: 38.46rpx;
   right: 38.46rpx;
-  bottom: 140.38rpx;
+  /* 94.23rpx 为详情卡上移量，额外保留 46.15rpx（24px）净间距。 */
+  bottom: calc(94.23rpx + 46.15rpx);
   z-index: 6;
   display: flex;
   flex-direction: column;
@@ -266,22 +267,23 @@ page {
   gap: 7.69rpx;
 }
 
-.hero-remark {
+.hero-remark-viewport {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+  transition: height 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: height;
+}
+
+.hero-remark {
+  display: block;
+  width: 100%;
   color: rgba(255, 255, 255, 0.9);
   font-size: 26.92rpx;
   font-weight: 500;
   line-height: 1.4;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-  overflow: hidden;
-}
-
-.hero-remark-expanded {
-  display: block;
-  overflow: visible;
+  white-space: normal;
+  word-break: break-all;
 }
 
 .remark-toggle {
@@ -300,12 +302,71 @@ page {
   white-space: nowrap;
 }
 
+.remark-toggle-label {
+  position: relative;
+  width: 46.15rpx;
+  height: 38.46rpx;
+  overflow: hidden;
+}
+
+.remark-toggle-label .remark-toggle-text {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(0);
+  transition: opacity 160ms ease-out, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.remark-toggle-label .remark-toggle-text-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.remark-toggle-label .remark-toggle-text-out-up {
+  opacity: 0;
+  transform: translateY(-7.69rpx);
+}
+
+.remark-toggle-label .remark-toggle-text-out-down {
+  opacity: 0;
+  transform: translateY(7.69rpx);
+}
+
+.remark-chevron-rotator {
+  width: 26.92rpx;
+  height: 26.92rpx;
+  flex-shrink: 0;
+  transform: rotate(0deg);
+  transform-origin: center;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .remark-chevron {
+  position: relative;
   width: 26.92rpx;
   height: 26.92rpx;
 }
 
+.remark-chevron::after {
+  content: "";
+  position: absolute;
+  left: 8.65rpx;
+  top: 5.77rpx;
+  width: 9.62rpx;
+  height: 9.62rpx;
+  border-right: 2.31rpx solid rgba(255, 255, 255, 0.8);
+  border-bottom: 2.31rpx solid rgba(255, 255, 255, 0.8);
+  transform: rotate(45deg);
+  transform-origin: center;
+}
+
 .hero-remark-measure,
+.hero-remark-full-measure,
 .remark-toggle-measure {
   position: fixed;
   left: -10000rpx;
@@ -322,6 +383,16 @@ page {
   font-weight: 500;
   line-height: 1.4;
   white-space: nowrap;
+}
+
+.hero-remark-full-measure {
+  display: block;
+  color: transparent;
+  font-size: 26.92rpx;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: break-all;
 }
 
 .remark-toggle-measure {

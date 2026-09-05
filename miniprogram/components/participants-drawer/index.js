@@ -8,7 +8,6 @@ const {
   buildProgressView,
   getMaxHeightRpx
 } = require("./logic");
-
 function getRpxPerPx() {
   try {
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
@@ -17,6 +16,16 @@ function getRpxPerPx() {
   } catch (error) {
     return 750 / 390;
   }
+}
+
+function getDrawerHeightRpx(rowCount, maxHeightRpx, safeBottomRpx) {
+  const count = Math.max(0, Math.floor(Number(rowCount) || 0));
+  const safeBottom = Math.max(0, Number(safeBottomRpx) || 0);
+  const fixedChromeRpx = 130.77 + 15.38 + 153.85 + 15.38 + 61.54 + 30.77 + safeBottom;
+  const bodyRpx = count > 0
+    ? count * 123.08 + Math.max(0, count - 1) * 7.69
+    : 576.92;
+  return Math.min(Number(maxHeightRpx) || 1384.62, fixedChromeRpx + bodyRpx);
 }
 
 Component({
@@ -31,7 +40,11 @@ Component({
   },
 
   data: {
+    containerRendered: false,
+    containerVisible: false,
+    drawerHeightRpx: 984.61,
     rows: [],
+    memberListScrollEnabled: true,
     actionWidthRpx: ACTION_AREA_WIDTH_RPX,
     maxHeightRpx: 1384.62,
     bodyMaxHeightRpx: 1253.85,
@@ -43,6 +56,14 @@ Component({
   },
 
   observers: {
+    visible(visible) {
+      if (visible) {
+        this.prepareParticipantsContainer();
+      } else {
+        this._gesture = null;
+        this.setData({ containerVisible: false, memberListScrollEnabled: true });
+      }
+    },
     participants(value) {
       this.setRows(value);
     },
@@ -62,30 +83,52 @@ Component({
       this.updateHeightConstraints();
       this.setRows(this.properties.participants || []);
       this.setProgress();
+      if (this.properties.visible) this.prepareParticipantsContainer();
     }
   },
 
   methods: {
+    prepareParticipantsContainer() {
+      this.setRows(this.properties.participants || [], () => {
+        this.setProgress(() => this.mountContainer());
+      });
+    },
+
+    mountContainer() {
+      this.setData({ containerRendered: true, containerVisible: false }, () => {
+        wx.nextTick(() => {
+          if (this.properties.visible) this.setData({ containerVisible: true });
+        });
+      });
+    },
+
+    onContainerAfterLeave() {
+      if (!this.properties.visible) {
+        this.setData({ containerRendered: false });
+      }
+    },
+
     updateHeightConstraints() {
       const maxHeightRpx = getMaxHeightRpx();
       const fixedChromeRpx = 130.77;
       const safeBottomRpx = Number(this.properties.safeBottomRpx) || 0;
       this.setData({
         maxHeightRpx,
-        bodyMaxHeightRpx: Math.max(0, Math.round((maxHeightRpx - fixedChromeRpx - safeBottomRpx) * 100) / 100)
+        bodyMaxHeightRpx: Math.max(0, Math.round((maxHeightRpx - fixedChromeRpx - safeBottomRpx) * 100) / 100),
+        drawerHeightRpx: getDrawerHeightRpx(this.data.rows.length, maxHeightRpx, safeBottomRpx)
       });
     },
 
-    setProgress() {
+    setProgress(callback) {
       const progress = buildProgressView(
         this.properties.participantCount,
         this.properties.checkinCount,
         this.properties.maxParticipants
       );
-      this.setData(progress);
+      this.setData(progress, callback);
     },
 
-    setRows(participants) {
+    setRows(participants, callback) {
       const rows = (Array.isArray(participants) ? participants : []).map((item, index) => {
         const row = item && typeof item === "object" ? item : { name: String(item || "未命名") };
         const checked = !!(row.checkedInAt || row.checkedInAtRaw);
@@ -108,7 +151,14 @@ Component({
           actionOpen: false
         };
       });
-      this.setData({ rows });
+      this.setData({
+        rows,
+        drawerHeightRpx: getDrawerHeightRpx(
+          rows.length,
+          this.data.maxHeightRpx,
+          this.properties.safeBottomRpx
+        )
+      }, callback);
     },
 
     onMaskTap() {
@@ -149,15 +199,21 @@ Component({
       const rows = this.data.rows.map((row, i) => i === gesture.index
         ? { ...row, offsetX: next, actionOpen: Math.abs(next) >= ACTION_WIDTH_RPX * SWIPE_OPEN_THRESHOLD_RATIO }
         : row);
-      this.setData({ rows });
+      this.setData({ rows, memberListScrollEnabled: false });
     },
 
     onTouchEnd() {
       const gesture = this._gesture;
       this._gesture = null;
-      if (!gesture || gesture.horizontal !== true || !this.properties.isAdmin) return;
+      if (!gesture || gesture.horizontal !== true || !this.properties.isAdmin) {
+        if (!this.data.memberListScrollEnabled) this.setData({ memberListScrollEnabled: true });
+        return;
+      }
       const row = this.data.rows[gesture.index];
-      if (!row) return;
+      if (!row) {
+        this.setData({ memberListScrollEnabled: true });
+        return;
+      }
       const endOffsetX = Number.isFinite(gesture.currentOffsetX)
         ? gesture.currentOffsetX
         : (row.offsetX || 0);
@@ -165,7 +221,7 @@ Component({
       const rows = this.data.rows.map((item, index) => index === gesture.index
         ? { ...item, ...settledState }
         : item);
-      this.setData({ rows });
+      this.setData({ rows, memberListScrollEnabled: true });
     },
 
     onTouchCancel() {

@@ -1,8 +1,12 @@
 <!-- 页面容器 -->
 <view class="page-wrap">
+  <!-- 原型装饰层：脱离滚动文档流，固定沉在首页内容下方。 -->
+  <image class="page-watermark dragon-watermark dragon-watermark--absolute" src="../../images/activity-home-logo.png" mode="aspectFit" />
+
   <scroll-view
     class="main-scroll"
-    scroll-y="{{mainScrollEnabled}}"
+    type="list"
+    scroll-y="{{true}}"
     show-scrollbar="false"
     bindscroll="onMainScroll"
     style="height: 100vh"
@@ -18,9 +22,6 @@
     <view slot="refresher" class="main-refresher-slot">
       <text class="main-refresher-hint">{{mainRefresherHint}}</text>
     </view>
-    <!-- 背景水印（随内容滚动） -->
-    <image class="page-watermark dragon-watermark dragon-watermark--absolute" src="../../images/activity-home-logo.png" mode="aspectFit" />
-
     <!-- 自定义透明顶部栏（随页面滚动） -->
     <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px">
       <view class="navbar-inner">
@@ -39,25 +40,43 @@
             <text class="group-create-text">添加活动</text>
           </view>
         </view>
-        <view
-          wx:if="{{groupedActivities.joined.length > 0}}"
-          class="cards-carousel"
+        <swiper
+          id="qaJoinedCardSwiper"
+          wx:if="{{groupSectionVisibility.joined}}"
+          class="cards-swiper large-cards-swiper"
+          current="{{focusedCardIndex.joined}}"
+          duration="300"
+          easing-function="easeOutCubic"
+          previous-margin="38.46rpx"
+          next-margin="157.69rpx"
+          cache-extent="1"
           data-group="joined"
-          bindtouchstart="onGroupTouchStart"
-          bindtouchmove="onGroupTouchMove"
-          bindtouchend="onGroupTouchEnd"
+          bindchange="onGroupSwiperChange"
         >
-          <view class="large-cards-row" style="transform:translate3d(-{{groupOffset.joined}}px, 0, 0);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
+          <swiper-item
+            wx:for="{{groupedActivities.joined}}"
+            wx:key="_id"
+            class="large-card-slide"
+          >
             <view
-              wx:for="{{groupedActivities.joined}}"
-              wx:key="_id"
-              class="large-card-wrap"
-              bindtap="showDetail"
-              data-activity="{{item}}"
+              class="large-card-wrap home-card-entrance home-card-entrance--{{cardEntranceState}}"
+              style="transition-delay: {{index * cardEntranceStaggerMs}}ms;"
             >
               <text class="card-datetime-label">{{item.cardDateTimeLabel || item.startTime}}</text>
-              <!-- 大卡片 -->
-              <view class="large-card large-card--{{item.activityType}}-{{item.activityStyleKey}}">
+              <open-container
+                class="large-card-transition"
+                closed-color="transparent"
+                closed-elevation="0"
+                closed-border-radius="16"
+                open-elevation="0"
+                open-border-radius="0"
+                transition-type="fadeThrough"
+                transition-duration="320"
+                bind:tap="showDetail"
+                data-activity="{{item}}"
+              >
+                <!-- 大卡片 -->
+                <view class="large-card large-card--{{item.activityType}}-{{item.activityStyleKey}}">
                 <image
                   wx:if="{{item.largeCardBgImageUrl}}"
                   class="card-image-bg"
@@ -149,35 +168,48 @@
                     </view>
                   </view>
                 </view>
-              </view>
+                </view>
+              </open-container>
             </view>
-            <!-- 末尾留白 -->
-            <view class="cards-row-end-spacer"></view>
-          </view>
-        </view>
+          </swiper-item>
+        </swiper>
       </view>
 
       <!-- ── 接受报名 ── -->
-      <view wx:if="{{groupedActivities.accepting.length > 0}}" class="group-section">
+      <view wx:if="{{groupSectionVisibility.accepting}}" class="group-section">
         <view class="group-header">
           <text class="group-title">接受报名</text>
         </view>
-        <view
-          class="cards-carousel"
+        <swiper
+          id="qaAcceptingCardSwiper"
+          class="cards-swiper small-cards-swiper"
+          current="{{focusedCardIndex.accepting}}"
+          duration="300"
+          easing-function="easeOutCubic"
+          previous-margin="38.46rpx"
+          next-margin="342.31rpx"
+          cache-extent="1"
           data-group="accepting"
-          bindtouchstart="onGroupTouchStart"
-          bindtouchmove="onGroupTouchMove"
-          bindtouchend="onGroupTouchEnd"
+          bindchange="onGroupSwiperChange"
         >
-          <view class="small-cards-row" style="transform:translate3d(-{{groupOffset.accepting}}px, 0, 0);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
-            <view
-              wx:for="{{groupedActivities.accepting}}"
-              wx:key="_id"
+          <swiper-item wx:for="{{groupedActivities.accepting}}" wx:key="_id" class="small-card-slide">
+            <open-container
               class="small-card-wrap"
-              bindtap="showDetail"
+              closed-color="transparent"
+              closed-elevation="0"
+              closed-border-radius="0"
+              open-elevation="0"
+              open-border-radius="0"
+              transition-type="fadeThrough"
+              transition-duration="320"
+              bind:tap="showDetail"
               data-activity="{{item}}"
             >
-              <view class="small-card">
+              <view
+                class="small-card-content home-card-entrance home-card-entrance--{{cardEntranceState}}"
+                style="transition-delay: {{index * cardEntranceStaggerMs}}ms;"
+              >
+                <view class="small-card">
                 <image
                   wx:if="{{item.smallCardBgImageUrl}}"
                   class="card-image-bg"
@@ -227,38 +259,52 @@
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 3].url}}" mode="aspectFill" />
                   </view>
                 </view>
+                </view>
+                <view class="small-card-info">
+                  <text class="small-card-name">{{item.name}}</text>
+                  <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
+                </view>
               </view>
-              <view class="small-card-info">
-                <text class="small-card-name">{{item.name}}</text>
-                <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
-              </view>
-            </view>
-            <view class="cards-row-end-spacer"></view>
-          </view>
-        </view>
+            </open-container>
+          </swiper-item>
+        </swiper>
       </view>
 
       <!-- ── 未开始 ── -->
-      <view wx:if="{{groupedActivities.notStarted.length > 0}}" class="group-section">
+      <view wx:if="{{groupSectionVisibility.notStarted}}" class="group-section">
         <view class="group-header">
           <text class="group-title">未开始</text>
         </view>
-        <view
-          class="cards-carousel"
+        <swiper
+          id="qaNotStartedCardSwiper"
+          class="cards-swiper small-cards-swiper"
+          current="{{focusedCardIndex.notStarted}}"
+          duration="300"
+          easing-function="easeOutCubic"
+          previous-margin="38.46rpx"
+          next-margin="342.31rpx"
+          cache-extent="1"
           data-group="notStarted"
-          bindtouchstart="onGroupTouchStart"
-          bindtouchmove="onGroupTouchMove"
-          bindtouchend="onGroupTouchEnd"
+          bindchange="onGroupSwiperChange"
         >
-          <view class="small-cards-row" style="transform:translate3d(-{{groupOffset.notStarted}}px, 0, 0);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
-            <view
-              wx:for="{{groupedActivities.notStarted}}"
-              wx:key="_id"
+          <swiper-item wx:for="{{groupedActivities.notStarted}}" wx:key="_id" class="small-card-slide">
+            <open-container
               class="small-card-wrap"
-              bindtap="showDetail"
+              closed-color="transparent"
+              closed-elevation="0"
+              closed-border-radius="0"
+              open-elevation="0"
+              open-border-radius="0"
+              transition-type="fadeThrough"
+              transition-duration="320"
+              bind:tap="showDetail"
               data-activity="{{item}}"
             >
-              <view class="small-card">
+              <view
+                class="small-card-content home-card-entrance home-card-entrance--{{cardEntranceState}}"
+                style="transition-delay: {{index * cardEntranceStaggerMs}}ms;"
+              >
+                <view class="small-card">
                 <image
                   wx:if="{{item.smallCardBgImageUrl}}"
                   class="card-image-bg"
@@ -308,38 +354,52 @@
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 3].url}}" mode="aspectFill" />
                   </view>
                 </view>
+                </view>
+                <view class="small-card-info">
+                  <text class="small-card-name">{{item.name}}</text>
+                  <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
+                </view>
               </view>
-              <view class="small-card-info">
-                <text class="small-card-name">{{item.name}}</text>
-                <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
-              </view>
-            </view>
-            <view class="cards-row-end-spacer"></view>
-          </view>
-        </view>
+            </open-container>
+          </swiper-item>
+        </swiper>
       </view>
 
       <!-- ── 已结束 ── -->
-      <view wx:if="{{groupedActivities.ended.length > 0}}" class="group-section ended-section">
+      <view wx:if="{{groupSectionVisibility.ended}}" class="group-section ended-section">
         <view class="group-header">
           <text class="group-title">已结束</text>
         </view>
-        <view
-          class="cards-carousel"
+        <swiper
+          id="qaEndedCardSwiper"
+          class="cards-swiper small-cards-swiper"
+          current="{{focusedCardIndex.ended}}"
+          duration="300"
+          easing-function="easeOutCubic"
+          previous-margin="38.46rpx"
+          next-margin="342.31rpx"
+          cache-extent="1"
           data-group="ended"
-          bindtouchstart="onGroupTouchStart"
-          bindtouchmove="onGroupTouchMove"
-          bindtouchend="onGroupTouchEnd"
+          bindchange="onGroupSwiperChange"
         >
-          <view class="small-cards-row" style="transform:translate3d(-{{groupOffset.ended}}px, 0, 0);{{groupUseTransition ? 'transition:transform 0.3s ease-out' : ''}}">
-            <view
-              wx:for="{{groupedActivities.ended}}"
-              wx:key="_id"
+          <swiper-item wx:for="{{groupedActivities.ended}}" wx:key="_id" class="small-card-slide">
+            <open-container
               class="small-card-wrap"
-              bindtap="showDetail"
+              closed-color="transparent"
+              closed-elevation="0"
+              closed-border-radius="0"
+              open-elevation="0"
+              open-border-radius="0"
+              transition-type="fadeThrough"
+              transition-duration="320"
+              bind:tap="showDetail"
               data-activity="{{item}}"
             >
-              <view class="small-card">
+              <view
+                class="small-card-content home-card-entrance home-card-entrance--{{cardEntranceState}}"
+                style="transition-delay: {{index * cardEntranceStaggerMs}}ms;"
+              >
+                <view class="small-card">
                 <image
                   wx:if="{{item.smallCardBgImageUrl}}"
                   class="card-image-bg"
@@ -389,20 +449,22 @@
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 3].url}}" mode="aspectFill" />
                   </view>
                 </view>
+                </view>
+                <view class="small-card-info">
+                  <text class="small-card-name">{{item.name}}</text>
+                  <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
+                </view>
               </view>
-              <view class="small-card-info">
-                <text class="small-card-name">{{item.name}}</text>
-                <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
-              </view>
-            </view>
-            <view wx:if="{{endedHasMore}}" class="small-card-wrap ended-more-strip">
+            </open-container>
+          </swiper-item>
+          <swiper-item wx:if="{{endedHasMore && groupedActivities.ended.length > 0}}" class="small-card-slide">
+            <view class="small-card-wrap ended-more-strip">
               <view class="ended-more-card" catchtap="onEndedHorizontalLoadMore">
                 <text class="ended-more-text">{{endedLoadingMore ? '加载中…' : '点击加载更多'}}</text>
               </view>
             </view>
-            <view class="cards-row-end-spacer"></view>
-          </view>
-        </view>
+          </swiper-item>
+        </swiper>
       </view>
 
       <!-- 底部占位与悬浮 Tab 高度一致，避免内容被遮挡 -->
@@ -410,19 +472,35 @@
     </block>
   </scroll-view>
 
-  <activity-form-sheet
-    id="qaActivityFormSheet"
-    wx:if="{{showActivityForm && !isGuest}}"
-    visible="{{true}}"
-    mode="create"
-    activity-type-option-values="{{activityTypeOptionValues}}"
-    activity-type-option-labels="{{activityTypeOptionLabels}}"
-    default-activity-type="{{'badminton'}}"
-    submitting="{{activityFormSubmitting}}"
-    bindclose="closeActivityForm"
-    bindsubmit="submitCreateActivity"
-  />
-
   <!-- 底部 Tab 由 custom-tab-bar 组件统一渲染，此处无需内联 -->
+
+  <page-container
+    wx:if="{{createFormContainerRendered}}"
+    id="qaActivityCreateContainer"
+    show="{{showCreateForm}}"
+    position="bottom"
+    overlay="{{true}}"
+    round="{{false}}"
+    duration="240"
+    close-on-slide-down="{{false}}"
+    overlay-style="background: rgba(23, 24, 20, 0.4);"
+    custom-style="height: 100%; background: transparent; border-radius: 0; overflow: hidden;"
+    bind:clickoverlay="closeCreateForm"
+    bind:afterleave="onCreateFormAfterLeave"
+  >
+    <activity-form-sheet
+      id="qaActivityCreateForm"
+      style="display: block; width: 100%; height: 100%;"
+      visible="{{showCreateForm}}"
+      route-embedded="{{true}}"
+      mode="create"
+      activity-type-option-values="{{activityTypeOptionValues}}"
+      activity-type-option-labels="{{activityTypeOptionLabels}}"
+      default-activity-type="{{'badminton'}}"
+      submitting="{{createFormSubmitting}}"
+      bindclose="closeCreateForm"
+      bindsubmit="submitCreateActivity"
+    />
+  </page-container>
 
 </view>

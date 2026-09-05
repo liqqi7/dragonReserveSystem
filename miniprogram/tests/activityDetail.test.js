@@ -37,17 +37,37 @@ test("activity title is limited to ten characters for the one-line hero display"
 
 test("activity remark uses measured one-line overflow and restores the prototype toggle", () => {
   assert.match(wxml, /class="remark-toggle"/);
-  assert.match(wxml, /\{\{remarkExpanded \? '收起' : '展开'\}\}/);
+  assert.match(wxml, /class="remark-toggle-label"/);
+  assert.match(wxml, /remark-toggle-text-out-up' : 'remark-toggle-text-active'\}\}">展开<\/text>/);
+  assert.match(wxml, /remark-toggle-text-active' : 'remark-toggle-text-out-down'\}\}">收起<\/text>/);
+  assert.match(wxml, /class="hero-remark"[\s\S]*?overflow="ellipsis"[\s\S]*?max-lines="\{\{remarkExpanded \? 999 : 1\}\}"/);
+  assert.match(wxml, /class="remark-chevron-rotator" style="transform: rotate\(\{\{remarkToggleRotationDeg\}\}deg\);"[\s\S]*?<view class="remark-chevron"><\/view>/);
   assert.match(wxml, /class="hero-remark-measure"/);
+  assert.match(wxml, /class="hero-remark-full-measure"/);
+  assert.match(wxml, /class="hero-remark-viewport"/);
   assert.match(wxml, /class="remark-toggle-measure"/);
   assert.match(js, /updateRemarkOverflow\(\)/);
   assert.match(js, /select\("\.hero-remark-row"\)\.boundingClientRect\(\)/);
   assert.match(js, /select\("\.hero-remark-measure"\)\.boundingClientRect\(\)/);
   assert.match(js, /select\("\.remark-toggle-measure"\)\.boundingClientRect\(\)/);
+  assert.match(js, /select\("\.hero-remark-full-measure"\)\.boundingClientRect\(\)/);
   assert.match(js, /rowRect\.width - toggleWidth - 7\.69/);
   assert.doesNotMatch(js, /remark\.length\s*>/);
-  assert.match(wxss, /\.hero-remark\s*\{[^}]*-webkit-line-clamp:\s*1;[^}]*overflow:\s*hidden;/s);
+  assert.match(wxss, /\.hero-remark-viewport\s*\{[^}]*overflow:\s*hidden;[^}]*transition:\s*height 260ms/s);
+  assert.match(wxss, /\.hero-copy\s*\{[^}]*left:\s*38\.46rpx;[^}]*right:\s*38\.46rpx;/s);
+  assert.match(wxss, /\.hero-remark\s*\{[^}]*white-space:\s*normal;[^}]*word-break:\s*break-all;/s);
+  assert.match(wxss, /\.remark-toggle\s*\{[^}]*gap:\s*7\.69rpx;[^}]*flex-shrink:\s*0;/s);
+  assert.match(wxss, /\.remark-chevron-rotator\s*\{[^}]*width:\s*26\.92rpx;[^}]*height:\s*26\.92rpx;[^}]*transition:\s*transform 220ms cubic-bezier\(0\.22, 1, 0\.36, 1\);/s);
+  assert.match(wxss, /\.remark-chevron\s*\{[^}]*position:\s*relative;[^}]*width:\s*26\.92rpx;[^}]*height:\s*26\.92rpx;/s);
+  assert.match(wxss, /\.remark-chevron::after\s*\{[^}]*border-right:\s*2\.31rpx solid rgba\(255, 255, 255, 0\.8\);[^}]*border-bottom:\s*2\.31rpx solid rgba\(255, 255, 255, 0\.8\);[^}]*rotate\(45deg\)/s);
+  assert.doesNotMatch(wxss, /\.remark-chevron-up::after/);
   assert.match(wxss, /\.remark-toggle-text\s*\{[^}]*font-size:\s*23\.08rpx;[^}]*font-weight:\s*500;/s);
+  assert.match(wxss, /\.remark-toggle-label\s*\{[^}]*width:\s*46\.15rpx;[^}]*height:\s*38\.46rpx;[^}]*overflow:\s*hidden;/s);
+  assert.match(wxss, /\.remark-toggle-label \.remark-toggle-text\s*\{[^}]*transition:\s*opacity 160ms ease-out, transform 220ms cubic-bezier\(0\.22, 1, 0\.36, 1\);/s);
+  assert.match(wxss, /\.remark-toggle-text-out-up\s*\{[^}]*translateY\(-7\.69rpx\)/s);
+  assert.match(wxss, /\.remark-toggle-text-out-down\s*\{[^}]*translateY\(7\.69rpx\)/s);
+  assert.match(js, /remarkToggleRotationDeg:\s*\(Number\(this\.data\.remarkToggleRotationDeg\) \|\| 0\) \+ 180/);
+  assert.match(wxml, /<\/view>\s*<\/view>\s*<!-- 测量节点必须放在 hero-copy 外/);
 });
 
 test("activity detail calculates and formats location distance", () => {
@@ -133,6 +153,16 @@ test("activity detail keeps QA anchors and the existing participants drawer", ()
   assert.match(wxml, /bindretrocheckin="adminRetroCheckin"/);
   assert.match(wxml, /bindcancelcheckin="adminCancelCheckin"/);
   assert.match(wxml, /bindremove="removeParticipant"/);
+});
+
+test("edit form and its time pickers share one full-height Skyline container", () => {
+  assert.equal(pageJson.usingComponents["date-time-picker-sheet"], undefined);
+  assert.match(wxml, /<page-container[\s\S]*id="qaActivityEditContainer"[\s\S]*show="{{showActivityForm}}"[\s\S]*bind:afterleave="onActivityFormAfterLeave"/);
+  assert.match(wxml, /<activity-form-sheet[\s\S]*id="qaActivityFormSheet"[\s\S]*route-embedded="{{true}}"[\s\S]*mode="edit"/);
+  assert.doesNotMatch(wxml, /external-date-time-picker|qaEditDateTimePickerSheet|bindopendatetimepicker/);
+  assert.match(js, /openAdminEdit\(\)\s*\{[\s\S]*activityFormContainerRendered:\s*true[\s\S]*showActivityForm:\s*false[\s\S]*wx\.nextTick\(\(\) => this\.setData\(\{ showActivityForm: true \}\)\)/);
+  assert.match(js, /onActivityFormAfterLeave\(\)\s*\{[\s\S]*activityFormContainerRendered:\s*false/);
+  assert.doesNotMatch(js, /openEditDateTimePicker|confirmEditDateTimePicker|editDateTimePickerVisible/);
 });
 
 test("activity detail removes the legacy countdown and standalone pigeon sections", () => {
@@ -238,14 +268,13 @@ test("activity detail follows the latest eight-pixel drawer rhythm", () => {
   assert.match(wxss, /\.detail-panel\s*\{[^}]*margin-top:\s*-94\.23rpx;[^}]*padding:\s*30\.77rpx;[^}]*box-shadow:\s*0 -7\.69rpx 34\.62rpx rgba\(0, 0, 0, 0\.102\);/s);
   assert.match(wxss, /\.facts-row\s*\{[^}]*margin-top:\s*15\.38rpx;/s);
   assert.match(wxss, /\.location-card,\s*\n\.weather-card\s*\{[^}]*margin-top:\s*15\.38rpx;/s);
-  assert.match(wxss, /\.hero-copy\s*\{[^}]*bottom:\s*140\.38rpx;[^}]*gap:\s*23\.08rpx;/s);
+  assert.match(wxss, /\.hero-copy\s*\{[^}]*bottom:\s*calc\(94\.23rpx \+ 46\.15rpx\);[^}]*gap:\s*23\.08rpx;/s);
 });
 
 test("weather card matches the prototype structure and unavailable state", () => {
   assert.match(wxml, /weather-icon-wrap/);
   assert.match(wxml, /weather-humidity\.svg/);
   assert.match(wxml, /weather-wind\.svg/);
-  assert.match(wxml, /activity-detail-chevron-down\.svg/);
   assert.match(wxml, /weather-air-quality\.svg/);
   assert.match(wxml, />空气湿度</);
   assert.match(wxml, />风向风速</);
@@ -274,7 +303,7 @@ test("prototype key sizes, colors, typography and action layout do not regress",
   assert.match(wxss, /\.hero-title\s*\{[^}]*height:\s*84\.62rpx;[^}]*font-size:\s*61\.54rpx;/s);
   assert.match(wxss, /\.hero-title\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;/s);
   assert.doesNotMatch(wxss, /\.section-assist(?:-text)?\s*\{/);
-  assert.match(wxss, /\.hero-copy\s*\{[^}]*gap:\s*23\.08rpx;/s);
+  assert.match(wxss, /\.hero-copy\s*\{[^}]*bottom:\s*calc\(94\.23rpx \+ 46\.15rpx\);[^}]*gap:\s*23\.08rpx;/s);
   assert.match(wxss, /\.section-title\s*\{[^}]*font-size:\s*34\.62rpx;[^}]*font-weight:\s*700;/s);
   assert.match(wxss, /\.facts-row\s*\{[^}]*height:\s*84\.62rpx;[^}]*padding:\s*0;[^}]*justify-content:\s*center;[^}]*gap:\s*23\.08rpx;/s);
   assert.match(wxss, /\.fact-item\s*\{[^}]*height:\s*84\.62rpx;/s);
@@ -304,8 +333,7 @@ test("prototype key sizes, colors, typography and action layout do not regress",
   assert.match(wxss, /\.bottom-primary\s*\{[^}]*left:\s*238\.46rpx;[^}]*width:\s*473\.08rpx;[^}]*height:/s);
   assert.match(wxss, /\.bottom-primary-disabled\s*\{[^}]*background:\s*#e5e7eb;[^}]*color:\s*#9ca3af;/s);
   assert.match(wxml, /src="\/images\/activity-detail-chevron-left\.svg"/);
-  assert.match(wxml, /activity-detail-chevron-up\.svg/);
-  assert.match(wxml, /activity-detail-chevron-down\.svg/);
+  assert.doesNotMatch(wxml, /activity-detail-chevron-(?:up|down)\.svg/);
   assert.match(wxml, /src="\/images\/activity-detail-chevron-right\.svg"/);
   assert.match(wxml, /src="\/images\/icon-navigation\.svg"/);
   assert.match(wxml, /src="\/images\/weather-humidity\.svg"/);

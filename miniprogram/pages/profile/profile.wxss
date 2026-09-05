@@ -2,9 +2,44 @@ page {
   background-color: #f5f5f5;
 }
 
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.profile-navbar {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  padding: 0 24rpx;
+  background: #f5f5f5;
+}
+
+.profile-navbar-inner {
+  display: flex;
+  height: 84.62rpx;
+  align-items: center;
+}
+
+.profile-navbar-title {
+  color: #0a0a0a;
+  font-size: 46.15rpx;
+  font-weight: 600;
+  line-height: 65.38rpx;
+}
+
+.profile-scroll {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
 .container {
   box-sizing: border-box;
-  min-height: 100vh;
+  min-height: 100%;
   padding: 24rpx;
 
   background: #f5f5f5;
@@ -220,8 +255,8 @@ page {
 
 .modal-body {
   padding: 24rpx;
-  overflow-y: auto;
   flex: 1;
+  min-height: 0;
 }
 
 .modal-footer {

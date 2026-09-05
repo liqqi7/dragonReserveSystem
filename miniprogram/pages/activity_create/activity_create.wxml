@@ -1,0 +1,15 @@
+<view class="activity-create-route">
+  <activity-form-sheet
+    id="qaActivityCreateRouteForm"
+    class="activity-create-form-host"
+    visible="{{true}}"
+    route-embedded="{{true}}"
+    mode="create"
+    activity-type-option-values="{{activityTypeOptionValues}}"
+    activity-type-option-labels="{{activityTypeOptionLabels}}"
+    default-activity-type="{{'badminton'}}"
+    submitting="{{submitting}}"
+    bindclose="closeCreateRoute"
+    bindsubmit="submitCreateActivity"
+  />
+</view>

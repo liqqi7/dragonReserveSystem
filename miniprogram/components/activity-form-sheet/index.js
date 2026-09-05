@@ -9,7 +9,6 @@ const {
   validateActivityForm,
   buildActivityPayload
 } = require("../../utils/activityForm");
-
 function normalizeMode(value) {
   return value === "edit" ? "edit" : "create";
 }
@@ -29,6 +28,34 @@ const REMARK_MIN_HEIGHT_RPX = 48;
 const REMARK_LINE_HEIGHT_RPX = 40;
 const REMARK_EDIT_LINE_HEIGHT_RPX = 42;
 const REMARK_MAX_LINES = 5;
+const CREATE_SHEET_TOP_OFFSET_RPX = 323.08;
+const EDIT_SHEET_BASE_HEIGHT_RPX = 1215.4;
+const EDIT_LIMIT_EXPANSION_RPX = 112;
+const EDIT_SHEET_MAX_RATIO = 0.92;
+
+function getViewportRpx() {
+  try {
+    const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
+    const width = Number(info && info.windowWidth);
+    const height = Number(info && info.windowHeight);
+    if (width > 0 && height > 0) return height * 750 / width;
+  } catch (error) {
+    // Tests and unsupported runtimes use the standard 390 × 844 viewport.
+  }
+  return 844 * 750 / 390;
+}
+
+function getActivitySheetHeightRpx(mode, limitEnabled, remarkTextareaHeightRpx) {
+  const viewportRpx = getViewportRpx();
+  if (normalizeMode(mode) === "create") {
+    return Math.min(viewportRpx * 0.96, viewportRpx - CREATE_SHEET_TOP_OFFSET_RPX);
+  }
+  const remarkExpansion = Math.max(0, Number(remarkTextareaHeightRpx) - REMARK_MIN_HEIGHT_RPX);
+  const contentHeight = EDIT_SHEET_BASE_HEIGHT_RPX
+    + (limitEnabled ? EDIT_LIMIT_EXPANSION_RPX : 0)
+    + remarkExpansion;
+  return Math.min(viewportRpx * EDIT_SHEET_MAX_RATIO, contentHeight);
+}
 
 function getRemarkTextareaHeight(lineCount, isEdit = false) {
   const normalizedLineCount = Math.max(1, Math.min(REMARK_MAX_LINES, Math.floor(Number(lineCount) || 1)));
@@ -58,10 +85,19 @@ Component({
     defaultActivityType: { type: String, value: DEFAULT_CREATE_ACTIVITY_TYPE },
     participantCount: { type: Number, value: 0 },
     locationDisabled: { type: Boolean, value: false },
-    submitting: { type: Boolean, value: false }
+    submitting: { type: Boolean, value: false },
+    /** 编辑页可将二级时间选择器提升到页面根层，避开两个 page-container 同组件叠层失效。 */
+    externalDateTimePicker: { type: Boolean, value: false },
+    /** 新建页可将二级类型选择器提升到页面根层，与时间选择器串行切换。 */
+    externalActivityTypePicker: { type: Boolean, value: false },
+    /** 已由 Skyline 半屏路由提供遮罩和进退场时，只保留表单面板本身。 */
+    routeEmbedded: { type: Boolean, value: false }
   },
 
   data: {
+    containerRendered: false,
+    containerVisible: false,
+    panelHeightRpx: EDIT_SHEET_BASE_HEIGHT_RPX,
     form: buildCreateForm(new Date(0), DEFAULT_CREATE_ACTIVITY_TYPE),
     title: "新建活动",
     submitText: "发布活动",
@@ -89,25 +125,54 @@ Component({
 
   observers: {
     visible(visible) {
-      if (visible) this.initializeForm();
-      else if (this.data.pickerVisible || this.data.activityTypePickerVisible) {
+      if (visible) {
+        this.initializeForm(() => this.mountContainer());
+        return;
+      } else if (this.data.pickerVisible || this.data.activityTypePickerVisible) {
         this.setData({
+          containerVisible: false,
           pickerVisible: false,
           pickerTarget: "",
           activityTypePickerVisible: false
         });
+      } else {
+        this.setData({ containerVisible: false });
       }
+    },
+    mode() {
+      if (!this.properties.visible) return;
+      this.initializeForm();
     }
   },
 
   lifetimes: {
     attached() {
-      if (this.properties.visible) this.initializeForm();
+      if (this.properties.visible) {
+        this.initializeForm(() => this.mountContainer());
+      }
     }
   },
 
   methods: {
-    initializeForm() {
+    mountContainer() {
+      if (this.properties.routeEmbedded) {
+        this.setData({ containerRendered: false, containerVisible: false });
+        return;
+      }
+      this.setData({ containerRendered: true, containerVisible: false }, () => {
+        wx.nextTick(() => {
+          if (this.properties.visible) this.setData({ containerVisible: true });
+        });
+      });
+    },
+
+    onContainerAfterLeave() {
+      if (!this.properties.visible) {
+        this.setData({ containerRendered: false });
+      }
+    },
+
+    initializeForm(callback) {
       const mode = normalizeMode(this.properties.mode);
       const isEdit = mode === "edit";
       const form = isEdit
@@ -124,6 +189,9 @@ Component({
         form.maxParticipants = minParticipants;
       }
       const remarkLineCount = estimateRemarkLineCount(form.remark);
+      const remarkTextareaHeight = form.remark
+        ? getRemarkTextareaHeight(remarkLineCount, isEdit)
+        : REMARK_MIN_HEIGHT_RPX;
       this.setData({
         form,
         title: isEdit ? "编辑活动" : "新建活动",
@@ -143,10 +211,11 @@ Component({
         nameCount: String(form.name || "").length,
         remarkCount: String(form.remark || "").length,
         remarkLineCount,
-        remarkTextareaHeight: form.remark
-          ? getRemarkTextareaHeight(remarkLineCount, isEdit)
-          : REMARK_MIN_HEIGHT_RPX,
+        remarkTextareaHeight,
+        panelHeightRpx: getActivitySheetHeightRpx(mode, form.limitEnabled, remarkTextareaHeight),
         participantInputFocused: false
+      }, () => {
+        if (typeof callback === "function") callback();
       });
     },
 
@@ -162,7 +231,7 @@ Component({
       const value = e.detail.value || "";
       const changes = { [`form.${field}`]: value };
       if (field === "name") changes.nameCount = value.length;
-      this.setData(changes);
+      this.setData(changes, () => this.refreshPanelHeight());
     },
 
     updateRemarkValue(value) {
@@ -198,7 +267,7 @@ Component({
         remarkTextareaHeight: this.data.form.remark
           ? getRemarkTextareaHeight(lineCount, this.data.isEdit)
           : REMARK_MIN_HEIGHT_RPX
-      });
+      }, () => this.refreshPanelHeight());
     },
 
     onSwitchChange(e) {
@@ -221,12 +290,30 @@ Component({
       if (field === "limitEnabled" && !checked) {
         changes.participantInputFocused = false;
       }
-      this.setData(changes);
+      this.setData(changes, () => this.refreshPanelHeight());
+    },
+
+    refreshPanelHeight() {
+      const mode = this.properties && this.properties.mode
+        ? this.properties.mode
+        : (this.data.isEdit ? "edit" : "create");
+      this.setData({
+        panelHeightRpx: getActivitySheetHeightRpx(
+          mode,
+          this.data.form.limitEnabled,
+          this.data.remarkTextareaHeight
+        )
+      });
     },
 
     openActivityTypePicker() {
       if (this.data.isEdit) return;
-      this.setData({ activityTypePickerVisible: true });
+      this.setData({ activityTypePickerVisible: true }, () => {
+        if (!this.properties || !this.properties.externalActivityTypePicker) return;
+        this.triggerEvent("openactivitytypepicker", {
+          value: this.data.form.activityType
+        });
+      });
     },
 
     closeActivityTypePicker() {
@@ -340,6 +427,14 @@ Component({
         pickerMode: config.mode,
         pickerTitle: config.title,
         pickerValue: config.value
+      }, () => {
+        if (!this.properties || !this.properties.externalDateTimePicker) return;
+        this.triggerEvent("opendatetimepicker", {
+          target,
+          mode: config.mode,
+          title: config.title,
+          value: config.value
+        });
       });
     },
 

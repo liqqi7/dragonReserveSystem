@@ -1,6 +1,19 @@
-<view wx:if="{{visible}}" class="drawer-root" id="qaParticipantsDrawer">
-  <view class="drawer-mask" catchtouchmove="noop" bindtap="onMaskTap"></view>
-  <view class="drawer-sheet" catchtap="noop" catchtouchmove="noop" style="padding-bottom: {{safeBottomRpx}}rpx; max-height: {{maxHeightRpx}}rpx">
+<page-container
+  wx:if="{{containerRendered}}"
+  id="qaParticipantsDrawer"
+  show="{{containerVisible}}"
+  position="bottom"
+  overlay="{{true}}"
+  round="{{false}}"
+  duration="240"
+  z-index="1230"
+  close-on-slide-down="{{false}}"
+  overlay-style="background: rgba(0, 0, 0, 0.4);"
+  custom-style="height: {{drawerHeightRpx}}rpx; max-height: {{maxHeightRpx}}rpx; background: transparent; border-radius: 46.15rpx 46.15rpx 0 0; overflow: hidden;"
+  bind:clickoverlay="onMaskTap"
+  bind:afterleave="onContainerAfterLeave"
+>
+    <view id="qaParticipantsSurface" class="drawer-sheet" style="padding-bottom: {{safeBottomRpx}}rpx;">
     <view class="drawer-handle-zone" aria-label="拖拽区">
       <view class="drawer-handle"></view>
     </view>
@@ -10,7 +23,7 @@
         <image src="/images/icon-close.svg" mode="aspectFit" />
       </view>
     </view>
-    <scroll-view scroll-y class="drawer-body" enhanced="{{true}}" show-scrollbar="{{false}}" style="max-height: {{bodyMaxHeightRpx}}rpx">
+    <view class="drawer-body">
       <view id="qaParticipantsProgress" class="checkin-progress-card">
         <view class="progress-title-row">
           <text class="progress-title">签到进度</text>
@@ -35,17 +48,26 @@
           <text class="head-time">签到时间</text>
           <text class="head-location">签到位置</text>
         </view>
-        <view wx:if="{{rows.length === 0}}" class="drawer-empty" id="qaParticipantsEmpty">
-          <text class="drawer-empty-title">还没有人报名</text>
-          <text class="drawer-empty-message">有成员报名后，会在这里生成人员名单</text>
-        </view>
-        <view wx:else class="participant-list">
+        <scroll-view
+          id="qaParticipantListScroll"
+          class="participant-list-scroll"
+          type="list"
+          scroll-y="{{memberListScrollEnabled}}"
+          enhanced="{{true}}"
+          bounces="{{false}}"
+          min-drag-distance="18"
+          show-scrollbar="{{false}}"
+        >
+          <view wx:if="{{rows.length === 0}}" class="drawer-empty" id="qaParticipantsEmpty">
+            <text class="drawer-empty-title">还没有人报名</text>
+            <text class="drawer-empty-message">有成员报名后，会在这里生成人员名单</text>
+          </view>
           <view
             wx:for="{{rows}}"
             wx:key="rowKey"
             wx:for-item="row"
             wx:for-index="index"
-            class="participant-row-wrap"
+            class="participant-row-wrap {{index < rows.length - 1 ? 'participant-row-wrap--spaced' : ''}}"
             data-index="{{index}}"
             bindtouchstart="onTouchStart"
             bindtouchmove="onTouchMove"
@@ -91,9 +113,9 @@
               </view>
             </view>
           </view>
-        </view>
+          <view class="drawer-body-bottom"></view>
+        </scroll-view>
       </view>
-      <view class="drawer-body-bottom"></view>
-    </scroll-view>
-  </view>
-</view>
+    </view>
+    </view>
+</page-container>

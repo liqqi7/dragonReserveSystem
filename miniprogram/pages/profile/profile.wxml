@@ -1,19 +1,19 @@
-<view class="container" style="padding-bottom: calc(131.69231rpx + {{bottomSafeAreaRpx}}rpx);">
-  <view class="profile-box">
+<view id="qa-profile-page" class="profile-page">
+  <view class="profile-navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="profile-navbar-inner"><text class="profile-navbar-title">我的</text></view>
+  </view>
+
+  <scroll-view class="profile-scroll" type="custom" scroll-y show-scrollbar="{{false}}">
+    <view class="container" style="padding-bottom: calc(131.69231rpx + {{bottomSafeAreaRpx}}rpx);">
+      <view class="profile-box">
     <view class="profile-header">
       <image wx:if="{{hasUser}}" class="avatar" src="{{user.avatarUrl || '/images/default-avatar.svg'}}" mode="aspectFill" binderror="onProfileAvatarError" />
       <view wx:else class="avatar placeholder"></view>
       <view class="info">
-        <view class="nickname">
-          {{hasUser ? (user.nickname || '未命名成员') : '神秘冒险者'}}
-        </view>
+        <view class="nickname"><text>{{hasUser ? (user.nickname || '未命名成员') : '神秘冒险者'}}</text></view>
         <view class="userid">
-          <block wx:if="{{hasUser}}">
-            公会 ID：{{user.userIdShort}}
-          </block>
-          <block wx:else>
-            登录后可查看对应工会活动
-          </block>
+          <text wx:if="{{hasUser}}">公会 ID：{{user.userIdShort}}</text>
+          <text wx:else>登录后可查看对应工会活动</text>
         </view>
       </view>
       <view wx:if="{{hasUser}}" class="header-actions">
@@ -41,18 +41,20 @@
 
     <!-- 仅已登录用户展示访问权限模块 -->
     <view wx:if="{{hasUser}}" class="section">
-      <view class="section-title">访问权限</view>
+      <view class="section-title"><text>访问权限</text></view>
       <view wx:if="{{isGuest}}" class="cell">
-        <view class="cell-title">当前为游客，无法查看相关活动数据</view>
-        <button class="btn primary small" bindtap="openPermissionModal">获取权限</button>
+        <view class="cell-title"><text>当前为游客，无法查看相关活动数据</text></view>
+        <button class="btn primary small" bindtap="openPermissionModal"><text>获取权限</text></button>
       </view>
       <view wx:else class="cell">
-        <view class="cell-title">已获取访问权限</view>
-        <button class="btn default small" bindtap="removePermission">删除权限</button>
+        <view class="cell-title"><text>已获取访问权限</text></view>
+        <button class="btn default small" bindtap="removePermission"><text>删除权限</text></button>
       </view>
     </view>
 
-  </view>
+      </view>
+    </view>
+  </scroll-view>
 
   <!-- 获取权限弹窗 -->
   <view wx:if="{{showPermissionModal}}" class="modal-overlay" bindtap="closePermissionModal">
@@ -61,9 +63,9 @@
         <text>获取权限</text>
         <text class="close-btn" bindtap="closePermissionModal">×</text>
       </view>
-      <view class="modal-body">
+      <scroll-view class="modal-body" type="custom" scroll-y show-scrollbar="{{false}}">
         <view class="form-item">
-          <view class="label">请输入邀请码</view>
+          <view class="label"><text>请输入邀请码</text></view>
           <input
             class="input"
             password
@@ -72,10 +74,10 @@
             bindinput="onPermissionInput"
           />
         </view>
-      </view>
+      </scroll-view>
       <view class="modal-footer">
-        <button class="btn default" bindtap="closePermissionModal">取消</button>
-        <button class="btn primary" bindtap="submitPermission">确认</button>
+        <button class="btn default" bindtap="closePermissionModal"><text>取消</text></button>
+        <button class="btn primary" bindtap="submitPermission"><text>确认</text></button>
       </view>
     </view>
   </view>
@@ -88,19 +90,19 @@
         <text class="close-btn" bindtap="closeEditModal">×</text>
       </view>
 
-      <view class="modal-body">
-        <view wx:if="{{forceProfileForSignup}}" class="force-profile-hint">{{forceProfileHint}}</view>
+      <scroll-view class="modal-body" type="custom" scroll-y show-scrollbar="{{false}}">
+        <view wx:if="{{forceProfileForSignup}}" class="force-profile-hint"><text>{{forceProfileHint}}</text></view>
         <view class="form-item avatar-form-row">
-          <view class="label">头像</view>
+          <view class="label"><text>头像</text></view>
           <view class="avatar-edit-wrap">
             <button class="avatar-edit-btn" bindtap="onChooseAvatar">
               <image wx:if="{{editAvatarUrl}}" class="avatar-edit-img" src="{{editAvatarUrl}}" mode="aspectFill" />
-              <view wx:else class="avatar-edit-placeholder">上传头像</view>
+              <view wx:else class="avatar-edit-placeholder"><text>上传头像</text></view>
             </button>
           </view>
         </view>
         <view class="form-item">
-          <view class="label">昵称</view>
+          <view class="label"><text>昵称</text></view>
           <input
             type="text"
             class="input"
@@ -109,11 +111,11 @@
             bindinput="onInputNickname"
           />
         </view>
-      </view>
+      </scroll-view>
 
       <view class="modal-footer">
-        <button class="btn default" bindtap="closeEditModal">取消</button>
-        <button class="btn primary {{forceProfileForSignup && !forceProfileCanSubmit ? 'btn-disabled' : ''}}" bindtap="saveProfile" disabled="{{forceProfileForSignup && !forceProfileCanSubmit}}">保存</button>
+        <button class="btn default" bindtap="closeEditModal"><text>取消</text></button>
+        <button class="btn primary {{forceProfileForSignup && !forceProfileCanSubmit ? 'btn-disabled' : ''}}" bindtap="saveProfile" disabled="{{forceProfileForSignup && !forceProfileCanSubmit}}"><text>保存</text></button>
       </view>
     </view>
   </view>

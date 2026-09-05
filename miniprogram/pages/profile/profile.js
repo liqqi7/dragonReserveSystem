@@ -42,6 +42,7 @@ function normalizeAvatarUrl(url) {
 
 Page({
   data: {
+    statusBarHeight: 0,
     hasUser: false,
     isGuest: true,
     user: {
@@ -60,10 +61,19 @@ Page({
     bottomSafeAreaRpx: 0
   },
 
+  onLoad() {
+    let statusBarHeight = 0;
+    try {
+      const info = typeof wx.getWindowInfo === "function" ? wx.getWindowInfo() : wx.getSystemInfoSync();
+      statusBarHeight = Number(info.statusBarHeight) || 0;
+    } catch (e) {}
+    this.setData({ statusBarHeight });
+  },
+
   onShow() {
     this.setData({ bottomSafeAreaRpx: getBottomSafeAreaRpx() });
     patchTabBarIfNeeded(this, {
-      selected: 4,
+      selected: 3,
       isAdmin: app.globalData.userRole === "admin",
     });
     this.syncGuestState();
