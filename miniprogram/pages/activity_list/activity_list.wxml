@@ -32,17 +32,12 @@
     <block>
 
       <!-- ── 我参与的 ── -->
-      <view class="group-section joined-group-section">
+      <view wx:if="{{groupSectionVisibility.joined}}" class="group-section joined-group-section">
         <view class="group-header">
           <text class="group-title">我参与的</text>
-          <view wx:if="{{isAdmin}}" class="group-create-btn" bindtap="showCreateModal">
-            <image class="group-create-icon" src="/images/tab-create.png" mode="aspectFit" />
-            <text class="group-create-text">添加活动</text>
-          </view>
         </view>
         <swiper
           id="qaJoinedCardSwiper"
-          wx:if="{{groupSectionVisibility.joined}}"
           class="cards-swiper large-cards-swiper"
           current="{{focusedCardIndex.joined}}"
           duration="300"
@@ -59,8 +54,8 @@
             class="large-card-slide"
           >
             <view
-              class="large-card-wrap home-card-entrance home-card-entrance--{{cardEntranceState}}"
-              style="transition-delay: {{index * cardEntranceStaggerMs}}ms;"
+              class="large-card-wrap home-card-entrance home-card-entrance--{{item._id == createdCardEntranceId ? createdCardEntranceState : cardEntranceState}}"
+              style="transition-delay: {{item._id == createdCardEntranceId ? 0 : index * cardEntranceStaggerMs}}ms;"
             >
               <text class="card-datetime-label">{{item.cardDateTimeLabel || item.startTime}}</text>
               <open-container
@@ -113,8 +108,6 @@
                   data-activity-name="{{item.name}}"
                   data-url="{{item.bgVideoUrl}}"
                 />
-                <!-- 类型角标 -->
-                <text wx:if="{{item.showTypeBadge}}" class="card-type-label">{{item.typeBadgeLabel}}</text>
                 <!-- 头像群（最近 3 人，从下往上递减：TL > TR > Middle） -->
                 <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-large">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl">
@@ -147,7 +140,15 @@
                   <view class="glass-static-blur-layer">
                     <view wx:if="{{item.largeCardGlassImageUrl}}" class="glass-static-blur-stage">
                       <!-- 服务端已完成镜像扩边和单次模糊；真机只展示静态位图，不运行实时滤镜。 -->
-                      <image class="glass-static-blur-image" src="{{item.largeCardGlassImageUrl}}" mode="aspectFill" />
+                      <image
+                        class="glass-static-blur-image"
+                        src="{{item.largeCardGlassImageUrl}}"
+                        mode="aspectFill"
+                        bindload="onCardGlassLoaded"
+                        binderror="onCardGlassError"
+                        data-activity-id="{{item._id}}"
+                        data-url="{{item.largeCardGlassImageUrl}}"
+                      />
                     </view>
                   </view>
                   <view class="glass-tint-layer"></view>
@@ -186,14 +187,19 @@
           current="{{focusedCardIndex.accepting}}"
           duration="300"
           easing-function="easeOutCubic"
-          previous-margin="38.46rpx"
-          next-margin="342.31rpx"
+          previous-margin="26.92rpx"
+          next-margin="353.85rpx"
           cache-extent="1"
           data-group="accepting"
           bindchange="onGroupSwiperChange"
         >
           <swiper-item wx:for="{{groupedActivities.accepting}}" wx:key="_id" class="small-card-slide">
-            <open-container
+            <view
+              class="small-card-layout home-card-entrance home-card-entrance--{{item._id == createdCardEntranceId ? createdCardEntranceState : cardEntranceState}}"
+              style="transition-delay: {{item._id == createdCardEntranceId ? 0 : index * cardEntranceStaggerMs}}ms;"
+            >
+              <view class="small-card-shadow" aria-hidden="true"></view>
+              <open-container
               class="small-card-wrap"
               closed-color="transparent"
               closed-elevation="0"
@@ -205,10 +211,7 @@
               bind:tap="showDetail"
               data-activity="{{item}}"
             >
-              <view
-                class="small-card-content home-card-entrance home-card-entrance--{{cardEntranceState}}"
-                style="transition-delay: {{index * cardEntranceStaggerMs}}ms;"
-              >
+              <view class="small-card-content">
                 <view class="small-card">
                 <image
                   wx:if="{{item.smallCardBgImageUrl}}"
@@ -246,8 +249,6 @@
                   data-activity-name="{{item.name}}"
                   data-url="{{item.bgVideoUrl}}"
                 />
-                <!-- 小卡类型角标（仅羽毛球/桌游） -->
-                <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
                 <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
@@ -265,7 +266,8 @@
                   <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
                 </view>
               </view>
-            </open-container>
+              </open-container>
+            </view>
           </swiper-item>
         </swiper>
       </view>
@@ -281,14 +283,19 @@
           current="{{focusedCardIndex.notStarted}}"
           duration="300"
           easing-function="easeOutCubic"
-          previous-margin="38.46rpx"
-          next-margin="342.31rpx"
+          previous-margin="26.92rpx"
+          next-margin="353.85rpx"
           cache-extent="1"
           data-group="notStarted"
           bindchange="onGroupSwiperChange"
         >
           <swiper-item wx:for="{{groupedActivities.notStarted}}" wx:key="_id" class="small-card-slide">
-            <open-container
+            <view
+              class="small-card-layout home-card-entrance home-card-entrance--{{item._id == createdCardEntranceId ? createdCardEntranceState : cardEntranceState}}"
+              style="transition-delay: {{item._id == createdCardEntranceId ? 0 : index * cardEntranceStaggerMs}}ms;"
+            >
+              <view class="small-card-shadow" aria-hidden="true"></view>
+              <open-container
               class="small-card-wrap"
               closed-color="transparent"
               closed-elevation="0"
@@ -300,10 +307,7 @@
               bind:tap="showDetail"
               data-activity="{{item}}"
             >
-              <view
-                class="small-card-content home-card-entrance home-card-entrance--{{cardEntranceState}}"
-                style="transition-delay: {{index * cardEntranceStaggerMs}}ms;"
-              >
+              <view class="small-card-content">
                 <view class="small-card">
                 <image
                   wx:if="{{item.smallCardBgImageUrl}}"
@@ -341,8 +345,6 @@
                   data-activity-name="{{item.name}}"
                   data-url="{{item.bgVideoUrl}}"
                 />
-                <!-- 小卡类型角标（仅羽毛球/桌游） -->
-                <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
                 <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
@@ -360,7 +362,8 @@
                   <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
                 </view>
               </view>
-            </open-container>
+              </open-container>
+            </view>
           </swiper-item>
         </swiper>
       </view>
@@ -376,14 +379,19 @@
           current="{{focusedCardIndex.ended}}"
           duration="300"
           easing-function="easeOutCubic"
-          previous-margin="38.46rpx"
-          next-margin="342.31rpx"
+          previous-margin="26.92rpx"
+          next-margin="353.85rpx"
           cache-extent="1"
           data-group="ended"
           bindchange="onGroupSwiperChange"
         >
           <swiper-item wx:for="{{groupedActivities.ended}}" wx:key="_id" class="small-card-slide">
-            <open-container
+            <view
+              class="small-card-layout home-card-entrance home-card-entrance--{{item._id == createdCardEntranceId ? createdCardEntranceState : cardEntranceState}}"
+              style="transition-delay: {{item._id == createdCardEntranceId ? 0 : index * cardEntranceStaggerMs}}ms;"
+            >
+              <view class="small-card-shadow" aria-hidden="true"></view>
+              <open-container
               class="small-card-wrap"
               closed-color="transparent"
               closed-elevation="0"
@@ -395,10 +403,7 @@
               bind:tap="showDetail"
               data-activity="{{item}}"
             >
-              <view
-                class="small-card-content home-card-entrance home-card-entrance--{{cardEntranceState}}"
-                style="transition-delay: {{index * cardEntranceStaggerMs}}ms;"
-              >
+              <view class="small-card-content">
                 <view class="small-card">
                 <image
                   wx:if="{{item.smallCardBgImageUrl}}"
@@ -436,8 +441,6 @@
                   data-activity-name="{{item.name}}"
                   data-url="{{item.bgVideoUrl}}"
                 />
-                <!-- 小卡类型角标（仅羽毛球/桌游） -->
-                <text wx:if="{{item.showTypeBadge}}" class="card-type-label-sm">{{item.typeBadgeLabel}}</text>
                 <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
                   <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
                     <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
@@ -455,7 +458,8 @@
                   <text class="small-card-time">{{item.smallCardTimeLabel || item.startTime}}</text>
                 </view>
               </view>
-            </open-container>
+              </open-container>
+            </view>
           </swiper-item>
           <swiper-item wx:if="{{endedHasMore && groupedActivities.ended.length > 0}}" class="small-card-slide">
             <view class="small-card-wrap ended-more-strip">
@@ -494,9 +498,6 @@
       visible="{{showCreateForm}}"
       route-embedded="{{true}}"
       mode="create"
-      activity-type-option-values="{{activityTypeOptionValues}}"
-      activity-type-option-labels="{{activityTypeOptionLabels}}"
-      default-activity-type="{{'badminton'}}"
       submitting="{{createFormSubmitting}}"
       bindclose="closeCreateForm"
       bindsubmit="submitCreateActivity"
@@ -504,3 +505,5 @@
   </page-container>
 
 </view>
+
+<create-access-dialog id="create-access-dialog" />

@@ -1,6 +1,6 @@
 """Activity use cases."""
 
-from datetime import datetime, timedelta
+from datetime import datetime
 import hashlib
 import json
 from zoneinfo import ZoneInfo
@@ -30,9 +30,9 @@ from app.utils.geo import haversine_distance_meters
 
 
 settings = get_settings()
-CHECKIN_EARLY_WINDOW_MINUTES = 30
 FLOW_CANCEL_MIN_PARTICIPANTS = 2  # 触发流局的最低人数阈值
 APP_TIME_ZONE = ZoneInfo("Asia/Shanghai")
+TERMINAL_ACTIVITY_STATUSES = frozenset({"已结束", "已取消", "已流局"})
 
 
 def _get_activity_query():
@@ -59,7 +59,7 @@ def get_activity_by_id(db: Session, activity_id: int) -> Activity:
 
 def _sync_activity_status(activity: Activity, now: datetime) -> bool:
     """Compute time-based status for an activity. Returns True if status changed."""
-    if activity.status in ("已取消", "已删除", "已流局"):
+    if activity.status in ("已取消", "已流局"):
         return False
     if activity.end_time <= now:
         new_status = "已结束"
@@ -83,12 +83,8 @@ def _sync_activity_status(activity: Activity, now: datetime) -> bool:
 
 
 def list_activities(db: Session) -> list[Activity]:
-    """List activities ordered by start time descending. Excludes logically deleted (已删除)."""
-    stmt = (
-        _get_activity_query()
-        .where(Activity.status != "已删除")
-        .order_by(Activity.start_time.desc())
-    )
+    """List activities ordered by start time descending."""
+    stmt = _get_activity_query().order_by(Activity.start_time.desc())
     activities = list(db.scalars(stmt).unique().all())
     now = _app_now()
     if any(_sync_activity_status(a, now) for a in activities):
@@ -102,7 +98,6 @@ def list_my_activities(db: Session, user: User) -> list[Activity]:
         _get_activity_query()
         .join(ActivityParticipant, ActivityParticipant.activity_id == Activity.id)
         .where(ActivityParticipant.user_id == user.id)
-        .where(Activity.status != "已删除")
         .order_by(Activity.start_time.asc())
     )
     activities = list(db.scalars(stmt).unique().all())
@@ -125,7 +120,6 @@ def _resolve_style_key_implicit(db: Session, activity_type: str) -> Optional[str
         db.scalar(
             select(func.count(Activity.id)).where(
                 Activity.activity_type == type_key,
-                Activity.status != "已删除",
                 Activity.status != "已取消",
             )
         )
@@ -135,12 +129,10 @@ def _resolve_style_key_implicit(db: Session, activity_type: str) -> Optional[str
 
 
 def get_activity_style_signature(db: Session) -> tuple[str, int]:
-    """Return signature for all style-related fields across non-deleted activities."""
+    """Return signature for all persisted activity style-related fields."""
 
     rows = db.execute(
-        select(Activity.id, Activity.activity_type, Activity.activity_style_key)
-        .where(Activity.status != "已删除")
-        .order_by(Activity.id.asc())
+        select(Activity.id, Activity.activity_type, Activity.activity_style_key).order_by(Activity.id.asc())
     ).all()
     signature_items: list[dict[str, object]] = []
     for activity_id, activity_type, activity_style_key in rows:
@@ -211,6 +203,9 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
 def update_activity(db: Session, activity: Activity, payload: ActivityUpdateRequest) -> Activity:
     """Update an activity."""
 
+    if activity.status in TERMINAL_ACTIVITY_STATUSES:
+        raise ValidationAppError("Terminal activities cannot be edited")
+
     data = payload.model_dump(exclude_unset=True)
     prev_type = activity.activity_type
     weather_source_changed = any(
@@ -254,6 +249,18 @@ def update_activity(db: Session, activity: Activity, payload: ActivityUpdateRequ
     if weather_source_changed:
         invalidate_weather_snapshot(db, activity)
 
+    db.add(activity)
+    db.commit()
+    db.refresh(activity)
+    return get_activity_by_id(db, activity.id)
+
+
+def cancel_activity(db: Session, activity: Activity) -> Activity:
+    """Cancel a mutable activity through an explicit state transition."""
+
+    if activity.status in TERMINAL_ACTIVITY_STATUSES:
+        raise ValidationAppError("Terminal activities cannot be cancelled")
+    activity.status = "已取消"
     db.add(activity)
     db.commit()
     db.refresh(activity)
@@ -310,27 +317,14 @@ def signup_activity(db: Session, activity: Activity, user: User) -> ActivityPart
     return participant
 
 
-def cancel_signup(db: Session, activity: Activity, user: User) -> None:
-    """Remove the current user's signup if still allowed."""
-
-    participant = db.scalar(
-        select(ActivityParticipant).where(
-            ActivityParticipant.activity_id == activity.id,
-            ActivityParticipant.user_id == user.id,
-        )
-    )
-    if participant is None:
-        raise NotFoundError("Signup record not found")
-
-    deadline = activity.signup_deadline or activity.start_time
-    if user.role != "admin" and deadline and _app_now() >= deadline:
-        raise ValidationAppError("Signup deadline has passed; contact an admin to remove this signup")
-
-    db.delete(participant)
-    db.commit()
-
-
-def remove_participant(db: Session, activity: Activity, participant_id: int, actor: User) -> None:
+def remove_participant(
+    db: Session,
+    activity: Activity,
+    participant_id: int,
+    actor: User,
+    *,
+    allow_activity_owner: bool = False,
+) -> None:
     """Remove a participant from an activity."""
 
     participant = db.scalar(
@@ -342,11 +336,14 @@ def remove_participant(db: Session, activity: Activity, participant_id: int, act
     if participant is None:
         raise NotFoundError("Participant not found")
 
-    if actor.role != "admin" and participant.user_id != actor.id:
+    is_activity_manager = actor.role == "admin" or (
+        allow_activity_owner and activity.created_by == actor.id
+    )
+    if not is_activity_manager and participant.user_id != actor.id:
         raise ValidationAppError("You can only remove your own signup")
 
     deadline = activity.signup_deadline or activity.start_time
-    if actor.role != "admin" and deadline and _app_now() >= deadline:
+    if not is_activity_manager and deadline and _app_now() >= deadline:
         raise ValidationAppError("Signup deadline has passed; contact an admin to remove this signup")
 
     db.delete(participant)
@@ -358,6 +355,8 @@ def admin_checkin_participant(
     activity: Activity,
     participant_id: int,
     actor: User,
+    *,
+    allow_activity_owner: bool = False,
 ) -> ActivityParticipant:
     """Admin-only retroactive checkin for a participant.
 
@@ -365,10 +364,10 @@ def admin_checkin_participant(
     after an activity has completed or when on-site checkin failed.
     """
 
-    if actor.role != "admin":
+    if actor.role != "admin" and not (allow_activity_owner and activity.created_by == actor.id):
         raise ValidationAppError("Only admins can perform retroactive checkin")
-    if activity.status in {"已取消", "已删除"}:
-        raise ValidationAppError("Cannot check in participants for a cancelled or deleted activity")
+    if activity.status == "已取消":
+        raise ValidationAppError("Cannot check in participants for a cancelled activity")
 
     participant = db.scalar(
         select(ActivityParticipant).where(
@@ -398,13 +397,15 @@ def admin_cancel_checkin_participant(
     activity: Activity,
     participant_id: int,
     actor: User,
+    *,
+    allow_activity_owner: bool = False,
 ) -> ActivityParticipant:
     """Admin-only cancel checkin for a participant."""
 
-    if actor.role != "admin":
+    if actor.role != "admin" and not (allow_activity_owner and activity.created_by == actor.id):
         raise ValidationAppError("Only admins can cancel checkin")
-    if activity.status in {"已取消", "已删除"}:
-        raise ValidationAppError("Cannot cancel checkin for a cancelled or deleted activity")
+    if activity.status == "已取消":
+        raise ValidationAppError("Cannot cancel checkin for a cancelled activity")
 
     participant = db.scalar(
         select(ActivityParticipant).where(
@@ -437,20 +438,8 @@ def checkin_activity(
 ) -> ActivityParticipant:
     """Check the current user in to an activity."""
 
-    if activity.status == "已取消":
-        raise ValidationAppError("Activity has been cancelled")
-
-    # Allow checkin from 30 minutes before activity start.
-    start_dt = activity.start_time
-    if start_dt is not None:
-        if start_dt.tzinfo is not None:
-            now = datetime.now(tz=start_dt.tzinfo)
-        else:
-            # Naive datetime is treated in local time on both frontend and backend.
-            now = datetime.now()
-        checkin_open_time = start_dt - timedelta(minutes=CHECKIN_EARLY_WINDOW_MINUTES)
-        if now < checkin_open_time:
-            raise ValidationAppError("提前签到杀球下网、桌游丢件、持仓全绿、抽卡大保底")
+    if activity.status != "进行中":
+        raise ValidationAppError("Only ongoing activities can be checked in")
 
     participant = db.scalar(
         select(ActivityParticipant).where(

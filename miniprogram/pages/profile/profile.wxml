@@ -56,28 +56,73 @@
     </view>
   </scroll-view>
 
-  <!-- 获取权限弹窗 -->
-  <view wx:if="{{showPermissionModal}}" class="modal-overlay" bindtap="closePermissionModal">
-    <view class="modal-content" catchtap="stopTap">
-      <view class="modal-header">
-        <text>获取权限</text>
-        <text class="close-btn" bindtap="closePermissionModal">×</text>
-      </view>
-      <scroll-view class="modal-body" type="custom" scroll-y show-scrollbar="{{false}}">
-        <view class="form-item">
-          <view class="label"><text>请输入邀请码</text></view>
-          <input
-            class="input"
-            password
-            placeholder="请联系工会柜台获取邀请码🌹"
-            value="{{permissionInput}}"
-            bindinput="onPermissionInput"
-          />
+  <!-- 添加权限：输入交互弹窗 -->
+  <view
+    wx:if="{{showPermissionModal}}"
+    id="qa-add-permission-dialog-overlay"
+    class="permission-dialog-overlay"
+    bindtap="closePermissionModal"
+    catchtouchmove="stopTouchMove"
+  >
+    <view
+      id="qa-add-permission-dialog"
+      class="permission-dialog"
+      catchtap="stopTap"
+      aria-role="dialog"
+      aria-label="添加权限"
+    >
+      <view class="permission-dialog-copy">
+        <view class="permission-dialog-title-row">
+          <image class="permission-dialog-icon" src="/images/dialog-prompt.svg" mode="aspectFit" aria-hidden="true" />
+          <text class="permission-dialog-title">添加权限</text>
         </view>
-      </scroll-view>
-      <view class="modal-footer">
-        <button class="btn default" bindtap="closePermissionModal"><text>取消</text></button>
-        <button class="btn primary" bindtap="submitPermission"><text>确认</text></button>
+        <text class="permission-dialog-message">请输入邀请码，验证通过后即可查看相关活动数据。</text>
+      </view>
+      <input
+        id="qa-add-permission-input"
+        class="permission-dialog-input"
+        password
+        maxlength="64"
+        placeholder="请输入邀请码"
+        placeholder-class="permission-dialog-input-placeholder"
+        value="{{permissionInput}}"
+        bindinput="onPermissionInput"
+        confirm-type="done"
+        bindconfirm="submitPermission"
+        cursor-spacing="24"
+      />
+      <view class="permission-dialog-actions">
+        <view class="permission-dialog-button permission-dialog-button--cancel" bindtap="closePermissionModal" aria-role="button">取消</view>
+        <view class="permission-dialog-button permission-dialog-button--primary {{permissionSubmitting ? 'permission-dialog-button--disabled' : ''}}" bindtap="submitPermission" aria-role="button">确认提交</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 删除权限：红色报警弹窗 -->
+  <view
+    wx:if="{{showDeletePermissionModal}}"
+    id="qa-delete-permission-dialog-overlay"
+    class="permission-dialog-overlay"
+    bindtap="closeDeletePermissionModal"
+    catchtouchmove="stopTouchMove"
+  >
+    <view
+      id="qa-delete-permission-dialog"
+      class="permission-dialog"
+      catchtap="stopTap"
+      aria-role="dialog"
+      aria-label="确认删除权限"
+    >
+      <view class="permission-dialog-copy">
+        <view class="permission-dialog-title-row">
+          <image class="permission-dialog-icon" src="/images/dialog-danger.svg" mode="aspectFit" aria-hidden="true" />
+          <text class="permission-dialog-title">确认删除权限？</text>
+        </view>
+        <text class="permission-dialog-message">删除后账号将恢复为游客，无法查看相关活动数据。</text>
+      </view>
+      <view class="permission-dialog-actions">
+        <view class="permission-dialog-button permission-dialog-button--cancel" bindtap="closeDeletePermissionModal" aria-role="button">再想想</view>
+        <view class="permission-dialog-button permission-dialog-button--danger {{permissionRemoving ? 'permission-dialog-button--disabled' : ''}}" bindtap="confirmDeletePermission" aria-role="button">确认删除</view>
       </view>
     </view>
   </view>
@@ -90,7 +135,7 @@
         <text class="close-btn" bindtap="closeEditModal">×</text>
       </view>
 
-      <scroll-view class="modal-body" type="custom" scroll-y show-scrollbar="{{false}}">
+      <view class="modal-body">
         <view wx:if="{{forceProfileForSignup}}" class="force-profile-hint"><text>{{forceProfileHint}}</text></view>
         <view class="form-item avatar-form-row">
           <view class="label"><text>头像</text></view>
@@ -111,7 +156,7 @@
             bindinput="onInputNickname"
           />
         </view>
-      </scroll-view>
+      </view>
 
       <view class="modal-footer">
         <button class="btn default" bindtap="closeEditModal"><text>取消</text></button>
@@ -120,3 +165,5 @@
     </view>
   </view>
 </view>
+
+<create-access-dialog id="create-access-dialog" />

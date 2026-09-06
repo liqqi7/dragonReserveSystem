@@ -9,6 +9,19 @@
   height: 100vh;
 }
 
+.activity-cover-picker-host {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.activity-cover-picker-host--visible {
+  pointer-events: auto;
+}
+
 .activity-form-sheet-dismiss-area {
   position: absolute;
   top: 0;
@@ -472,7 +485,6 @@
   left: 0;
   height: 40rpx;
   color: #9ca3af;
-  font-family: inherit;
   font-size: 28rpx;
   line-height: 40rpx;
   font-weight: 400;
@@ -713,7 +725,6 @@
 
 .activity-sheet-panel .location-value.bento-placeholder-text {
   color: #9ca3af;
-  font-family: inherit;
   font-weight: 400;
 }
 

@@ -4,6 +4,7 @@
     "pages/activity_calendar/activity_calendar",
     "pages/tools/tools",
     "pages/activity_detail/activity_detail",
+    "pages/activity_cover_preview/activity_cover_preview",
     "pages/welcome/welcome",
     "pages/history/history",
     "pages/profile/profile",

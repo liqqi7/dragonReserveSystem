@@ -735,7 +735,6 @@ button.create-btn-fixed.create-btn-hover {
   width: 100%;
   max-width: 100vw;
   overflow: hidden;
-  font-family: "Noto Sans SC", "PingFang SC", sans-serif;
 }
 
 /* 背景水印：固定为原型 x=175、y=-29、323×211，不参与 scroll-view 排版。 */
@@ -769,7 +768,6 @@ button.create-btn-fixed.create-btn-hover {
   font-size: 46.15rpx;
   font-weight: 600;
   line-height: 65.38rpx;
-  font-family: "Noto Sans SC", "PingFang SC", sans-serif;
   color: #0a0a0a;
   letter-spacing: 0;
   flex: 1;
@@ -828,39 +826,7 @@ button.create-btn-fixed.create-btn-hover {
   font-size: 38.46rpx;
   font-weight: 700;
   line-height: 53.85rpx;
-  font-family: "Noto Sans SC", "PingFang SC", sans-serif;
   color: #0a0a0a;
-}
-
-.group-create-btn {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  gap: 9.62rpx;
-  width: 184.62rpx;
-  height: 65.38rpx;
-  padding: 0;
-  box-sizing: border-box;
-  border-radius: 32.69rpx;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 4rpx 14rpx rgba(0, 0, 0, 0.08);
-}
-
-.group-create-icon {
-  width: 32.69rpx;
-  height: 32.69rpx;
-  flex: none;
-}
-
-.group-create-text {
-  font-size: 26.92rpx;
-  line-height: 38.46rpx;
-  font-weight: 600;
-  font-family: "Noto Sans SC", "PingFang SC", sans-serif;
-  color: #191919;
-  white-space: nowrap;
-  flex: none;
 }
 
 .group-empty {
@@ -916,7 +882,8 @@ button.create-btn-fixed.create-btn-hover {
 }
 
 .small-card-slide {
-  padding: 23.08rpx 23.08rpx 38.46rpx 0;
+  /* 将原有 23.08rpx 卡间距均分到左右，卡片 x 坐标和轮播步长保持不变。 */
+  padding: 23.08rpx 11.54rpx 38.46rpx;
 }
 
 .large-card-wrap {
@@ -987,6 +954,20 @@ button.create-btn-fixed.create-btn-hover {
   width: 346.15rpx;
   background-color: transparent;
   overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+
+/*
+ * 阴影必须位于 open-container 外层。Skyline 的转场容器会建立独立裁切边界，
+ * 即便后代声明 overflow:visible，外阴影仍可能在左右两侧被截断。
+ */
+.small-card-layout {
+  width: 346.15rpx;
+  position: relative;
+  flex-shrink: 0;
+  background-color: transparent;
+  overflow: visible;
 }
 
 .small-card-content {
@@ -999,14 +980,28 @@ button.create-btn-fixed.create-btn-hover {
   overflow: visible;
 }
 
-/* 小卡片主体 */
+/* 小卡阴影与圆角裁切分层：Skyline 会裁掉和 overflow:hidden 同节点的外阴影。 */
+.small-card-shadow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 346.15rpx;
+  height: 346.15rpx;
+  border-radius: 23.08rpx;
+  overflow: visible;
+  box-shadow: 0 11.54rpx 38.46rpx rgba(0, 0, 0, 0.10);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 小卡片主体只负责裁切图片和内部内容。 */
 .small-card {
   width: 346.15rpx;
   height: 346.15rpx;
   border-radius: 23.08rpx;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 11.54rpx 38.46rpx rgba(0, 0, 0, 0.10);
+  box-shadow: none;
 }
 
 .small-card-info {
@@ -1099,28 +1094,6 @@ button.create-btn-fixed.create-btn-hover {
   width: 100%;
   height: 100%;
   z-index: 0;
-}
-
-/* ── 类型角标 ── */
-.card-type-label {
-  position: absolute;
-  top: 30.77rpx;
-  right: 30.77rpx;
-  font-size: 30.77rpx;
-  font-weight: 600;
-  color: #ffffff;
-  z-index: 2;
-}
-
-.card-type-label-sm {
-  position: absolute;
-  top: 14rpx;
-  right: 14rpx;
-  font-size: 22rpx;
-  font-weight: 600;
-  color: #ffffff;
-  z-index: 2;
-  text-shadow: 0 1rpx 3rpx rgba(0,0,0,0.25);
 }
 
 /* ── 大卡片头像群 ── */
@@ -1267,6 +1240,7 @@ button.create-btn-fixed.create-btn-hover {
   border-bottom-left-radius: inherit;
   border-bottom-right-radius: inherit;
   pointer-events: none;
+  background: rgba(31, 41, 55, 0.58);
 }
 
 /*

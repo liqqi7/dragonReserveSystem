@@ -133,6 +133,7 @@ test("check-in dates retain zero-padded months and the time column keeps them on
 });
 
 test("rows preserve check-in time and location for ordinary users", () => {
+  assert.match(js, /canManage: \{ type: Boolean, value: false \}/);
   assert.match(js, /isAdmin: \{ type: Boolean, value: false \}/);
   assert.match(js, /const checkinLocation = checked[\s\S]*?String\(row\.checkinLocationName \|\| row\.checkinAddress \|\| ""\)\.trim\(\)/);
   assert.match(js, /hasCheckinLocation: Boolean\(checkinLocation\)/);
@@ -143,8 +144,8 @@ test("rows preserve check-in time and location for ordinary users", () => {
   assert.match(wxml, /checkinDateText/);
   assert.match(wxml, /checkinTimeText/);
   assert.match(wxml, /checkinLocationText/);
-  assert.match(wxml, /wx:if="\{\{isAdmin\}\}"/);
-  assert.match(js, /availableActions: this\.properties\.isAdmin \?/);
+  assert.match(wxml, /wx:if="\{\{canManage\}\}"/);
+  assert.match(js, /availableActions:\s*this\.properties\.canManage\s*\?/);
 });
 
 test("unchecked check-in placeholders are centered while checked-in details remain left aligned", () => {
@@ -156,8 +157,8 @@ test("unchecked check-in placeholders are centered while checked-in details rema
 });
 
 test("admin actions are bound to check-in state and participant drawer events", () => {
-  assert.match(wxml, /wx:if="\{\{row\.hasCheckedIn\}\}"[^>]*data-action="cancelcheckin"/);
-  assert.match(wxml, /wx:else[^>]*class="row-action row-action-retro"[^>]*data-action="retrocheckin"/);
+  assert.match(wxml, /wx:if="\{\{isAdmin && row\.hasCheckedIn\}\}"[^>]*data-action="cancelcheckin"/);
+  assert.match(wxml, /wx:elif="\{\{isAdmin\}\}"[^>]*class="row-action row-action-retro"[^>]*data-action="retrocheckin"/);
   assert.match(wxml, /data-action="remove"/);
   assert.match(wxml, /bindtap="onActionTap"/);
   assert.match(wxml, /bindtouchstart="onTouchStart"/);
@@ -207,17 +208,45 @@ test("swipe action width and threshold stay in RPX and close other rows", () => 
   assert.equal(definition.SWIPE_CLOSE_THRESHOLD_RATIO, 0.15);
   assert.match(wxml, /translate3d\(\{\{row\.offsetX\}\}rpx/);
   assert.match(js, /const dxRpx = dx \* getRpxPerPx\(\)/);
-  assert.match(js, /actionWidthRpx: ACTION_AREA_WIDTH_RPX/);
+  assert.equal(definition.REMOVE_ACTION_WIDTH_RPX, 161.54);
+  assert.equal(definition.REMOVE_ACTION_AREA_WIDTH_RPX, 153.85);
+  assert.deepEqual(definition.getActionMetrics(true, true), {
+    actionOffsetRpx: 323.08,
+    actionAreaWidthRpx: 315.38
+  });
+  assert.deepEqual(definition.getActionMetrics(true, false), {
+    actionOffsetRpx: 161.54,
+    actionAreaWidthRpx: 153.85
+  });
+  assert.deepEqual(definition.getActionMetrics(false, false), {
+    actionOffsetRpx: 0,
+    actionAreaWidthRpx: 0
+  });
+  assert.match(js, /actionAreaWidthRpx:\s*0/);
   assert.match(js, /bodyMaxHeightRpx: 1253\.85/);
   assert.match(js, /fixedChromeRpx = 130\.77/);
-  assert.match(js, /clamp\(gesture\.startOffsetX \+ dxRpx, -ACTION_WIDTH_RPX, 0\)/);
-  assert.match(js, /getSwipeSettledState\(gesture\.startOffsetX, endOffsetX\)/);
+  assert.match(js, /clamp\(gesture\.startOffsetX \+ dxRpx, -actionOffsetRpx, 0\)/);
+  assert.match(js, /getSwipeSettledState\([\s\S]*?gesture\.startOffsetX,[\s\S]*?endOffsetX,[\s\S]*?this\.data\.actionOffsetRpx/);
   assert.match(js, /this\.closeOpenRows\(index\)/);
   assert.match(wxss, /\.participant-actions\s*\{[^}]*right:\s*0;[^}]*bottom:\s*0;/s);
   assert.match(wxss, /\.participant-actions\s*\{[^}]*gap:\s*7\.69rpx;/s);
   assert.match(wxss, /\.row-action\s*\{[^}]*width:\s*153\.85rpx;[^}]*height:\s*123\.08rpx;[^}]*border-radius:\s*23\.08rpx;/s);
   assert.match(wxss, /\.participant-row-wrap\s*\{[^}]*overflow:\s*hidden;[^}]*border-radius:\s*23\.08rpx;/s);
   assert.match(wxss, /\.participant-row\s*\{[^}]*border-radius:\s*23\.08rpx;[^}]*transition:\s*transform\s+0\.18s\s+ease-out;[^}]*will-change:\s*transform;/s);
+});
+
+test("ordinary activity creators can reveal only the single remove action", () => {
+  assert.match(js, /availableActions:\s*this\.properties\.canManage[\s\S]*?this\.properties\.isAdmin[\s\S]*?: \["remove"\]/);
+  assert.match(wxml, /wx:if="\{\{canManage\}\}"[\s\S]*?wx:if="\{\{isAdmin && row\.hasCheckedIn\}\}"[\s\S]*?wx:elif="\{\{isAdmin\}\}"[\s\S]*?data-action="remove"/);
+  assert.deepEqual(definition.getSwipeSettledState(0, -50, definition.REMOVE_ACTION_WIDTH_RPX), {
+    offsetX: -definition.REMOVE_ACTION_WIDTH_RPX,
+    actionOpen: true
+  });
+  assert.deepEqual(definition.getSwipeSettledState(0, -35, definition.REMOVE_ACTION_WIDTH_RPX), {
+    offsetX: 0,
+    actionOpen: false
+  });
+  assert.match(js, /\(action === "retrocheckin" \|\| action === "cancelcheckin"\) && !this\.properties\.isAdmin/);
 });
 
 test("drawer keeps stable QA anchors and page integration events", () => {
@@ -233,6 +262,7 @@ test("drawer keeps stable QA anchors and page integration events", () => {
   assert.match(pageWxml, /bindretrocheckin="adminRetroCheckin"/);
   assert.match(pageWxml, /bindcancelcheckin="adminCancelCheckin"/);
   assert.match(pageWxml, /bindremove="removeParticipant"/);
+  assert.match(pageWxml, /is-admin="\{\{isAdmin\}\}"/);
   assert.doesNotMatch(pageWxml, /activity-status=/);
   assert.doesNotMatch(js, /activityStatus/);
   assert.equal(pageJson.usingComponents["participants-drawer"], "../../components/participants-drawer/index");

@@ -1,9 +1,0 @@
-{
-  "navigationStyle": "custom",
-  "renderer": "skyline",
-  "componentFramework": "glass-easel",
-  "disableScroll": true,
-  "usingComponents": {
-    "activity-form-sheet": "../../components/activity-form-sheet/index"
-  }
-}

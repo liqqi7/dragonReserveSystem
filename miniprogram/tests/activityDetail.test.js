@@ -5,25 +5,92 @@ const path = require("node:path");
 
 const detail = require("../utils/activityDetail");
 const { enrichSingleActivity } = require("../utils/activityEnrich");
+const detailSource = fs.readFileSync(path.join(__dirname, "../utils/activityDetail.js"), "utf8");
+const activityServiceSource = fs.readFileSync(path.join(__dirname, "../services/activity.js"), "utf8");
 const pageDir = path.join(__dirname, "../pages/activity_detail");
 const js = fs.readFileSync(path.join(pageDir, "activity_detail.js"), "utf8");
 const wxml = fs.readFileSync(path.join(pageDir, "activity_detail.wxml"), "utf8");
 const wxss = fs.readFileSync(path.join(pageDir, "activity_detail.wxss"), "utf8");
 const pageJson = JSON.parse(fs.readFileSync(path.join(pageDir, "activity_detail.json"), "utf8"));
 
-test("activity detail formats date, time and the prototype hero meta", () => {
+test("activity detail loading state matches the prototype skeleton and reuses the cover shimmer", () => {
+  assert.match(wxml, /wx:if="\{\{loading \|\| detailSkeletonLeaving\}\}" id="qaActivityDetailSkeleton" class="detail-skeleton-screen \{\{detailSkeletonLeaving \? 'detail-skeleton-screen--leaving' : ''\}\}"/);
+  assert.doesNotMatch(wxml, /<text class="state-text">加载中…<\/text>/);
+  for (const className of [
+    "detail-skeleton-hero",
+    "detail-skeleton-hero-copy",
+    "detail-skeleton-panel",
+    "detail-skeleton-facts-row",
+    "detail-skeleton-location-card",
+    "detail-skeleton-weather-card",
+    "detail-skeleton-bottom-bar"
+  ]) {
+    assert.match(wxml, new RegExp(`class="[^"]*${className}`));
+  }
+  assert.match(wxss, /\.detail-skeleton-hero\s*\{[^}]*height:\s*750rpx;[^}]*background:\s*#1a1d24;/s);
+  assert.match(wxss, /\.detail-skeleton-hero-copy\s*\{[^}]*top:\s*373\.08rpx;[^}]*right:\s*38\.46rpx;[^}]*left:\s*38\.46rpx;/s);
+  assert.match(wxss, /\.detail-skeleton-panel\s*\{[^}]*top:\s*642\.31rpx;[^}]*padding:\s*30\.77rpx;[^}]*border-radius:\s*46\.15rpx 46\.15rpx 0 0;/s);
+  assert.match(wxss, /\.detail-skeleton-location-card\s*\{\s*height:\s*388\.46rpx;/s);
+  assert.match(wxss, /\.detail-skeleton-weather-card\s*\{\s*height:\s*192\.31rpx;/s);
+  assert.match(wxss, /\.detail-skeleton-block\s*\{[^}]*position:\s*relative;[^}]*overflow:\s*hidden;[^}]*background-color:\s*#eaecef;/s);
+  assert.doesNotMatch(wxss, /\.detail-skeleton-block\s*\{[^}]*animation-/s);
+  const shimmerRule = wxss.match(/\.detail-skeleton-shimmer\s*\{([^}]*)\}/s)?.[1] || "";
+  assert.match(shimmerRule, /position:\s*absolute;/);
+  assert.match(shimmerRule, /width:\s*72%;/);
+  assert.match(shimmerRule, /rgba\(248, 249, 251, 0\.52\) 42%/);
+  assert.match(shimmerRule, /rgba\(248, 249, 251, 0\.52\) 58%/);
+  assert.match(shimmerRule, /transform:\s*translateX\(-100%\);/);
+  assert.match(shimmerRule, /animation-name:\s*detail-skeleton-shimmer;/);
+  assert.match(shimmerRule, /animation-duration:\s*1800ms;/);
+  assert.match(shimmerRule, /animation-timing-function:\s*linear;/);
+  assert.match(wxss, /@keyframes detail-skeleton-shimmer\s*\{\s*from\s*\{\s*transform:\s*translateX\(-100%\);\s*\}\s*to\s*\{\s*transform:\s*translateX\(150%\);\s*\}\s*\}/s);
+});
+
+test("activity detail skeleton keeps its bottom actions visible and crossfades into content", () => {
+  assert.match(wxml, /class="detail-skeleton-bottom-bar" style="height: calc\(107\.69rpx \+ \{\{safeBottomRpx\}\}rpx\); padding-bottom: \{\{safeBottomRpx\}\}rpx"/);
+  assert.match(wxml, /class="detail-skeleton-block detail-skeleton-share-button"/);
+  assert.match(wxml, /class="detail-skeleton-block detail-skeleton-primary-button"/);
+  assert.match(wxss, /\.detail-skeleton-bottom-bar\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*left:\s*0;[^}]*z-index:\s*4;/s);
+  assert.match(wxss, /\.detail-skeleton-share-button\s*\{[^}]*left:\s*38\.46rpx;[^}]*width:\s*184\.62rpx;/s);
+  assert.match(wxss, /\.detail-skeleton-primary-button\s*\{[^}]*left:\s*238\.46rpx;[^}]*width:\s*473\.08rpx;/s);
+  assert.match(wxml, /wx:if="\{\{activity \|\| loadError\}\}" class="detail-content-layer \{\{activity && !detailContentVisible \? 'detail-content-layer--hidden' : 'detail-content-layer--visible'\}\}"/);
+  assert.match(wxss, /\.detail-skeleton-screen\s*\{[^}]*opacity:\s*1;[^}]*transition:\s*opacity 280ms ease-out;/s);
+  assert.match(wxss, /\.detail-skeleton-screen--leaving\s*\{[^}]*opacity:\s*0;/s);
+  assert.match(wxss, /\.detail-content-layer\s*\{[^}]*opacity:\s*0;[^}]*transition:\s*opacity 280ms ease-out;/s);
+  assert.match(wxss, /\.detail-content-layer--visible\s*\{[^}]*opacity:\s*1;/s);
+  assert.match(js, /applyActivity\(activity, \(\) => this\.startDetailEntranceTransition\(\)\)/);
+  const entranceStart = js.indexOf("  startDetailEntranceTransition() {");
+  const entranceEnd = js.indexOf("  refreshDetail(options = {})", entranceStart);
+  const entranceMethod = entranceStart >= 0 && entranceEnd > entranceStart
+    ? js.slice(entranceStart, entranceEnd)
+    : "";
+  assert.match(entranceMethod, /detailSkeletonLeaving:\s*true/);
+  assert.match(entranceMethod, /detailContentVisible:\s*false/);
+  assert.match(entranceMethod, /DETAIL_ENTRANCE_FRAME_MS/);
+  assert.match(entranceMethod, /detailContentVisible:\s*true/);
+  assert.match(entranceMethod, /DETAIL_ENTRANCE_DURATION_MS/);
+  assert.match(entranceMethod, /detailSkeletonLeaving:\s*false/);
+  assert.match(js, /onUnload\(\)[\s\S]*?clearDetailEntranceTransition\(\)/);
+});
+
+test("activity detail formats date, time and the prototype month-date hero meta", () => {
   assert.equal(detail.formatActivityDate("2026-09-05 16:30"), "9月5日 周六");
   assert.equal(detail.formatActivityTime("2026-09-05 16:30", "2026-09-05 19:00"), "16:30 - 19:00");
   assert.equal(detail.formatHeroMeta({
     startTime: "2026-09-05 16:30",
     typeBadgeLabel: "outdoor",
     typeDisplayName: "户外"
-  }), "OUTDOOR · 09/05");
+  }), "SEPTEMBER · 05");
   assert.equal(detail.formatHeroMeta({
-    startTime: "2026-09-05 16:30",
+    startTime: "2026-03-07 16:30",
     activityType: "other",
     typeDisplayName: "其它"
-  }), "OTHER · 09/05");
+  }), "MARCH · 07");
+  assert.equal(detail.formatHeroMeta({
+    startTime: ""
+  }), "");
+  assert.doesNotMatch(detailSource, /typeBadgeLabel|typeDisplayName|activityType/);
+  assert.match(wxss, /\.hero-meta\s*\{[^}]*color:\s*rgba\(255, 255, 255, 0\.9\);[^}]*font-size:\s*25rpx;[^}]*font-weight:\s*600;[^}]*letter-spacing:\s*2\.31rpx;/s);
 });
 
 test("activity title is limited to ten characters for the one-line hero display", () => {
@@ -115,17 +182,20 @@ test("detail weather is read from the activity detail snapshot without a second 
 });
 
 test("primary action keeps signup, cancel, checkin and disabled business states", () => {
-  assert.deepEqual(detail.resolvePrimaryAction({ status: "未开始", hasSignedUp: false }, false), {
+  assert.deepEqual(detail.resolvePrimaryAction({ status: "未开始", hasSignedUp: false }), {
     label: "立即报名", disabled: false, action: "signup"
   });
-  assert.deepEqual(detail.resolvePrimaryAction({ status: "未开始", hasSignedUp: true, signupDeadlinePassed: false }, false), {
+  assert.deepEqual(detail.resolvePrimaryAction({ status: "未开始", hasSignedUp: true, signupDeadlinePassed: false }), {
     label: "取消报名", disabled: false, action: "cancel"
   });
-  assert.deepEqual(detail.resolvePrimaryAction({ status: "进行中", hasSignedUp: true }, true), {
-    label: "签到", disabled: false, action: "checkin"
+  assert.deepEqual(detail.resolvePrimaryAction({ status: "进行中", hasSignedUp: true }), {
+    label: "立即签到", disabled: false, action: "checkin"
   });
-  assert.deepEqual(detail.resolvePrimaryAction({ status: "已结束", hasSignedUp: false }, false), {
-    label: "已停止报名", disabled: true, action: "none"
+  assert.deepEqual(detail.resolvePrimaryAction({ status: "已结束", hasSignedUp: false }), {
+    label: "活动已结束", disabled: true, action: "none"
+  });
+  assert.deepEqual(detail.resolvePrimaryAction({ status: "已结束", hasSignedUp: true, hasCheckedIn: true }), {
+    label: "活动已结束", disabled: true, action: "none"
   });
 });
 
@@ -155,6 +225,13 @@ test("activity detail keeps QA anchors and the existing participants drawer", ()
   assert.match(wxml, /bindremove="removeParticipant"/);
 });
 
+test("detail exposes checkin only after the activity enters the ongoing state", () => {
+  assert.match(detailSource, /activity\.hasSignedUp && activity\.status === "进行中"/);
+  assert.doesNotMatch(detailSource, /isCheckinWindowOpen/);
+  assert.doesNotMatch(js, /isCheckinWindowOpen/);
+  assert.match(js, /if \(activity\.status !== "进行中"\)[\s\S]*?仅进行中的活动可以签到/);
+});
+
 test("edit form and its time pickers share one full-height Skyline container", () => {
   assert.equal(pageJson.usingComponents["date-time-picker-sheet"], undefined);
   assert.match(wxml, /<page-container[\s\S]*id="qaActivityEditContainer"[\s\S]*show="{{showActivityForm}}"[\s\S]*bind:afterleave="onActivityFormAfterLeave"/);
@@ -163,6 +240,20 @@ test("edit form and its time pickers share one full-height Skyline container", (
   assert.match(js, /openAdminEdit\(\)\s*\{[\s\S]*activityFormContainerRendered:\s*true[\s\S]*showActivityForm:\s*false[\s\S]*wx\.nextTick\(\(\) => this\.setData\(\{ showActivityForm: true \}\)\)/);
   assert.match(js, /onActivityFormAfterLeave\(\)\s*\{[\s\S]*activityFormContainerRendered:\s*false/);
   assert.doesNotMatch(js, /openEditDateTimePicker|confirmEditDateTimePicker|editDateTimePickerVisible/);
+});
+
+test("mini-program never exposes physical deletion and ended activities cannot be edited", () => {
+  assert.doesNotMatch(wxml, /binddeleteactivity|删除活动/);
+  assert.doesNotMatch(js, /deleteActivityFromForm|\.deleteActivity\(/);
+  assert.doesNotMatch(activityServiceSource, /function deleteActivity|\bdeleteActivity,/);
+  assert.match(wxml, /wx:if="{{canManageActivity && activity\.status !== '已结束'}}"/);
+  assert.match(wxml, /activityFormContainerRendered && canManageActivity && activity && activity\.status !== '已结束'/);
+  assert.match(js, /openAdminEdit\(\)\s*\{[\s\S]*activity\.status === "已结束"[\s\S]*\) return;/);
+  assert.match(js, /resolveCanManageActivity\(activity,[\s\S]*?role === "admin"[\s\S]*?role !== "user"[\s\S]*?activity\.createdBy/);
+  assert.match(wxml, /can-manage="\{\{canManageActivity\}\}"/);
+  assert.match(wxml, /is-admin="\{\{isAdmin\}\}"/);
+  assert.match(js, /adminRetroCheckin\(e\)\s*\{[\s\S]*?if \(!this\.data\.isAdmin/);
+  assert.match(js, /adminCancelCheckin\(e\)\s*\{[\s\S]*?if \(!this\.data\.isAdmin/);
 });
 
 test("activity detail removes the legacy countdown and standalone pigeon sections", () => {
@@ -193,6 +284,49 @@ test("signup status remains global after the current user has signed up", () => 
 
   assert.equal(activity.hasSignedUp, true);
   assert.equal(activity.detailStatusTag, "报名中");
+});
+
+test("cover-based activities retain the server-rendered large-card glass image", () => {
+  const activity = enrichSingleActivity({
+    id: 51,
+    name: "封面活动",
+    status: "未开始",
+    remark: "验证毛玻璃",
+    start_time: "2026-10-18T10:00:00",
+    end_time: "2026-10-18T12:00:00",
+    participants: [],
+    activity_cover_id: "lam-001",
+    activity_cover: {
+      id: "lam-001",
+      thumbnail_url: "https://example.test/lam-001-thumb.jpg",
+      image_url: "https://example.test/lam-001.jpg",
+      large_card_glass_image_url: "https://example.test/lam-001-glass.png"
+    }
+  }, [], "", "", new Date("2026-09-06T10:00:00"));
+
+  assert.equal(activity.largeCardBgImageUrl, "https://example.test/lam-001.jpg");
+  assert.equal(activity.largeCardGlassImageUrl, "https://example.test/lam-001-glass.png");
+});
+
+test("flow-cancelled activity remains a terminal state after frontend enrichment", () => {
+  const activity = enrichSingleActivity({
+    id: 50,
+    name: "已流局活动",
+    status: "已流局",
+    start_time: "2026-10-18T10:00:00",
+    end_time: "2026-10-18T12:00:00",
+    signup_deadline: "2026-10-17T23:00:00",
+    signup_enabled: true,
+    max_participants: 12,
+    activity_type: "other",
+    participants: []
+  }, [], "", "", new Date("2026-09-02T10:00:00"));
+
+  assert.equal(activity.status, "已流局");
+  assert.equal(activity.detailStatusTag, "已流局");
+  assert.deepEqual(detail.resolvePrimaryAction(activity), {
+    label: "已停止报名", disabled: true, action: "none"
+  });
 });
 
 test("activity detail top navigation has no text title", () => {
@@ -298,7 +432,8 @@ test("detail hero avatar composition scales the home large-card layout by width"
 
 test("prototype key sizes, colors, typography and action layout do not regress", () => {
   assert.match(wxss, /\.immersive-hero\s*\{[^}]*height:\s*750rpx;/s);
-  assert.match(wxss, /\.hero-shade\s*\{[\s\S]*?radial-gradient\([\s\S]*?linear-gradient\([\s\S]*?background-blend-mode:\s*multiply, normal;/);
+  assert.match(wxss, /\.hero-shade\s*\{[\s\S]*?radial-gradient\(circle 420px[\s\S]*?linear-gradient\(/);
+  assert.doesNotMatch(wxss, /background-blend-mode|\binset\s*:/);
   assert.match(wxss, /\.status-pill\s*\{[^}]*height:\s*53\.85rpx;[^}]*border-radius:\s*26\.92rpx;[^}]*font-size:\s*26\.92rpx;/s);
   assert.match(wxss, /\.hero-title\s*\{[^}]*height:\s*84\.62rpx;[^}]*font-size:\s*61\.54rpx;/s);
   assert.match(wxss, /\.hero-title\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;/s);
@@ -314,6 +449,8 @@ test("prototype key sizes, colors, typography and action layout do not regress",
   assert.match(wxss, /\.fact-item-time\s*\{[^}]*flex:\s*0 0 196\.15rpx;/s);
   assert.match(wxss, /\.fact-label\s*\{[^}]*font-size:\s*23\.08rpx;[^}]*font-weight:\s*500;[^}]*line-height:\s*32\.69rpx;/s);
   assert.match(wxss, /\.fact-value,[\s\S]*?\{[^}]*font-size:\s*30\.77rpx;[^}]*font-weight:\s*600;[^}]*line-height:\s*44\.23rpx;/s);
+  assert.doesNotMatch(wxss, /font-family\s*:/);
+  assert.doesNotMatch(wxml, /fact-value-time/);
   assert.match(wxss, /\.participant-separator\s*\{[^}]*font-size:\s*30\.77rpx;[^}]*font-weight:\s*500;[^}]*line-height:\s*44\.23rpx;/s);
   assert.match(wxss, /\.fact-participants\s*\{[^}]*flex:\s*0 0 180\.77rpx;/s);
   assert.match(wxss, /\.location-card\s*\{[^}]*height:\s*388\.46rpx;/s);
@@ -331,7 +468,14 @@ test("prototype key sizes, colors, typography and action layout do not regress",
   assert.match(wxss, /\.bottom-icon-button:nth-child\(2\)\s*\{[^}]*left:\s*138\.46rpx;/s);
   assert.match(wxss, /\.bottom-icon-button-wide\s*\{[^}]*width:\s*184\.62rpx;/s);
   assert.match(wxss, /\.bottom-primary\s*\{[^}]*left:\s*238\.46rpx;[^}]*width:\s*473\.08rpx;[^}]*height:/s);
+  assert.match(wxss, /\.bottom-primary-cancel\s*\{[^}]*background:\s*rgba\(255, 255, 255, 0\);[^}]*border:\s*1\.92rpx solid #ff9800;[^}]*color:\s*#ff9800;[^}]*font-weight:\s*600;/s);
   assert.match(wxss, /\.bottom-primary-disabled\s*\{[^}]*background:\s*#e5e7eb;[^}]*color:\s*#9ca3af;/s);
+  assert.match(wxml, /\{\{\(!canManageActivity \|\| activity\.status === '已结束'\) \? 'bottom-icon-button-wide' : ''\}\}/);
+  assert.match(wxml, /wx:if="\{\{canManageActivity && activity\.status !== '已结束'\}\}"/);
+  assert.match(js, /openAdminEdit\(\)\s*\{[\s\S]*?!this\.data\.canManageActivity[\s\S]*?activity\.status === "已结束"/);
+  assert.match(wxml, /primaryActionType === 'cancel' \? 'bottom-primary-cancel'/);
+  assert.match(js, /const shouldExpandRemarkByDefault = activity\.status === "已结束";/);
+  assert.match(js, /const expandByDefault = !!\([\s\S]*?this\.data\.activity\.status === "已结束"[\s\S]*?remarkExpanded:\s*expandByDefault,[\s\S]*?remarkToggleRotationDeg:\s*expandByDefault \? 180 : 0/);
   assert.match(wxml, /src="\/images\/activity-detail-chevron-left\.svg"/);
   assert.doesNotMatch(wxml, /activity-detail-chevron-(?:up|down)\.svg/);
   assert.match(wxml, /src="\/images\/activity-detail-chevron-right\.svg"/);

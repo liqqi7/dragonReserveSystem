@@ -30,7 +30,6 @@ from app.services.activity_share_preview_service import get_or_create_activity_s
 from app.services.activity_service import (
     admin_cancel_checkin_participant,
     admin_checkin_participant,
-    cancel_signup,
     checkin_activity,
     create_activity,
     delete_activity,
@@ -116,7 +115,6 @@ def get_style_signature(
 
 
 @router.get("/me/signed-up", response_model=list[ActivityResponse], summary="List my signed-up activities")
-@router.get("/mine", response_model=list[ActivityResponse], summary="List my signed-up activities")
 def get_my_activities(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -216,19 +214,6 @@ def post_signup(
     activity = get_activity_by_id(db, activity_id)
     participant = signup_activity(db, activity, current_user)
     return ActivitySignupResponse(activity_id=activity.id, participant_id=participant.id, status="signed_up")
-
-
-@router.delete("/{activity_id}/signup", status_code=status.HTTP_204_NO_CONTENT, summary="Cancel signup")
-def delete_signup(
-    activity_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-) -> Response:
-    """Cancel the current user's signup."""
-
-    activity = get_activity_by_id(db, activity_id)
-    cancel_signup(db, activity, current_user)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.delete(

@@ -30,6 +30,9 @@ test("visual WXSS dimensions use rpx except approved px cases", () => {
     if (relative === path.join("pages", "activity_list", "activity_list.wxss")) {
       source = source.replace(/border:\s*1px dashed/g, "border: dashed");
     }
+    if (relative === path.join("pages", "activity_detail", "activity_detail.wxss")) {
+      source = source.replace(/radial-gradient\(circle\s+420px\s+at/g, "radial-gradient(circle at");
+    }
     if (relative === path.join("custom-tab-bar", "index.wxss")) {
       const fixedTabPixelValues = source.match(/(?:top|width|height|font-size|line-height|border-radius):\s*\d+px;|padding:\s*\d+px\s+7\.69231rpx;/g) || [];
       assert.deepEqual(
@@ -40,6 +43,12 @@ test("visual WXSS dimensions use rpx except approved px cases", () => {
           "border-radius: 26px;",
           "height: 44px;",
           "border-radius: 22px;",
+          "height: 44px;",
+          "width: 34px;",
+          "height: 26px;",
+          "border-radius: 8px;",
+          "width: 16px;",
+          "height: 16px;",
           "top: 5px;",
           "width: 18px;",
           "height: 18px;",

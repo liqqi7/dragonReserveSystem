@@ -40,6 +40,19 @@ function normalizeAvatarUrl(url) {
   return value;
 }
 
+function syncProfileTabBarModalMask(page, visible) {
+  const applyMask = () => {
+    const tabBar = page && typeof page.getTabBar === "function" ? page.getTabBar() : null;
+    if (tabBar && typeof tabBar.setModalMaskVisible === "function") {
+      tabBar.setModalMaskVisible(visible);
+    }
+  };
+  applyMask();
+  if (visible && typeof wx !== "undefined" && typeof wx.nextTick === "function") {
+    wx.nextTick(applyMask);
+  }
+}
+
 Page({
   data: {
     statusBarHeight: 0,
@@ -57,7 +70,10 @@ Page({
     forceProfileHint: "",
     forceProfileCanSubmit: true,
     showPermissionModal: false,
+    showDeletePermissionModal: false,
     permissionInput: "",
+    permissionSubmitting: false,
+    permissionRemoving: false,
     bottomSafeAreaRpx: 0
   },
 
@@ -77,6 +93,9 @@ Page({
       isAdmin: app.globalData.userRole === "admin",
     });
     this.syncGuestState();
+    if (this.data.showPermissionModal || this.data.showDeletePermissionModal) {
+      syncProfileTabBarModalMask(this, true);
+    }
     const hasLocalAuth = !!wx.getStorageSync("accessToken");
     const userId = app.globalData.userId;
     const profile = app.globalData.userProfile;
@@ -92,6 +111,18 @@ Page({
       });
     } else {
       this.setData({ hasUser: false });
+    }
+
+    const pendingCreateAccessAction = String(app.globalData.pendingCreateAccessAction || "");
+    if (pendingCreateAccessAction) {
+      app.globalData.pendingCreateAccessAction = "";
+      if (pendingCreateAccessAction === "login") {
+        this.startRegister();
+        return;
+      }
+      if (pendingCreateAccessAction === "permission") {
+        this.openPermissionModal();
+      }
     }
 
     const shouldAutoLoginAndEdit = !!app.globalData._pendingAutoLoginAndEditProfile;
@@ -125,6 +156,10 @@ Page({
         app.globalData._pendingForceProfileForSignup = false;
       }
     });
+  },
+
+  onHide() {
+    syncProfileTabBarModalMask(this, false);
   },
 
   syncGuestState() {
@@ -190,11 +225,21 @@ Page({
   },
 
   openPermissionModal() {
-    this.setData({ showPermissionModal: true, permissionInput: "" });
+    this.setData({
+      showPermissionModal: true,
+      permissionInput: "",
+      permissionSubmitting: false
+    });
+    syncProfileTabBarModalMask(this, true);
   },
 
   closePermissionModal() {
-    this.setData({ showPermissionModal: false, permissionInput: "" });
+    this.setData({
+      showPermissionModal: false,
+      permissionInput: "",
+      permissionSubmitting: false
+    });
+    syncProfileTabBarModalMask(this, false);
   },
 
   onPermissionInput(e) {
@@ -202,35 +247,65 @@ Page({
   },
 
   submitPermission() {
+    if (this.data.permissionSubmitting) return;
     const input = (this.data.permissionInput || "").trim();
+    if (!input) {
+      wx.showToast({ title: "请输入邀请码", icon: "none" });
+      return;
+    }
+    this.setData({ permissionSubmitting: true });
     userService.updateMyRole(input)
       .then((user) => {
         app.applyCurrentUser(user);
-        this.setData({ showPermissionModal: false, permissionInput: "", isGuest: false });
+        this.setData({
+          showPermissionModal: false,
+          permissionInput: "",
+          permissionSubmitting: false,
+          isGuest: false
+        });
+        syncProfileTabBarModalMask(this, false);
         wx.showToast({ title: "已获取权限", icon: "success" });
       })
       .catch((err) => {
+        this.setData({ permissionSubmitting: false });
         wx.showToast({ title: err.message || "邀请码错误", icon: "none" });
       });
   },
 
   removePermission() {
-    wx.showModal({
-      title: "确认删除权限",
-      content: "确定要恢复为游客吗？将无法查看活动与记账数据。",
-      success: (res) => {
-        if (!res.confirm) return;
-        userService.clearMyRole()
-          .then((user) => {
-            app.applyCurrentUser(user);
-            this.setData({ isGuest: true });
-            wx.showToast({ title: "已恢复为游客", icon: "success" });
-          })
-          .catch((err) => {
-            wx.showToast({ title: err.message || "恢复失败", icon: "none" });
-          });
-      }
+    this.setData({
+      showDeletePermissionModal: true,
+      permissionRemoving: false
     });
+    syncProfileTabBarModalMask(this, true);
+  },
+
+  closeDeletePermissionModal() {
+    this.setData({
+      showDeletePermissionModal: false,
+      permissionRemoving: false
+    });
+    syncProfileTabBarModalMask(this, false);
+  },
+
+  confirmDeletePermission() {
+    if (this.data.permissionRemoving) return;
+    this.setData({ permissionRemoving: true });
+    userService.clearMyRole()
+      .then((user) => {
+        app.applyCurrentUser(user);
+        this.setData({
+          isGuest: true,
+          showDeletePermissionModal: false,
+          permissionRemoving: false
+        });
+        syncProfileTabBarModalMask(this, false);
+        wx.showToast({ title: "已恢复为游客", icon: "success" });
+      })
+      .catch((err) => {
+        this.setData({ permissionRemoving: false });
+        wx.showToast({ title: err.message || "恢复失败", icon: "none" });
+      });
   },
 
   logout() {
@@ -289,6 +364,8 @@ Page({
   },
 
   stopTap() {},
+
+  stopTouchMove() {},
 
   onProfileAvatarError() {
     this.setData({

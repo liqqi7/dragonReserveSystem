@@ -1,5 +1,7 @@
 const ACTION_WIDTH_RPX = 323.08;
 const ACTION_AREA_WIDTH_RPX = 315.38;
+const REMOVE_ACTION_WIDTH_RPX = 161.54;
+const REMOVE_ACTION_AREA_WIDTH_RPX = 153.85;
 const SWIPE_OPEN_THRESHOLD_RATIO = 0.25;
 // 已展开行右滑回收只需移动操作区宽度的 15%，避免沿用“从关闭态打开”的全局阈值。
 const SWIPE_CLOSE_THRESHOLD_RATIO = 0.15;
@@ -24,18 +26,28 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
-function getSwipeSettledState(startOffsetX, endOffsetX) {
+function getSwipeSettledState(startOffsetX, endOffsetX, actionWidthRpx = ACTION_WIDTH_RPX) {
+  const resolvedActionWidthRpx = Math.max(0, Number(actionWidthRpx) || 0);
   const startedOpen = Number(startOffsetX) < 0;
   const movedRightRpx = Number(endOffsetX) - Number(startOffsetX);
-  const openThresholdRpx = ACTION_WIDTH_RPX * SWIPE_OPEN_THRESHOLD_RATIO;
-  const closeThresholdRpx = ACTION_WIDTH_RPX * SWIPE_CLOSE_THRESHOLD_RATIO;
+  const openThresholdRpx = resolvedActionWidthRpx * SWIPE_OPEN_THRESHOLD_RATIO;
+  const closeThresholdRpx = resolvedActionWidthRpx * SWIPE_CLOSE_THRESHOLD_RATIO;
   const actionOpen = startedOpen
     ? movedRightRpx < closeThresholdRpx
     : Math.abs(Number(endOffsetX) || 0) >= openThresholdRpx;
   return {
-    offsetX: actionOpen ? -ACTION_WIDTH_RPX : 0,
+    offsetX: actionOpen ? -resolvedActionWidthRpx : 0,
     actionOpen
   };
+}
+
+function getActionMetrics(canManage, isAdmin) {
+  if (!canManage) {
+    return { actionOffsetRpx: 0, actionAreaWidthRpx: 0 };
+  }
+  return isAdmin
+    ? { actionOffsetRpx: ACTION_WIDTH_RPX, actionAreaWidthRpx: ACTION_AREA_WIDTH_RPX }
+    : { actionOffsetRpx: REMOVE_ACTION_WIDTH_RPX, actionAreaWidthRpx: REMOVE_ACTION_AREA_WIDTH_RPX };
 }
 
 function formatCheckinParts(value) {
@@ -78,6 +90,8 @@ function buildProgressView(participantCount, checkinCount, maxParticipants) {
 module.exports = {
   ACTION_WIDTH_RPX,
   ACTION_AREA_WIDTH_RPX,
+  REMOVE_ACTION_WIDTH_RPX,
+  REMOVE_ACTION_AREA_WIDTH_RPX,
   DRAWER_MAX_HEIGHT_RATIO,
   DEFAULT_MAX_HEIGHT_RPX,
   getMaxHeightRpx,
@@ -85,6 +99,7 @@ module.exports = {
   SWIPE_CLOSE_THRESHOLD_RATIO,
   clamp,
   getSwipeSettledState,
+  getActionMetrics,
   formatCheckinParts,
   buildProgressView,
   hasParticipantLimit

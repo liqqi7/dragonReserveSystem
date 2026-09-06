@@ -1,5 +1,4 @@
 const {
-  DEFAULT_CREATE_ACTIVITY_TYPE,
   DEFAULT_MAX_PARTICIPANTS,
   MAX_NAME_LENGTH,
   MAX_REMARK_LENGTH,
@@ -80,16 +79,11 @@ Component({
     visible: { type: Boolean, value: false },
     mode: { type: String, value: "create" },
     activity: { type: Object, value: null },
-    activityTypeOptionValues: { type: Array, value: [] },
-    activityTypeOptionLabels: { type: Array, value: [] },
-    defaultActivityType: { type: String, value: DEFAULT_CREATE_ACTIVITY_TYPE },
     participantCount: { type: Number, value: 0 },
     locationDisabled: { type: Boolean, value: false },
     submitting: { type: Boolean, value: false },
     /** 编辑页可将二级时间选择器提升到页面根层，避开两个 page-container 同组件叠层失效。 */
     externalDateTimePicker: { type: Boolean, value: false },
-    /** 新建页可将二级类型选择器提升到页面根层，与时间选择器串行切换。 */
-    externalActivityTypePicker: { type: Boolean, value: false },
     /** 已由 Skyline 半屏路由提供遮罩和进退场时，只保留表单面板本身。 */
     routeEmbedded: { type: Boolean, value: false }
   },
@@ -98,12 +92,11 @@ Component({
     containerRendered: false,
     containerVisible: false,
     panelHeightRpx: EDIT_SHEET_BASE_HEIGHT_RPX,
-    form: buildCreateForm(new Date(0), DEFAULT_CREATE_ACTIVITY_TYPE),
+    form: buildCreateForm(new Date(0)),
     title: "新建活动",
     submitText: "发布活动",
     isEdit: false,
-    activityTypeIndex: 0,
-    activityTypePickerVisible: false,
+    coverPickerVisible: false,
     pickerVisible: false,
     pickerMode: "datetime",
     pickerTitle: "选择日期和时间",
@@ -128,12 +121,12 @@ Component({
       if (visible) {
         this.initializeForm(() => this.mountContainer());
         return;
-      } else if (this.data.pickerVisible || this.data.activityTypePickerVisible) {
+      } else if (this.data.pickerVisible || this.data.coverPickerVisible) {
         this.setData({
           containerVisible: false,
           pickerVisible: false,
           pickerTarget: "",
-          activityTypePickerVisible: false
+          coverPickerVisible: false
         });
       } else {
         this.setData({ containerVisible: false });
@@ -177,12 +170,7 @@ Component({
       const isEdit = mode === "edit";
       const form = isEdit
         ? buildEditForm(this.properties.activity || {})
-        : buildCreateForm(new Date(), this.properties.defaultActivityType || DEFAULT_CREATE_ACTIVITY_TYPE);
-      const optionValues = this.properties.activityTypeOptionValues || [];
-      let activityTypeIndex = optionValues.indexOf(form.activityType);
-      if (activityTypeIndex < 0) activityTypeIndex = optionValues.indexOf(this.properties.defaultActivityType);
-      if (activityTypeIndex < 0) activityTypeIndex = 0;
-      if (!form.activityType && optionValues[activityTypeIndex]) form.activityType = optionValues[activityTypeIndex];
+        : buildCreateForm(new Date());
       const participantCount = Math.max(0, Number(this.properties.participantCount) || 0);
       const minParticipants = isEdit ? Math.max(1, participantCount) : 1;
       if (form.limitEnabled && Number(form.maxParticipants) < minParticipants) {
@@ -197,8 +185,7 @@ Component({
         title: isEdit ? "编辑活动" : "新建活动",
         submitText: isEdit ? "保存修改" : "发布活动",
         isEdit,
-        activityTypeIndex,
-        activityTypePickerVisible: false,
+        coverPickerVisible: false,
         pickerVisible: false,
         pickerTarget: "",
         pickerMode: "datetime",
@@ -222,7 +209,7 @@ Component({
     stopPropagation() {},
 
     onClose() {
-      if (this.properties.submitting || this.data.pickerVisible || this.data.activityTypePickerVisible) return;
+      if (this.properties.submitting || this.data.pickerVisible || this.data.coverPickerVisible) return;
       this.triggerEvent("close");
     },
 
@@ -306,33 +293,24 @@ Component({
       });
     },
 
-    openActivityTypePicker() {
-      if (this.data.isEdit) return;
-      this.setData({ activityTypePickerVisible: true }, () => {
-        if (!this.properties || !this.properties.externalActivityTypePicker) return;
-        this.triggerEvent("openactivitytypepicker", {
-          value: this.data.form.activityType
-        });
-      });
+    openCoverPicker() {
+      this.setData({ coverPickerVisible: true });
     },
 
-    closeActivityTypePicker() {
-      this.setData({ activityTypePickerVisible: false });
+    closeCoverPicker() {
+      this.setData({ coverPickerVisible: false });
     },
 
-    confirmActivityTypePicker(e) {
+    confirmCoverPicker(e) {
       const detail = e.detail || {};
-      const value = String(detail.value || "");
+      const value = String(detail.id || "");
       if (!value) {
-        this.setData({ activityTypePickerVisible: false });
+        this.setData({ coverPickerVisible: false });
         return;
       }
-      const values = this.properties.activityTypeOptionValues || [];
-      const index = values.indexOf(value);
       this.setData({
-        activityTypePickerVisible: false,
-        activityTypeIndex: index >= 0 ? index : 0,
-        "form.activityType": value
+        coverPickerVisible: false,
+        "form.activityCoverId": value
       });
     },
 
@@ -486,6 +464,20 @@ Component({
     },
 
     onCancelActivity() {
+      if (this.properties.submitting) return;
+      const activity = this.properties.activity || {};
+      const dialog = this.selectComponent("#qaCancelActivityDialog");
+      if (!dialog || typeof dialog.open !== "function") return;
+      dialog.open({
+        type: "cancelActivity",
+        title: "确认取消活动？",
+        message: `活动「${String(activity.name || "")}」取消后将无法报名和签到，是否确认取消？`,
+        confirmText: "确认取消",
+        confirmBehavior: "emit"
+      });
+    },
+
+    confirmCancelActivity() {
       if (this.properties.submitting) return;
       this.triggerEvent("cancelactivity");
     },

@@ -22,16 +22,14 @@
     <include src="./surface.wxml" />
   </page-container>
 
-  <activity-type-picker-sheet
-  wx:if="{{!externalActivityTypePicker}}"
-  id="qaActivityTypePickerSheet"
-  visible="{{activityTypePickerVisible}}"
+  <activity-cover-picker-sheet
+  id="qaActivityCoverPickerSheet"
+  class="activity-cover-picker-host {{coverPickerVisible ? 'activity-cover-picker-host--visible' : ''}}"
+  visible="{{coverPickerVisible}}"
   embedded="{{routeEmbedded}}"
-  value="{{form.activityType}}"
-  option-values="{{activityTypeOptionValues}}"
-  option-labels="{{activityTypeOptionLabels}}"
-  bindclose="closeActivityTypePicker"
-  bindconfirm="confirmActivityTypePicker"
+  value="{{form.activityCoverId}}"
+  bindclose="closeCoverPicker"
+  bindconfirm="confirmCoverPicker"
   />
 
   <date-time-picker-sheet
@@ -46,5 +44,10 @@
   minute-step="{{5}}"
   bindclose="closeDateTimePicker"
   bindconfirm="confirmDateTimePicker"
+  />
+
+  <create-access-dialog
+    id="qaCancelActivityDialog"
+    bindconfirm="confirmCancelActivity"
   />
 </view>

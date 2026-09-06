@@ -172,7 +172,8 @@ test("ranking page preserves champion jokes and follows the Pencil layout fixes"
   assert.match(wxss, /\.ranking-row:nth-child\(n \+ 4\) \.ranking-progress-fill\s*\{[^}]*background:\s*#ffe0b2;/s);
   assert.match(wxss, /\.champion-joke\s*\{[^}]*width:\s*398\.08rpx;[^}]*height:\s*32\.69rpx;/s);
   assert.match(wxss, /\.pigeon-ring\s*\{[^}]*box-shadow:\s*0 7\.69rpx 23\.08rpx rgba\(184,74,0,\.1\);/s);
-  assert.match(wxss, /\.pigeon-description\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*font-family:\s*"PingFang SC", "Microsoft YaHei", sans-serif;/s);
+  assert.match(wxss, /\.pigeon-description\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;/s);
+  assert.doesNotMatch(wxss, /font-family\s*:/);
   assert.match(wxss, /\.pigeon-description-line\s*\{[^}]*display:\s*block;[^}]*height:\s*28\.85rpx;[^}]*line-height:\s*28\.85rpx;/s);
   assert.match(wxss, /\.ranking-navbar-row\s*\{[^}]*max-width:\s*480px;[^}]*margin:\s*0 auto;/s);
   assert.match(wxss, /\.ranking-content\s*\{[^}]*max-width:\s*480px;[^}]*margin:\s*0 auto;[^}]*padding:\s*15\.38rpx 38\.46rpx;/s);

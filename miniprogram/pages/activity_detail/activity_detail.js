@@ -14,7 +14,6 @@ const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
 const { getBottomSafeAreaRpx, getWindowInfoCompat } = require("../../utils/safeArea");
 const { resolveActivityWeather } = require("../../utils/activityWeatherCache");
 const {
-  parseLocalDateTime,
   formatActivityDate,
   formatActivityTime,
   truncateActivityTitle,
@@ -63,6 +62,8 @@ const PARTICIPANTS_MORE_ICON = "/images/icon-participants-more.png";
 const LOCATION_MAP_MARKER_ICON = "/images/icon-activity-map-marker.png";
 const LOCATION_MAP_MARKER_DESIGN_SIZE_PX = 54;
 const LOCATION_MAP_MARKER_ANCHOR_Y = 23 / 54;
+const DETAIL_ENTRANCE_FRAME_MS = 17;
+const DETAIL_ENTRANCE_DURATION_MS = 280;
 
 function buildLocationMapMarkers(latitude, longitude, windowWidthPx) {
   const viewportWidth = Number(windowWidthPx) > 0 ? Number(windowWidthPx) : 390;
@@ -87,8 +88,11 @@ Page({
     activityId: "",
     activity: null,
     loading: true,
+    detailSkeletonLeaving: false,
+    detailContentVisible: false,
     loadError: "",
     isAdmin: false,
+    canManageActivity: false,
     myUserId: "",
     myNickname: "",
     showParticipantsDrawer: false,
@@ -98,7 +102,6 @@ Page({
     participantCurrentText: "0",
     participantMaxText: "",
     participantHasLimit: false,
-    isCheckinWindowOpen: false,
     activityDateText: "—",
     activityTimeText: "—",
     heroMetaText: "",
@@ -190,14 +193,25 @@ Page({
 
   onUnload() {
     this._locationRequestId += 1;
+    this.clearDetailEntranceTransition();
   },
 
   syncUser() {
-    const isAdmin = app.globalData.userRole === "admin";
+    const role = String(app.globalData.userRole || "");
+    const isAdmin = role === "admin";
     const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
     const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
-    this.setData({ isAdmin, myUserId, myNickname });
-    return { isAdmin, myUserId, myNickname };
+    const canManageActivity = this.resolveCanManageActivity(this.data.activity, { role, myUserId });
+    this.setData({ isAdmin, canManageActivity, myUserId, myNickname });
+    return { isAdmin, canManageActivity, myUserId, myNickname };
+  },
+
+  resolveCanManageActivity(activity, identity = {}) {
+    const role = String(identity.role || app.globalData.userRole || "");
+    const myUserId = String(identity.myUserId || app.globalData.userId || "");
+    if (role === "admin") return true;
+    if (role !== "user" || !app.globalData.isAuthenticated || !myUserId || !activity) return false;
+    return String(activity.createdBy || "") === myUserId;
   },
 
   openSignupProfileModal() {
@@ -306,13 +320,16 @@ Page({
   },
 
   bootstrap() {
-    this.setData({ loading: true, loadError: "" });
-    Promise.all([
-      activityService.listActivityTypeStyles().catch(() => []),
-      activityService.getActivity(this.data.activityId)
-    ])
-      .then(([styles, raw]) => {
-        this._activityTypeStyles = Array.isArray(styles) && styles.length > 0 ? styles : [];
+    this.clearDetailEntranceTransition();
+    this.setData({
+      loading: true,
+      detailSkeletonLeaving: false,
+      detailContentVisible: false,
+      loadError: ""
+    });
+    activityService.getActivity(this.data.activityId)
+      .then((raw) => {
+        this._activityTypeStyles = [];
         const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
         const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
         const activity = enrichSingleActivity(
@@ -321,13 +338,15 @@ Page({
           myUserId,
           myNickname
         );
-        this.applyActivity(activity);
-        this.setData({ loading: false, loadError: "" });
+        this.applyActivity(activity, () => this.startDetailEntranceTransition());
       })
       .catch((err) => {
         console.error(err);
+        this.clearDetailEntranceTransition();
         this.setData({
           loading: false,
+          detailSkeletonLeaving: false,
+          detailContentVisible: true,
           loadError: (err && err.message) || "加载失败",
           sharePreviewImageUrl: "",
           sharePreviewLoading: false
@@ -335,20 +354,48 @@ Page({
       });
   },
 
+  clearDetailEntranceTransition() {
+    if (this._detailEntranceFrameTimer) clearTimeout(this._detailEntranceFrameTimer);
+    if (this._detailSkeletonExitTimer) clearTimeout(this._detailSkeletonExitTimer);
+    this._detailEntranceFrameTimer = null;
+    this._detailSkeletonExitTimer = null;
+  },
+
+  startDetailEntranceTransition() {
+    this.clearDetailEntranceTransition();
+    this.setData({
+      loading: false,
+      loadError: "",
+      detailSkeletonLeaving: true,
+      detailContentVisible: false
+    }, () => {
+      const revealContent = () => {
+        this._detailEntranceFrameTimer = setTimeout(() => {
+          this._detailEntranceFrameTimer = null;
+          this.setData({ detailContentVisible: true }, () => {
+            this._detailSkeletonExitTimer = setTimeout(() => {
+              this._detailSkeletonExitTimer = null;
+              this.setData({ detailSkeletonLeaving: false });
+            }, DETAIL_ENTRANCE_DURATION_MS);
+          });
+        }, DETAIL_ENTRANCE_FRAME_MS);
+      };
+      if (typeof wx !== "undefined" && typeof wx.nextTick === "function") wx.nextTick(revealContent);
+      else revealContent();
+    });
+  },
+
+  stopPropagation() {},
+
   refreshDetail(options = {}) {
     const { silent } = options;
     if (!this.data.activityId) return Promise.resolve();
     if (!silent) {
       wx.showLoading({ title: "刷新中..." });
     }
-    return Promise.all([
-      activityService.listActivityTypeStyles().catch(() => []),
-      activityService.getActivity(this.data.activityId)
-    ])
-      .then(([styles, raw]) => {
-        if (Array.isArray(styles) && styles.length > 0) {
-          this._activityTypeStyles = styles;
-        }
+    return activityService.getActivity(this.data.activityId)
+      .then((raw) => {
+        this._activityTypeStyles = [];
         const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
         const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
         const activity = enrichSingleActivity(
@@ -370,7 +417,8 @@ Page({
       });
   },
 
-  applyActivity(activity) {
+  applyActivity(activity, onApplied) {
+    const canManageActivity = this.resolveCanManageActivity(activity);
     const rawAvatars = (activity.avatarList || []).slice().reverse().map((a, i) => ({
       url: (a && a.url) || DEFAULT_AVATAR,
       pKey: `av-${i}`
@@ -390,12 +438,6 @@ Page({
     const participantCurrentText = `${n}`;
     const participantMaxText = max != null ? `${max}` : "";
     const participantHasLimit = max != null;
-    let isCheckinWindowOpen = false;
-    const startAt = parseLocalDateTime(activity.startTime);
-    if (startAt) {
-      isCheckinWindowOpen = Date.now() >= startAt.getTime() - 60 * 60 * 1000;
-    }
-
     const rawParts = orderParticipantsForDrawerRecentFirst(activity.participants || []);
     const participantDrawerList = rawParts.map((p, i) => {
       if (typeof p === "string") {
@@ -428,11 +470,12 @@ Page({
     const heroCardAvatars = Array.isArray(activity.cardAvatars)
       ? activity.cardAvatars.slice(-3)
       : [];
-    const primaryAction = resolvePrimaryAction(activity, isCheckinWindowOpen);
+    const primaryAction = resolvePrimaryAction(activity);
     const remark = String(activity.remark || "").trim();
+    const shouldExpandRemarkByDefault = activity.status === "已结束";
     const detailStatusClass = activity.detailStatusTag === "进行中"
       ? "status-pill-ongoing"
-      : (["已结束", "已取消", "已删除"].includes(activity.detailStatusTag)
+      : (["已结束", "已取消", "已流局"].includes(activity.detailStatusTag)
         ? "status-pill-ended"
         : "status-pill-signup");
     const rawLocationMapLatitude = activity.locationLatitude;
@@ -455,6 +498,7 @@ Page({
 
     this.setData({
       activity,
+      canManageActivity,
       heroCardAvatars,
       participantPreview: list,
       participantDrawerList,
@@ -463,7 +507,6 @@ Page({
       participantHasLimit,
       activityParticipantCount: n,
       locationDisabled: (activity.checkinCount || 0) > 0,
-      isCheckinWindowOpen,
       activityDateText: formatActivityDate(activity.startTime),
       activityTimeText: formatActivityTime(activity.startTime, activity.endTime),
       heroMetaText: formatHeroMeta(activity),
@@ -475,8 +518,8 @@ Page({
       locationMapMarkers: locationMapAvailable
         ? buildLocationMapMarkers(locationMapLatitude, locationMapLongitude, this._windowWidthPx)
         : [],
-      remarkExpanded: false,
-      remarkToggleRotationDeg: 0,
+      remarkExpanded: shouldExpandRemarkByDefault,
+      remarkToggleRotationDeg: shouldExpandRemarkByDefault ? 180 : 0,
       remarkExpandable: false,
       remarkTextWidthPx: 0,
       remarkCollapsedHeightPx: 0,
@@ -489,6 +532,7 @@ Page({
       weather: buildWeatherView(resolveActivityWeather(activity))
     }, () => {
       this.updateRemarkOverflow();
+      if (typeof onApplied === "function") onApplied();
     });
     this.refreshSharePreview(activity && activity._id);
     this.loadLocationDistance(activity);
@@ -530,12 +574,19 @@ Page({
               Number(fullRect && fullRect.height) || collapsedHeight
             );
             const remarkExpandable = widthOverflows || expandedHeight > collapsedHeight + 0.5;
+            const expandByDefault = !!(
+              remarkExpandable &&
+              this.data.activity &&
+              this.data.activity.status === "已结束"
+            );
             this.setData({
               remarkExpandable,
-              remarkExpanded: false,
-              remarkToggleRotationDeg: 0,
+              remarkExpanded: expandByDefault,
+              remarkToggleRotationDeg: expandByDefault ? 180 : 0,
               remarkExpandedHeightPx: expandedHeight,
-              remarkViewportHeightPx: remarkExpandable ? collapsedHeight : expandedHeight
+              remarkViewportHeightPx: remarkExpandable
+                ? (expandByDefault ? expandedHeight : collapsedHeight)
+                : expandedHeight
             });
           });
         });
@@ -659,7 +710,14 @@ Page({
 
   openAdminEdit() {
     const activity = this.data.activity;
-    if (!activity || !activity._id || this.data.showActivityForm || this.data.activityFormSubmitting) return;
+    if (
+      !this.data.canManageActivity ||
+      !activity ||
+      !activity._id ||
+      activity.status === "已结束" ||
+      this.data.showActivityForm ||
+      this.data.activityFormSubmitting
+    ) return;
     this.setData({
       activityFormContainerRendered: true,
       showActivityForm: false,
@@ -710,29 +768,22 @@ Page({
   cancelActivityFromForm() {
     const activity = this.data.activity;
     if (!activity || !activity._id || this.data.activityFormSubmitting) return;
-    wx.showModal({
-      title: "确认取消活动",
-      content: `确定要取消活动「${activity.name}」吗？`,
-      success: (res) => {
-        if (!res.confirm) return;
-        this.setData({ activityFormSubmitting: true });
-        wx.showLoading({ title: "处理中...", mask: true });
-        activityService
-          .updateActivity(activity._id, { status: "已取消" })
-          .then(() => {
-            wx.hideLoading();
-            wx.showToast({ title: "已取消活动", icon: "success" });
-            this.setData({ showActivityForm: false, activityFormSubmitting: false });
-            return this.refreshDetail({ silent: true });
-          })
-          .catch((err) => {
-            console.error(err);
-            wx.hideLoading();
-            this.setData({ activityFormSubmitting: false });
-            wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
-          });
-      }
-    });
+    this.setData({ activityFormSubmitting: true });
+    wx.showLoading({ title: "处理中...", mask: true });
+    activityService
+      .cancelActivity(activity._id)
+      .then(() => {
+        wx.hideLoading();
+        wx.showToast({ title: "已取消活动", icon: "success" });
+        this.setData({ showActivityForm: false, activityFormSubmitting: false });
+        return this.refreshDetail({ silent: true });
+      })
+      .catch((err) => {
+        console.error(err);
+        wx.hideLoading();
+        this.setData({ activityFormSubmitting: false });
+        wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
+      });
   },
 
   onTapSignup() {
@@ -788,7 +839,7 @@ Page({
 
   directSignup(activity) {
     if (activity.status === "已结束" || activity.status === "已取消" || activity.status === "已流局") {
-      wx.showToast({ title: "该活动已结束或已取消", icon: "none" });
+      wx.showToast({ title: "该活动已结束、取消或流局", icon: "none" });
       return;
     }
     if (activity.isSignupClosed) {
@@ -894,8 +945,8 @@ Page({
   },
 
   checkinActivity(activity) {
-    if (activity.status !== "进行中" && activity.status !== "未开始") {
-      wx.showToast({ title: "仅未开始或进行中的活动可以签到", icon: "none" });
+    if (activity.status !== "进行中") {
+      wx.showToast({ title: "仅进行中的活动可以签到", icon: "none" });
       return;
     }
     if (!activity.locationLatitude || !activity.locationLongitude) {
@@ -931,6 +982,7 @@ Page({
     const isSelf = !!payload.self;
     const activity = this.data.activity;
     if (!activity) return;
+    if (!isSelf && !this.data.canManageActivity) return;
 
     wx.showModal({
       title: isSelf ? "确认取消报名" : "确认删除",
@@ -968,7 +1020,7 @@ Page({
     const participantId = payload.id;
     const name = payload.name;
     const activity = this.data.activity;
-    if (!activity || !activity._id || !participantId) return;
+    if (!this.data.isAdmin || !activity || !activity._id || !participantId) return;
 
     wx.showModal({
       title: "确认补签",
@@ -997,7 +1049,7 @@ Page({
     const participantId = payload.id;
     const name = payload.name;
     const activity = this.data.activity;
-    if (!activity || !activity._id || !participantId) return;
+    if (!this.data.isAdmin || !activity || !activity._id || !participantId) return;
 
     wx.showModal({
       title: "确认取消签到",

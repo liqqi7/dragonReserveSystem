@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const tabDir = path.join(__dirname, "../custom-tab-bar");
+const createAccessDialogDir = path.join(__dirname, "../components/create-access-dialog");
 const imageDir = path.join(__dirname, "../images");
 
 const iconNames = [
@@ -35,8 +36,10 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.equal((wxml.match(/class="tab-item /g) || []).length, 4);
   assert.equal(componentJson.styleIsolation, "isolated");
   assert.match(wxml, /id="qa-custom-tab-bar"/);
-  assert.match(wxml, /class="tab-bar-wrap {{entering \? 'tab-bar-wrap--entering' : ''}}" hidden="{{hidden}}"/);
+  assert.match(wxml, /class="tab-bar-wrap {{!hidden && !entering \? 'tab-bar-wrap--visible' : ''}}" hidden="{{hidden}}"/);
   assert.match(wxml, /id="qa-tab-glass"/);
+  assert.match(wxml, /id="qa-tab-glass" class="tab-items-wrap \{\{modalMaskVisible \? 'tab-items-wrap--modal' : ''\}\}"/);
+  assert.doesNotMatch(wxml, /modalContentOpacity/);
   assert.match(wxml, /id="qa-tab-glass-blur"[^>]*opacity: \{\{tabGlassBlurOpacity\}\}[^>]*blur\(\{\{tabGlassBlurRadiusRpx\}\}rpx\)/);
   assert.match(wxml, /id="qa-tab-glass-fill"[^>]*rgba\(255, 255, 255, \{\{tabGlassFillOpacity\}\}\)/);
   assert.match(wxml, /id="qa-tab-glass-stroke"/);
@@ -45,6 +48,9 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   for (const qaId of ["home", "tools", "ranking", "profile"]) {
     assert.match(wxml, new RegExp(`id="qa-tab-${qaId}"`));
   }
+  assert.match(wxml, /id="qa-tab-create"[^>]*catchtap="onCreateActivityTap"/);
+  assert.match(wxml, /id="qa-tab-modal-mask"[^>]*catchtap="blockTabInteraction"[^>]*catchtouchmove="blockTabInteraction"/s);
+  assert.match(wxml, /src="\/images\/tab-create-plus\.svg"/);
   assert.match(wxml, />首页<\/text>/);
   assert.doesNotMatch(wxml, />日程<\/text>|qa-tab-calendar|tab-calendar-month/);
   assert.match(wxml, />排行<\/text>/);
@@ -116,6 +122,15 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.doesNotMatch(wxss, /mask-image|mask-size|mask-position|mask-repeat/);
   assert.match(wxss, /\.tab-label\s*{[\s\S]*?position:\s*absolute;[\s\S]*?top:\s*25px;[\s\S]*?left:\s*0;[\s\S]*?width:\s*100%;[\s\S]*?height:\s*14px;[\s\S]*?font-size:\s*10px;[\s\S]*?line-height:\s*14px;[\s\S]*?font-weight:\s*400;[\s\S]*?text-align:\s*center;/);
   assert.match(wxss, /\.tab-label--active\s*{[\s\S]*?color:\s*#f59e0b;/);
+  assert.match(wxss, /\.tab-create-item\s*\{[^}]*height:\s*44px;[^}]*flex:\s*1;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;/s);
+  assert.match(wxss, /\.tab-create-button\s*\{[^}]*width:\s*34px;[^}]*height:\s*26px;[^}]*border-radius:\s*8px;[^}]*background:\s*#ff9800;[^}]*box-shadow:\s*0 3\.84615rpx 11\.53846rpx rgba\(255, 152, 0, 0\.2\);/s);
+  assert.match(wxss, /\.tab-modal-mask\s*\{[^}]*position:\s*absolute;[^}]*top:\s*0;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*left:\s*0;[^}]*z-index:\s*10;[^}]*pointer-events:\s*auto;/s);
+  assert.doesNotMatch(wxml, /id="qa-tab-modal-mask"[\s\S]*?background: rgba\(23, 24, 20,/);
+  assert.match(wxss, /\.tab-items-wrap--modal\s*\{[^}]*box-shadow:\s*none;/s);
+  assert.match(wxss, /\.tab-items-wrap--modal \.tab-glass-fill\s*\{[^}]*opacity:\s*0;/s);
+  assert.match(wxss, /\.tab-items-wrap--modal \.tab-glass-stroke,[\s\S]*?\.tab-items-wrap--modal \.tab-create-item\s*\{[^}]*opacity:\s*0\.6;/s);
+  assert.match(wxss, /\.tab-modal-mask\s*\{[^}]*background:\s*transparent;/s);
+  assert.match(js, /setModalMaskVisible\(visible, opacity = 0\.4\)/);
   assert.ok(activeLabelRule);
   assert.doesNotMatch(activeLabelRule[1], /gap:|margin:|padding:|font-size:|font-weight:|line-height:|transform:/);
   assert.doesNotMatch(wxss, /border-radius:\s*999(?:r?px)|tab-indicator/);
@@ -133,9 +148,14 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.match(hostRule[1], /background:\s*transparent;/);
   assert.doesNotMatch(hostRule[1], /position:\s*fixed;/);
   assert.match(wxss, /\.tab-bar-wrap\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?bottom:\s*0;[\s\S]*?left:\s*0;[\s\S]*?z-index:\s*300;[\s\S]*?width:\s*100%;/);
-  assert.match(wxss, /\.tab-bar-wrap\s*\{[\s\S]*?opacity:\s*1;[\s\S]*?transform:\s*translateY\(0\);[\s\S]*?transition:\s*transform 240ms cubic-bezier\(0\.2, 0\.8, 0\.2, 1\), opacity 160ms ease-out;/);
-  assert.match(wxss, /\.tab-bar-wrap--entering\s*\{[^}]*opacity:\s*0;[^}]*transform:\s*translateY\(100%\);[^}]*pointer-events:\s*none;/s);
+  assert.match(wxss, /\.tab-bar-wrap\s*\{[\s\S]*?opacity:\s*0;[\s\S]*?transform:\s*translateY\(100%\);[\s\S]*?transition:\s*transform 240ms cubic-bezier\(0\.2, 0\.8, 0\.2, 1\), opacity 160ms ease-out;[\s\S]*?pointer-events:\s*none;/);
+  assert.match(wxss, /\.tab-bar-wrap--visible\s*\{[^}]*opacity:\s*1;[^}]*transform:\s*translateY\(0\);[^}]*pointer-events:\s*auto;/s);
   assert.match(js, /setHidden\(hidden, \{ animate = false \} = \{\}\)/);
+  assert.match(js, /function getGlobalTabHidden\(\)/);
+  assert.match(js, /function getGlobalHomeTabEntrancePending\(\)/);
+  assert.match(js, /hidden:\s*true/);
+  assert.match(js, /function shouldKeepTabHidden\(route\)[\s\S]*?if \(!route\) return true;[\s\S]*?route === ACTIVITY_LIST_ROUTE &&[\s\S]*?getGlobalTabHidden\(\) \|\| getGlobalHomeTabEntrancePending\(\)/);
+  assert.match(js, /setHidden\(hidden,[\s\S]*?setGlobalTabHidden\(nextHidden\)/);
   assert.doesNotMatch(historyWxml, /bottom: calc\(107\.69231rpx/);
   assert.match(historyWxss, /\.ranking-scroll\s*\{[^}]*bottom:\s*0;/);
   assert.match(historyWxml, /class="ranking-content"[^>]*padding-bottom: calc\(123\.07692rpx \+ \{\{bottomSafeAreaRpx\}\}rpx\)/);
@@ -147,6 +167,70 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
 test("tab labels inherit the runtime system font", () => {
   const wxss = fs.readFileSync(path.join(tabDir, "index.wxss"), "utf8");
   assert.doesNotMatch(wxss, /font-family\s*:/);
+});
+
+test("create access dialog follows the warning-level centered modal spec", () => {
+  const wxml = fs.readFileSync(path.join(createAccessDialogDir, "index.wxml"), "utf8");
+  const wxss = fs.readFileSync(path.join(createAccessDialogDir, "index.wxss"), "utf8");
+  const warningSvg = fs.readFileSync(path.join(imageDir, "dialog-warning.svg"), "utf8");
+  const appJs = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
+  const profileJs = fs.readFileSync(path.join(__dirname, "../pages/profile/profile.js"), "utf8");
+
+  assert.match(wxml, /id="qa-create-access-dialog-overlay"/);
+  assert.match(wxml, /id="qa-create-access-dialog"/);
+  assert.match(wxml, /class="create-access-dialog-title-row"/);
+  assert.match(wxml, /src="\/images\/dialog-warning\.svg"/);
+  assert.match(wxml, /id="qa-create-access-dialog-confirm"/);
+  assert.match(wxss, /\.create-access-dialog-overlay\s*\{[^}]*background:\s*rgba\(23, 24, 20, 0\.4\);/s);
+  assert.match(wxss, /\.create-access-dialog\s*\{[^}]*width:\s*576\.92308rpx;[^}]*padding:\s*38\.46154rpx;[^}]*gap:\s*30\.76923rpx;[^}]*border-radius:\s*30\.76923rpx;/s);
+  assert.match(wxss, /\.create-access-dialog-title-row\s*\{[^}]*gap:\s*15\.38462rpx;/s);
+  assert.match(wxss, /\.create-access-dialog-icon\s*\{[^}]*width:\s*34\.61538rpx;[^}]*height:\s*34\.61538rpx;/s);
+  assert.match(wxss, /\.create-access-dialog-title\s*\{[^}]*font-size:\s*30\.76923rpx;[^}]*font-weight:\s*700;/s);
+  assert.match(wxss, /\.create-access-dialog-message\s*\{[^}]*color:\s*#4b5563;[^}]*font-size:\s*26\.92308rpx;[^}]*font-weight:\s*400;/s);
+  assert.match(wxss, /\.create-access-dialog-actions\s*\{[^}]*gap:\s*23\.07692rpx;/s);
+  assert.match(wxss, /\.create-access-dialog-button\s*\{[^}]*height:\s*84\.61538rpx;[^}]*border-radius:\s*23\.07692rpx;[^}]*font-size:\s*26\.92308rpx;/s);
+  assert.match(wxss, /\.create-access-dialog-button--cancel\s*\{[^}]*color:\s*#4b5563;[^}]*background:\s*#f5f5f5;/s);
+  assert.match(wxss, /\.create-access-dialog-button--confirm\s*\{[^}]*color:\s*#ffffff;[^}]*background:\s*#ff9800;/s);
+  assert.match(warningSvg, /stroke="#F59E0B"/);
+  assert.doesNotMatch(warningSvg, /<rect|fill="#FFF3E0"/);
+  assert.match(appJs, /pendingCreateAccessAction:\s*""/);
+  assert.match(profileJs, /pendingCreateAccessAction === "login"[\s\S]*?this\.startRegister\(\)/);
+  assert.match(profileJs, /pendingCreateAccessAction === "permission"[\s\S]*?this\.openPermissionModal\(\)/);
+  assert.match(profileJs, /function syncProfileTabBarModalMask\(page, visible\)[\s\S]*?tabBar\.setModalMaskVisible\(visible\)/);
+  assert.match(profileJs, /openPermissionModal\(\)\s*\{[\s\S]*?syncProfileTabBarModalMask\(this, true\)/);
+  assert.match(profileJs, /closePermissionModal\(\)\s*\{[\s\S]*?syncProfileTabBarModalMask\(this, false\)/);
+
+  for (const pageName of ["activity_list", "tools", "history", "profile"]) {
+    const pageDir = path.join(__dirname, `../pages/${pageName}`);
+    const pageJson = fs.readFileSync(path.join(pageDir, `${pageName}.json`), "utf8");
+    const pageWxml = fs.readFileSync(path.join(pageDir, `${pageName}.wxml`), "utf8");
+    assert.match(pageJson, /"create-access-dialog":\s*"\.\.\/\.\.\/components\/create-access-dialog\/index"/);
+    assert.match(pageWxml, /<create-access-dialog id="create-access-dialog"\s*\/>/);
+  }
+});
+
+test("tab modal mask can be synchronized by page-level dialogs", () => {
+  const componentPath = path.join(tabDir, "index.js");
+  const previousComponent = global.Component;
+  let definition;
+  try {
+    global.Component = (value) => { definition = value; };
+    delete require.cache[require.resolve(componentPath)];
+    require(componentPath);
+
+    const ctx = {
+      data: { modalMaskVisible: false, modalMaskOpacity: 0.4 },
+      setData(patch) { Object.assign(this.data, patch); }
+    };
+    definition.methods.setModalMaskVisible.call(ctx, true, 0.5);
+    assert.deepEqual(ctx.data, { modalMaskVisible: true, modalMaskOpacity: 0.5 });
+    definition.methods.setModalMaskVisible.call(ctx, false, 0.5);
+    assert.deepEqual(ctx.data, { modalMaskVisible: false, modalMaskOpacity: 0.5 });
+  } finally {
+    delete require.cache[require.resolve(componentPath)];
+    if (previousComponent === undefined) delete global.Component;
+    else global.Component = previousComponent;
+  }
 });
 
 test("hidden tab bar re-enters from below on demand and ordinary visibility changes stay immediate", async () => {
@@ -184,6 +268,83 @@ test("hidden tab bar re-enters from below on demand and ordinary visibility chan
 
     definition.methods.setHidden.call(ctx, false);
     assert.deepEqual(patches.at(-1), { hidden: false, entering: false });
+  } finally {
+    delete require.cache[require.resolve(componentPath)];
+    for (const [key, value] of Object.entries(previousGlobals)) {
+      if (value === undefined) delete global[key];
+      else global[key] = value;
+    }
+  }
+});
+
+test("tab bar remount preserves the hidden state while the home drawer survives a native page", () => {
+  const componentPath = path.join(tabDir, "index.js");
+  const previousGlobals = {
+    Component: global.Component,
+    getApp: global.getApp,
+    getCurrentPages: global.getCurrentPages
+  };
+  let definition;
+  const app = { globalData: { tabBarSelected: 0, tabBarHidden: true, userRole: "admin" } };
+
+  try {
+    global.Component = (value) => { definition = value; };
+    global.getApp = () => app;
+    global.getCurrentPages = () => [{ route: "pages/activity_list/activity_list" }];
+    delete require.cache[require.resolve(componentPath)];
+    require(componentPath);
+
+    const ctx = {
+      data: { selected: 0, hidden: false, entering: false, isAdmin: true },
+      syncBottomSafeArea() {},
+      setData(patch) { Object.assign(this.data, patch); }
+    };
+
+    definition.lifetimes.attached.call(ctx);
+    assert.equal(ctx.data.hidden, true);
+
+    app.globalData.tabBarHidden = false;
+    definition.pageLifetimes.show.call(ctx);
+    assert.equal(ctx.data.hidden, false);
+  } finally {
+    delete require.cache[require.resolve(componentPath)];
+    for (const [key, value] of Object.entries(previousGlobals)) {
+      if (value === undefined) delete global[key];
+      else global[key] = value;
+    }
+  }
+});
+
+test("tab bar stays hidden while its page route is not available during the first mount", () => {
+  const componentPath = path.join(tabDir, "index.js");
+  const previousGlobals = {
+    Component: global.Component,
+    getApp: global.getApp,
+    getCurrentPages: global.getCurrentPages
+  };
+  let definition;
+  const app = { globalData: { tabBarSelected: 0, tabBarHidden: false, homeTabEntrancePending: true } };
+
+  try {
+    global.Component = (value) => { definition = value; };
+    global.getApp = () => app;
+    global.getCurrentPages = () => [];
+    delete require.cache[require.resolve(componentPath)];
+    require(componentPath);
+
+    const patches = [];
+    const ctx = {
+      data: { selected: 0, hidden: true, entering: false },
+      syncBottomSafeArea() {},
+      setData(patch) {
+        patches.push(patch);
+        Object.assign(this.data, patch);
+      }
+    };
+
+    definition.lifetimes.attached.call(ctx);
+    assert.equal(ctx.data.hidden, true);
+    assert.equal(patches.some((patch) => patch.hidden === false), false);
   } finally {
     delete require.cache[require.resolve(componentPath)];
     for (const [key, value] of Object.entries(previousGlobals)) {
@@ -330,6 +491,79 @@ test("tab selection follows the visible route without mutating the page being le
       currentTarget: { dataset: { index: "0" } }
     });
     assert.equal(vibrationCount, 1);
+  } finally {
+    delete require.cache[require.resolve(componentPath)];
+    for (const [key, value] of Object.entries(previousGlobals)) {
+      if (value === undefined) delete global[key];
+      else global[key] = value;
+    }
+  }
+});
+
+test("central create entry follows the four-state identity matrix", () => {
+  const componentPath = path.join(tabDir, "index.js");
+  const previousGlobals = {
+    Component: global.Component,
+    getApp: global.getApp,
+    getCurrentPages: global.getCurrentPages,
+    wx: global.wx
+  };
+  let definition;
+  const accessDialog = {
+    opened: null,
+    open(dialog) { this.opened = dialog; }
+  };
+  let currentPage = {
+    route: "pages/activity_list/activity_list",
+    showCreateModalCalls: 0,
+    showCreateModal() { this.showCreateModalCalls += 1; },
+    selectComponent(selector) {
+      assert.equal(selector, "#create-access-dialog");
+      return accessDialog;
+    }
+  };
+  let switchedUrl = "";
+  const app = {
+    globalData: {
+      userRole: null,
+      isAuthenticated: false,
+      accessToken: "",
+      pendingOpenCreateActivity: false
+    }
+  };
+
+  try {
+    global.Component = (value) => { definition = value; };
+    global.getApp = () => app;
+    global.getCurrentPages = () => [currentPage];
+    global.wx = { switchTab({ url }) { switchedUrl = url; } };
+    delete require.cache[require.resolve(componentPath)];
+    require(componentPath);
+
+    const ctx = { data: { selected: 0 } };
+    definition.methods.onCreateActivityTap.call(ctx);
+    assert.equal(currentPage.showCreateModalCalls, 0, "未登录不能直接打开新建活动");
+    assert.equal(accessDialog.opened.type, "login", "未登录点击必须展示原因弹窗");
+    assert.equal(accessDialog.opened.title, "尚未登录");
+    assert.equal(accessDialog.opened.confirmText, "去登录");
+
+    Object.assign(app.globalData, { userRole: "guest", isAuthenticated: false, accessToken: "guest-token" });
+    definition.methods.onCreateActivityTap.call(ctx);
+    assert.equal(currentPage.showCreateModalCalls, 0, "游客不能直接打开新建活动");
+    assert.equal(accessDialog.opened.type, "permission", "游客点击必须展示权限弹窗");
+    assert.equal(accessDialog.opened.title, "暂无创建权限");
+    assert.equal(accessDialog.opened.confirmText, "去获取权限");
+
+    Object.assign(app.globalData, { userRole: "user", isAuthenticated: true, accessToken: "user-token" });
+    definition.methods.onCreateActivityTap.call(ctx);
+    assert.equal(currentPage.showCreateModalCalls, 1, "普通用户可直接打开首页抽屉");
+
+    currentPage = { route: "pages/tools/tools" };
+    Object.assign(app.globalData, { userRole: "admin", isAuthenticated: true, accessToken: "admin-token" });
+    definition.methods.onCreateActivityTap.call(ctx);
+    assert.equal(switchedUrl, "/pages/activity_list/activity_list");
+    assert.equal(app.globalData.pendingOpenCreateActivity, true, "管理员跨 Tab 后由首页消费打开请求");
+    assert.equal(app.globalData.tabBarHidden, true, "跨 Tab 打开前先隐藏底部栏，避免切页闪现");
   } finally {
     delete require.cache[require.resolve(componentPath)];
     for (const [key, value] of Object.entries(previousGlobals)) {

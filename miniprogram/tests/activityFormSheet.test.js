@@ -224,7 +224,7 @@ test("form markup keeps prototype labels, placeholders and full-row tap targets"
   const pageWxml = fs.readFileSync(path.join(__dirname, "../pages/activity_list/activity_list.wxml"), "utf8");
   assert.match(js, /submitText:\s*"发布活动"/);
   assert.match(js, /submitText:\s*isEdit \? "保存修改" : "发布活动"/);
-  assert.match(pageWxml, /default-activity-type="{{'badminton'}}"/);
+  assert.match(wxml, />活动封面<\/text>/);
   assert.match(wxml, /data-target="startDateTime"/);
   assert.match(wxml, /data-target="endDateTime"/);
   assert.match(wxml, /data-target="signupDeadlineDate"/);
@@ -259,14 +259,18 @@ test("form markup keeps prototype labels, placeholders and full-row tap targets"
   assert.match(wxml, /activity-sheet-footer--create/);
   assert.match(wxml, /activity-sheet-footer-actions--create/);
   assert.match(wxml, /sheet-button--primary-create/);
-  assert.match(wxml, /activity-sheet-panel[^>]*pickerVisible \|\| activityTypePickerVisible[^>]*activity-sheet-panel--covered/);
-  const editSignupIndex = wxml.indexOf(">允许报名</text>");
-  const editLimitIndex = wxml.indexOf(">限制报名人数</text>", editSignupIndex);
-  assert.ok(editSignupIndex >= 0 && editLimitIndex > editSignupIndex);
+  assert.match(wxml, /activity-sheet-panel[^>]*pickerVisible \|\| coverPickerVisible[^>]*activity-sheet-panel--covered/);
+  const coverIndex = wxml.indexOf(">活动封面</text>");
+  const limitIndex = wxml.indexOf(">限制报名人数</text>", coverIndex);
+  assert.ok(coverIndex >= 0 && limitIndex > coverIndex);
+  assert.doesNotMatch(wxml, />允许报名<\/text>|>活动类型<\/text>/);
   assert.match(wxml, /participant-limit-card--edit/);
   assert.match(wxml, /activity-sheet-footer-actions--edit/);
   assert.match(wxml, /sheet-button--secondary-edit/);
   assert.match(wxml, /sheet-button--primary-edit/);
+  assert.match(wxml, /wx:if="{{isEdit && activity\.status !== '已取消'}}"[\s\S]*bindtap="onCancelActivity">取消活动<\/button>/);
+  assert.doesNotMatch(wxml, /删除活动|onDeleteActivity/);
+  assert.doesNotMatch(js, /onDeleteActivity|deleteactivity/);
   assert.doesNotMatch(wxml, /activity-sheet-panel" catchtap=/);
   assert.match(wxml, /bindtap="decrementParticipants"/);
   assert.match(wxml, /bindtap="incrementParticipants"/);
@@ -324,10 +328,10 @@ test("activity form sheet geometry follows the prototype measurements and gives 
   assert.match(css, /\.sheet-button\s*\{[^}]*border-radius:\s*23.08rpx;/s);
   assert.match(css, /\.activity-type-chevron\s*\{[^}]*width:\s*28rpx;[^}]*height:\s*28rpx;/s);
   assert.match(css, /\.location-value\.bento-placeholder-text\s*{[^}]*color:\s*#9ca3af;/s);
-  assert.match(css, /\.activity-sheet-panel \.location-value\.bento-placeholder-text\s*{[^}]*color:\s*#9ca3af;[^}]*font-family:\s*inherit;[^}]*font-weight:\s*400;/s);
+  assert.match(css, /\.activity-sheet-panel \.location-value\.bento-placeholder-text\s*{[^}]*color:\s*#9ca3af;[^}]*font-weight:\s*400;/s);
   assert.match(css, /\.textarea-input-wrap\s*{[^}]*position:\s*relative;[^}]*width:\s*100%;[^}]*min-height:\s*40rpx;/s);
   assert.match(css, /\.bento-textarea\s*{[^}]*height:\s*100%;[^}]*min-height:\s*40rpx;[^}]*font-size:\s*28rpx;[^}]*line-height:\s*40rpx;[^}]*font-weight:\s*400;/s);
-  assert.match(css, /\.bento-textarea-placeholder\s*{[^}]*position:\s*absolute;[^}]*color:\s*#9ca3af;[^}]*font-family:\s*inherit;[^}]*font-size:\s*28rpx;[^}]*line-height:\s*40rpx;[^}]*font-weight:\s*400;[^}]*pointer-events:\s*none;/s);
+  assert.match(css, /\.bento-textarea-placeholder\s*{[^}]*position:\s*absolute;[^}]*color:\s*#9ca3af;[^}]*font-size:\s*28rpx;[^}]*line-height:\s*40rpx;[^}]*font-weight:\s*400;[^}]*pointer-events:\s*none;/s);
   assert.match(css, /\.activity-sheet-panel--create\s*{[^}]*padding-bottom:\s*153\.85rpx;/s);
   assert.doesNotMatch(css, /\.activity-sheet-panel--(?:create|edit) \.activity-sheet-body\s*{/);
   assert.match(css, /\.bento-grid--create\s*{[^}]*gap:\s*15.38rpx;/s);
@@ -451,26 +455,21 @@ test("participant number opens numeric input and normalizes typed value", () => 
 });
 
 
-test("activity type field opens its own secondary sheet and confirmation updates the form", () => {
+test("activity cover field opens its own secondary sheet and confirmation updates the form", () => {
   const context = createContext(definition, {
     isEdit: false,
-    activityTypePickerVisible: false,
-    activityTypeIndex: 2,
-    form: { activityType: "other" }
+    coverPickerVisible: false,
+    form: { activityCoverId: "" }
   });
-  context.properties = {
-    activityTypeOptionValues: ["badminton", "boardgame", "other", "eating", "outing", "movie"]
-  };
 
-  definition.methods.openActivityTypePicker.call(context);
-  assert.equal(context.data.activityTypePickerVisible, true);
+  definition.methods.openCoverPicker.call(context);
+  assert.equal(context.data.coverPickerVisible, true);
 
-  definition.methods.confirmActivityTypePicker.call(context, {
-    detail: { value: "movie", label: "电影" }
+  definition.methods.confirmCoverPicker.call(context, {
+    detail: { id: "lam-001", artistName: "LAM" }
   });
-  assert.equal(context.data.activityTypePickerVisible, false);
-  assert.equal(context.data.form.activityType, "movie");
-  assert.equal(context.data.activityTypeIndex, 5);
+  assert.equal(context.data.coverPickerVisible, false);
+  assert.equal(context.data.form.activityCoverId, "lam-001");
 });
 
 test("activity type sheet follows the prototype grouping and preserves temporary selection until confirmation", () => {
@@ -512,36 +511,38 @@ test("activity type sheet follows the prototype grouping and preserves temporary
   assert.deepEqual(events, [{ name: "confirm", detail: { value: "outing", label: "外出", index: 4 } }]);
 });
 
-test("activity type sheet markup and dimensions match the Pencil component", () => {
+test("activity cover sheet markup and dimensions match the Pencil component", () => {
   const formWxml = readActivityFormWxml();
-  const typeWxml = fs.readFileSync(path.join(__dirname, "../components/activity-type-picker-sheet/index.wxml"), "utf8");
-  const typeSurfaceWxml = fs.readFileSync(path.join(__dirname, "../components/activity-type-picker-sheet/surface.wxml"), "utf8");
-  const typeCss = fs.readFileSync(path.join(__dirname, "../components/activity-type-picker-sheet/index.wxss"), "utf8");
+  const coverWxml = fs.readFileSync(path.join(__dirname, "../components/activity-cover-picker-sheet/index.wxml"), "utf8");
+  const coverSurfaceWxml = fs.readFileSync(path.join(__dirname, "../components/activity-cover-picker-sheet/surface.wxml"), "utf8");
+  const coverCss = fs.readFileSync(path.join(__dirname, "../components/activity-cover-picker-sheet/index.wxss"), "utf8");
 
-  assert.match(formWxml, /bindtap="openActivityTypePicker"/);
+  assert.match(formWxml, /bindtap="openCoverPicker"/);
   assert.doesNotMatch(formWxml, /<picker[^>]*mode="selector"/);
-  assert.match(formWxml, /<activity-type-picker-sheet[\s\S]*visible="{{activityTypePickerVisible}}"[\s\S]*bindconfirm="confirmActivityTypePicker"/);
-  assert.match(typeWxml, /<block wx:if="{{embedded && containerRendered}}">/);
-  assert.match(typeWxml, /<page-container[\s\S]*wx:if="{{!embedded && containerRendered}}"/);
-  assert.match(typeWxml, /id="qaActivityTypePickerContainer"[\s\S]*show="{{containerVisible}}"[\s\S]*position="bottom"/);
-  assert.match(typeWxml, /overlay="{{true}}"[\s\S]*close-on-slide-down="{{false}}"[\s\S]*bind:clickoverlay="onClose"/);
-  assert.doesNotMatch(typeWxml, /draggable-sheet|root-portal|worklet:onsizeupdate|associative-container/);
-  assert.match(typeSurfaceWxml, /选择活动类型/);
-  assert.match(typeSurfaceWxml, /src="\/images\/icon-close\.svg"/);
-  assert.match(typeSurfaceWxml, /class="type-sheet-option {{option\.value === selectedValue \? 'type-sheet-option--selected' : ''}}"/);
-  assert.match(typeSurfaceWxml, /class="type-sheet-confirm"[\s\S]*>确定<\/view>/);
+  assert.match(formWxml, /<activity-cover-picker-sheet[\s\S]*visible="{{coverPickerVisible}}"[\s\S]*bindconfirm="confirmCoverPicker"/);
+  assert.match(coverWxml, /<block wx:if="{{embedded && containerRendered}}">/);
+  assert.match(coverWxml, /id="qaActivityCoverPickerContainer"[\s\S]*position="bottom"/);
+  assert.match(coverSurfaceWxml, /选择活动封面/);
+  assert.match(coverSurfaceWxml, /type="list" scroll-x="{{true}}" enable-flex="{{true}}"/);
+  assert.match(coverSurfaceWxml, /cover-artwork--selected/);
+  assert.match(coverCss, /border-radius:\s*42\.31rpx 42\.31rpx 0 0/);
+  assert.match(coverCss, /width:\s*296\.15rpx/);
+  assert.match(coverSurfaceWxml, /<view class="cover-artwork-border"><\/view>/);
+  assert.match(coverCss, /\.cover-artwork--selected \.cover-artwork-border\s*{[\s\S]*?border-width:\s*5\.77rpx;/);
+  assert.match(coverCss, /\.cover-sheet-content\s*{[\s\S]*?margin-top:\s*23\.08rpx;[\s\S]*?margin-bottom:\s*23\.08rpx;/);
+  assert.doesNotMatch(coverWxml, /cover-sheet-embedded-root--suspended/);
+  assert.match(coverWxml, /show="{{containerVisible}}"/);
+  assert.match(coverCss, /\.cover-sheet-footer\s*{[\s\S]*?height:\s*153\.85rpx;/);
+  assert.match(coverCss, /\.cover-sheet-confirm\s*{[\s\S]*?height:\s*84\.62rpx;[\s\S]*?border-radius:\s*23\.08rpx;[\s\S]*?font-weight:\s*700;/);
+});
 
-  assert.match(typeCss, /\.type-sheet-panel\s*{[\s\S]*?border-radius:\s*48rpx 48rpx 0 0;[\s\S]*?background:\s*#ffffff;/);
-  assert.match(typeCss, /\.type-sheet-header\s*{[\s\S]*?height:\s*112rpx;[\s\S]*?padding:\s*0 32rpx;/);
-  assert.match(typeCss, /\.type-sheet-content\s*{[\s\S]*?padding:\s*32rpx;[\s\S]*?gap:\s*32rpx;/);
-  assert.match(typeCss, /\.type-sheet-group\s*{[\s\S]*?gap:\s*20rpx;/);
-  assert.match(typeCss, /\.type-sheet-group-title\s*{[\s\S]*?font-size:\s*28rpx;[\s\S]*?line-height:\s*40rpx;[\s\S]*?font-weight:\s*600;/);
-  assert.match(typeCss, /\.type-sheet-options\s*{[\s\S]*?flex-wrap:\s*wrap;[\s\S]*?gap:\s*20rpx;/);
-  assert.match(typeCss, /\.type-sheet-option\s*{[\s\S]*?width:\s*calc\(\(100% - 20rpx\) \/ 2\);[\s\S]*?height:\s*96rpx;[\s\S]*?border-radius:\s*24rpx;/);
-  assert.match(typeCss, /\.type-sheet-option--selected\s*{[\s\S]*?border:\s*2rpx solid #ff9800;[\s\S]*?background:\s*#fff3e0;/);
-  assert.match(typeCss, /\.type-sheet-option--selected \.type-sheet-option-label\s*{[\s\S]*?color:\s*#ff9800;[\s\S]*?font-weight:\s*600;/);
-  assert.match(typeCss, /\.type-sheet-footer\s*{[\s\S]*?height:\s*160rpx;[\s\S]*?padding:\s*12rpx 32rpx 60rpx;[\s\S]*?border-top:\s*2rpx solid #e5e7eb;[\s\S]*?box-shadow:\s*0 -6rpx 24rpx rgba\(0, 0, 0, 0\.07\);/);
-  assert.match(typeCss, /\.type-sheet-confirm\s*{[\s\S]*?height:\s*88rpx;[\s\S]*?border-radius:\s*24rpx;[\s\S]*?font-weight:\s*700;/);
+test("activity cover confirmation action keeps the prototype full width", () => {
+  const coverCss = fs.readFileSync(path.join(__dirname, "../components/activity-cover-picker-sheet/index.wxss"), "utf8");
+
+  assert.match(coverCss, /padding:\s*11\.54rpx 38\.46rpx 57\.69rpx/);
+  assert.match(coverCss, /justify-content:\s*center/);
+  assert.match(coverCss, /\.cover-sheet-confirm\s*\{[\s\S]*?width:\s*auto;[\s\S]*?min-width:\s*0;[\s\S]*?flex:\s*1;/);
+  assert.match(coverCss, /\.cover-sheet-confirm\s*\{[\s\S]*?display:\s*flex;[\s\S]*?align-items:\s*center;[\s\S]*?justify-content:\s*center;/);
 });
 
 test("create and edit forms embed their pickers in one full-height native container", () => {
@@ -657,7 +658,7 @@ test("critical custom component hosts keep stable qa ids for runtime validation"
 
   const createFormHost = listWxml.match(/<activity-form-sheet\b[\s\S]*?\/>/)?.[0] || "";
   const editFormHost = detailWxml.match(/<activity-form-sheet\b[\s\S]*?\/>/)?.[0] || "";
-  const typePickerHost = formWxml.match(/<activity-type-picker-sheet\b[\s\S]*?\/>/)?.[0] || "";
+  const coverPickerHost = formWxml.match(/<activity-cover-picker-sheet\b[\s\S]*?\/>/)?.[0] || "";
   const dateTimePickerHost = formWxml.match(/<date-time-picker-sheet\b[\s\S]*?\/>/)?.[0] || "";
 
   assert.match(createFormHost, /\bid="qaActivityCreateForm"/);
@@ -671,8 +672,20 @@ test("critical custom component hosts keep stable qa ids for runtime validation"
   assert.match(editFormHost, /\broute-embedded="{{true}}"/);
   assert.match(editFormHost, /\bstyle="display: block; width: 100%; height: 100%;"/);
   assert.doesNotMatch(editFormHost, /\bexternal-date-time-picker/);
-  assert.match(typePickerHost, /\bid="qaActivityTypePickerSheet"/);
+  assert.match(coverPickerHost, /\bid="qaActivityCoverPickerSheet"/);
   assert.match(dateTimePickerHost, /\bid="qaDateTimePickerSheet"/);
   assert.doesNotMatch(listWxml, /\bid="qaActivityCreateDateTimePicker"/);
   assert.doesNotMatch(detailWxml, /\bid="qaEditDateTimePickerSheet"/);
+});
+
+test("edit activity cancellation uses the shared warning dialog before emitting the action", () => {
+  const componentDir = path.join(__dirname, "../components/activity-form-sheet");
+  const config = JSON.parse(fs.readFileSync(path.join(componentDir, "index.json"), "utf8"));
+  const wxml = fs.readFileSync(path.join(componentDir, "index.wxml"), "utf8");
+  const js = fs.readFileSync(path.join(componentDir, "index.js"), "utf8");
+
+  assert.equal(config.usingComponents["create-access-dialog"], "../create-access-dialog/index");
+  assert.match(wxml, /<create-access-dialog[\s\S]*?id="qaCancelActivityDialog"[\s\S]*?bindconfirm="confirmCancelActivity"/);
+  assert.match(js, /onCancelActivity\(\)[\s\S]*?selectComponent\("#qaCancelActivityDialog"\)[\s\S]*?title:\s*"确认取消活动？"[\s\S]*?confirmText:\s*"确认取消"[\s\S]*?confirmBehavior:\s*"emit"/);
+  assert.match(js, /confirmCancelActivity\(\)[\s\S]*?this\.triggerEvent\("cancelactivity"\)/);
 });

@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
+import pytest
+
 from app.models import Activity, ActivityWeatherSnapshot, User
+from app.services import activity_weather_service
 from app.services.activity_weather_service import (
     ATTRIBUTION,
     ActivityWeatherRefreshService,
@@ -13,6 +16,11 @@ from app.services.activity_weather_service import (
 )
 
 NOW = datetime(2026, 9, 4, 10, 0, 0)
+
+
+@pytest.fixture(autouse=True)
+def freeze_weather_clock(monkeypatch) -> None:
+    monkeypatch.setattr(activity_weather_service, "app_now", lambda: NOW)
 
 
 def make_activity(
@@ -162,26 +170,8 @@ def test_activity_detail_serializes_available_weather_date(client, db_session, a
     assert response.json()["weather"]["temperature"] == 24
 
 
-def test_legacy_weather_endpoint_only_reads_persisted_snapshot(client, db_session, admin_user) -> None:
-    activity = make_activity(db_session, admin_user)
-    snapshot = ensure_weather_snapshot(db_session, activity, now=NOW)
-    snapshot.status = "available"
-    snapshot.temperature = 24
-    snapshot.condition = "晴"
-    snapshot.icon_code = "100"
-    snapshot.last_success_at = NOW
-    snapshot.valid_until = NOW + timedelta(hours=6)
-    db_session.commit()
-
-    response = client.get(
-        "/api/v1/weather/activity",
-        params={"longitude": 116.40741, "latitude": 39.90421, "date": "2026-09-05"},
-    )
-
-    assert response.status_code == 200
-    assert response.json()["available"] is True
-    assert response.json()["temperature"] == 24
-    assert response.json()["condition"] == "晴"
+def test_legacy_weather_endpoint_is_not_exposed(client) -> None:
+    assert "/api/v1/weather/activity" not in client.app.openapi()["paths"]
 
 
 def test_refresh_deduplicates_same_location_and_keeps_weather_when_air_quality_fails(db_session, admin_user) -> None:

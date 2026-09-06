@@ -2,5 +2,8 @@
   "renderer": "skyline",
   "componentFramework": "glass-easel",
   "navigationStyle": "custom",
-  "disableScroll": true
+  "disableScroll": true,
+  "usingComponents": {
+    "create-access-dialog": "../../components/create-access-dialog/index"
+  }
 }

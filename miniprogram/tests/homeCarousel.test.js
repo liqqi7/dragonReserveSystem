@@ -10,6 +10,7 @@ const pageConfig = JSON.parse(fs.readFileSync(path.join(pageDir, "activity_list.
 const detailConfig = JSON.parse(fs.readFileSync(path.join(__dirname, "../pages/activity_detail/activity_detail.json"), "utf8"));
 const appConfig = JSON.parse(fs.readFileSync(path.join(__dirname, "../app.json"), "utf8"));
 const projectConfig = JSON.parse(fs.readFileSync(path.join(__dirname, "../../project.config.json"), "utf8"));
+const appJs = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
 const groups = ["joined", "accepting", "notStarted", "ended"];
 
 test("activity cards use Skyline open-container for native card-to-page transitions", () => {
@@ -24,7 +25,7 @@ test("activity cards use Skyline open-container for native card-to-page transiti
   assert.equal(smallCardContainers.length, 3);
   assert.ok(smallCardContainers.every((container) => container.includes('closed-color="transparent"')));
   assert.ok(smallCardContainers.every((container) => container.includes('closed-border-radius="0"')));
-  assert.equal((wxml.match(/class="small-card-content home-card-entrance home-card-entrance--\{\{cardEntranceState\}\}"/g) || []).length, 3);
+  assert.equal((wxml.match(/class="small-card-layout home-card-entrance home-card-entrance--\{\{item\._id == createdCardEntranceId \? createdCardEntranceState : cardEntranceState\}\}"/g) || []).length, 3);
   assert.match(wxml, /<view[\s\S]*?class="large-card-wrap home-card-entrance[^\"]*"[\s\S]*?<text class="card-datetime-label">[\s\S]*?<open-container[\s\S]*?class="large-card-transition"[\s\S]*?closed-color="transparent"/);
 
   assert.equal(projectConfig.setting.skylineRenderEnable, true);
@@ -53,6 +54,12 @@ test("home carousels use native Skyline swiper paging", () => {
   assert.match(js, /group === "ended" && this\.data\.endedHasMore && current === endedCount/);
 });
 
+test("home activity refresh stays silent without a global loading overlay", () => {
+  assert.doesNotMatch(js, /title:\s*"加载中\.\.\."/);
+  assert.doesNotMatch(js, /skipPullOverlayLoading/);
+  assert.match(js, /loadActivityList\(options = \{\}\)[\s\S]*?activityService\.listActivities\(\)/);
+});
+
 test("home shell paints before the delayed per-card entrance starts", () => {
   const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");
 
@@ -60,7 +67,7 @@ test("home shell paints before the delayed per-card entrance starts", () => {
   assert.match(js, /onReady\(\)\s*\{[\s\S]*this\._homeFirstFrameReady\s*=\s*true[\s\S]*Date\.now\(\) \+ COLD_START_CARD_ENTRANCE_DELAY_MS[\s\S]*this\._scheduleColdStartCardEntrance\(\)/);
   assert.match(js, /_prepareColdStartCardPresentation\(groupedActivities\)/);
   assert.match(js, /this\._pendingColdStartGroupedActivities\s*=\s*groupedActivities/);
-  assert.match(js, /groupedActivities:\s*this\.data\.groupedActivities,[\s\S]*cardEntranceState:\s*"idle"/);
+  assert.match(js, /_prepareColdStartCardPresentation\(groupedActivities\)[\s\S]*?groupedActivities,[\s\S]*?cardEntranceState:\s*"pending"/);
   assert.match(js, /_scheduleColdStartCardEntrance\(\)/);
   assert.match(js, /COLD_START_CARD_ENTRANCE_DELAY_MS\s*=\s*400/);
   assert.match(js, /COLD_START_CARD_ENTRANCE_FRAME_MS\s*=\s*17/);
@@ -72,15 +79,44 @@ test("home shell paints before the delayed per-card entrance starts", () => {
   assert.match(wxml, /wx:if="\{\{groupSectionVisibility\.notStarted\}\}"/);
   assert.match(wxml, /wx:if="\{\{groupSectionVisibility\.ended\}\}"/);
   assert.match(js, /_revealColdStartCards\(\)/);
+  assert.match(js, /_coldStartGlassPendingIds[\s\S]*?largeCardGlassImageUrl/);
+  assert.match(js, /_loadedCardGlassUrls/);
   assert.match(js, /this\.setData\(\{ groupedActivities, cardEntranceState:\s*"pending" \}/);
+  assert.match(appJs, /homeTabEntrancePending:\s*true/);
+  assert.match(js, /this\._coldStartTabEntrancePending\s*=\s*true/);
+  assert.doesNotMatch(js, /!this\._hasRenderableCards\(groupedActivities\)/);
+  assert.match(js, /接口失败或列表为空[\s\S]*?this\._pendingColdStartGroupedActivities\s*=\s*this\.data\.groupedActivities[\s\S]*?this\._scheduleColdStartCardEntrance\(\)/);
+  assert.match(js, /homeTabEntrancePending\s*=\s*false[\s\S]*?_setTabBarHidden\(false, \{ animate:\s*true \}\)[\s\S]*?const enter = \(\) =>/);
   assert.match(js, /setTimeout\([\s\S]*cardEntranceState:\s*"entered"[\s\S]*COLD_START_CARD_ENTRANCE_FRAME_MS\)/);
-  assert.equal((wxml.match(/home-card-entrance--\{\{cardEntranceState\}\}/g) || []).length, 4);
-  assert.equal((wxml.match(/style="transition-delay: \{\{index \* cardEntranceStaggerMs\}\}ms;"/g) || []).length, 4);
-  assert.match(wxml, /class="large-card-wrap home-card-entrance home-card-entrance--\{\{cardEntranceState\}\}"/);
-  assert.equal((wxml.match(/class="small-card-content home-card-entrance home-card-entrance--\{\{cardEntranceState\}\}"/g) || []).length, 3);
+  assert.equal((wxml.match(/home-card-entrance--\{\{item\._id == createdCardEntranceId \? createdCardEntranceState : cardEntranceState\}\}/g) || []).length, 4);
+  assert.equal((wxml.match(/style="transition-delay: \{\{item\._id == createdCardEntranceId \? 0 : index \* cardEntranceStaggerMs\}\}ms;"/g) || []).length, 4);
+  assert.match(wxml, /class="large-card-wrap home-card-entrance home-card-entrance--\{\{item\._id == createdCardEntranceId \? createdCardEntranceState : cardEntranceState\}\}"/);
+  assert.equal((wxml.match(/class="small-card-layout home-card-entrance home-card-entrance--\{\{item\._id == createdCardEntranceId \? createdCardEntranceState : cardEntranceState\}\}"/g) || []).length, 3);
   assert.match(wxss, /\.home-card-entrance\s*\{[^}]*opacity:\s*1;[^}]*transform:\s*translateY\(0\);[^}]*transition:\s*transform 560ms cubic-bezier\(0\.2, 0\.8, 0\.2, 1\), opacity 440ms ease-out;/s);
   assert.match(wxss, /\.home-card-entrance--pending\s*\{[^}]*opacity:\s*0;[^}]*transform:\s*translateY\(23\.08rpx\);/s);
   assert.doesNotMatch(wxss, /will-change/);
+});
+
+test("a newly created activity is inserted immediately and animates without replaying old cards", () => {
+  assert.match(js, /activityService\.createActivity\(payload\)[\s\S]*?\.then\(\(createdActivity\) =>[\s\S]*?this\.insertCreatedActivity\(createdActivity\)/);
+  assert.match(js, /insertCreatedActivity\(rawActivity\)[\s\S]*?this\.processActivityList\(\[rawActivity\], new Date\(\)\)/);
+  assert.match(js, /insertCreatedActivity\(rawActivity\)[\s\S]*?const activityList = \[[\s\S]*?createdActivity,[\s\S]*?\.filter/);
+  assert.match(js, /createdCardEntranceId:\s*createdActivity\._id,[\s\S]*?createdCardEntranceState:\s*"pending"/);
+  assert.match(js, /onCreateFormAfterLeave\(\)[\s\S]*?this\._revealCreatedCard\(\)/);
+  assert.match(js, /_revealCreatedCard\(\)[\s\S]*?_createdCardDrawerDismissed\s*=\s*true[\s\S]*?_tryRevealCreatedCard\(\)/);
+  assert.match(js, /_tryRevealCreatedCard\(\)[\s\S]*?!this\._createdCardDrawerDismissed[\s\S]*?!this\._createdCardGlassReady[\s\S]*?createdCardEntranceState:\s*"entered"/);
+  assert.match(js, /CREATED_CARD_ENTRANCE_DURATION_MS\s*=\s*560/);
+  assert.equal((wxml.match(/item\._id == createdCardEntranceId \? createdCardEntranceState : cardEntranceState/g) || []).length, 4);
+  assert.equal((wxml.match(/item\._id == createdCardEntranceId \? 0 : index \* cardEntranceStaggerMs/g) || []).length, 4);
+});
+
+test("a newly created large card waits for its glass bitmap before entering", () => {
+  assert.match(js, /const waitsForGlass = createdGroup === "joined" &&[\s\S]*?!!createdActivity\.largeCardGlassImageUrl/);
+  assert.match(js, /this\._createdCardGlassReady = !waitsForGlass/);
+  assert.doesNotMatch(js, /CREATED_CARD_GLASS_WAIT_TIMEOUT_MS/);
+  assert.match(js, /onCardGlassLoaded\(e\)[\s\S]*?_markCreatedCardGlassReady/);
+  assert.match(js, /onCardGlassError\(e\)[\s\S]*?_markCreatedCardGlassReady/);
+  assert.match(wxml, /class="glass-static-blur-image"[\s\S]*?bindload="onCardGlassLoaded"[\s\S]*?binderror="onCardGlassError"[\s\S]*?data-activity-id="\{\{item\._id\}\}"/);
 });
 
 test("ended load-more strip stays hidden until ended cards are rendered", () => {
@@ -101,6 +137,27 @@ test("cards do not apply native press opacity during horizontal paging", () => {
   assert.doesNotMatch(fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8"), /\.card-press/);
 });
 
+test("home large and small cards no longer render activity type badges", () => {
+  const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");
+
+  assert.doesNotMatch(wxml, /card-type-label|typeBadgeLabel|showTypeBadge/);
+  assert.doesNotMatch(wxss, /\.card-type-label(?:-sm)?\s*\{/);
+});
+
+test("small card shadow is outside the rounded clipping layer", () => {
+  const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");
+  const shadowLayerCount = (wxml.match(/class="small-card-shadow"/g) || []).length;
+
+  assert.equal(shadowLayerCount, 3);
+  assert.equal((wxml.match(/class="small-card-layout[^>]*>[\s\S]*?<view class="small-card-shadow"[^>]*><\/view>[\s\S]*?<open-container/g) || []).length, 3);
+  assert.match(wxss, /\.small-card-layout\s*\{[^}]*position:\s*relative;[^}]*overflow:\s*visible;/s);
+  assert.match(wxss, /\.small-card-shadow\s*\{[^}]*position:\s*absolute;[^}]*overflow:\s*visible;[^}]*box-shadow:/s);
+  assert.match(wxss, /\.small-card\s*\{[^}]*overflow:\s*hidden;[^}]*box-shadow:\s*none;/s);
+  assert.equal((wxml.match(/previous-margin="26\.92rpx"/g) || []).length, 3);
+  assert.equal((wxml.match(/next-margin="353\.85rpx"/g) || []).length, 3);
+  assert.match(wxss, /\.small-card-slide\s*\{[^}]*padding:\s*23\.08rpx 11\.54rpx 38\.46rpx;/s);
+});
+
 test("home sections match the prototype title and module spacing", () => {
   const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");
 
@@ -111,12 +168,17 @@ test("home sections match the prototype title and module spacing", () => {
   assert.match(wxss, /\.group-section\s*\{[^}]*margin-bottom:\s*0;/s);
   assert.match(wxss, /\.group-header\s*\{[^}]*height:\s*53\.85rpx;/s);
   assert.match(wxss, /\.group-title\s*\{[^}]*font-size:\s*38\.46rpx;[^}]*font-weight:\s*700;[^}]*line-height:\s*53\.85rpx;/s);
-  assert.match(wxss, /\.group-create-btn\s*\{[^}]*width:\s*184\.62rpx;[^}]*height:\s*65\.38rpx;[^}]*padding:\s*0;[^}]*border-radius:\s*32\.69rpx;/s);
-  assert.match(wxss, /\.group-create-text\s*\{[^}]*font-size:\s*26\.92rpx;[^}]*font-weight:\s*600;[^}]*white-space:\s*nowrap;/s);
+  assert.match(wxml, /<view wx:if="\{\{groupSectionVisibility\.joined\}\}" class="group-section joined-group-section">/);
+  assert.doesNotMatch(wxml, /group-create-btn|添加活动/);
+  assert.doesNotMatch(wxss, /\.group-create-(?:btn|icon|text)\b/);
+  assert.match(js, /hasCreateActivityPermission\(\)\s*\{[\s\S]*?role === "user" \|\| role === "admin"/);
+  assert.match(js, /consumePendingCreateActivity\(\)\s*\{[\s\S]*?pendingOpenCreateActivity = false[\s\S]*?showCreateModal\(\)/);
+  assert.match(js, /showCreateModal\(\)\s*\{\s*if \(!this\.hasCreateActivityPermission\(\)\) return;/);
+  assert.match(js, /_setTabBarHidden\(!!\([\s\S]*?app\.globalData\.pendingOpenCreateActivity[\s\S]*?\)\);/);
   assert.match(wxss, /\.large-cards-swiper\s*\{[^}]*height:\s*823\.07rpx;/s);
   assert.match(wxss, /\.small-cards-swiper\s*\{[^}]*height:\s*488\.46rpx;/s);
   assert.match(wxss, /\.large-card-slide\s*\{[^}]*padding:\s*23\.08rpx 23\.08rpx 38\.46rpx 0;/s);
-  assert.match(wxss, /\.small-card-slide\s*\{[^}]*padding:\s*23\.08rpx 23\.08rpx 38\.46rpx 0;/s);
+  assert.match(wxss, /\.small-card-slide\s*\{[^}]*padding:\s*23\.08rpx 11\.54rpx 38\.46rpx;/s);
   assert.match(wxss, /\.small-card-wrap\s*\{[^}]*display:\s*block;[^}]*width:\s*346\.15rpx;[^}]*background-color:\s*transparent;[^}]*overflow:\s*visible;/s);
   assert.match(wxss, /\.small-card-content\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*gap:\s*15\.38rpx;[^}]*width:\s*346\.15rpx;[^}]*overflow:\s*visible;/s);
   assert.match(wxss, /\.small-card-info\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*padding:\s*0;[^}]*background-color:\s*transparent;/s);
@@ -132,7 +194,8 @@ test("large card matches the prototype geometry and typography", () => {
   assert.match(wxss, /\.large-card-wrap\s*\{[^}]*gap:\s*15\.38rpx;[^}]*background-color:\s*transparent;/s);
   assert.match(wxss, /\.large-card-transition\s*\{[^}]*width:\s*530\.77rpx;[^}]*height:\s*707\.69rpx;[^}]*overflow:\s*visible;[^}]*border-radius:\s*30\.77rpx;[^}]*background-color:\s*transparent;[^}]*box-shadow:\s*0 11\.54rpx 38\.46rpx rgba\(0, 0, 0, 0\.10\);/s);
   assert.match(wxss, /\.large-card\s*\{[^}]*box-shadow:\s*none;/s);
-  assert.match(wxss, /\.small-card\s*\{[^}]*width:\s*346\.15rpx;[^}]*height:\s*346\.15rpx;[^}]*border-radius:\s*23\.08rpx;[^}]*overflow:\s*hidden;[^}]*box-shadow:\s*0 11\.54rpx 38\.46rpx rgba\(0, 0, 0, 0\.10\);/s);
+  assert.match(wxss, /\.small-card-shadow\s*\{[^}]*width:\s*346\.15rpx;[^}]*height:\s*346\.15rpx;[^}]*border-radius:\s*23\.08rpx;[^}]*overflow:\s*visible;[^}]*box-shadow:\s*0 11\.54rpx 38\.46rpx rgba\(0, 0, 0, 0\.10\);/s);
+  assert.match(wxss, /\.small-card\s*\{[^}]*width:\s*346\.15rpx;[^}]*height:\s*346\.15rpx;[^}]*border-radius:\s*23\.08rpx;[^}]*overflow:\s*hidden;[^}]*box-shadow:\s*none;/s);
   const datetimeRule = wxss.match(/\.card-datetime-label\s*\{([^}]*)\}/);
   assert.ok(datetimeRule);
   assert.match(datetimeRule[1], /font-size:\s*26\.92rpx;/);
@@ -160,20 +223,30 @@ test("large-card meta icons use the prototype Lucide assets", () => {
   assert.match(wxml, /class="large-card large-card--\{\{item\.activityType\}\}-\{\{item\.activityStyleKey\}\}"/);
 });
 
+test("home large and small cards both use the original cover image", () => {
+  assert.match(js, /activity\.smallCardBgImageUrl = selectedStyle \? \(selectedStyle\.largeCardBgImageUrl \|\| ""\) : ""/);
+  assert.match(js, /activity\.largeCardBgImageUrl = activity\.activityCover\.imageUrl;[\s\S]*?activity\.smallCardBgImageUrl = activity\.activityCover\.imageUrl;/);
+  assert.doesNotMatch(js, /activity\.smallCardBgImageUrl = activity\.activityCover\.thumbnailUrl/);
+  assert.match(wxml, /class="card-image-bg"[\s\S]*?src="\{\{item\.smallCardBgImageUrl\}\}"[\s\S]*?mode="aspectFill"/);
+});
+
 test("large-card glass uses a pre-rendered static image with the black gradient", () => {
   const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");
   const glassBottomRule = wxss.match(/\.glass-bottom\s*\{([^}]*)\}/);
   const glassSection = wxss.slice(wxss.indexOf("/* ── 大卡片毛玻璃底部 ── */"), wxss.indexOf("/* ── 自定义底部 Tab ── */"));
 
   assert.ok(glassBottomRule, "glass-bottom rule should exist");
-  assert.match(js, /largeCardGlassImageUrl: buildCardGlassImageUrl\(key, styleKey\)/);
+  assert.doesNotMatch(js, /buildCardGlassImageUrl|\/activities\/type-styles\//);
   assert.match(js, /activity\.largeCardGlassImageUrl = selectedStyle/);
+  assert.match(js, /largeCardGlassImageUrl: String\(rawCover\.large_card_glass_image_url \|\| ""\)/);
+  assert.match(js, /activity\.largeCardGlassImageUrl = activity\.activityCover\.largeCardGlassImageUrl \|\| ""/);
   assert.match(wxml, /class="glass-bottom"[\s\S]*class="glass-static-blur-layer"/);
   assert.match(wxml, /wx:if="\{\{item\.largeCardGlassImageUrl\}\}"/);
   assert.match(wxml, /class="glass-static-blur-image"[\s\S]*src="\{\{item\.largeCardGlassImageUrl\}\}"/);
   assert.match(wxml, /class="glass-tint-layer"/);
   assert.match(wxml, /class="glass-content"/);
   assert.match(glassSection, /\.glass-static-blur-layer\s*\{[\s\S]*top: 0;[\s\S]*bottom: 0;[\s\S]*overflow: hidden;[\s\S]*border-bottom-left-radius: inherit;/);
+  assert.match(glassSection, /\.glass-static-blur-layer\s*\{[\s\S]*background: rgba\(31, 41, 55, 0\.58\);/);
   assert.doesNotMatch(glassSection, /-webkit-mask-image|isolation:\s*isolate/);
   assert.match(glassSection, /\.glass-static-blur-stage\s*\{[\s\S]*left: 0;[\s\S]*bottom: 0;[\s\S]*width: 530\.77rpx;[\s\S]*height: 707\.69rpx;/);
   assert.match(glassSection, /background: linear-gradient\(180deg, rgba\(0,0,0,0\.10\) 0%, rgba\(0,0,0,0\.30\) 100%\)/);

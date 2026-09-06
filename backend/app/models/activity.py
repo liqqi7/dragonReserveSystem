@@ -31,6 +31,11 @@ class Activity(Base):
     signup_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     activity_type: Mapped[Optional[str]] = mapped_column(String(32), nullable=True, default=None)
     activity_style_key: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, default=None)
+    activity_cover_id: Mapped[str] = mapped_column(
+        String(96),
+        nullable=False,
+        server_default="aleksey-rico-001",
+    )
     location_name: Mapped[str] = mapped_column(String(255), nullable=False, default="")
     location_address: Mapped[str] = mapped_column(String(255), nullable=False, default="")
     location_latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)

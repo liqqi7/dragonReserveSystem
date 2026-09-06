@@ -1,4 +1,4 @@
-<view id="qaActivityFormSurface" class="activity-sheet-panel {{isEdit ? 'activity-sheet-panel--edit' : 'activity-sheet-panel--create'}} {{routeEmbedded ? 'activity-sheet-panel--route-embedded' : ''}} {{pickerVisible || activityTypePickerVisible ? 'activity-sheet-panel--covered' : ''}}" style="height: {{panelHeightRpx}}rpx;">
+<view id="qaActivityFormSurface" class="activity-sheet-panel {{isEdit ? 'activity-sheet-panel--edit' : 'activity-sheet-panel--create'}} {{routeEmbedded ? 'activity-sheet-panel--route-embedded' : ''}} {{pickerVisible || coverPickerVisible ? 'activity-sheet-panel--covered' : ''}}" style="height: {{panelHeightRpx}}rpx;">
   <view class="activity-sheet-header">
     <text class="activity-sheet-title">{{title}}</text>
     <view class="activity-sheet-close" bindtap="onClose" aria-role="button" aria-label="关闭">
@@ -37,18 +37,11 @@
       </view>
 
       <view class="bento-pair-row">
-        <view wx:if="{{!isEdit}}" class="bento-card bento-card--half compact-card compact-select-card" hover-class="compact-select-card--pressed" bindtap="openActivityTypePicker" aria-role="button" aria-label="选择活动类型">
-          <text class="bento-label bento-label--strong">活动类型</text>
+        <view class="bento-card bento-card--half compact-card compact-select-card" hover-class="compact-select-card--pressed" bindtap="openCoverPicker" aria-role="button" aria-label="选择活动封面">
+          <text class="bento-label bento-label--strong">活动封面</text>
           <view class="compact-select-row">
-            <text class="compact-value {{activityTypeOptionLabels[activityTypeIndex] ? 'compact-value--filled create-completed-text' : ''}}">{{activityTypeOptionLabels[activityTypeIndex] || '请选择'}}</text>
+            <text class="compact-value {{form.activityCoverId ? 'compact-value--filled create-completed-text' : ''}}">{{form.activityCoverId ? '已选择' : '请选择'}}</text>
             <image class="activity-type-chevron" src="/images/icon-chevron-down.svg" mode="aspectFit" />
-          </view>
-        </view>
-
-        <view wx:if="{{isEdit}}" class="bento-card bento-card--half compact-card compact-switch-card">
-          <text class="bento-label bento-label--strong">允许报名</text>
-          <view class="prototype-switch {{form.signupEnabled ? 'prototype-switch--checked' : ''}}" bindtap="onSwitchTap" data-field="signupEnabled" aria-role="switch" aria-checked="{{form.signupEnabled}}">
-            <view class="prototype-switch-thumb"></view>
           </view>
         </view>
 

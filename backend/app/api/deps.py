@@ -73,3 +73,11 @@ def require_admin(user: User = Depends(get_current_user)) -> User:
     if user.role != "admin":
         raise PermissionDeniedError("Admin permission required")
     return user
+
+
+def require_activity_create_permission(user: User = Depends(get_current_user)) -> User:
+    """Allow authenticated ordinary users and admins to create v2 activities."""
+
+    if user.role not in {"user", "admin"}:
+        raise PermissionDeniedError("Activity creation permission required")
+    return user

@@ -119,7 +119,7 @@ test("activity form embeds create and edit pickers in one full-height container"
   const formWxml = read("components/activity-form-sheet/index.wxml");
   const listWxml = read("pages/activity_list/activity_list.wxml");
   const detailWxml = read("pages/activity_detail/activity_detail.wxml");
-  assert.match(formWxml, /<activity-type-picker-sheet[\s\S]*visible="{{activityTypePickerVisible}}"/);
+  assert.match(formWxml, /<activity-cover-picker-sheet[\s\S]*visible="{{coverPickerVisible}}"/);
   assert.match(formWxml, /<date-time-picker-sheet[\s\S]*visible="{{pickerVisible}}"/);
   assert.match(formWxml, /bottom-offset-rpx="{{routeEmbedded \? 323\.08 : 0}}"/);
   assert.match(listWxml, /<page-container[\s\S]*id="qaActivityCreateContainer"[\s\S]*show="{{showCreateForm}}"[\s\S]*position="bottom"/);
@@ -137,16 +137,18 @@ test("create secondary pickers stay on the same page without drawer z-index", ()
   const formJs = read("components/activity-form-sheet/index.js");
   const listWxml = read("pages/activity_list/activity_list.wxml");
   const datePickerWxml = read("components/date-time-picker-sheet/index.wxml");
-  const typePickerWxml = read("components/activity-type-picker-sheet/index.wxml");
+  const coverPickerWxml = read("components/activity-cover-picker-sheet/index.wxml");
   assert.doesNotMatch(formJs, /suspended\(suspended\)/);
   assert.match(formWxml, /<date-time-picker-sheet[\s\S]*wx:if="{{!externalDateTimePicker}}"/);
-  assert.match(formWxml, /<activity-type-picker-sheet[\s\S]*wx:if="{{!externalActivityTypePicker}}"/);
+  assert.match(formWxml, /<activity-cover-picker-sheet[\s\S]*visible="{{coverPickerVisible}}"/);
   assert.match(formWxml, /<date-time-picker-sheet[\s\S]*embedded="{{routeEmbedded}}"/);
-  assert.match(formWxml, /<activity-type-picker-sheet[\s\S]*embedded="{{routeEmbedded}}"/);
+  assert.match(formWxml, /<activity-cover-picker-sheet[\s\S]*embedded="{{routeEmbedded}}"/);
   assert.match(datePickerWxml, /<block wx:if="{{embedded && containerRendered}}">/);
-  assert.match(typePickerWxml, /<block wx:if="{{embedded && containerRendered}}">/);
+  assert.match(coverPickerWxml, /<block wx:if="{{embedded && containerRendered}}">/);
+  assert.doesNotMatch(coverPickerWxml, /cover-sheet-embedded-root--suspended/);
+  assert.match(coverPickerWxml, /show="{{containerVisible}}"/);
   assert.match(datePickerWxml, /picker-sheet-embedded-panel \{\{containerVisible \? 'picker-sheet-embedded-panel--visible' : ''\}\}/);
-  assert.match(typePickerWxml, /type-sheet-embedded-panel \{\{containerVisible \? 'type-sheet-embedded-panel--visible' : ''\}\}/);
+  assert.match(coverPickerWxml, /cover-sheet-embedded-panel \{\{containerVisible \? 'cover-sheet-embedded-panel--visible' : ''\}\}/);
   assert.match(formWxml, /class="activity-form-sheet-dismiss-area"/);
   assert.match(formWxml, /activity-form-sheet-root--route-embedded/);
   assert.match(read("components/activity-form-sheet/index.wxss"), /\.activity-form-sheet-root--route-embedded\s*\{[^}]*height:\s*100vh;/s);
@@ -154,7 +156,7 @@ test("create secondary pickers stay on the same page without drawer z-index", ()
   assert.doesNotMatch(listWxml, /qaActivityCreateDateTimePicker/);
   assert.doesNotMatch(listWxml, /qaActivityCreateTypePicker/);
   assert.doesNotMatch(datePickerWxml, /z-index="/);
-  assert.doesNotMatch(typePickerWxml, /z-index="/);
+  assert.doesNotMatch(coverPickerWxml, /z-index="/);
 });
 
 test("home opens the create form on one page, hides Tab during its lifecycle, and does not use a route", () => {
@@ -169,6 +171,8 @@ test("home opens the create form on one page, hides Tab during its lifecycle, an
   assert.match(listWxml, /id="qaActivityCreateContainer"[\s\S]*?bind:afterleave="onCreateFormAfterLeave"/);
   assert.match(listJs, /showCreateModal\(\)\s*\{[\s\S]*?_setTabBarHidden\(true\)/);
   assert.match(listJs, /onCreateFormAfterLeave\(\)\s*\{[\s\S]*?_setTabBarHidden\(false, \{ animate: true \}\)/);
-  assert.match(listJs, /onShow\(\)\s*\{[\s\S]*?_setTabBarHidden\(!!\(this\.data\.createFormContainerRendered \|\| this\.data\.showCreateForm\)\)/);
+  assert.match(listJs, /onShow\(\)\s*\{[\s\S]*?_setTabBarHidden\(!!\([\s\S]*?this\.data\.createFormContainerRendered[\s\S]*?this\.data\.showCreateForm[\s\S]*?this\._coldStartTabEntrancePending[\s\S]*?\)\)/);
+  assert.match(listJs, /onHide\(\)\s*\{[\s\S]*?keepTabBarHidden\s*=\s*!!\([\s\S]*?this\.data\.createFormContainerRendered[\s\S]*?this\.data\.showCreateForm[\s\S]*?this\._coldStartTabEntrancePending[\s\S]*?\)[\s\S]*?_setTabBarHidden\(keepTabBarHidden\)/);
+  assert.match(listJs, /_setTabBarHidden\(hidden,[\s\S]*?app\.globalData\.tabBarHidden\s*=\s*nextHidden/);
   assert.doesNotMatch(listJs, /_syncTabBarVisibility/);
 });

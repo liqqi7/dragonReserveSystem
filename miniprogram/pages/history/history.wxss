@@ -55,7 +55,7 @@ page { background: #ffffff; overflow: hidden; }
 .pigeon-summary-content { display: flex; min-height: 0; flex: 1; gap: 15.38rpx; align-items: center; }
 .pigeon-copy { display: flex; min-width: 0; height: 100%; flex: 1; gap: 11.54rpx; flex-direction: column; justify-content: center; }
 .pigeon-label { color: #c94f00; font-size: 23.08rpx; font-weight: 700; line-height: 34.62rpx; }
-.pigeon-description { display: flex; flex-direction: column; color: #9a7255; font-size: 19.23rpx; font-weight: 500; line-height: 28.85rpx; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
+.pigeon-description { display: flex; flex-direction: column; color: #9a7255; font-size: 19.23rpx; font-weight: 500; line-height: 28.85rpx; }
 .pigeon-description-line { display: block; height: 28.85rpx; line-height: 28.85rpx; }
 .pigeon-ring { display: flex; box-sizing: border-box; width: 215.38rpx; height: 215.38rpx; flex: none; align-items: center; justify-content: center; border-radius: 50%; box-shadow: 0 7.69rpx 23.08rpx rgba(184,74,0,.1); }
 .pigeon-ring-inner { display: flex; width: 138.46rpx; height: 138.46rpx; flex-direction: column; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,.95); }

@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.services.activity_type_style_service import get_allowed_activity_types, normalize_activity_type_key
 
 
-ACTIVITY_STATUSES = {"未开始", "进行中", "已结束", "已取消", "已删除", "已流局"}
+ACTIVITY_STATUSES = {"未开始", "进行中", "已结束", "已取消", "已流局"}
 MAX_ACTIVITY_NAME_LENGTH = 10
 MAX_ACTIVITY_REMARK_LENGTH = 120
 

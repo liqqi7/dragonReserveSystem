@@ -26,17 +26,6 @@ class ActivityRankingResponse(BaseModel):
     heatmap: list[ActivityHeatmapDayResponse]
 
 
-class PigeonStatResponse(BaseModel):
-    """Signup/checkin summary for one user."""
-
-    user_id: int
-    nickname: str
-    signup_count: int
-    checkin_count: int
-    pigeon_count: int
-    pigeon_rate: float
-
-
 class PigeonRankingResponse(BaseModel):
     """Pigeon ranking item returned by the new ranking endpoint."""
 
@@ -47,9 +36,3 @@ class PigeonRankingResponse(BaseModel):
     checkin_count: int
     pigeon_count: int
     pigeon_rate: float
-
-
-class HistorySummaryResponse(BaseModel):
-    """Small summary displayed above the history ranking."""
-
-    ended_activity_count: int

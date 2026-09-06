@@ -286,7 +286,6 @@ page {
 }
 
 .day-title-text {
-  font-family: "Noto Sans SC", "PingFang SC", sans-serif;
   font-size: 23.07692rpx;
   line-height: 23.07692rpx;
   font-weight: 400;
@@ -294,7 +293,6 @@ page {
 }
 
 .time-axis-head-text {
-  font-family: "Noto Sans SC", "PingFang SC", sans-serif;
   font-size: 19.23077rpx;
   line-height: 19.23077rpx;
   font-weight: 400;

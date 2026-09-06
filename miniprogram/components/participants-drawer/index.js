@@ -1,9 +1,8 @@
 const {
-  ACTION_WIDTH_RPX,
-  ACTION_AREA_WIDTH_RPX,
   SWIPE_OPEN_THRESHOLD_RATIO,
   clamp,
   getSwipeSettledState,
+  getActionMetrics,
   formatCheckinParts,
   buildProgressView,
   getMaxHeightRpx
@@ -35,6 +34,7 @@ Component({
     participantCount: { type: Number, value: 0 },
     checkinCount: { type: Number, value: 0 },
     maxParticipants: { type: Number, value: null },
+    canManage: { type: Boolean, value: false },
     isAdmin: { type: Boolean, value: false },
     safeBottomRpx: { type: Number, value: 0 }
   },
@@ -45,7 +45,8 @@ Component({
     drawerHeightRpx: 984.61,
     rows: [],
     memberListScrollEnabled: true,
-    actionWidthRpx: ACTION_AREA_WIDTH_RPX,
+    actionOffsetRpx: 0,
+    actionAreaWidthRpx: 0,
     maxHeightRpx: 1384.62,
     bodyMaxHeightRpx: 1253.85,
     participantCountText: "0",
@@ -67,7 +68,7 @@ Component({
     participants(value) {
       this.setRows(value);
     },
-    isAdmin() {
+    "canManage, isAdmin"() {
       this.setRows(this.properties.participants || []);
     },
     "participantCount, checkinCount, maxParticipants"() {
@@ -129,6 +130,7 @@ Component({
     },
 
     setRows(participants, callback) {
+      const actionMetrics = getActionMetrics(this.properties.canManage, this.properties.isAdmin);
       const rows = (Array.isArray(participants) ? participants : []).map((item, index) => {
         const row = item && typeof item === "object" ? item : { name: String(item || "未命名") };
         const checked = !!(row.checkedInAt || row.checkedInAtRaw);
@@ -146,13 +148,18 @@ Component({
           checkinDateText: checked ? parts.date : "—",
           checkinTimeText: checked ? parts.time : "—",
           checkinLocationText: checkinLocation || "—",
-          availableActions: this.properties.isAdmin ? (checked ? ["cancelcheckin", "remove"] : ["retrocheckin", "remove"]) : [],
+          availableActions: this.properties.canManage
+            ? (this.properties.isAdmin
+              ? (checked ? ["cancelcheckin", "remove"] : ["retrocheckin", "remove"])
+              : ["remove"])
+            : [],
           offsetX: 0,
           actionOpen: false
         };
       });
       this.setData({
         rows,
+        ...actionMetrics,
         drawerHeightRpx: getDrawerHeightRpx(
           rows.length,
           this.data.maxHeightRpx,
@@ -168,7 +175,7 @@ Component({
     onTouchStart(e) {
       const index = Number(e.currentTarget.dataset.index);
       const touch = e.touches && e.touches[0];
-      if (!Number.isFinite(index) || !touch || !this.properties.isAdmin) return;
+      if (!Number.isFinite(index) || !touch || !this.properties.canManage) return;
       const row = this.data.rows[index];
       if (!row) return;
       this.closeOpenRows(index);
@@ -184,7 +191,7 @@ Component({
     onTouchMove(e) {
       const gesture = this._gesture;
       const touch = e.touches && e.touches[0];
-      if (!gesture || !touch || !this.properties.isAdmin) return;
+      if (!gesture || !touch || !this.properties.canManage) return;
       const dx = touch.clientX - gesture.startX;
       const dy = touch.clientY - gesture.startY;
       if (gesture.horizontal === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
@@ -192,12 +199,13 @@ Component({
       }
       if (!gesture.horizontal) return;
       const dxRpx = dx * getRpxPerPx();
-      const next = clamp(gesture.startOffsetX + dxRpx, -ACTION_WIDTH_RPX, 0);
+      const actionOffsetRpx = Number(this.data.actionOffsetRpx) || 0;
+      const next = clamp(gesture.startOffsetX + dxRpx, -actionOffsetRpx, 0);
       // setData is asynchronous in the Mini Program runtime. Keep the latest
       // gesture offset locally so touchend never snaps from stale row data.
       gesture.currentOffsetX = next;
       const rows = this.data.rows.map((row, i) => i === gesture.index
-        ? { ...row, offsetX: next, actionOpen: Math.abs(next) >= ACTION_WIDTH_RPX * SWIPE_OPEN_THRESHOLD_RATIO }
+        ? { ...row, offsetX: next, actionOpen: Math.abs(next) >= actionOffsetRpx * SWIPE_OPEN_THRESHOLD_RATIO }
         : row);
       this.setData({ rows, memberListScrollEnabled: false });
     },
@@ -205,7 +213,7 @@ Component({
     onTouchEnd() {
       const gesture = this._gesture;
       this._gesture = null;
-      if (!gesture || gesture.horizontal !== true || !this.properties.isAdmin) {
+      if (!gesture || gesture.horizontal !== true || !this.properties.canManage) {
         if (!this.data.memberListScrollEnabled) this.setData({ memberListScrollEnabled: true });
         return;
       }
@@ -217,7 +225,11 @@ Component({
       const endOffsetX = Number.isFinite(gesture.currentOffsetX)
         ? gesture.currentOffsetX
         : (row.offsetX || 0);
-      const settledState = getSwipeSettledState(gesture.startOffsetX, endOffsetX);
+      const settledState = getSwipeSettledState(
+        gesture.startOffsetX,
+        endOffsetX,
+        this.data.actionOffsetRpx
+      );
       const rows = this.data.rows.map((item, index) => index === gesture.index
         ? { ...item, ...settledState }
         : item);
@@ -239,7 +251,8 @@ Component({
       const index = Number(e.currentTarget.dataset.index);
       const action = String(e.currentTarget.dataset.action || "");
       const row = this.data.rows[index];
-      if (!row || !action || !this.properties.isAdmin) return;
+      if (!row || !action || !this.properties.canManage) return;
+      if ((action === "retrocheckin" || action === "cancelcheckin") && !this.properties.isAdmin) return;
       this.closeOpenRows(index);
       this.triggerEvent(action, { id: row.id, name: row.name, row });
     },

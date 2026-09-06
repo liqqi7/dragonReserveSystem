@@ -1,6 +1,6 @@
 const app = getApp();
 const activityService = require("../../services/activity");
-const { getApiBaseUrl, resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
+const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
 const { createTraceId, logInfo, logError, summarizeError } = require("../../services/logger");
 const { enrichSingleActivity } = require("../../utils/activityEnrich");
 const { parseCreatedAtMs, orderParticipantsForRecentAvatarSlice } = require("../../utils/participantSort");
@@ -27,11 +27,11 @@ const DEFAULT_ACTIVITY_TYPE_KEY = "other";
 const CARD_MEDIA_DIAG_WARN_MS = 8000;
 const CARD_MEDIA_DIAG_ERROR_MS = 15000;
 const ENDED_ACTIVITY_PAGE_SIZE = 5;
-const CACHE_METADATA_TTL_MS = 60 * 1000;
 /** 须与 wxml 中 refresher-threshold 一致 */
 const MAIN_REFRESH_THRESHOLD_PX = 80;
 const COLD_START_CARD_ENTRANCE_DELAY_MS = 400;
 const COLD_START_CARD_ENTRANCE_FRAME_MS = 17;
+const CREATED_CARD_ENTRANCE_DURATION_MS = 560;
 const DEFAULT_ACTIVITY_TYPE_STYLES = [
   {
     key: "badminton",
@@ -180,12 +180,6 @@ function normalizeTypeKey(value) {
   return t;
 }
 
-function buildCardGlassImageUrl(typeKey, styleKey) {
-  const apiBaseUrl = String(getApiBaseUrl() || "").replace(/\/$/, "");
-  if (!apiBaseUrl || !typeKey || !styleKey) return "";
-  return `${apiBaseUrl}/activities/type-styles/${encodeURIComponent(typeKey)}/${encodeURIComponent(styleKey)}/glass-image?v=2`;
-}
-
 function buildTypeStyleMap(typeStyles) {
   const source = Array.isArray(typeStyles) && typeStyles.length > 0 ? typeStyles : DEFAULT_ACTIVITY_TYPE_STYLES;
   const map = {};
@@ -204,7 +198,7 @@ function buildTypeStyleMap(typeStyles) {
         showBadge: s.show_badge !== false,
         showAvatarCluster: s.show_avatar_cluster !== false,
         largeCardBgImageUrl: String(s.large_card_bg_image_url || ""),
-        largeCardGlassImageUrl: buildCardGlassImageUrl(key, styleKey),
+        largeCardGlassImageUrl: "",
         smallCardBgImageUrl: String(s.small_card_bg_image_url || ""),
         bgVideoUrl: s.bg_video_url ? String(s.bg_video_url) : ""
       };
@@ -324,8 +318,10 @@ function adaptActivity(item) {
   const participants = (item.participants || []).map(adaptParticipant);
   const startTime = formatDateTime(item.start_time);
   const rawType = item.activity_type;
+  const rawCover = item.activity_cover && typeof item.activity_cover === "object" ? item.activity_cover : null;
   return {
     _id: String(item.id),
+    createdBy: item.created_by != null ? String(item.created_by) : "",
     date: startTime.split(" ")[0] || "",
     name: item.name,
     status: item.status || "进行中",
@@ -342,6 +338,15 @@ function adaptActivity(item) {
     signupEnabled: item.signup_enabled !== false,
     activityType: rawType || "other",
     activityStyleKey: item.activity_style_key || "",
+    activityCoverId: item.activity_cover_id || (rawCover && rawCover.id) || "",
+    activityCover: rawCover ? {
+      id: String(rawCover.id || ""),
+      artistName: String(rawCover.artist_name || ""),
+      artistAvatarUrl: String(rawCover.artist_avatar_url || ""),
+      thumbnailUrl: String(rawCover.thumbnail_url || ""),
+      imageUrl: String(rawCover.image_url || ""),
+      largeCardGlassImageUrl: String(rawCover.large_card_glass_image_url || "")
+    } : null,
     _rawActivityType: rawType
   };
 }
@@ -396,10 +401,10 @@ Page({
     searchKeyword: "",
     selectedFilter: "我参与的",
     activityTypeStyles: DEFAULT_ACTIVITY_TYPE_STYLES,
-    activityTypeOptionLabels: DEFAULT_ACTIVITY_TYPE_STYLES.map((item) => item.display_name || item.key),
-    activityTypeOptionValues: DEFAULT_ACTIVITY_TYPE_STYLES.map((item) => normalizeTypeKey(item.key)).filter(Boolean),
     cardEntranceState: "idle",
     cardEntranceStaggerMs: 200,
+    createdCardEntranceId: null,
+    createdCardEntranceState: "entered",
     createFormContainerRendered: false,
     showCreateForm: false,
     createFormSubmitting: false,
@@ -411,15 +416,26 @@ Page({
     this._cardEntranceNotBefore = 0;
     this._pendingColdStartGroupedActivities = null;
     this._coldStartCardEntranceStarted = false;
+    this._coldStartTabEntrancePending = false;
     this._cardEntranceTimer = null;
     this._cardEntranceFrameTimer = null;
+    this._createdCardEntranceFrameTimer = null;
+    this._createdCardEntranceClearTimer = null;
+    this._createdCardDrawerDismissed = false;
+    this._createdCardGlassReady = true;
+    this._createdCardRevealStarted = false;
+    this._loadedCardGlassUrls = new Set();
+    this._coldStartGlassPendingIds = new Set();
     const aid = options && options.activityId;
     if (aid) {
+      if (app && app.globalData) app.globalData.homeTabEntrancePending = false;
       wx.redirectTo({
         url: `/pages/activity_detail/activity_detail?id=${encodeURIComponent(String(aid))}`
       });
       return;
     }
+    this._coldStartTabEntrancePending = true;
+    if (app && app.globalData) app.globalData.homeTabEntrancePending = true;
     this.syncGuestState();
     this.setData({ bottomSafeAreaRpx: getBottomSafeAreaRpx() });
     // 计算自定义导航栏高度
@@ -447,12 +463,18 @@ Page({
     this._loadGeneration = (this._loadGeneration || 0) + 1;
     this.syncGuestState();
     /** 原生弹层也可能触发 show；一级抽屉仍存续时不得提前恢复 Tab。 */
-    this._setTabBarHidden(!!(this.data.createFormContainerRendered || this.data.showCreateForm));
+    this._setTabBarHidden(!!(
+      this.data.createFormContainerRendered ||
+      this.data.showCreateForm ||
+      app.globalData.pendingOpenCreateActivity ||
+      this._coldStartTabEntrancePending
+    ));
     const isAdmin = app.globalData.userRole === "admin";
     const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
     const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
     this.setData({ isAdmin, myUserId, myNickname }, () => {
       this.loadActivityListByCachePolicy();
+      this.consumePendingCreateActivity();
     });
     patchTabBarIfNeeded(this, {
       selected: 0,
@@ -461,60 +483,50 @@ Page({
     this._scheduleColdStartCardEntrance();
   },
 
-  loadActivityListByCachePolicy() {
-    const metadataAge = Date.now() - cacheManager.getCacheMetadataCheckedAt();
-    const metadataFresh = metadataAge >= 0 && metadataAge < CACHE_METADATA_TTL_MS;
-    const usedCachedStyles = this.loadActivityTypeStylesFromCache();
-    const usedCachedList = this.loadActivityListFromCache();
-    const hasCompleteCache = usedCachedStyles && usedCachedList;
-    const refreshMetadata = () => Promise.all([activityService.getClientConfig(), activityService.getActivityStyleSignature()])
-      .then(([cfg, sigRes]) => {
-        const serverVersion = String((cfg && cfg.cache_version) || "1");
-        const serverSignature = String((sigRes && sigRes.signature) || "");
-        const localVersion = cacheManager.getClientCacheVersion();
-        const localSignature = cacheManager.getActivityStyleSignature();
-        const shouldRefresh = !localVersion || !localSignature ||
-          localVersion !== serverVersion || localSignature !== serverSignature;
-        cacheManager.setCacheMetadataCheckedAt();
+  hasCreateActivityPermission() {
+    const role = String(app.globalData.userRole || "");
+    const token = String(app.globalData.accessToken || wx.getStorageSync("accessToken") || "");
+    return !!app.globalData.isAuthenticated && !!token && (role === "user" || role === "admin");
+  },
 
-        if (shouldRefresh) {
-          cacheManager.clearBusinessCaches();
-          cacheManager.setClientCacheVersion(serverVersion);
-          cacheManager.setActivityStyleSignature(serverSignature);
-          if (usedCachedStyles) {
-            return this.loadActivityTypeStyles({ forceNetwork: true })
-              .then(() => this.loadActivityList({ forceNetwork: true }));
-          }
-        }
-      });
-
-    if (hasCompleteCache) {
-      // 缓存先渲染，元数据校验和活动静默刷新均不阻塞首屏。
-      this.loadActivityList({ forceNetwork: false, skipCardMediaDiagnostics: true });
-      if (metadataFresh) return Promise.resolve();
-      return refreshMetadata().catch((err) => console.error(err));
+  consumePendingCreateActivity() {
+    if (!app.globalData.pendingOpenCreateActivity) return;
+    app.globalData.pendingOpenCreateActivity = false;
+    if (!this.hasCreateActivityPermission()) {
+      this._setTabBarHidden(false);
+      return;
     }
+    wx.nextTick(() => this.showCreateModal());
+  },
 
-    // 首次进入没有完整缓存时，样式、活动和元数据检查同时开始；页面只等样式与活动。
-    const stylesPromise = usedCachedStyles
-      ? Promise.resolve()
-      : this.loadActivityTypeStyles({ forceNetwork: true });
-    const rawActivitiesPromise = activityService.listActivities();
-    const activitiesPromise = stylesPromise.then(() =>
-      this.loadActivityList({ forceNetwork: true, responsePromise: rawActivitiesPromise })
-    );
-    const metadataPromise = metadataFresh ? Promise.resolve() : refreshMetadata().catch((err) => console.error(err));
-    return Promise.all([stylesPromise, activitiesPromise, metadataPromise]);
+  loadActivityListByCachePolicy() {
+    const usedCachedList = this.loadActivityListFromCache();
+    if (usedCachedList) {
+      // V2 activities carry their complete cover presentation.  Render the cache
+      // immediately and refresh only the activity payload in the background.
+      return this.loadActivityList({ forceNetwork: false, skipCardMediaDiagnostics: true });
+    }
+    return this.loadActivityList({ forceNetwork: true });
   },
 
   onHide() {
     this._pageVisible = false;
     this._loadGeneration = (this._loadGeneration || 0) + 1;
     this._finishColdStartCardEntrance();
+    this._finishCreatedCardEntrance();
     this._clearCardMediaDiagnostics();
     calendarWarmup.cancelScheduledPrefetch();
+    /**
+     * wx.chooseLocation、编译重载或切后台都会暂时隐藏首页；冷启动动画尚未触发时
+     * 必须连同抽屉状态一起保留隐藏，避免 Tab 先恢复、再被 onShow 隐藏而闪现。
+     */
+    const keepTabBarHidden = !!(
+      this.data.createFormContainerRendered ||
+      this.data.showCreateForm ||
+      this._coldStartTabEntrancePending
+    );
     const self = this;
-    const flush = () => self._setTabBarHidden(false);
+    const flush = () => self._setTabBarHidden(keepTabBarHidden);
     if (typeof wx !== "undefined" && typeof wx.nextTick === "function") wx.nextTick(flush);
     else flush();
   },
@@ -524,9 +536,15 @@ Page({
     this._loadGeneration = (this._loadGeneration || 0) + 1;
     if (this._cardEntranceTimer) clearTimeout(this._cardEntranceTimer);
     if (this._cardEntranceFrameTimer) clearTimeout(this._cardEntranceFrameTimer);
+    if (this._createdCardEntranceFrameTimer) clearTimeout(this._createdCardEntranceFrameTimer);
+    if (this._createdCardEntranceClearTimer) clearTimeout(this._createdCardEntranceClearTimer);
     this._cardEntranceTimer = null;
     this._cardEntranceFrameTimer = null;
+    this._createdCardEntranceFrameTimer = null;
+    this._createdCardEntranceClearTimer = null;
     this._pendingColdStartGroupedActivities = null;
+    this._coldStartTabEntrancePending = false;
+    if (app && app.globalData) app.globalData.homeTabEntrancePending = false;
     calendarWarmup.cancelScheduledPrefetch();
     this._clearCardMediaDiagnostics();
     const self = this;
@@ -536,20 +554,16 @@ Page({
   },
 
   _setTabBarHidden(hidden, { animate = false } = {}) {
+    const nextHidden = !!hidden;
+    if (app && app.globalData) app.globalData.tabBarHidden = nextHidden;
     if (typeof this.getTabBar !== "function") return;
     const tabBar = this.getTabBar();
     if (!tabBar || typeof tabBar.setData !== "function") return;
     if (typeof tabBar.setHidden === "function") {
-      tabBar.setHidden(!!hidden, { animate: !!animate });
+      tabBar.setHidden(nextHidden, { animate: !!animate });
       return;
     }
-    tabBar.setData({ hidden: !!hidden });
-  },
-
-  _hasRenderableCards(groupedActivities) {
-    const groups = groupedActivities || {};
-    return ["joined", "accepting", "notStarted", "ended"]
-      .some((group) => Array.isArray(groups[group]) && groups[group].length > 0);
+    tabBar.setData({ hidden: nextHidden });
   },
 
   _buildGroupSectionVisibility(groupedActivities) {
@@ -562,7 +576,7 @@ Page({
 
   _prepareColdStartCardPresentation(groupedActivities) {
     const groupSectionVisibility = this._buildGroupSectionVisibility(groupedActivities);
-    if (!this._hasRenderableCards(groupedActivities) || this._coldStartCardEntranceStarted) {
+    if (this._coldStartCardEntranceStarted) {
       return {
         groupedActivities,
         cardEntranceState: this.data.cardEntranceState || "idle",
@@ -570,10 +584,18 @@ Page({
       };
     }
     this._pendingColdStartGroupedActivities = groupedActivities;
+    const joined = Array.isArray(groupedActivities && groupedActivities.joined)
+      ? groupedActivities.joined
+      : [];
+    this._coldStartGlassPendingIds = new Set(
+      joined
+        .filter((item) => item.largeCardGlassImageUrl && !this._loadedCardGlassUrls.has(item.largeCardGlassImageUrl))
+        .map((item) => String(item._id))
+    );
     this._scheduleColdStartCardEntrance();
     return {
-      groupedActivities: this.data.groupedActivities,
-      cardEntranceState: "idle",
+      groupedActivities,
+      cardEntranceState: "pending",
       groupSectionVisibility
     };
   },
@@ -584,6 +606,7 @@ Page({
       this._cardEntranceTimer ||
       !this._homeFirstFrameReady ||
       !this._pendingColdStartGroupedActivities ||
+      (this._coldStartGlassPendingIds && this._coldStartGlassPendingIds.size > 0) ||
       this._pageVisible === false
     ) return;
     const waitMs = Math.max(0, (this._cardEntranceNotBefore || Date.now()) - Date.now());
@@ -603,6 +626,10 @@ Page({
     this._pendingColdStartGroupedActivities = null;
     this._coldStartCardEntranceStarted = true;
     this.setData({ groupedActivities, cardEntranceState: "pending" }, () => {
+      this._coldStartTabEntrancePending = false;
+      if (app && app.globalData) app.globalData.homeTabEntrancePending = false;
+      const keepTabBarHidden = !!(this.data.createFormContainerRendered || this.data.showCreateForm);
+      if (!keepTabBarHidden) this._setTabBarHidden(false, { animate: true });
       const enter = () => {
         if (this._pageVisible === false || this.data.cardEntranceState !== "pending") return;
         this._cardEntranceFrameTimer = setTimeout(() => {
@@ -628,6 +655,70 @@ Page({
     if (this._coldStartCardEntranceStarted && this.data.cardEntranceState === "pending") {
       this.setData({ cardEntranceState: "entered" });
     }
+  },
+
+  _finishCreatedCardEntrance() {
+    if (this._createdCardEntranceFrameTimer) {
+      clearTimeout(this._createdCardEntranceFrameTimer);
+      this._createdCardEntranceFrameTimer = null;
+    }
+    if (this._createdCardEntranceClearTimer) {
+      clearTimeout(this._createdCardEntranceClearTimer);
+      this._createdCardEntranceClearTimer = null;
+    }
+    this._createdCardDrawerDismissed = false;
+    this._createdCardGlassReady = true;
+    this._createdCardRevealStarted = false;
+    if (this.data.createdCardEntranceId != null) {
+      this.setData({
+        createdCardEntranceId: null,
+        createdCardEntranceState: "entered"
+      });
+    }
+  },
+
+  _revealCreatedCard() {
+    if (this.data.createdCardEntranceId == null) return;
+    this._createdCardDrawerDismissed = true;
+    this._tryRevealCreatedCard();
+  },
+
+  _tryRevealCreatedCard() {
+    if (
+      this.data.createdCardEntranceId == null ||
+      !this._createdCardDrawerDismissed ||
+      !this._createdCardGlassReady ||
+      this._createdCardRevealStarted
+    ) return;
+    if (this._pageVisible === false) {
+      this._finishCreatedCardEntrance();
+      return;
+    }
+    this._createdCardRevealStarted = true;
+    if (this._createdCardEntranceFrameTimer) clearTimeout(this._createdCardEntranceFrameTimer);
+    const enter = () => {
+      if (this._pageVisible === false || this.data.createdCardEntranceId == null) return;
+      this._createdCardEntranceFrameTimer = setTimeout(() => {
+        this._createdCardEntranceFrameTimer = null;
+        if (this._pageVisible === false || this.data.createdCardEntranceId == null) return;
+        this.setData({ createdCardEntranceState: "entered" });
+        this._createdCardEntranceClearTimer = setTimeout(() => {
+          this._createdCardEntranceClearTimer = null;
+          this.setData({ createdCardEntranceId: null });
+        }, CREATED_CARD_ENTRANCE_DURATION_MS);
+      }, COLD_START_CARD_ENTRANCE_FRAME_MS);
+    };
+    if (typeof wx !== "undefined" && typeof wx.nextTick === "function") wx.nextTick(enter);
+    else enter();
+  },
+
+  _markCreatedCardGlassReady(activityId) {
+    if (
+      this.data.createdCardEntranceId == null ||
+      String(activityId || "") !== String(this.data.createdCardEntranceId)
+    ) return;
+    this._createdCardGlassReady = true;
+    this._tryRevealCreatedCard();
   },
 
   _clearCardMediaDiagnostics() {
@@ -997,10 +1088,7 @@ Page({
     const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
     const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
     this.setData({ isAdmin: app.globalData.userRole === "admin", myUserId, myNickname });
-    return Promise.all([
-      this.loadActivityTypeStyles({ forceNetwork: true }),
-      this.loadActivityList({ forceNetwork: true, skipPullOverlayLoading: true })
-    ]);
+    return this.loadActivityList({ forceNetwork: true });
   },
 
   onMainRefresherPulling(e) {
@@ -1038,40 +1126,6 @@ Page({
     this.setData({ isGuest });
 
     return isGuest;
-  },
-
-  _applyActivityTypeStyles(styles) {
-    const optionValues = styles.map((item) => normalizeTypeKey(item.key)).filter(Boolean);
-    const optionLabels = styles.map((item) => String(item.display_name || item.key || ""));
-    this.setData({
-      activityTypeStyles: styles,
-      activityTypeOptionValues: optionValues,
-      activityTypeOptionLabels: optionLabels
-    });
-  },
-
-  loadActivityTypeStylesFromCache() {
-    const cached = cacheManager.getCachedActivityTypeStyles();
-    const styles = cached && Array.isArray(cached.styles) ? cached.styles : [];
-    if (!styles.length) return false;
-    this._applyActivityTypeStyles(styles);
-    return true;
-  },
-
-  loadActivityTypeStyles(options = {}) {
-    if (!options.forceNetwork && this.loadActivityTypeStylesFromCache()) {
-      return Promise.resolve();
-    }
-    return activityService
-      .listActivityTypeStyles()
-      .then((res) => {
-        const styles = Array.isArray(res) && res.length > 0 ? res : DEFAULT_ACTIVITY_TYPE_STYLES;
-        cacheManager.setCachedActivityTypeStyles(styles);
-        this._applyActivityTypeStyles(styles);
-      })
-      .catch(() => {
-        this._applyActivityTypeStyles(DEFAULT_ACTIVITY_TYPE_STYLES);
-      });
   },
 
   buildEndedStreamState(groupedActivities, visibleCount) {
@@ -1154,9 +1208,6 @@ Page({
     const generation = options.generation == null ? (this._loadGeneration || 0) : options.generation;
     if (this._pageVisible === false || generation !== (this._loadGeneration || 0)) return Promise.resolve();
     this._clearCardMediaDiagnostics();
-    if (options.forceNetwork && !options.skipPullOverlayLoading) {
-      wx.showLoading({ title: "加载中..." });
-    }
     return (options.responsePromise || activityService.listActivities())
       .then((res) => this.processActivityList(res || [], new Date()))
       .then(result => {
@@ -1190,14 +1241,18 @@ Page({
             calendarWarmup.schedulePrefetchSignedUpList(app);
           });
 
-          if (options.forceNetwork && !options.skipPullOverlayLoading) wx.hideLoading();
-
         }
       })
       .catch(err => {
         if (this._pageVisible === false || generation !== (this._loadGeneration || 0)) return;
         console.error(err);
-        if (options.forceNetwork && !options.skipPullOverlayLoading) wx.hideLoading();
+        // 即使接口失败或列表为空，也不能让冷启动 Tab 永久停留在屏幕下方。
+        if (this._coldStartTabEntrancePending && !this._pendingColdStartGroupedActivities) {
+          this._pendingColdStartGroupedActivities = this.data.groupedActivities || {
+            joined: [], accepting: [], notStarted: [], ended: []
+          };
+          this._scheduleColdStartCardEntrance();
+        }
         // 测试环境切换后常见：本地缓存 token 对应的用户不在当前库中
         if (err && err.statusCode === 404 && String(err.message || "").includes("User not found")) {
           app.logout();
@@ -1229,7 +1284,16 @@ Page({
       activity.bgVideoUrl = selectedStyle ? (selectedStyle.bgVideoUrl || "") : "";
       activity.largeCardBgImageUrl = selectedStyle ? (selectedStyle.largeCardBgImageUrl || "") : "";
       activity.largeCardGlassImageUrl = selectedStyle ? (selectedStyle.largeCardGlassImageUrl || "") : "";
-      activity.smallCardBgImageUrl = selectedStyle ? (selectedStyle.smallCardBgImageUrl || "") : "";
+      // 首页大小卡统一使用高清原图；小卡仅改变 aspectFill 裁切区域，不加载缩略图。
+      activity.smallCardBgImageUrl = selectedStyle ? (selectedStyle.largeCardBgImageUrl || "") : "";
+      if (activity.activityCover && activity.activityCover.imageUrl) {
+        activity.largeCardBgImageUrl = activity.activityCover.imageUrl;
+        activity.smallCardBgImageUrl = activity.activityCover.imageUrl;
+        activity.largeCardGlassImageUrl = activity.activityCover.largeCardGlassImageUrl || "";
+        activity.bgVideoUrl = "";
+        activity.showTypeBadge = false;
+        activity.showAvatarCluster = false;
+      }
       let signupDeadline = activity.signupDeadline;
       if (!signupDeadline && activity.startTime) {
         const base = new Date(activity.startTime.replace(" ", "T") + ":00");
@@ -1327,12 +1391,12 @@ Page({
       }
       activity.isSignupClosed = isSignupClosed;
 
-      // 基于时间自动更新状态（已取消、已删除、已流局不参与自动推算，避免删除后又显示为未开始）
+      // 基于时间自动更新状态（已取消、已流局是终态，不参与自动推算）
       const parseDateTime = (s) => new Date(s.replace(" ", "T") + ":00");
       const start = parseDateTime(activity.startTime);
       const end = parseDateTime(activity.endTime);
       let autoStatus = activity.status || "未开始";
-      if (activity.status === "已取消" || activity.status === "已删除" || activity.status === "已流局") {
+      if (activity.status === "已取消" || activity.status === "已流局") {
         autoStatus = activity.status;
       } else if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
         if (now.getTime() < start.getTime()) {
@@ -1344,7 +1408,7 @@ Page({
         }
       }
 
-      if (activity.status !== "已取消" && activity.status !== "已删除" && activity.status !== "已流局") {
+      if (activity.status !== "已取消" && activity.status !== "已流局") {
         activity.status = autoStatus;
       }
 
@@ -1366,8 +1430,7 @@ Page({
   },
 
   computeFilteredList(list, selectedFilter, searchKeyword) {
-    // 逻辑删除的活动不在任何 Tab 展示
-    let filtered = list ? list.filter(item => item.status !== "已删除") : [];
+    let filtered = list ? list.slice() : [];
 
     if (selectedFilter === "我参与的") {
       // 只看当前用户参与过的活动（已通过 hasSignedUp 标记）
@@ -1402,10 +1465,12 @@ Page({
       new Date((a.startTime || "").replace(" ", "T") + ":00");
 
     const usedIds = new Set();
-    const valid = (list || []).filter(a => a.status !== "已取消" && a.status !== "已删除" && a.status !== "已流局");
+    const valid = list || [];
 
     // 1. 我参与的：已报名且未结束（已结束的归入下方「已结束」区，避免历史活动占大卡位）
-    const joined = valid.filter((a) => a.hasSignedUp && a.status !== "已结束").sort(sortByStart);
+    const joined = valid
+      .filter((a) => a.hasSignedUp && !["已结束", "已取消", "已流局"].includes(a.status))
+      .sort(sortByStart);
     joined.forEach((a) => usedIds.add(a._id));
 
     // 2. 接受报名：未开始 + 报名未截止 + 开关开启 + 未满员 + 未报名
@@ -1427,14 +1492,15 @@ Page({
 
     // 4. 已结束：按开始时间降序
     const ended = valid
-      .filter(a => !usedIds.has(a._id) && a.status === "已结束")
+      .filter(a => !usedIds.has(a._id) && ["已结束", "已取消", "已流局"].includes(a.status))
       .sort(sortByStartDesc);
 
     return { joined, accepting, notStarted, ended };
   },
 
-  // 管理员：首页只负责创建活动，编辑入口统一放在活动详情页。
+  // 普通用户和管理员均可创建；未登录、游客保持静默。
   showCreateModal() {
+    if (!this.hasCreateActivityPermission()) return;
     if (this.data.showCreateForm || this.data.createFormSubmitting) return;
     this._setTabBarHidden(true);
     this.setData({
@@ -1453,9 +1519,69 @@ Page({
 
   onCreateFormAfterLeave() {
     if (!this.data.showCreateForm) {
-      this.setData({ createFormContainerRendered: false });
-      this._setTabBarHidden(false, { animate: true });
+      this.setData({ createFormContainerRendered: false }, () => {
+        this._setTabBarHidden(false, { animate: true });
+        this._revealCreatedCard();
+      });
     }
+  },
+
+  insertCreatedActivity(rawActivity) {
+    const processed = this.processActivityList([rawActivity], new Date());
+    const createdActivity = processed && Array.isArray(processed.list) ? processed.list[0] : null;
+    if (!createdActivity || createdActivity._id == null) return Promise.resolve(false);
+
+    this._finishCreatedCardEntrance();
+    const activityList = [
+      createdActivity,
+      ...(this.data.activityList || []).filter((item) => String(item._id) !== String(createdActivity._id))
+    ];
+    const filteredList = this.computeFilteredList(
+      activityList,
+      this.data.selectedFilter,
+      this.data.searchKeyword
+    );
+    const fullGroupedActivities = this.computeGroupedActivities(activityList);
+    const currentEndedCount = Math.max(
+      ENDED_ACTIVITY_PAGE_SIZE,
+      ((this.data.groupedActivities && this.data.groupedActivities.ended) || []).length
+    );
+    const endedStream = this.buildEndedStreamState(fullGroupedActivities, currentEndedCount);
+    const groupedActivities = endedStream.groupedActivities;
+    const createdGroup = Object.keys(groupedActivities).find((group) =>
+      (groupedActivities[group] || []).some((item) => String(item._id) === String(createdActivity._id))
+    );
+    const focusedCardIndex = { ...(this.data.focusedCardIndex || {}) };
+    if (createdGroup) {
+      focusedCardIndex[createdGroup] = groupedActivities[createdGroup].findIndex(
+        (item) => String(item._id) === String(createdActivity._id)
+      );
+    }
+    const waitsForGlass = createdGroup === "joined" &&
+      !!createdActivity.largeCardGlassImageUrl &&
+      !this._loadedCardGlassUrls.has(createdActivity.largeCardGlassImageUrl);
+    this._createdCardDrawerDismissed = false;
+    this._createdCardGlassReady = !waitsForGlass;
+    this._createdCardRevealStarted = false;
+
+    return new Promise((resolve) => {
+      this.setData({
+        activityList,
+        filteredList,
+        groupedActivities,
+        allEndedActivities: endedStream.allEndedActivities,
+        endedHasMore: endedStream.endedHasMore,
+        endedLoadingMore: false,
+        focusedCardIndex,
+        groupSectionVisibility: this._buildGroupSectionVisibility(groupedActivities),
+        createdCardEntranceId: createdActivity._id,
+        createdCardEntranceState: "pending"
+      }, () => {
+        cacheManager.setCachedActivityList(activityList, this.data.myUserId || "");
+        calendarWarmup.schedulePrefetchSignedUpList(app);
+        resolve(true);
+      });
+    });
   },
 
   submitCreateActivity(e) {
@@ -1468,14 +1594,15 @@ Page({
     this.setData({ createFormSubmitting: true });
     wx.showLoading({ title: "创建中...", mask: true });
     activityService.createActivity(payload)
-      .then(() => {
+      .then((createdActivity) => {
         wx.hideLoading();
         wx.showToast({ title: "创建成功", icon: "success" });
         this.setData({
           showCreateForm: false,
           createFormSubmitting: false
         });
-        return this.loadActivityList();
+        return this.insertCreatedActivity(createdActivity)
+          .then((inserted) => inserted || this.loadActivityList());
       })
       .catch((error) => {
         console.error(error);
@@ -1485,46 +1612,19 @@ Page({
       });
   },
 
-  // 管理员：逻辑删除已取消的活动（标记为已删除，列表中不再展示）
-  logicalDeleteActivity(e) {
-    const activity = e.currentTarget.dataset.activity;
-    if (!activity || !activity._id) return;
-    if (activity.status !== "已取消") return;
-    wx.showModal({
-      title: "确认删除",
-      content: "确定要删除该活动吗？删除后将不再在列表中展示。",
-      success: (res) => {
-        if (!res.confirm) return;
-        wx.showLoading({ title: "处理中..." });
-        activityService
-          .updateActivity(activity._id, { status: "已删除" })
-          .then(() => {
-            wx.hideLoading();
-            wx.showToast({ title: "已删除", icon: "success" });
-            this.loadActivityList();
-          })
-          .catch((err) => {
-            console.error(err);
-            wx.hideLoading();
-            wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
-          });
-      }
-    });
-  },
-
-  // 管理员：从列表卡片取消活动（标记为已取消，不删除数据）
+  // 管理员：从列表卡片取消活动（终态保留在首页历史区域）
   cancelActivityFromCard(e) {
     const activity = e.currentTarget.dataset.activity;
     if (!activity || !activity._id) return;
     if (activity.status === "已取消") return;
     wx.showModal({
       title: "确认取消活动",
-      content: `确定要取消活动"${activity.name}"吗？取消后活动将进入「已取消」列表，不可再报名或签到。`,
+      content: `确定要取消活动"${activity.name}"吗？取消后将归入首页历史活动，不可再报名或签到。`,
       success: (res) => {
         if (!res.confirm) return;
         wx.showLoading({ title: "处理中..." });
         activityService
-          .updateActivity(activity._id, { status: "已取消" })
+          .cancelActivity(activity._id)
           .then(() => {
             wx.hideLoading();
             wx.showToast({ title: "已取消活动", icon: "success" });
@@ -1535,32 +1635,6 @@ Page({
             wx.hideLoading();
             wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
           });
-      }
-    });
-  },
-
-  // 管理员：删除活动（从后端彻底删除，保留用于后续如需恢复）
-  deleteActivity(e) {
-    const activity = e.currentTarget.dataset.activity;
-    wx.showModal({
-      title: "确认删除",
-      content: `确定要删除活动"${activity.name}"吗？`,
-      success: (res) => {
-        if (res.confirm) {
-          wx.showLoading({ title: "删除中..." });
-          activityService
-            .deleteActivity(activity._id)
-            .then(() => {
-              wx.hideLoading();
-              wx.showToast({ title: "删除成功", icon: "success" });
-              this.loadActivityList();
-            })
-            .catch(err => {
-              console.error(err);
-              wx.hideLoading();
-              wx.showToast({ title: (err && err.message) || "删除失败", icon: "none" });
-            });
-        }
       }
     });
   },
@@ -1600,6 +1674,29 @@ Page({
   onCardBgError(e) {
     const meta = pickCardMediaMetaFromDataset(e && e.currentTarget && e.currentTarget.dataset, "image");
     this._markCardMediaEvent(meta, "error", e && e.detail);
+  },
+
+  onCardGlassLoaded(e) {
+    const dataset = e && e.currentTarget && e.currentTarget.dataset;
+    const activityId = String((dataset && dataset.activityId) || "");
+    const url = String((dataset && dataset.url) || "");
+    if (url) this._loadedCardGlassUrls.add(url);
+    if (this._coldStartGlassPendingIds) this._coldStartGlassPendingIds.delete(activityId);
+    this._scheduleColdStartCardEntrance();
+    this._markCreatedCardGlassReady(activityId);
+  },
+
+  onCardGlassError(e) {
+    const dataset = e && e.currentTarget && e.currentTarget.dataset;
+    logError("activity_card_glass_load_failed", {
+      activityId: String((dataset && dataset.activityId) || ""),
+      url: String((dataset && dataset.url) || ""),
+      summary: summarizeError((e && e.detail) || {})
+    });
+    const activityId = String((dataset && dataset.activityId) || "");
+    if (this._coldStartGlassPendingIds) this._coldStartGlassPendingIds.delete(activityId);
+    this._scheduleColdStartCardEntrance();
+    this._markCreatedCardGlassReady(activityId);
   },
 
   onCardVideoLoaded(e) {

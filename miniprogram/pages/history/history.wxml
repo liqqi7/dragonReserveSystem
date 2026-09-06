@@ -92,3 +92,5 @@
     </view>
   </scroll-view>
 </view>
+
+<create-access-dialog id="create-access-dialog" />

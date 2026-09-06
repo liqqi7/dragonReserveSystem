@@ -3,5 +3,7 @@
   "componentFramework": "glass-easel",
   "navigationStyle": "custom",
   "disableScroll": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "create-access-dialog": "../../components/create-access-dialog/index"
+  }
 }

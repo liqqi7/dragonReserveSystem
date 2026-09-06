@@ -10,8 +10,448 @@ page {
   overflow: hidden;
   background: #ffffff;
   color: #111827;
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
   box-sizing: border-box;
+}
+
+/* ── 活动详情骨架屏：结构固定，仅骨架块内部流光移动 ── */
+.detail-skeleton-screen {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1200;
+  overflow: hidden;
+  background: #f5f5f5;
+  opacity: 1;
+  transition: opacity 280ms ease-out;
+}
+
+.detail-skeleton-screen--leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.detail-skeleton-hero {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 750rpx;
+  overflow: hidden;
+  background: #1a1d24;
+}
+
+.detail-skeleton-hero-copy {
+  position: absolute;
+  top: 373.08rpx;
+  right: 38.46rpx;
+  left: 38.46rpx;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 23.08rpx;
+}
+
+.detail-skeleton-status-row {
+  width: 100%;
+  height: 53.85rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.detail-skeleton-title-group {
+  width: 100%;
+  height: 84.62rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.detail-skeleton-remark-row {
+  width: 100%;
+  height: 38.46rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15.38rpx;
+}
+
+.detail-skeleton-block {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  background-color: #eaecef;
+}
+
+.detail-skeleton-block-dark {
+  background-color: #2a2e35;
+}
+
+.detail-skeleton-shimmer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 72%;
+  height: 100%;
+  background-image: linear-gradient(
+    90deg,
+    rgba(248, 249, 251, 0) 0%,
+    rgba(248, 249, 251, 0.24) 22%,
+    rgba(248, 249, 251, 0.52) 42%,
+    rgba(248, 249, 251, 0.52) 58%,
+    rgba(248, 249, 251, 0.24) 78%,
+    rgba(248, 249, 251, 0) 100%
+  );
+  transform: translateX(-100%);
+  pointer-events: none;
+  animation-name: detail-skeleton-shimmer;
+  animation-duration: 1800ms;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.detail-skeleton-shimmer-dark {
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.04) 22%,
+    rgba(255, 255, 255, 0.1) 42%,
+    rgba(255, 255, 255, 0.1) 58%,
+    rgba(255, 255, 255, 0.04) 78%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+.detail-skeleton-status-pill {
+  width: 126.92rpx;
+  height: 53.85rpx;
+  border-radius: 26.92rpx;
+}
+
+.detail-skeleton-hero-meta {
+  width: 101.92rpx;
+  height: 30.77rpx;
+  border-radius: 15.38rpx;
+}
+
+.detail-skeleton-title-primary {
+  width: 538.46rpx;
+  height: 38.46rpx;
+  border-radius: 11.54rpx;
+}
+
+.detail-skeleton-title-secondary {
+  width: 326.92rpx;
+  height: 34.62rpx;
+  border-radius: 11.54rpx;
+}
+
+.detail-skeleton-remark {
+  height: 26.92rpx;
+  flex: 1;
+  border-radius: 13.46rpx;
+}
+
+.detail-skeleton-expand {
+  width: 82.69rpx;
+  height: 30.77rpx;
+  border-radius: 15.38rpx;
+}
+
+.detail-skeleton-panel {
+  position: absolute;
+  top: 642.31rpx;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  padding: 30.77rpx;
+  overflow: hidden;
+  border-radius: 46.15rpx 46.15rpx 0 0;
+  background: #ffffff;
+  box-shadow: 0 -7.69rpx 34.62rpx rgba(0, 0, 0, 0.102);
+  box-sizing: border-box;
+}
+
+.detail-skeleton-section-title {
+  width: 146.15rpx;
+  height: 38.46rpx;
+  border-radius: 11.54rpx;
+}
+
+.detail-skeleton-facts-row {
+  width: 100%;
+  height: 84.62rpx;
+  margin-top: 23.08rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 23.08rpx;
+}
+
+.detail-skeleton-fact {
+  height: 84.62rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7.69rpx;
+}
+
+.detail-skeleton-fact-date { width: 184.62rpx; }
+.detail-skeleton-fact-time { width: 196.15rpx; }
+.detail-skeleton-fact-people { width: 180.77rpx; }
+
+.detail-skeleton-fact-label {
+  width: 48.08rpx;
+  height: 32.69rpx;
+  border-radius: 7.69rpx;
+}
+
+.detail-skeleton-people-label { width: 94.23rpx; }
+
+.detail-skeleton-fact-value {
+  height: 44.23rpx;
+  border-radius: 11.54rpx;
+}
+
+.detail-skeleton-fact-value-date { width: 184.62rpx; }
+.detail-skeleton-time-value { width: 196.15rpx; }
+.detail-skeleton-fact-value-people { width: 180.77rpx; }
+
+.detail-skeleton-divider {
+  width: 1.92rpx;
+  height: 57.69rpx;
+  flex: none;
+  background: #e5e7eb;
+}
+
+.detail-skeleton-location-card,
+.detail-skeleton-weather-card {
+  width: 100%;
+  margin-top: 15.38rpx;
+  overflow: hidden;
+  border: 1.92rpx solid #e5e7eb;
+  border-radius: 30.77rpx;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.detail-skeleton-location-card { height: 388.46rpx; }
+
+.detail-skeleton-map {
+  width: 100%;
+  height: 284.62rpx;
+}
+
+.detail-skeleton-location-meta {
+  width: 100%;
+  height: 103.85rpx;
+  padding: 15.38rpx 23.08rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15.38rpx;
+  box-sizing: border-box;
+}
+
+.detail-skeleton-location-copy {
+  height: 76.92rpx;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7.69rpx;
+}
+
+.detail-skeleton-location-name {
+  width: 350rpx;
+  height: 38.46rpx;
+  border-radius: 7.69rpx;
+}
+
+.detail-skeleton-location-address {
+  width: 496.15rpx;
+  height: 30.77rpx;
+  border-radius: 7.69rpx;
+}
+
+.detail-skeleton-navigation {
+  width: 130.77rpx;
+  height: 69.23rpx;
+  border-radius: 23.08rpx;
+}
+
+.detail-skeleton-weather-card { height: 192.31rpx; }
+
+.detail-skeleton-weather-content {
+  width: 100%;
+  height: 142.31rpx;
+  padding: 0 23.08rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.detail-skeleton-weather-summary {
+  width: 230.77rpx;
+  height: 111.54rpx;
+  padding: 0 15.38rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 23.08rpx;
+  box-sizing: border-box;
+}
+
+.detail-skeleton-weather-icon {
+  width: 80.77rpx;
+  height: 80.77rpx;
+  border-radius: 23.08rpx;
+}
+
+.detail-skeleton-temperature-copy {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7.69rpx;
+}
+
+.detail-skeleton-temperature {
+  width: 67.31rpx;
+  height: 46.15rpx;
+  border-radius: 7.69rpx;
+}
+
+.detail-skeleton-condition {
+  width: 96.15rpx;
+  height: 26.92rpx;
+  border-radius: 7.69rpx;
+}
+
+.detail-skeleton-weather-divider {
+  width: 1.92rpx;
+  height: 80.77rpx;
+  margin: 0 15.38rpx;
+  flex: none;
+  background: #e5e7eb;
+}
+
+.detail-skeleton-weather-metrics {
+  height: 111.54rpx;
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 7.69rpx;
+}
+
+.detail-skeleton-weather-metric {
+  height: 111.54rpx;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7.69rpx;
+}
+
+.detail-skeleton-metric-icon {
+  width: 26.92rpx;
+  height: 26.92rpx;
+  border-radius: 5.77rpx;
+}
+
+.detail-skeleton-metric-value {
+  width: 60rpx;
+  height: 25rpx;
+  border-radius: 5.77rpx;
+}
+
+.detail-skeleton-metric-label {
+  width: 76.92rpx;
+  height: 26.92rpx;
+  border-radius: 5.77rpx;
+}
+
+.detail-skeleton-weather-source {
+  width: 100%;
+  height: 50rpx;
+  padding: 15.38rpx 30.77rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  border-top: 1.92rpx solid #f3f4f6;
+  background: #fafafa;
+  box-sizing: border-box;
+}
+
+.detail-skeleton-source-text {
+  width: 234.62rpx;
+  height: 19.23rpx;
+  border-radius: 5.77rpx;
+}
+
+.detail-skeleton-bottom-bar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  background: #ffffff;
+  border-top: 1.92rpx solid #e5e7eb;
+  box-shadow: 0 -5.77rpx 23.08rpx rgba(0, 0, 0, 0.07);
+  box-sizing: border-box;
+}
+
+.detail-skeleton-bottom-inner {
+  position: relative;
+  width: 100%;
+  height: 107.69rpx;
+}
+
+.detail-skeleton-share-button,
+.detail-skeleton-primary-button {
+  position: absolute;
+  top: 11.54rpx;
+  height: 84.62rpx;
+  border-radius: 23.08rpx;
+}
+
+.detail-skeleton-share-button {
+  left: 38.46rpx;
+  width: 184.62rpx;
+}
+
+.detail-skeleton-primary-button {
+  left: 238.46rpx;
+  width: 473.08rpx;
+}
+
+@keyframes detail-skeleton-shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(150%); }
+}
+
+.detail-content-layer {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 280ms ease-out;
+}
+
+.detail-content-layer--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.detail-content-layer--visible {
+  opacity: 1;
 }
 
 .main-scroll {
@@ -73,7 +513,10 @@ page {
 .hero-placeholder,
 .hero-shade {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   width: 100%;
   height: 100%;
 }
@@ -85,15 +528,17 @@ page {
 .hero-shade {
   z-index: 4;
   background:
-    radial-gradient(120% 108% at 50% 42%, rgba(0, 0, 0, 0) 52%, rgba(0, 0, 0, 0.059) 76%, rgba(0, 0, 0, 0.169) 100%),
+    radial-gradient(circle 420px at 50% 42%, rgba(0, 0, 0, 0) 52%, rgba(0, 0, 0, 0.059) 76%, rgba(0, 0, 0, 0.169) 100%),
     linear-gradient(180deg, rgba(0, 0, 0, 0.259) 0%, rgba(0, 0, 0, 0.102) 24%, rgba(0, 0, 0, 0.18) 50%, rgba(0, 0, 0, 0.459) 72%, rgba(0, 0, 0, 0.78) 88%, rgba(0, 0, 0, 0.91) 100%);
-  background-blend-mode: multiply, normal;
   pointer-events: none;
 }
 
 .hero-avatar-cluster {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 2;
 }
 
@@ -237,10 +682,10 @@ page {
 }
 
 .hero-meta {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 23.08rpx;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 25rpx;
   font-weight: 600;
-  letter-spacing: 1.92rpx;
+  letter-spacing: 2.31rpx;
   line-height: 1.3;
 }
 
@@ -486,10 +931,6 @@ page {
   font-weight: 600;
   line-height: 44.23rpx;
   white-space: nowrap;
-}
-
-.fact-value-time {
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
 }
 
 .fact-divider {
@@ -820,7 +1261,6 @@ page {
 .bottom-icon-button,
 .bottom-primary {
   margin: 0;
-  font-family: inherit;
   padding: 0;
   height: 84.62rpx;
   border-radius: 23.08rpx;
@@ -880,6 +1320,13 @@ page {
 
 .bottom-primary-hover {
   opacity: 0.86;
+}
+
+.bottom-primary-cancel {
+  background: rgba(255, 255, 255, 0);
+  border: 1.92rpx solid #ff9800;
+  color: #ff9800;
+  font-weight: 600;
 }
 
 .bottom-primary-disabled {
@@ -944,7 +1391,7 @@ page {
 .signup-profile-modal-body {
   padding: 24rpx;
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .signup-profile-hint {

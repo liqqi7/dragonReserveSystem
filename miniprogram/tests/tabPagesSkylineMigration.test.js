@@ -50,6 +50,13 @@ test("newly migrated tab pages avoid WebView-only layout rules", () => {
   }
 });
 
+test("profile form and prompt dialogs keep native inputs in non-collapsing containers", () => {
+  const wxml = readPage("profile", "wxml");
+  assert.equal((wxml.match(/<view class="modal-body">/g) || []).length, 1);
+  assert.doesNotMatch(wxml, /<scroll-view class="modal-body"/);
+  assert.match(wxml, /<view[\s\S]*?class="permission-dialog"[\s\S]*?<input[\s\S]*?value="\{\{permissionInput\}\}"[\s\S]*?bindinput="onPermissionInput"/);
+});
+
 test("four tab routes and component indexes are contiguous and exclude calendar", () => {
   const appJson = JSON.parse(fs.readFileSync(path.join(__dirname, "../app.json"), "utf8"));
   const componentWxml = fs.readFileSync(

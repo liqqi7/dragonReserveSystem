@@ -76,14 +76,14 @@
           >
             <view
               class="participant-actions"
-              wx:if="{{isAdmin}}"
-              style="width: {{actionWidthRpx}}rpx"
+              wx:if="{{canManage}}"
+              style="width: {{actionAreaWidthRpx}}rpx"
             >
-              <view wx:if="{{row.hasCheckedIn}}" class="row-action row-action-cancel" data-index="{{index}}" data-action="cancelcheckin" bindtap="onActionTap">
+              <view wx:if="{{isAdmin && row.hasCheckedIn}}" class="row-action row-action-cancel" data-index="{{index}}" data-action="cancelcheckin" bindtap="onActionTap">
                 <image src="/images/icon-clipboard-x.svg" mode="aspectFit" class="row-action-icon" />
                 <text>取签</text>
               </view>
-              <view wx:else class="row-action row-action-retro" data-index="{{index}}" data-action="retrocheckin" bindtap="onActionTap">
+              <view wx:elif="{{isAdmin}}" class="row-action row-action-retro" data-index="{{index}}" data-action="retrocheckin" bindtap="onActionTap">
                 <image src="/images/icon-assignment-turned-in.svg" mode="aspectFit" class="row-action-icon" />
                 <text>补卡</text>
               </view>
