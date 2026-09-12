@@ -25,11 +25,11 @@
   },
   "aleksey-rico/glass/aleksey-rico-001.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/glass/aleksey-rico-001.jpg",
-    "source_sha256": "c6863a18f4d8849b5bc23606df5031fa0ffb89026da64f707497788a48d4a931",
-    "sha256": "c8ccda0cad02361441d3c57cf4b770af3d06681e533deaf7a75ff3858843c00e",
-    "source_bytes": 23060,
-    "bytes": 21970,
-    "method": "lossless-optimized"
+    "source_sha256": "0167a7030124884330a3fa73635e74d485c5891f10bbb74a893a86f823277f72",
+    "sha256": "0167a7030124884330a3fa73635e74d485c5891f10bbb74a893a86f823277f72",
+    "source_bytes": 18389,
+    "bytes": 18389,
+    "method": "original-copy"
   },
   "aleksey-rico/images/aleksey-rico-002.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/images/aleksey-rico-002.jpg",
@@ -49,11 +49,11 @@
   },
   "aleksey-rico/glass/aleksey-rico-002.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/glass/aleksey-rico-002.jpg",
-    "source_sha256": "877263582a0d5817cc07aec4a6ec2f9213132e2a1d5747a3a1f4b8e4075a1ae9",
-    "sha256": "b3a793257ae7b9cc78ffa5fc85f79f5ad50d66f5c0c38764cf58c2687180db1f",
-    "source_bytes": 25053,
-    "bytes": 24193,
-    "method": "lossless-optimized"
+    "source_sha256": "cc44f6c7c888fe39a4ac8ef168459a8a0cd8666a35cee1383b7ca628b8426fbf",
+    "sha256": "cc44f6c7c888fe39a4ac8ef168459a8a0cd8666a35cee1383b7ca628b8426fbf",
+    "source_bytes": 20078,
+    "bytes": 20078,
+    "method": "original-copy"
   },
   "aleksey-rico/images/aleksey-rico-003.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/images/aleksey-rico-003.jpg",
@@ -73,11 +73,11 @@
   },
   "aleksey-rico/glass/aleksey-rico-003.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/glass/aleksey-rico-003.jpg",
-    "source_sha256": "ac49f0cb2a01c894e759586d863408564a57db149085f475b2a4a9796a341678",
-    "sha256": "61f7104b4659f631a692e878e9f0103a5727893e5843a5d77abe212fd59f1441",
-    "source_bytes": 22945,
-    "bytes": 22161,
-    "method": "lossless-optimized"
+    "source_sha256": "025555c58fc7f10245fc8b9c8b460931ffeed0662957377c179da903902c7ea1",
+    "sha256": "025555c58fc7f10245fc8b9c8b460931ffeed0662957377c179da903902c7ea1",
+    "source_bytes": 18260,
+    "bytes": 18260,
+    "method": "original-copy"
   },
   "aleksey-rico/images/aleksey-rico-004.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/images/aleksey-rico-004.jpg",
@@ -97,11 +97,11 @@
   },
   "aleksey-rico/glass/aleksey-rico-004.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/glass/aleksey-rico-004.jpg",
-    "source_sha256": "937fb3113e706a5471c41c4582d53bd0bc5f4f2e2754f1845c2a7d791134b430",
-    "sha256": "e06f88682b8a08085e0e5ac72abe0d6b7e4bdb925e9c5707c8226cab2f5415da",
-    "source_bytes": 20060,
-    "bytes": 19383,
-    "method": "lossless-optimized"
+    "source_sha256": "f384eded0c4ab50f81256f126908428ead44b2a853885b695128434db83776f9",
+    "sha256": "f384eded0c4ab50f81256f126908428ead44b2a853885b695128434db83776f9",
+    "source_bytes": 16246,
+    "bytes": 16246,
+    "method": "original-copy"
   },
   "aleksey-rico/images/aleksey-rico-005.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/images/aleksey-rico-005.jpg",
@@ -121,11 +121,11 @@
   },
   "aleksey-rico/glass/aleksey-rico-005.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/glass/aleksey-rico-005.jpg",
-    "source_sha256": "641e7cd386a5362f9e4cc26235c38d1a8e829ebdaed983cd12b1e140614b452d",
-    "sha256": "ee323ff6a89951fe3ba304f92966fc9b2b93eb06d4828b7e7280bbc24778bde8",
-    "source_bytes": 27113,
-    "bytes": 26505,
-    "method": "lossless-optimized"
+    "source_sha256": "a95cdf35774f14015fc02feb5275b5c29d32c6b8e9f9704f8f9fc5ae76ce5505",
+    "sha256": "a95cdf35774f14015fc02feb5275b5c29d32c6b8e9f9704f8f9fc5ae76ce5505",
+    "source_bytes": 21641,
+    "bytes": 21641,
+    "method": "original-copy"
   },
   "aleksey-rico/images/aleksey-rico-006.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/images/aleksey-rico-006.jpg",
@@ -145,11 +145,11 @@
   },
   "aleksey-rico/glass/aleksey-rico-006.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/glass/aleksey-rico-006.jpg",
-    "source_sha256": "4bb3a9e7d8c8f7480fc0542436771e28781f897fc897d75f44fe887dee61a3ef",
-    "sha256": "e72ba73f1fe1904d39050818badfda9259e432d509769ae868dbcd23d40b52ba",
-    "source_bytes": 19374,
-    "bytes": 18548,
-    "method": "lossless-optimized"
+    "source_sha256": "c495dd9240d311dfdb761eb4dba6497180f500d46d4f96329df7a59f613f3b64",
+    "sha256": "c495dd9240d311dfdb761eb4dba6497180f500d46d4f96329df7a59f613f3b64",
+    "source_bytes": 15302,
+    "bytes": 15302,
+    "method": "original-copy"
   },
   "aleksey-rico/images/aleksey-rico-009.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/images/aleksey-rico-009.jpg",
@@ -169,11 +169,11 @@
   },
   "aleksey-rico/glass/aleksey-rico-009.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/glass/aleksey-rico-009.jpg",
-    "source_sha256": "caa88243d680490d0c0cc45f59abf0f9a16ead3f5330368ad1fa7236dfb40b54",
-    "sha256": "807d22f5dbf52bae25043cedaa8dfb98076471c5d0189131313b6ca7c174078c",
-    "source_bytes": 18016,
-    "bytes": 17589,
-    "method": "lossless-optimized"
+    "source_sha256": "2a17aa475da4635c668a08e655e87830e39436793266810527a9f659f403318e",
+    "sha256": "2a17aa475da4635c668a08e655e87830e39436793266810527a9f659f403318e",
+    "source_bytes": 14557,
+    "bytes": 14557,
+    "method": "original-copy"
   },
   "aleksey-rico/images/aleksey-rico-010.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/images/aleksey-rico-010.jpg",
@@ -193,11 +193,11 @@
   },
   "aleksey-rico/glass/aleksey-rico-010.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/glass/aleksey-rico-010.jpg",
-    "source_sha256": "d12dfedb17fbb2e4000b6ec0d6ddcfc70dfd84907b52f5323f57938862f03532",
-    "sha256": "20601ea14fafe315fa93d8c6ca495fe171fe381d15842ffa41e96442ba2c97ca",
-    "source_bytes": 31171,
-    "bytes": 30494,
-    "method": "lossless-optimized"
+    "source_sha256": "7bb3d3fcaace238e527f667638507e4484aa0537f764ce20c1be32a8f1df516f",
+    "sha256": "7bb3d3fcaace238e527f667638507e4484aa0537f764ce20c1be32a8f1df516f",
+    "source_bytes": 24988,
+    "bytes": 24988,
+    "method": "original-copy"
   },
   "aleksey-rico/images/aleksey-rico-011.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/images/aleksey-rico-011.jpg",
@@ -217,11 +217,11 @@
   },
   "aleksey-rico/glass/aleksey-rico-011.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/glass/aleksey-rico-011.jpg",
-    "source_sha256": "e9c43b19e771e0111f75d5ca252f94d11d40744c4cc15c899dbf21052c314a41",
-    "sha256": "09a49ea4fe2243891d1f155f3c2b48a3a743a81886378264d0ce7081cee702cc",
-    "source_bytes": 30944,
-    "bytes": 30264,
-    "method": "lossless-optimized"
+    "source_sha256": "a57e2776b23f482ab957ed7720376114c7e70dab05be2e834e4353bbe9611c32",
+    "sha256": "a57e2776b23f482ab957ed7720376114c7e70dab05be2e834e4353bbe9611c32",
+    "source_bytes": 24787,
+    "bytes": 24787,
+    "method": "original-copy"
   },
   "aleksey-rico/images/aleksey-rico-012.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/images/aleksey-rico-012.jpg",
@@ -241,11 +241,11 @@
   },
   "aleksey-rico/glass/aleksey-rico-012.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/glass/aleksey-rico-012.jpg",
-    "source_sha256": "e4cbb821877646d620f4503a0c532be3575e020b5e590c4d50bd95333c53de52",
-    "sha256": "7df280de316b28deb91f1732005652f2257de13371c5ea43736275581e0659a5",
-    "source_bytes": 28087,
-    "bytes": 27147,
-    "method": "lossless-optimized"
+    "source_sha256": "48aafe1226de8334dd9e6800e6494dcc74eec3fb81934613fdc084bb0ce47e9a",
+    "sha256": "48aafe1226de8334dd9e6800e6494dcc74eec3fb81934613fdc084bb0ce47e9a",
+    "source_bytes": 22584,
+    "bytes": 22584,
+    "method": "original-copy"
   },
   "aleksey-rico/images/aleksey-rico-013.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/images/aleksey-rico-013.jpg",
@@ -265,11 +265,11 @@
   },
   "aleksey-rico/glass/aleksey-rico-013.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/glass/aleksey-rico-013.jpg",
-    "source_sha256": "50bd242e9e551e36a973305b8891144744ab44ed9569eceb61dd56337089d1a5",
-    "sha256": "ab005b6a8da148b53a61aa03be6de76ea2aa8b750f371e4e435bc543e75f0e3e",
-    "source_bytes": 21974,
-    "bytes": 21079,
-    "method": "lossless-optimized"
+    "source_sha256": "39269e0f3a355096fa8de62181699a1cfdc0a6d313801504fbb91094513fdcf1",
+    "sha256": "39269e0f3a355096fa8de62181699a1cfdc0a6d313801504fbb91094513fdcf1",
+    "source_bytes": 17330,
+    "bytes": 17330,
+    "method": "original-copy"
   },
   "aleksey-rico/images/aleksey-rico-014.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/images/aleksey-rico-014.jpg",
@@ -289,11 +289,11 @@
   },
   "aleksey-rico/glass/aleksey-rico-014.jpg": {
     "path": "jpeg-q88-v1/aleksey-rico/glass/aleksey-rico-014.jpg",
-    "source_sha256": "e9a1cbf9c89dba293f3133b9542244850b08f6a03fcf3cac244c18987d998ccb",
-    "sha256": "664bdd3d74cf5c6e3cac174a05001ce784fee2cc9e60fc793ee5c3a5b85748f2",
-    "source_bytes": 26954,
-    "bytes": 26373,
-    "method": "lossless-optimized"
+    "source_sha256": "b0ef018ddf3c5e6dd9ab1bd259d9b9fb7ab7b110c8163341b708425b523ab282",
+    "sha256": "b0ef018ddf3c5e6dd9ab1bd259d9b9fb7ab7b110c8163341b708425b523ab282",
+    "source_bytes": 21520,
+    "bytes": 21520,
+    "method": "original-copy"
   },
   "lam/avatar.jpg": {
     "path": "jpeg-q88-v1/lam/avatar.jpg",
@@ -321,11 +321,11 @@
   },
   "lam/glass/lam-001.jpg": {
     "path": "jpeg-q88-v1/lam/glass/lam-001.jpg",
-    "source_sha256": "6d2f2e22ce402f4f2c126582e40d00d5c969a979ba54a89deece2a8622f7a546",
-    "sha256": "fb4c636ae7727eedc4e8d583440958143e230c3dfed7866c86eda51723bbd5a5",
-    "source_bytes": 22537,
-    "bytes": 22122,
-    "method": "lossless-optimized"
+    "source_sha256": "91663a4f0f8723914c0dbe939087ed92eebf860747ceaa8c067a2bca62ec537d",
+    "sha256": "91663a4f0f8723914c0dbe939087ed92eebf860747ceaa8c067a2bca62ec537d",
+    "source_bytes": 18057,
+    "bytes": 18057,
+    "method": "original-copy"
   },
   "lam/images/lam-002.jpg": {
     "path": "jpeg-q88-v1/lam/images/lam-002.jpg",
@@ -345,11 +345,11 @@
   },
   "lam/glass/lam-002.jpg": {
     "path": "jpeg-q88-v1/lam/glass/lam-002.jpg",
-    "source_sha256": "71a5fe288896515e003147445b78b84e8ebaf72298a62a6dac31b48348a4fde9",
-    "sha256": "38cb03caf9acdc7d60b12912d58ce2b489688ad95f62d940c002fc510723bc6a",
-    "source_bytes": 24388,
-    "bytes": 23674,
-    "method": "lossless-optimized"
+    "source_sha256": "975bc50a8fbff3707a73ce98bcd8fdd2eff2f682232b29314580d913790d831e",
+    "sha256": "975bc50a8fbff3707a73ce98bcd8fdd2eff2f682232b29314580d913790d831e",
+    "source_bytes": 19583,
+    "bytes": 19583,
+    "method": "original-copy"
   },
   "lam/images/lam-003.jpg": {
     "path": "jpeg-q88-v1/lam/images/lam-003.jpg",
@@ -369,11 +369,11 @@
   },
   "lam/glass/lam-003.jpg": {
     "path": "jpeg-q88-v1/lam/glass/lam-003.jpg",
-    "source_sha256": "adf3e108d00da5788a1a9f1b489f8faf7c84dd9577c0a223afa6ae2de6df02b8",
-    "sha256": "d1c475159f655e7c6f80b32ffdeb949b3a81f7850719b391cf815a56ec40eecd",
-    "source_bytes": 20489,
-    "bytes": 19962,
-    "method": "lossless-optimized"
+    "source_sha256": "64b87b4c9992dd077fad405e87db1109f3f290eb7065931265cb28033a98299b",
+    "sha256": "64b87b4c9992dd077fad405e87db1109f3f290eb7065931265cb28033a98299b",
+    "source_bytes": 16768,
+    "bytes": 16768,
+    "method": "original-copy"
   },
   "lam/images/lam-004.jpg": {
     "path": "jpeg-q88-v1/lam/images/lam-004.jpg",
@@ -393,11 +393,11 @@
   },
   "lam/glass/lam-004.jpg": {
     "path": "jpeg-q88-v1/lam/glass/lam-004.jpg",
-    "source_sha256": "359b0d52f2e8e265dadf781ce0c5d09756a9f69e08adec337c6f2bd71be403a2",
-    "sha256": "e90002d3c8d459134b2361c1ca14961c17543afe36e73f9d93fb42e3d9b17bc4",
-    "source_bytes": 25194,
-    "bytes": 24621,
-    "method": "lossless-optimized"
+    "source_sha256": "adb05d97b1a279863cec5bec187caa6edaf931107d36465d78346e8368c964d4",
+    "sha256": "adb05d97b1a279863cec5bec187caa6edaf931107d36465d78346e8368c964d4",
+    "source_bytes": 20565,
+    "bytes": 20565,
+    "method": "original-copy"
   },
   "lam/images/lam-005.jpg": {
     "path": "jpeg-q88-v1/lam/images/lam-005.jpg",
@@ -417,11 +417,11 @@
   },
   "lam/glass/lam-005.jpg": {
     "path": "jpeg-q88-v1/lam/glass/lam-005.jpg",
-    "source_sha256": "731abff1161b078841449a37547faa421952d119d3119dcd232bf62b3cfc040e",
-    "sha256": "e1c53673320b42ab08053003033c7277f7c798a9645e9762e97a06bfe7b25828",
-    "source_bytes": 22827,
-    "bytes": 22021,
-    "method": "lossless-optimized"
+    "source_sha256": "68e56f2ebfe3364a81671a2cc8c1db9f34d12af4460f68c9403effa094626fc1",
+    "sha256": "68e56f2ebfe3364a81671a2cc8c1db9f34d12af4460f68c9403effa094626fc1",
+    "source_bytes": 18506,
+    "bytes": 18506,
+    "method": "original-copy"
   },
   "lam/images/lam-006.jpg": {
     "path": "jpeg-q88-v1/lam/images/lam-006.jpg",
@@ -441,11 +441,11 @@
   },
   "lam/glass/lam-006.jpg": {
     "path": "jpeg-q88-v1/lam/glass/lam-006.jpg",
-    "source_sha256": "ced682f9148f09d0bcd3c4b544d57829617f8b9f9d4eaee018590441f6b70c69",
-    "sha256": "39704f34869b12d6abc27c9f342a42b4d09cd559ec783d3d860dd23b40e75cb1",
-    "source_bytes": 21976,
-    "bytes": 21572,
-    "method": "lossless-optimized"
+    "source_sha256": "afc3b1949db256176339d11e94f4ce6f24d278f88fd061b16a6e7cd56e8d4bcb",
+    "sha256": "afc3b1949db256176339d11e94f4ce6f24d278f88fd061b16a6e7cd56e8d4bcb",
+    "source_bytes": 17694,
+    "bytes": 17694,
+    "method": "original-copy"
   },
   "lam/images/lam-007.jpg": {
     "path": "jpeg-q88-v1/lam/images/lam-007.jpg",
@@ -465,11 +465,11 @@
   },
   "lam/glass/lam-007.jpg": {
     "path": "jpeg-q88-v1/lam/glass/lam-007.jpg",
-    "source_sha256": "dea0a28f7c65b655bb8f250dd3061c54724b61922ae6e3989e19328e3c2f3da2",
-    "sha256": "39044e7711b9cbe35291106e5281541099e07ffb1107b4fe43e56a958239b776",
-    "source_bytes": 27124,
-    "bytes": 26500,
-    "method": "lossless-optimized"
+    "source_sha256": "59c4765dac88a65084e196a821ef7d91beb46c59b81bff53f3f08274d97db1da",
+    "sha256": "59c4765dac88a65084e196a821ef7d91beb46c59b81bff53f3f08274d97db1da",
+    "source_bytes": 21981,
+    "bytes": 21981,
+    "method": "original-copy"
   },
   "lam/images/lam-008.jpg": {
     "path": "jpeg-q88-v1/lam/images/lam-008.jpg",
@@ -489,11 +489,11 @@
   },
   "lam/glass/lam-008.jpg": {
     "path": "jpeg-q88-v1/lam/glass/lam-008.jpg",
-    "source_sha256": "4f5d92347af61dcaa035fafccbb8998b002cd63851cfa27e79e7f252604f4e6d",
-    "sha256": "cc45c802c75aea30a5f3a0c3c52186a3202a102e21288f73c98e047d2a02bece",
-    "source_bytes": 28148,
-    "bytes": 27928,
-    "method": "lossless-optimized"
+    "source_sha256": "2bea8470ceebfafe6870a61e08f0773fce4b964b76921187fc0e5e0f8c9af09e",
+    "sha256": "2bea8470ceebfafe6870a61e08f0773fce4b964b76921187fc0e5e0f8c9af09e",
+    "source_bytes": 22810,
+    "bytes": 22810,
+    "method": "original-copy"
   },
   "lam/images/lam-009.jpg": {
     "path": "jpeg-q88-v1/lam/images/lam-009.jpg",
@@ -513,11 +513,11 @@
   },
   "lam/glass/lam-009.jpg": {
     "path": "jpeg-q88-v1/lam/glass/lam-009.jpg",
-    "source_sha256": "07ab01b58f891d178f30b048584da027aa627cac857fabedea947f6e96ef58a2",
-    "sha256": "0bdd3ca468533c8804077f3e5579bed9831cb961524861534f44dabc1f3b7251",
-    "source_bytes": 30951,
-    "bytes": 30490,
-    "method": "lossless-optimized"
+    "source_sha256": "eddedcc10690f0b83dac5f80caefd3a1d50d3e2f31e37fcb1fc6330045723e29",
+    "sha256": "eddedcc10690f0b83dac5f80caefd3a1d50d3e2f31e37fcb1fc6330045723e29",
+    "source_bytes": 24836,
+    "bytes": 24836,
+    "method": "original-copy"
   },
   "lam/images/lam-010.jpg": {
     "path": "jpeg-q88-v1/lam/images/lam-010.jpg",
@@ -537,11 +537,11 @@
   },
   "lam/glass/lam-010.jpg": {
     "path": "jpeg-q88-v1/lam/glass/lam-010.jpg",
-    "source_sha256": "de908fa7e40cd0ad4392acf1f0835b421d5928e54d27316c84defa71db94e46f",
-    "sha256": "fe0f6edb724cf55600c8b150f75a9e49c98d112f5913a75006a840a97f9c6f40",
-    "source_bytes": 16082,
-    "bytes": 15562,
-    "method": "lossless-optimized"
+    "source_sha256": "2fa8edfad5c7963e3f1cf75013b938df2eeb406a07f56485aeb64b31c54e1a67",
+    "sha256": "2fa8edfad5c7963e3f1cf75013b938df2eeb406a07f56485aeb64b31c54e1a67",
+    "source_bytes": 13039,
+    "bytes": 13039,
+    "method": "original-copy"
   },
   "lam/images/lam-011.jpg": {
     "path": "jpeg-q88-v1/lam/images/lam-011.jpg",
@@ -561,11 +561,11 @@
   },
   "lam/glass/lam-011.jpg": {
     "path": "jpeg-q88-v1/lam/glass/lam-011.jpg",
-    "source_sha256": "9ce2e72cfdcea346f98e509ed06aecd5d839100ab30d000d5f20a148f49683a2",
-    "sha256": "9a434e5b3cdcd116e6a547cdf0e8476058c415b99dd0bf8218c68ffb4d11b9de",
-    "source_bytes": 26480,
-    "bytes": 25965,
-    "method": "lossless-optimized"
+    "source_sha256": "dbd40e9008955c6836dd882f7ab3a2c67a439d288d67a062e6a75d0303ccf60c",
+    "sha256": "dbd40e9008955c6836dd882f7ab3a2c67a439d288d67a062e6a75d0303ccf60c",
+    "source_bytes": 21786,
+    "bytes": 21786,
+    "method": "original-copy"
   },
   "lam/images/lam-012.jpg": {
     "path": "jpeg-q88-v1/lam/images/lam-012.jpg",
@@ -585,11 +585,11 @@
   },
   "lam/glass/lam-012.jpg": {
     "path": "jpeg-q88-v1/lam/glass/lam-012.jpg",
-    "source_sha256": "80109932d66804df92cc38c146c94693e2a0887af63f6fac87540b342f44ba45",
-    "sha256": "2cf63fa49d86311ef1adb67ea772d7b2dd7074ca103dc3a27169daba82b82dd7",
-    "source_bytes": 25675,
-    "bytes": 25160,
-    "method": "lossless-optimized"
+    "source_sha256": "50565c7c6de7af8011f4cc8fb145fa936d461f40ac1cacd0fb92d2c02b321aec",
+    "sha256": "50565c7c6de7af8011f4cc8fb145fa936d461f40ac1cacd0fb92d2c02b321aec",
+    "source_bytes": 20973,
+    "bytes": 20973,
+    "method": "original-copy"
   },
   "ardhira-putra/avatar.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/avatar.jpg",
@@ -617,11 +617,11 @@
   },
   "ardhira-putra/glass/ardhira-putra-001.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/glass/ardhira-putra-001.jpg",
-    "source_sha256": "ebc026999e5b582828d92a4c2147a0514824f8791373fd92180e8194b4517457",
-    "sha256": "543bc0cce3ca856e366e6f50a0e89678c95315d89824b8bf15b42ce2d2cf46ac",
-    "source_bytes": 23897,
-    "bytes": 23372,
-    "method": "lossless-optimized"
+    "source_sha256": "5c41d6e27305a48b3ca3b535ff09d8aedf2f4d8590c8b62f8fe60e94c925e4a1",
+    "sha256": "5c41d6e27305a48b3ca3b535ff09d8aedf2f4d8590c8b62f8fe60e94c925e4a1",
+    "source_bytes": 18828,
+    "bytes": 18828,
+    "method": "original-copy"
   },
   "ardhira-putra/images/ardhira-putra-002.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/images/ardhira-putra-002.jpg",
@@ -641,11 +641,11 @@
   },
   "ardhira-putra/glass/ardhira-putra-002.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/glass/ardhira-putra-002.jpg",
-    "source_sha256": "3eb87b2740296d892e2e1739a224c01e3b85626b38d7e491f985b94f7c40c3f6",
-    "sha256": "7c7329148813565e550cebf598daa3500f4e3cf9777c5f25873d5e39f1896ddd",
-    "source_bytes": 23222,
-    "bytes": 22695,
-    "method": "lossless-optimized"
+    "source_sha256": "f268493aa093541843989879ca23ab3905354a543d06e34343ca9476f9a7636e",
+    "sha256": "f268493aa093541843989879ca23ab3905354a543d06e34343ca9476f9a7636e",
+    "source_bytes": 18388,
+    "bytes": 18388,
+    "method": "original-copy"
   },
   "ardhira-putra/images/ardhira-putra-003.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/images/ardhira-putra-003.jpg",
@@ -665,11 +665,11 @@
   },
   "ardhira-putra/glass/ardhira-putra-003.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/glass/ardhira-putra-003.jpg",
-    "source_sha256": "9217f15322a0cfbbdfeb8763ba6da62500cb2574ae22a837d0809b6ba6c410e2",
-    "sha256": "f503941dd093747542df41dc6daef7b080b10f0d2056f4e6457f02662b516d07",
-    "source_bytes": 19604,
-    "bytes": 18826,
-    "method": "lossless-optimized"
+    "source_sha256": "7bf5c32bbd082cf1aa72d2bc0965ce308c7477b1daa752e9bb75cf0f731d2314",
+    "sha256": "7bf5c32bbd082cf1aa72d2bc0965ce308c7477b1daa752e9bb75cf0f731d2314",
+    "source_bytes": 15371,
+    "bytes": 15371,
+    "method": "original-copy"
   },
   "ardhira-putra/images/ardhira-putra-004.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/images/ardhira-putra-004.jpg",
@@ -689,11 +689,11 @@
   },
   "ardhira-putra/glass/ardhira-putra-004.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/glass/ardhira-putra-004.jpg",
-    "source_sha256": "9c74a6fcb6a897beb17462ef70886eaa0fce52dff6c0df42248262de9f1d1819",
-    "sha256": "f2a1d3983459f746f3526077be91d017ff65b785bef449320cd6a26868fdd4b9",
-    "source_bytes": 16388,
-    "bytes": 15723,
-    "method": "lossless-optimized"
+    "source_sha256": "d6c2b00b157d2b7fa2ca54a37a467bbd20f19d7048956d24ab905fff02b98f4f",
+    "sha256": "d6c2b00b157d2b7fa2ca54a37a467bbd20f19d7048956d24ab905fff02b98f4f",
+    "source_bytes": 13233,
+    "bytes": 13233,
+    "method": "original-copy"
   },
   "ardhira-putra/images/ardhira-putra-005.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/images/ardhira-putra-005.jpg",
@@ -713,11 +713,11 @@
   },
   "ardhira-putra/glass/ardhira-putra-005.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/glass/ardhira-putra-005.jpg",
-    "source_sha256": "21cf4052cd34185334bbb52704c03c2d1f77ffe28f176547169506e59ffc82f4",
-    "sha256": "a8c6f73f72dcd473cf18fab6828823d4fbc86bf82f526cae9f89d9420d941bd1",
-    "source_bytes": 23425,
-    "bytes": 22985,
-    "method": "lossless-optimized"
+    "source_sha256": "fc56d041d1f36aff21a45c174eea844f57c2c4e72c5c9a874058e87cd6dd94bd",
+    "sha256": "fc56d041d1f36aff21a45c174eea844f57c2c4e72c5c9a874058e87cd6dd94bd",
+    "source_bytes": 18452,
+    "bytes": 18452,
+    "method": "original-copy"
   },
   "ardhira-putra/images/ardhira-putra-006.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/images/ardhira-putra-006.jpg",
@@ -737,11 +737,11 @@
   },
   "ardhira-putra/glass/ardhira-putra-006.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/glass/ardhira-putra-006.jpg",
-    "source_sha256": "d4fb1e4db7c64450a31b179f6f8f68e0d8e66762b3887f265f28bea8d2d8dcf1",
-    "sha256": "85c6bbc5215e2ae56eeed6bcdd01ceabb0d749a776ad9b510cb82bd643d4e848",
-    "source_bytes": 9971,
-    "bytes": 9522,
-    "method": "lossless-optimized"
+    "source_sha256": "19e95deab8219e5f780ee818f915b5b68b676a08dfefbc3532d4a1df651234a1",
+    "sha256": "19e95deab8219e5f780ee818f915b5b68b676a08dfefbc3532d4a1df651234a1",
+    "source_bytes": 8084,
+    "bytes": 8084,
+    "method": "original-copy"
   },
   "ardhira-putra/images/ardhira-putra-007.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/images/ardhira-putra-007.jpg",
@@ -761,11 +761,11 @@
   },
   "ardhira-putra/glass/ardhira-putra-007.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/glass/ardhira-putra-007.jpg",
-    "source_sha256": "b65c059d15557c4b22532337f1451ecb3a267704d3bebf8037ce56432dfe49c5",
-    "sha256": "33ff781f5a2ce6ac672adfb9a073c8286b1fc3a3d424d97493d6c93dd3c1e31a",
-    "source_bytes": 14797,
-    "bytes": 14427,
-    "method": "lossless-optimized"
+    "source_sha256": "4074bfc79bec36a0a34d5ec8363b88da161455563d77e88cbcefc3b4c58f214c",
+    "sha256": "4074bfc79bec36a0a34d5ec8363b88da161455563d77e88cbcefc3b4c58f214c",
+    "source_bytes": 11673,
+    "bytes": 11673,
+    "method": "original-copy"
   },
   "ardhira-putra/images/ardhira-putra-008.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/images/ardhira-putra-008.jpg",
@@ -785,11 +785,11 @@
   },
   "ardhira-putra/glass/ardhira-putra-008.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/glass/ardhira-putra-008.jpg",
-    "source_sha256": "f1e74edbd12438a090caaa5c707be17e188515fe3ef3deadc6611536c34b1ed0",
-    "sha256": "71e2aeb71c299d436d55f36e9ad482bfda1f1fd7dc4fcf629b387ae2b6498e99",
-    "source_bytes": 25053,
-    "bytes": 24600,
-    "method": "lossless-optimized"
+    "source_sha256": "12a8649654f23c5ea095a3fb613db06c088f62473c10f1588b5c8eb2b6bf07b7",
+    "sha256": "12a8649654f23c5ea095a3fb613db06c088f62473c10f1588b5c8eb2b6bf07b7",
+    "source_bytes": 19794,
+    "bytes": 19794,
+    "method": "original-copy"
   },
   "ardhira-putra/images/ardhira-putra-009.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/images/ardhira-putra-009.jpg",
@@ -809,11 +809,11 @@
   },
   "ardhira-putra/glass/ardhira-putra-009.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/glass/ardhira-putra-009.jpg",
-    "source_sha256": "5a68e7dbffac26be8e624ef3bf357831cd8249e694a60ae0f728ba1525f27fd2",
-    "sha256": "8651f81a03e2e95826fd4c2193a5a672021d955a32cdff886de33cc5878a03b2",
-    "source_bytes": 22844,
-    "bytes": 22305,
-    "method": "lossless-optimized"
+    "source_sha256": "31a0fefc7ca27db31839ec462dc125ea076196d797647127485a1831668dba7e",
+    "sha256": "31a0fefc7ca27db31839ec462dc125ea076196d797647127485a1831668dba7e",
+    "source_bytes": 18158,
+    "bytes": 18158,
+    "method": "original-copy"
   },
   "ardhira-putra/images/ardhira-putra-010.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/images/ardhira-putra-010.jpg",
@@ -833,11 +833,11 @@
   },
   "ardhira-putra/glass/ardhira-putra-010.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/glass/ardhira-putra-010.jpg",
-    "source_sha256": "c07570b159ce230ee868e7586e35427fa5b37b5fcc2043968c8676543b9c74e9",
-    "sha256": "9b09e594e699aab2050bcf9f5f38afba85bbea52932ed63ad77c2c54e441a562",
-    "source_bytes": 30033,
-    "bytes": 29590,
-    "method": "lossless-optimized"
+    "source_sha256": "132e6e49ddd387190d1ae7bb15360fd77ba2a0d896daefaaea302ffb8322af7a",
+    "sha256": "132e6e49ddd387190d1ae7bb15360fd77ba2a0d896daefaaea302ffb8322af7a",
+    "source_bytes": 23681,
+    "bytes": 23681,
+    "method": "original-copy"
   },
   "ardhira-putra/images/ardhira-putra-011.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/images/ardhira-putra-011.jpg",
@@ -857,11 +857,11 @@
   },
   "ardhira-putra/glass/ardhira-putra-011.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/glass/ardhira-putra-011.jpg",
-    "source_sha256": "8557c9c65303bf5c1e08558e5535ac7d9eaa20186b8240c7f38e1143904d3b13",
-    "sha256": "e39664d428b2cf5ef35a03cbb8e85bc5a1c426d77ca1c92a75cb0458b42f1bc8",
-    "source_bytes": 30362,
-    "bytes": 30043,
-    "method": "lossless-optimized"
+    "source_sha256": "4a3c2bf7d2229a98676eb8727fb0f006e6a00aabf865e458ed359ed86cca61f0",
+    "sha256": "4a3c2bf7d2229a98676eb8727fb0f006e6a00aabf865e458ed359ed86cca61f0",
+    "source_bytes": 24274,
+    "bytes": 24274,
+    "method": "original-copy"
   },
   "ardhira-putra/images/ardhira-putra-012.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/images/ardhira-putra-012.jpg",
@@ -881,11 +881,11 @@
   },
   "ardhira-putra/glass/ardhira-putra-012.jpg": {
     "path": "jpeg-q88-v1/ardhira-putra/glass/ardhira-putra-012.jpg",
-    "source_sha256": "65c591d8d4b340b61165f5d97360a93264c7a0f4209356511511f9eb82386afc",
-    "sha256": "69e07db1a909f4aea4a4d82f65d3fca4dc77c1471087570afa2793c0a0ee5cb2",
-    "source_bytes": 30961,
-    "bytes": 30571,
-    "method": "lossless-optimized"
+    "source_sha256": "04274819efe6405c648c2f3c20fb65f4a159d9b00303051f05e6364c1a2dd2e5",
+    "sha256": "04274819efe6405c648c2f3c20fb65f4a159d9b00303051f05e6364c1a2dd2e5",
+    "source_bytes": 24308,
+    "bytes": 24308,
+    "method": "original-copy"
   },
   "magoyama/avatar.jpg": {
     "path": "jpeg-q88-v1/magoyama/avatar.jpg",
@@ -913,11 +913,11 @@
   },
   "magoyama/glass/magoyama-001.jpg": {
     "path": "jpeg-q88-v1/magoyama/glass/magoyama-001.jpg",
-    "source_sha256": "3b5657e8b663f5833497a34a1e7250c089e3304e49e14947eb71b1b9404d231e",
-    "sha256": "590a89313f9842021e0f00411fc8db181d94002f6437e95868388cfcd9f34a80",
-    "source_bytes": 18666,
-    "bytes": 18166,
-    "method": "lossless-optimized"
+    "source_sha256": "6dcedfe71fb41407f4f893f1a8b2cdc966598a0144dc6c2ab04b5de655826ad3",
+    "sha256": "6dcedfe71fb41407f4f893f1a8b2cdc966598a0144dc6c2ab04b5de655826ad3",
+    "source_bytes": 15214,
+    "bytes": 15214,
+    "method": "original-copy"
   },
   "magoyama/images/magoyama-002.jpg": {
     "path": "jpeg-q88-v1/magoyama/images/magoyama-002.jpg",
@@ -937,11 +937,11 @@
   },
   "magoyama/glass/magoyama-002.jpg": {
     "path": "jpeg-q88-v1/magoyama/glass/magoyama-002.jpg",
-    "source_sha256": "fca58889928ebd22e78ea3db46060fc983e739f44af27c149921c16ff71255d3",
-    "sha256": "9e89dd472cd38c5a4e60f78add5fb38b5d94a445175d7a174ffb874f07a0fa6f",
-    "source_bytes": 23474,
-    "bytes": 23178,
-    "method": "lossless-optimized"
+    "source_sha256": "9ef71ac94fd112057324c8fd8138498eeb6dcb64be9bc1ddfc18ea232edaf751",
+    "sha256": "9ef71ac94fd112057324c8fd8138498eeb6dcb64be9bc1ddfc18ea232edaf751",
+    "source_bytes": 19227,
+    "bytes": 19227,
+    "method": "original-copy"
   },
   "magoyama/images/magoyama-003.jpg": {
     "path": "jpeg-q88-v1/magoyama/images/magoyama-003.jpg",
@@ -961,11 +961,11 @@
   },
   "magoyama/glass/magoyama-003.jpg": {
     "path": "jpeg-q88-v1/magoyama/glass/magoyama-003.jpg",
-    "source_sha256": "966a173ccd24dce2f5151acfc5552513179473bbd92e3ca743f3012dc7db0cf6",
-    "sha256": "4f4c51a373e0ea02d4bf5d2cf39b8ad803d787303f8e4c76d40907a0119abc62",
-    "source_bytes": 25810,
-    "bytes": 25251,
-    "method": "lossless-optimized"
+    "source_sha256": "f2dc058272a774a915214bbe84ea7ac99684961a709436d62589765babaa72da",
+    "sha256": "f2dc058272a774a915214bbe84ea7ac99684961a709436d62589765babaa72da",
+    "source_bytes": 20909,
+    "bytes": 20909,
+    "method": "original-copy"
   },
   "magoyama/images/magoyama-004.jpg": {
     "path": "jpeg-q88-v1/magoyama/images/magoyama-004.jpg",
@@ -985,11 +985,11 @@
   },
   "magoyama/glass/magoyama-004.jpg": {
     "path": "jpeg-q88-v1/magoyama/glass/magoyama-004.jpg",
-    "source_sha256": "8dd8051da2ac11f227d9912567cca22b634a7c8ad304e2349fc0513c9847beab",
-    "sha256": "e08e02fbcaa59bc801ce7aa92492eaee6c272a5242ce819919d7debd13f9714d",
-    "source_bytes": 33634,
-    "bytes": 33400,
-    "method": "lossless-optimized"
+    "source_sha256": "056d0ef3449a43f6800dda383f477124a2529070b4f62382749fe16fd72adf6f",
+    "sha256": "056d0ef3449a43f6800dda383f477124a2529070b4f62382749fe16fd72adf6f",
+    "source_bytes": 26954,
+    "bytes": 26954,
+    "method": "original-copy"
   },
   "magoyama/images/magoyama-005.jpg": {
     "path": "jpeg-q88-v1/magoyama/images/magoyama-005.jpg",
@@ -1009,11 +1009,11 @@
   },
   "magoyama/glass/magoyama-005.jpg": {
     "path": "jpeg-q88-v1/magoyama/glass/magoyama-005.jpg",
-    "source_sha256": "bdda6879d8279ff273b2cd3a35963435d2770c0063a97865098a57746a99b027",
-    "sha256": "ed98b2a25c21c6cff79f27f9fb2f61ae4c17a271569ffbbbebdf4f34cbd7a5b4",
-    "source_bytes": 22958,
-    "bytes": 21987,
-    "method": "lossless-optimized"
+    "source_sha256": "3923ee027367f6932bea48c8ad5236ae673a6951cbf4b37f51f90d789f694a0f",
+    "sha256": "3923ee027367f6932bea48c8ad5236ae673a6951cbf4b37f51f90d789f694a0f",
+    "source_bytes": 18325,
+    "bytes": 18325,
+    "method": "original-copy"
   },
   "magoyama/images/magoyama-006.jpg": {
     "path": "jpeg-q88-v1/magoyama/images/magoyama-006.jpg",
@@ -1033,11 +1033,11 @@
   },
   "magoyama/glass/magoyama-006.jpg": {
     "path": "jpeg-q88-v1/magoyama/glass/magoyama-006.jpg",
-    "source_sha256": "daefb8e01befb67b1a3e996f454966f737f4c1792190d58a86134202aa7a71ca",
-    "sha256": "3642eec57964129a043ebe3672871566fc03ce86e080c1175cb2e331a3a20624",
-    "source_bytes": 20563,
-    "bytes": 19897,
-    "method": "lossless-optimized"
+    "source_sha256": "859f3fdf5e87d1c513f4bd05a1289b6151cdda256371148f17120b1d713ba319",
+    "sha256": "859f3fdf5e87d1c513f4bd05a1289b6151cdda256371148f17120b1d713ba319",
+    "source_bytes": 16555,
+    "bytes": 16555,
+    "method": "original-copy"
   },
   "magoyama/images/magoyama-007.jpg": {
     "path": "jpeg-q88-v1/magoyama/images/magoyama-007.jpg",
@@ -1057,11 +1057,11 @@
   },
   "magoyama/glass/magoyama-007.jpg": {
     "path": "jpeg-q88-v1/magoyama/glass/magoyama-007.jpg",
-    "source_sha256": "bcd9303eeaeeb2569a4bd3c105da9da84d0e9dcd34a41f75c4aef994bffe8f09",
-    "sha256": "8302b9915efddecddf1084d031f5dfea4de8bfbbf5cfc1355abd5d70f15532d3",
-    "source_bytes": 18703,
-    "bytes": 18035,
-    "method": "lossless-optimized"
+    "source_sha256": "e05588358f84b100cdf0f7ebb439804768ef3f1ec15f51bf518b674f4001751f",
+    "sha256": "e05588358f84b100cdf0f7ebb439804768ef3f1ec15f51bf518b674f4001751f",
+    "source_bytes": 14990,
+    "bytes": 14990,
+    "method": "original-copy"
   },
   "magoyama/images/magoyama-008.jpg": {
     "path": "jpeg-q88-v1/magoyama/images/magoyama-008.jpg",
@@ -1081,11 +1081,11 @@
   },
   "magoyama/glass/magoyama-008.jpg": {
     "path": "jpeg-q88-v1/magoyama/glass/magoyama-008.jpg",
-    "source_sha256": "73baba790f486323ffffa9c4e1588659dadbec604c08e821a022c118310b17d7",
-    "sha256": "4ef4be20b58f2cea749cd669c953908b0a105ff57062f3280956d5d0cac552c2",
-    "source_bytes": 20001,
-    "bytes": 19663,
-    "method": "lossless-optimized"
+    "source_sha256": "f5ecfbdf336862db18325e0f3b5f11271de99a897c945114ac8f6539673021c9",
+    "sha256": "f5ecfbdf336862db18325e0f3b5f11271de99a897c945114ac8f6539673021c9",
+    "source_bytes": 16236,
+    "bytes": 16236,
+    "method": "original-copy"
   },
   "magoyama/images/magoyama-009.jpg": {
     "path": "jpeg-q88-v1/magoyama/images/magoyama-009.jpg",
@@ -1105,11 +1105,11 @@
   },
   "magoyama/glass/magoyama-009.jpg": {
     "path": "jpeg-q88-v1/magoyama/glass/magoyama-009.jpg",
-    "source_sha256": "bbb776cd67da55f0f691ed2c297c817857aca7aadbd55c93743bea44c577c4ef",
-    "sha256": "8a0a2eea8a41b7c8ea30eb7058f447445f67320f1217c273e3be6652257efde9",
-    "source_bytes": 18813,
-    "bytes": 18522,
-    "method": "lossless-optimized"
+    "source_sha256": "40f4ee42fb994a4d3b113c1568235fd8bad6e080b193d2ab65e0329009949576",
+    "sha256": "40f4ee42fb994a4d3b113c1568235fd8bad6e080b193d2ab65e0329009949576",
+    "source_bytes": 15255,
+    "bytes": 15255,
+    "method": "original-copy"
   },
   "magoyama/images/magoyama-010.jpg": {
     "path": "jpeg-q88-v1/magoyama/images/magoyama-010.jpg",
@@ -1129,11 +1129,11 @@
   },
   "magoyama/glass/magoyama-010.jpg": {
     "path": "jpeg-q88-v1/magoyama/glass/magoyama-010.jpg",
-    "source_sha256": "1b5e3aafad5477262899fce6022427bfe1510bb5d7dd97bbc6a4d671e7052efe",
-    "sha256": "f2d21f9b96877bd28520e07f7634368c75747e06cab903e675239d96edbf1fcf",
-    "source_bytes": 21936,
-    "bytes": 21588,
-    "method": "lossless-optimized"
+    "source_sha256": "0d9b034b347ab8b540c62b5d1ed9cbe76f5f3fbc2e2ad27fad1c81fffc8c1dfc",
+    "sha256": "0d9b034b347ab8b540c62b5d1ed9cbe76f5f3fbc2e2ad27fad1c81fffc8c1dfc",
+    "source_bytes": 17905,
+    "bytes": 17905,
+    "method": "original-copy"
   },
   "magoyama/images/magoyama-011.jpg": {
     "path": "jpeg-q88-v1/magoyama/images/magoyama-011.jpg",
@@ -1153,11 +1153,11 @@
   },
   "magoyama/glass/magoyama-011.jpg": {
     "path": "jpeg-q88-v1/magoyama/glass/magoyama-011.jpg",
-    "source_sha256": "0c27690d4564d5c759f12df0a3f6defac38b7497c37318b8b00423a1ebb48f76",
-    "sha256": "02a07de7b62b69fe9047d099b2b63aae42f8a3c43c3c1caa2d6e672f2c999182",
-    "source_bytes": 12615,
-    "bytes": 11964,
-    "method": "lossless-optimized"
+    "source_sha256": "7f0435397cea19a5af693fc529147d0b5ba93f082cf324ef9627dd73cf4b3a92",
+    "sha256": "7f0435397cea19a5af693fc529147d0b5ba93f082cf324ef9627dd73cf4b3a92",
+    "source_bytes": 10094,
+    "bytes": 10094,
+    "method": "original-copy"
   },
   "magoyama/images/magoyama-012.jpg": {
     "path": "jpeg-q88-v1/magoyama/images/magoyama-012.jpg",
@@ -1177,11 +1177,11 @@
   },
   "magoyama/glass/magoyama-012.jpg": {
     "path": "jpeg-q88-v1/magoyama/glass/magoyama-012.jpg",
-    "source_sha256": "9516d14e35b10a3cde6270c1cbb4f9ce1bf42aea529457d71fa808faea62ec9b",
-    "sha256": "9b1592682d42f271ea121d3020958471b0bb1069f859bd9a7a7a04bcd8cbdf1e",
-    "source_bytes": 18669,
-    "bytes": 18663,
-    "method": "lossless-optimized"
+    "source_sha256": "90a41ca1424eb5c9f3550c3fcd6e728e48c8c7d6aed9eddc68268cf05e525c0c",
+    "sha256": "90a41ca1424eb5c9f3550c3fcd6e728e48c8c7d6aed9eddc68268cf05e525c0c",
+    "source_bytes": 14960,
+    "bytes": 14960,
+    "method": "original-copy"
   },
   "yoneyama-mai/avatar.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/avatar.jpg",
@@ -1209,11 +1209,11 @@
   },
   "yoneyama-mai/glass/yoneyama-mai-003.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/glass/yoneyama-mai-003.jpg",
-    "source_sha256": "5ba2411c1b412cba66a4274c1e4d7df779a6d23975b1d406f7a96c524c6d1eff",
-    "sha256": "75a8da1a9a585f6901462f30e3abffc72da71f3388fcb427095e29cde4fb26a2",
-    "source_bytes": 16241,
-    "bytes": 15728,
-    "method": "lossless-optimized"
+    "source_sha256": "2bfb1b5137534d4d2af5cce1de37ccd145b66881cda8703ecbd6e6a10ecae9d4",
+    "sha256": "2bfb1b5137534d4d2af5cce1de37ccd145b66881cda8703ecbd6e6a10ecae9d4",
+    "source_bytes": 13004,
+    "bytes": 13004,
+    "method": "original-copy"
   },
   "yoneyama-mai/images/yoneyama-mai-004.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/images/yoneyama-mai-004.jpg",
@@ -1233,11 +1233,11 @@
   },
   "yoneyama-mai/glass/yoneyama-mai-004.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/glass/yoneyama-mai-004.jpg",
-    "source_sha256": "43feac1e50ca060cce118c4506931472606febde9ccbceda86263910df13dac3",
-    "sha256": "bc4c5c11b4f44df8071a8c02766e56a269f963fb1e4f7fe61192db60fa1939a8",
-    "source_bytes": 21316,
-    "bytes": 20665,
-    "method": "lossless-optimized"
+    "source_sha256": "c612650589ad971aa6f0fc7c5928768ee8ffcc83a54c0e5dbd175220af432215",
+    "sha256": "c612650589ad971aa6f0fc7c5928768ee8ffcc83a54c0e5dbd175220af432215",
+    "source_bytes": 16943,
+    "bytes": 16943,
+    "method": "original-copy"
   },
   "yoneyama-mai/images/yoneyama-mai-006.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/images/yoneyama-mai-006.jpg",
@@ -1257,11 +1257,11 @@
   },
   "yoneyama-mai/glass/yoneyama-mai-006.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/glass/yoneyama-mai-006.jpg",
-    "source_sha256": "324eee44c8dd3226febaaaa030348cacd98af7c96357d67fbb01e5c2645e70aa",
-    "sha256": "2aa0b11837106d6d7acf576f8d4115b71208827b3a8e16b31bb901ee54352973",
-    "source_bytes": 20494,
-    "bytes": 19525,
-    "method": "lossless-optimized"
+    "source_sha256": "d6a5b602def7a1265370a1031e6a43f1ba7d2803beab8d2efc21c521b7bb3e00",
+    "sha256": "d6a5b602def7a1265370a1031e6a43f1ba7d2803beab8d2efc21c521b7bb3e00",
+    "source_bytes": 16802,
+    "bytes": 16802,
+    "method": "original-copy"
   },
   "yoneyama-mai/images/yoneyama-mai-007.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/images/yoneyama-mai-007.jpg",
@@ -1281,11 +1281,11 @@
   },
   "yoneyama-mai/glass/yoneyama-mai-007.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/glass/yoneyama-mai-007.jpg",
-    "source_sha256": "90b8621d2a992994719954a74a666c88f603335bee2f71f60f9e552c8c7a87f0",
-    "sha256": "47e6f64eead547234785c1e1593c9e73bf6a7803a0e6f12821cec53edd47dbc1",
-    "source_bytes": 21697,
-    "bytes": 21221,
-    "method": "lossless-optimized"
+    "source_sha256": "49c10e13e3df5d7fa40eb984d628e65cec5bbf82b6d801c1ba421c3d6f4fabf2",
+    "sha256": "49c10e13e3df5d7fa40eb984d628e65cec5bbf82b6d801c1ba421c3d6f4fabf2",
+    "source_bytes": 17212,
+    "bytes": 17212,
+    "method": "original-copy"
   },
   "yoneyama-mai/images/yoneyama-mai-008.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/images/yoneyama-mai-008.jpg",
@@ -1305,11 +1305,11 @@
   },
   "yoneyama-mai/glass/yoneyama-mai-008.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/glass/yoneyama-mai-008.jpg",
-    "source_sha256": "27b1285f7ca855f7672677a1cae427300ac93bfdeb4e2bd0ef30045dfbf04fc4",
-    "sha256": "ea5510eac683b71410bad3a510b18606ea14b26a455922e65739fc83f276b1ef",
-    "source_bytes": 23918,
-    "bytes": 23143,
-    "method": "lossless-optimized"
+    "source_sha256": "51fa81a04d0833fa34e37f67b92ac15ce32bd499da6a44c742db662e853ff682",
+    "sha256": "51fa81a04d0833fa34e37f67b92ac15ce32bd499da6a44c742db662e853ff682",
+    "source_bytes": 19092,
+    "bytes": 19092,
+    "method": "original-copy"
   },
   "yoneyama-mai/images/yoneyama-mai-010.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/images/yoneyama-mai-010.jpg",
@@ -1329,11 +1329,11 @@
   },
   "yoneyama-mai/glass/yoneyama-mai-010.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/glass/yoneyama-mai-010.jpg",
-    "source_sha256": "08f56844e2e086c1d887721e8528ec080a9fd76bc56d18f594df986d54a55009",
-    "sha256": "76a0bda3bcd23869e63853ca279da6dc5738be58abc447d0a335abc9fc5123a6",
-    "source_bytes": 23420,
-    "bytes": 22517,
-    "method": "lossless-optimized"
+    "source_sha256": "7ba4841f9675070b8eefc3f410f39e6377cb5e4dd4109a2fbf8e2879805351a1",
+    "sha256": "7ba4841f9675070b8eefc3f410f39e6377cb5e4dd4109a2fbf8e2879805351a1",
+    "source_bytes": 18534,
+    "bytes": 18534,
+    "method": "original-copy"
   },
   "yoneyama-mai/images/yoneyama-mai-011.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/images/yoneyama-mai-011.jpg",
@@ -1353,11 +1353,11 @@
   },
   "yoneyama-mai/glass/yoneyama-mai-011.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/glass/yoneyama-mai-011.jpg",
-    "source_sha256": "b649d6effa2845b7fc60acb0801b00d94a4397984fe86f4c4098c5e81a531390",
-    "sha256": "59c09433bf67d7972c90dbfd77fd12990d3bd7be81112a9c139a3f9f136f98f7",
-    "source_bytes": 30803,
-    "bytes": 30574,
-    "method": "lossless-optimized"
+    "source_sha256": "e5c814fd6ef6bf7f6d94f93eb1a16dc49d7faf1f9f0f07ab7cfa92d9ff4a0ba2",
+    "sha256": "e5c814fd6ef6bf7f6d94f93eb1a16dc49d7faf1f9f0f07ab7cfa92d9ff4a0ba2",
+    "source_bytes": 24533,
+    "bytes": 24533,
+    "method": "original-copy"
   },
   "yoneyama-mai/images/yoneyama-mai-012.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/images/yoneyama-mai-012.jpg",
@@ -1377,11 +1377,11 @@
   },
   "yoneyama-mai/glass/yoneyama-mai-012.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/glass/yoneyama-mai-012.jpg",
-    "source_sha256": "ab0c5c400bacc96d528ca9623d3a01da154fe035dbd3310d46c4d2e428629cbb",
-    "sha256": "438df08bc240afdbedab59b7be431ffd0d6a8b97bb994f9a8c4f102cd0cb3029",
-    "source_bytes": 26184,
-    "bytes": 26149,
-    "method": "lossless-optimized"
+    "source_sha256": "7b9ece20fc1bf88205b908553d6499d0fbb7c642e77cf50df8ebd3a7e1721076",
+    "sha256": "7b9ece20fc1bf88205b908553d6499d0fbb7c642e77cf50df8ebd3a7e1721076",
+    "source_bytes": 21049,
+    "bytes": 21049,
+    "method": "original-copy"
   },
   "yoneyama-mai/images/yoneyama-mai-013.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/images/yoneyama-mai-013.jpg",
@@ -1401,11 +1401,11 @@
   },
   "yoneyama-mai/glass/yoneyama-mai-013.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/glass/yoneyama-mai-013.jpg",
-    "source_sha256": "688dd90e22f320eb77c9ff94e0c28cc87788177d8bc6d3eabd587b560f7e353f",
-    "sha256": "d390ee5e71f1574e41ab6893a6f4491025764d5cb68bce0ac5cb0c6054b3ba13",
-    "source_bytes": 27467,
-    "bytes": 26965,
-    "method": "lossless-optimized"
+    "source_sha256": "771a7f3f6caba55ad6a18301b1b9a5b50e84c319a24c3f4b94c9435e85f0ca04",
+    "sha256": "771a7f3f6caba55ad6a18301b1b9a5b50e84c319a24c3f4b94c9435e85f0ca04",
+    "source_bytes": 22077,
+    "bytes": 22077,
+    "method": "original-copy"
   },
   "yoneyama-mai/images/yoneyama-mai-014.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/images/yoneyama-mai-014.jpg",
@@ -1425,11 +1425,11 @@
   },
   "yoneyama-mai/glass/yoneyama-mai-014.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/glass/yoneyama-mai-014.jpg",
-    "source_sha256": "6e302581635fd8dd57e72fd5c22d6542ddd90d5aba62df0630852af16ab86fae",
-    "sha256": "c74f9eadefa10117db15881ecb1cbefb19b28e96662cf9eda272b39de60a5ddd",
-    "source_bytes": 28725,
-    "bytes": 28440,
-    "method": "lossless-optimized"
+    "source_sha256": "acf97caa57eb349009266b69a053a4b199b94f21ece34f626b83abeb086160dc",
+    "sha256": "acf97caa57eb349009266b69a053a4b199b94f21ece34f626b83abeb086160dc",
+    "source_bytes": 22961,
+    "bytes": 22961,
+    "method": "original-copy"
   },
   "yoneyama-mai/images/yoneyama-mai-015.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/images/yoneyama-mai-015.jpg",
@@ -1449,11 +1449,11 @@
   },
   "yoneyama-mai/glass/yoneyama-mai-015.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/glass/yoneyama-mai-015.jpg",
-    "source_sha256": "3af5c57904be4068a2a4ae4a3fb6bfd82f7347316ed8aa68a0c5943aa3a0f00f",
-    "sha256": "24120f25336c8e19b12ccfaf0b81f702589f395c31da14ac4c710d28b991c1db",
-    "source_bytes": 23526,
-    "bytes": 23042,
-    "method": "lossless-optimized"
+    "source_sha256": "c9b259048094143c8c2996b13f3e5c1523e93a0949736a0427305cee38da356b",
+    "sha256": "c9b259048094143c8c2996b13f3e5c1523e93a0949736a0427305cee38da356b",
+    "source_bytes": 18906,
+    "bytes": 18906,
+    "method": "original-copy"
   },
   "yoneyama-mai/images/yoneyama-mai-016.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/images/yoneyama-mai-016.jpg",
@@ -1473,11 +1473,11 @@
   },
   "yoneyama-mai/glass/yoneyama-mai-016.jpg": {
     "path": "jpeg-q88-v1/yoneyama-mai/glass/yoneyama-mai-016.jpg",
-    "source_sha256": "1d9f611ec6434a29dd3e5a0ddaf37ee2427fd59203e96def0b637079d756121a",
-    "sha256": "3acd0ac4595dc1b930460ea5707e599d4f00f979743a84a5d4450f2ea0c0c5ff",
-    "source_bytes": 29613,
-    "bytes": 29260,
-    "method": "lossless-optimized"
+    "source_sha256": "370226b0a835fd96905cfe132fdc05ad5be6044aa923ea03d86a3ba2548fe8a8",
+    "sha256": "370226b0a835fd96905cfe132fdc05ad5be6044aa923ea03d86a3ba2548fe8a8",
+    "source_bytes": 23796,
+    "bytes": 23796,
+    "method": "original-copy"
   },
   "benjamin-flouw/avatar.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/avatar.jpg",
@@ -1505,11 +1505,11 @@
   },
   "benjamin-flouw/glass/benjamin-flouw-001.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/glass/benjamin-flouw-001.jpg",
-    "source_sha256": "e69aaed154cbac75f27580e9c21d3a740276055bd91a4df1d7c2f976fc89e437",
-    "sha256": "1abcd5e4484e23e93cf3e75e8c9803bfaf4847b5acfc2f925010429c248e8d73",
-    "source_bytes": 11723,
-    "bytes": 11385,
-    "method": "lossless-optimized"
+    "source_sha256": "5ad873afd0989e4556013631f47cc4d5e35f273fe8fd49a7a81fd4bf6ad39d87",
+    "sha256": "5ad873afd0989e4556013631f47cc4d5e35f273fe8fd49a7a81fd4bf6ad39d87",
+    "source_bytes": 9467,
+    "bytes": 9467,
+    "method": "original-copy"
   },
   "benjamin-flouw/images/benjamin-flouw-003.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/images/benjamin-flouw-003.jpg",
@@ -1529,11 +1529,11 @@
   },
   "benjamin-flouw/glass/benjamin-flouw-003.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/glass/benjamin-flouw-003.jpg",
-    "source_sha256": "522f0cc55a3e7cf0c3a4a737dbd12d84ff81250f24683079c14f17a488b647a8",
-    "sha256": "d050b635548a94e8515b64535cd452b834ea6f4dbe18b253ebb3565e381f6ebb",
-    "source_bytes": 15481,
-    "bytes": 14865,
-    "method": "lossless-optimized"
+    "source_sha256": "3e0a78596a0c6e99deb0f6c993585424ec1b040717f5a4441925913075644264",
+    "sha256": "3e0a78596a0c6e99deb0f6c993585424ec1b040717f5a4441925913075644264",
+    "source_bytes": 12684,
+    "bytes": 12684,
+    "method": "original-copy"
   },
   "benjamin-flouw/images/benjamin-flouw-004.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/images/benjamin-flouw-004.jpg",
@@ -1553,11 +1553,11 @@
   },
   "benjamin-flouw/glass/benjamin-flouw-004.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/glass/benjamin-flouw-004.jpg",
-    "source_sha256": "ed1cbbe552c09c3a7de7583e212fe040da8da888fd961782db121e39ca481a7f",
-    "sha256": "3caa0fed1c37a19adfd26bf63ebf6c5ecce33e8d1e03d669174301f36d587d5f",
-    "source_bytes": 8332,
-    "bytes": 7591,
-    "method": "lossless-optimized"
+    "source_sha256": "644e72cfd99a5fcb970a5144b84974625a953de8b59e6fba7e1604767501f616",
+    "sha256": "644e72cfd99a5fcb970a5144b84974625a953de8b59e6fba7e1604767501f616",
+    "source_bytes": 6802,
+    "bytes": 6802,
+    "method": "original-copy"
   },
   "benjamin-flouw/images/benjamin-flouw-005.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/images/benjamin-flouw-005.jpg",
@@ -1577,11 +1577,11 @@
   },
   "benjamin-flouw/glass/benjamin-flouw-005.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/glass/benjamin-flouw-005.jpg",
-    "source_sha256": "c6ba01b37929c0f51af45296f6aff281d6e1bf0017a544ec33a57859c7e196ef",
-    "sha256": "ae9243ddc781fa27d9655a032756876a22c2ac4f3f06c0c4e43eadbabd777595",
-    "source_bytes": 18064,
-    "bytes": 17208,
-    "method": "lossless-optimized"
+    "source_sha256": "0abfc5d1950973903209f0c3ec958a0b79c41658c645cd2d85d453a0aed2c941",
+    "sha256": "0abfc5d1950973903209f0c3ec958a0b79c41658c645cd2d85d453a0aed2c941",
+    "source_bytes": 14939,
+    "bytes": 14939,
+    "method": "original-copy"
   },
   "benjamin-flouw/images/benjamin-flouw-006.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/images/benjamin-flouw-006.jpg",
@@ -1601,11 +1601,11 @@
   },
   "benjamin-flouw/glass/benjamin-flouw-006.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/glass/benjamin-flouw-006.jpg",
-    "source_sha256": "27935a0e817f70b70fca908cb5be9de66fce61fb3244f7e9cb255cd2202dc3bb",
-    "sha256": "b12fa8b9298ea467e1f16bca875113888eb6bd5d061c42ae0ea51d17b7f49ac8",
-    "source_bytes": 19856,
-    "bytes": 19089,
-    "method": "lossless-optimized"
+    "source_sha256": "3876aa27b3c9550e1e328aee9a652e4d4596d93af314dc562fa178e66fc4a689",
+    "sha256": "3876aa27b3c9550e1e328aee9a652e4d4596d93af314dc562fa178e66fc4a689",
+    "source_bytes": 16639,
+    "bytes": 16639,
+    "method": "original-copy"
   },
   "benjamin-flouw/images/benjamin-flouw-007.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/images/benjamin-flouw-007.jpg",
@@ -1625,11 +1625,11 @@
   },
   "benjamin-flouw/glass/benjamin-flouw-007.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/glass/benjamin-flouw-007.jpg",
-    "source_sha256": "630c0985d5986502537ec29b018ad3960d15144b727830974354ed2c1ed29f2c",
-    "sha256": "4f0a63c338aaed624f44891a86df068faafaf77d2b3b0d9fe2868d8c8e7e14a2",
-    "source_bytes": 19707,
-    "bytes": 19147,
-    "method": "lossless-optimized"
+    "source_sha256": "40ca5fd9b0cac14d1a7f7b9a9325e4cc0da405c9fac372ed01be7deb11e9c2f5",
+    "sha256": "40ca5fd9b0cac14d1a7f7b9a9325e4cc0da405c9fac372ed01be7deb11e9c2f5",
+    "source_bytes": 16300,
+    "bytes": 16300,
+    "method": "original-copy"
   },
   "benjamin-flouw/images/benjamin-flouw-009.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/images/benjamin-flouw-009.jpg",
@@ -1649,11 +1649,11 @@
   },
   "benjamin-flouw/glass/benjamin-flouw-009.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/glass/benjamin-flouw-009.jpg",
-    "source_sha256": "0fab8e9a8bc763e021e9d83122ad5ffcae12bc81858875db6318342505e5200a",
-    "sha256": "baff0936d5f60602dc8e403c8f2e15a7cc1f5908382914a4b2857908b0adf7ee",
-    "source_bytes": 14503,
-    "bytes": 13733,
-    "method": "lossless-optimized"
+    "source_sha256": "afff3856416c2d2775013ef0b235272f4c445d75f55cda3712d706c99c6389b1",
+    "sha256": "afff3856416c2d2775013ef0b235272f4c445d75f55cda3712d706c99c6389b1",
+    "source_bytes": 12287,
+    "bytes": 12287,
+    "method": "original-copy"
   },
   "benjamin-flouw/images/benjamin-flouw-010.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/images/benjamin-flouw-010.jpg",
@@ -1673,11 +1673,11 @@
   },
   "benjamin-flouw/glass/benjamin-flouw-010.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/glass/benjamin-flouw-010.jpg",
-    "source_sha256": "a10d27c8a9d9c811744e785b4bed22ddf0d103498d3879419536d7ad602c3cc2",
-    "sha256": "fbf7dd88c1da412f6cf5e9d654c14ad9c1057e538ec86d143494cb05d221052d",
-    "source_bytes": 18502,
-    "bytes": 18044,
-    "method": "lossless-optimized"
+    "source_sha256": "a06a373a754c2890500dd80bd90950bc1c005ffbc76ba4f583a5b7d6c5b63412",
+    "sha256": "a06a373a754c2890500dd80bd90950bc1c005ffbc76ba4f583a5b7d6c5b63412",
+    "source_bytes": 14948,
+    "bytes": 14948,
+    "method": "original-copy"
   },
   "benjamin-flouw/images/benjamin-flouw-011.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/images/benjamin-flouw-011.jpg",
@@ -1697,11 +1697,11 @@
   },
   "benjamin-flouw/glass/benjamin-flouw-011.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/glass/benjamin-flouw-011.jpg",
-    "source_sha256": "4b1ed685754985439e9ada27bcde4c4c614e4fd40ed360bfa33e51e2e0f5bd7f",
-    "sha256": "3df43df9e67fa5ab52de4f9c74091bb92896bb03c300881b180b83308cabebee",
-    "source_bytes": 18868,
-    "bytes": 17823,
-    "method": "lossless-optimized"
+    "source_sha256": "5bec3327f902424bf9bfb11b82440d7243704c11eb0e41f59357ffed1dc61728",
+    "sha256": "5bec3327f902424bf9bfb11b82440d7243704c11eb0e41f59357ffed1dc61728",
+    "source_bytes": 15363,
+    "bytes": 15363,
+    "method": "original-copy"
   },
   "benjamin-flouw/images/benjamin-flouw-012.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/images/benjamin-flouw-012.jpg",
@@ -1721,11 +1721,11 @@
   },
   "benjamin-flouw/glass/benjamin-flouw-012.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/glass/benjamin-flouw-012.jpg",
-    "source_sha256": "fb9ae927b43b0956802497276631c38c9af9a2fbe6460160d6de961df3b556d7",
-    "sha256": "f6fba4a71d2a597e333df94bf77a2a7f8d0e79662b81945046be8ad740055f92",
-    "source_bytes": 21884,
-    "bytes": 21073,
-    "method": "lossless-optimized"
+    "source_sha256": "9b8d94c7aa5b3f2d00c956f9916d38c5957f3cb11a062096df878796bc44280a",
+    "sha256": "9b8d94c7aa5b3f2d00c956f9916d38c5957f3cb11a062096df878796bc44280a",
+    "source_bytes": 17700,
+    "bytes": 17700,
+    "method": "original-copy"
   },
   "benjamin-flouw/images/benjamin-flouw-013.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/images/benjamin-flouw-013.jpg",
@@ -1745,11 +1745,11 @@
   },
   "benjamin-flouw/glass/benjamin-flouw-013.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/glass/benjamin-flouw-013.jpg",
-    "source_sha256": "cfdf5f3174cd02793c703b96dbad1e014b3730c91bc307f5e32e689bf32157b0",
-    "sha256": "5ca6c32d8066d1f1b5ddcc78d28317c61b4683d2bd061f92362e5cea81f67768",
-    "source_bytes": 12897,
-    "bytes": 11993,
-    "method": "lossless-optimized"
+    "source_sha256": "841324bdd57d27fde2dfc494b5e1b3e4da534d2a14a73b2876ddb8b78eff7e53",
+    "sha256": "841324bdd57d27fde2dfc494b5e1b3e4da534d2a14a73b2876ddb8b78eff7e53",
+    "source_bytes": 10770,
+    "bytes": 10770,
+    "method": "original-copy"
   },
   "benjamin-flouw/images/benjamin-flouw-014.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/images/benjamin-flouw-014.jpg",
@@ -1769,11 +1769,11 @@
   },
   "benjamin-flouw/glass/benjamin-flouw-014.jpg": {
     "path": "jpeg-q88-v1/benjamin-flouw/glass/benjamin-flouw-014.jpg",
-    "source_sha256": "e92208273fee088a2ac25048308ec594c262e5b6e4b79115feafd99b64293703",
-    "sha256": "841420274883731aac290821137b5a9a5726113f94b8328c9da7ac5a3ee3b5e7",
-    "source_bytes": 18091,
-    "bytes": 17968,
-    "method": "lossless-optimized"
+    "source_sha256": "825a66863cb8f9f5090b4697ab5966429186798a7fb363d0faabb423c0d5337a",
+    "sha256": "825a66863cb8f9f5090b4697ab5966429186798a7fb363d0faabb423c0d5337a",
+    "source_bytes": 14404,
+    "bytes": 14404,
+    "method": "original-copy"
   },
   "venmen/avatar.jpg": {
     "path": "jpeg-q88-v1/venmen/avatar.jpg",
@@ -1801,11 +1801,11 @@
   },
   "venmen/glass/venmen-001.jpg": {
     "path": "jpeg-q88-v1/venmen/glass/venmen-001.jpg",
-    "source_sha256": "96d0dada38299c11429b11d4bc6693f4b0b6a9b11a7ed5b5a507c97088ba3471",
-    "sha256": "c53d2b49f20d2b605e728aaad34b37958aa77dc2f260d0faad0e76c21d972887",
-    "source_bytes": 25138,
-    "bytes": 24409,
-    "method": "lossless-optimized"
+    "source_sha256": "c6c73af47878033539e2d734118038497f934eacfd66080719b8a5e17fa7ae1b",
+    "sha256": "c6c73af47878033539e2d734118038497f934eacfd66080719b8a5e17fa7ae1b",
+    "source_bytes": 20805,
+    "bytes": 20805,
+    "method": "original-copy"
   },
   "venmen/images/venmen-003.jpg": {
     "path": "jpeg-q88-v1/venmen/images/venmen-003.jpg",
@@ -1825,11 +1825,11 @@
   },
   "venmen/glass/venmen-003.jpg": {
     "path": "jpeg-q88-v1/venmen/glass/venmen-003.jpg",
-    "source_sha256": "66fd4397032d470e071b9b7e743ba6b8aff348fff2a73d5da990314a9c4a9869",
-    "sha256": "c5d8d849ca55d1f3cbaa0c20586872fc5aefba89185e7fd883625fbab97949b7",
-    "source_bytes": 21717,
-    "bytes": 21076,
-    "method": "lossless-optimized"
+    "source_sha256": "91ecac93d4c12133693ff58e6d4a72357abd22607e51c73763c78a68e7714b73",
+    "sha256": "91ecac93d4c12133693ff58e6d4a72357abd22607e51c73763c78a68e7714b73",
+    "source_bytes": 18035,
+    "bytes": 18035,
+    "method": "original-copy"
   },
   "venmen/images/venmen-004.jpg": {
     "path": "jpeg-q88-v1/venmen/images/venmen-004.jpg",
@@ -1849,11 +1849,11 @@
   },
   "venmen/glass/venmen-004.jpg": {
     "path": "jpeg-q88-v1/venmen/glass/venmen-004.jpg",
-    "source_sha256": "e7f87f7f9e3c67d1f9ab6d3eb956a019a3a9071db05a404ea087bbdb66a8af46",
-    "sha256": "8e8f61030c29a3ba798b1b614fd5e2fbb68b716eae3578ed42692e5b73eec42c",
-    "source_bytes": 23293,
-    "bytes": 22901,
-    "method": "lossless-optimized"
+    "source_sha256": "2df98211cd42a8500b4aab8a3248af6b7b003ddad227f776f3c281e8e661133f",
+    "sha256": "2df98211cd42a8500b4aab8a3248af6b7b003ddad227f776f3c281e8e661133f",
+    "source_bytes": 19164,
+    "bytes": 19164,
+    "method": "original-copy"
   },
   "venmen/images/venmen-005.jpg": {
     "path": "jpeg-q88-v1/venmen/images/venmen-005.jpg",
@@ -1873,11 +1873,11 @@
   },
   "venmen/glass/venmen-005.jpg": {
     "path": "jpeg-q88-v1/venmen/glass/venmen-005.jpg",
-    "source_sha256": "1ebf71c6fa54db291e5ad258901c13ff9f8ce473510062653be6e878b4586404",
-    "sha256": "4804192bd9f9a3351db65031f827b3bbea17c2ecc312e7365bab9f03e4ba61a2",
-    "source_bytes": 17689,
-    "bytes": 17198,
-    "method": "lossless-optimized"
+    "source_sha256": "77354fc69f3a5b3ca6db560c688217d0d450828feef7a4b3b2323008360439e1",
+    "sha256": "77354fc69f3a5b3ca6db560c688217d0d450828feef7a4b3b2323008360439e1",
+    "source_bytes": 14511,
+    "bytes": 14511,
+    "method": "original-copy"
   },
   "venmen/images/venmen-006.jpg": {
     "path": "jpeg-q88-v1/venmen/images/venmen-006.jpg",
@@ -1897,11 +1897,11 @@
   },
   "venmen/glass/venmen-006.jpg": {
     "path": "jpeg-q88-v1/venmen/glass/venmen-006.jpg",
-    "source_sha256": "92285349f63964fc51efd2c834178c06d7611668b529cf8fe512fe5aff8f04cd",
-    "sha256": "b0ee7d8d08c4506f7b01c2e2ea61fd02d77ed215924f271760cbc3ed89a50bb3",
-    "source_bytes": 24354,
-    "bytes": 24064,
-    "method": "lossless-optimized"
+    "source_sha256": "400ebbd2581d1a69763b868aa07779a1bdc19f26833876a9f0052d8736157bb7",
+    "sha256": "400ebbd2581d1a69763b868aa07779a1bdc19f26833876a9f0052d8736157bb7",
+    "source_bytes": 19439,
+    "bytes": 19439,
+    "method": "original-copy"
   },
   "venmen/images/venmen-007.jpg": {
     "path": "jpeg-q88-v1/venmen/images/venmen-007.jpg",
@@ -1921,11 +1921,11 @@
   },
   "venmen/glass/venmen-007.jpg": {
     "path": "jpeg-q88-v1/venmen/glass/venmen-007.jpg",
-    "source_sha256": "d3eebcebb19643837bc579552e8198dc733a9debddfa0534316bf58608b68589",
-    "sha256": "da2c5aaeb84a70fa14ba0bfd1994a43841f739a7b7fa3983870db9379f232f2a",
-    "source_bytes": 33984,
-    "bytes": 33877,
-    "method": "lossless-optimized"
+    "source_sha256": "03096efb8ead694b716d5ba20166f2f58f880a32a9b10e733657e3551867e3ed",
+    "sha256": "03096efb8ead694b716d5ba20166f2f58f880a32a9b10e733657e3551867e3ed",
+    "source_bytes": 26965,
+    "bytes": 26965,
+    "method": "original-copy"
   },
   "venmen/images/venmen-008.jpg": {
     "path": "jpeg-q88-v1/venmen/images/venmen-008.jpg",
@@ -1945,11 +1945,11 @@
   },
   "venmen/glass/venmen-008.jpg": {
     "path": "jpeg-q88-v1/venmen/glass/venmen-008.jpg",
-    "source_sha256": "f953326fb061db3092ff1a87d8cf02eaf60bde045633faacc084e76fc7927713",
-    "sha256": "2bc423ffa1fed66b10e1ed918c4a8bd9cae46760e50443bb474ae206d931bd2f",
-    "source_bytes": 22654,
-    "bytes": 21825,
-    "method": "lossless-optimized"
+    "source_sha256": "d46425dad1ff15fe14f11ce7c822001b22e814a09d747aacc4cff28dfccd2d4c",
+    "sha256": "d46425dad1ff15fe14f11ce7c822001b22e814a09d747aacc4cff28dfccd2d4c",
+    "source_bytes": 18540,
+    "bytes": 18540,
+    "method": "original-copy"
   },
   "venmen/images/venmen-010.jpg": {
     "path": "jpeg-q88-v1/venmen/images/venmen-010.jpg",
@@ -1969,11 +1969,11 @@
   },
   "venmen/glass/venmen-010.jpg": {
     "path": "jpeg-q88-v1/venmen/glass/venmen-010.jpg",
-    "source_sha256": "c4f4b80b26656c9e594d328e8c2cab775620a7e1fcaea885341137f9a424900f",
-    "sha256": "427d5d7a540657f0fd704595b5e7513cf7f6392e1c5df590dc3aff4e00c144cd",
-    "source_bytes": 26381,
-    "bytes": 25686,
-    "method": "lossless-optimized"
+    "source_sha256": "5ddc7fe169570bcf212ae7d4254aa3eee1be2c2c8df0329df8174a25b77ea655",
+    "sha256": "5ddc7fe169570bcf212ae7d4254aa3eee1be2c2c8df0329df8174a25b77ea655",
+    "source_bytes": 21625,
+    "bytes": 21625,
+    "method": "original-copy"
   },
   "venmen/images/venmen-011.jpg": {
     "path": "jpeg-q88-v1/venmen/images/venmen-011.jpg",
@@ -1993,11 +1993,11 @@
   },
   "venmen/glass/venmen-011.jpg": {
     "path": "jpeg-q88-v1/venmen/glass/venmen-011.jpg",
-    "source_sha256": "a90893a11cddf8b3e32264e04c16e9e9b85e3196c163196fe688beea0c1dcfe1",
-    "sha256": "7bb6285d21bf7d73692120c52232fa8ce0add3d4d6d5516b93d453c6c663fc83",
-    "source_bytes": 25846,
-    "bytes": 24924,
-    "method": "lossless-optimized"
+    "source_sha256": "888e924ffb84355cc44bcf60bccc533c5f43adfbff04338e64dad72aa28d07ff",
+    "sha256": "888e924ffb84355cc44bcf60bccc533c5f43adfbff04338e64dad72aa28d07ff",
+    "source_bytes": 20956,
+    "bytes": 20956,
+    "method": "original-copy"
   },
   "patryk-wojciechowicz/avatar.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/avatar.jpg",
@@ -2025,11 +2025,11 @@
   },
   "patryk-wojciechowicz/glass/patryk-wojciechowicz-002.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/glass/patryk-wojciechowicz-002.jpg",
-    "source_sha256": "8db3f87015ad011bf28bc158998d1e696e6b0b6e9db39cfb6e40ce0138aa8346",
-    "sha256": "71ed18f893a899d68ba292a7606f8d346aba842976791802ff44ec1a23510d20",
-    "source_bytes": 8619,
-    "bytes": 8170,
-    "method": "lossless-optimized"
+    "source_sha256": "44463915a245b371efc6b62920d1a64bc1a67184cb5880674ef9bea726e5d1bd",
+    "sha256": "44463915a245b371efc6b62920d1a64bc1a67184cb5880674ef9bea726e5d1bd",
+    "source_bytes": 7180,
+    "bytes": 7180,
+    "method": "original-copy"
   },
   "patryk-wojciechowicz/images/patryk-wojciechowicz-004.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/images/patryk-wojciechowicz-004.jpg",
@@ -2049,11 +2049,11 @@
   },
   "patryk-wojciechowicz/glass/patryk-wojciechowicz-004.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/glass/patryk-wojciechowicz-004.jpg",
-    "source_sha256": "31677e6111568f9337e75a50f6540497f21969a29bb6aa2de393c9b04ea14335",
-    "sha256": "d93b7a43e891aabe736830209f8e87f591125d8fe9dd66a7ce2b98ed12de5cd6",
-    "source_bytes": 8944,
-    "bytes": 8521,
-    "method": "lossless-optimized"
+    "source_sha256": "9f1daaaf025c24300630e2c619da4fd137fa9eeac9445000d46e2714c2a46eb5",
+    "sha256": "9f1daaaf025c24300630e2c619da4fd137fa9eeac9445000d46e2714c2a46eb5",
+    "source_bytes": 7351,
+    "bytes": 7351,
+    "method": "original-copy"
   },
   "patryk-wojciechowicz/images/patryk-wojciechowicz-005.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/images/patryk-wojciechowicz-005.jpg",
@@ -2073,11 +2073,11 @@
   },
   "patryk-wojciechowicz/glass/patryk-wojciechowicz-005.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/glass/patryk-wojciechowicz-005.jpg",
-    "source_sha256": "6854c328cafe5df8652e5b2b2162b4c0d1d2f7081e3c92b5468c228d7501d4ea",
-    "sha256": "ee01199bbc6b52a28d3c833c548dd1458d8c48076ee0b977e131ba50b66cf3dd",
-    "source_bytes": 7556,
-    "bytes": 6909,
-    "method": "lossless-optimized"
+    "source_sha256": "ca57a9110e3b12d8e10f6817d25be7928704259f11af7a3000a37efbdf6ca48b",
+    "sha256": "ca57a9110e3b12d8e10f6817d25be7928704259f11af7a3000a37efbdf6ca48b",
+    "source_bytes": 5979,
+    "bytes": 5979,
+    "method": "original-copy"
   },
   "patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg",
@@ -2097,11 +2097,11 @@
   },
   "patryk-wojciechowicz/glass/patryk-wojciechowicz-006.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/glass/patryk-wojciechowicz-006.jpg",
-    "source_sha256": "3d771a748ab80c1cee3ac710922451478914860652f1a81229fcdd73f46bb4fb",
-    "sha256": "a16615893e93429e262052f200afabc4116ae9ba121d5cfbcdef8b7627152c47",
-    "source_bytes": 11534,
-    "bytes": 10931,
-    "method": "lossless-optimized"
+    "source_sha256": "2609f9e65bfdd696ce75f119815ffb9e847d4f0b295c813d73573d63236ce76e",
+    "sha256": "2609f9e65bfdd696ce75f119815ffb9e847d4f0b295c813d73573d63236ce76e",
+    "source_bytes": 9514,
+    "bytes": 9514,
+    "method": "original-copy"
   },
   "patryk-wojciechowicz/images/patryk-wojciechowicz-007.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/images/patryk-wojciechowicz-007.jpg",
@@ -2121,11 +2121,11 @@
   },
   "patryk-wojciechowicz/glass/patryk-wojciechowicz-007.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/glass/patryk-wojciechowicz-007.jpg",
-    "source_sha256": "d951c4fcbee2d6450cd5b4435deeca3b5fcfc9765602e9343aff6b069fb73440",
-    "sha256": "d28a21fc661a3b26cc9f55bdfa5a47b87f1e049919ef3cbcb4a312ea135b6b10",
-    "source_bytes": 14181,
-    "bytes": 13624,
-    "method": "lossless-optimized"
+    "source_sha256": "ae25e963310314a719ccd6b62f8168aead1467c87c28e8d0c0d52d94e225f8c1",
+    "sha256": "ae25e963310314a719ccd6b62f8168aead1467c87c28e8d0c0d52d94e225f8c1",
+    "source_bytes": 11458,
+    "bytes": 11458,
+    "method": "original-copy"
   },
   "patryk-wojciechowicz/images/patryk-wojciechowicz-008.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/images/patryk-wojciechowicz-008.jpg",
@@ -2145,11 +2145,11 @@
   },
   "patryk-wojciechowicz/glass/patryk-wojciechowicz-008.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/glass/patryk-wojciechowicz-008.jpg",
-    "source_sha256": "2d412b764bb6769169467e55482537f3dadf66d01acda8abe0fe8ee2e7660bd7",
-    "sha256": "8f9f5c1cca0136bf86f387c697ec6ecfd0763eb5c0508408efb45bc1e5fb4ba0",
-    "source_bytes": 14193,
-    "bytes": 13636,
-    "method": "lossless-optimized"
+    "source_sha256": "d2f03706a6d73b243545bad895dfa6fc420c276e892f74925622ac9d1ec83c98",
+    "sha256": "d2f03706a6d73b243545bad895dfa6fc420c276e892f74925622ac9d1ec83c98",
+    "source_bytes": 11540,
+    "bytes": 11540,
+    "method": "original-copy"
   },
   "patryk-wojciechowicz/images/patryk-wojciechowicz-009.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/images/patryk-wojciechowicz-009.jpg",
@@ -2169,11 +2169,11 @@
   },
   "patryk-wojciechowicz/glass/patryk-wojciechowicz-009.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/glass/patryk-wojciechowicz-009.jpg",
-    "source_sha256": "8ad1b7a384b521908a700cf3b9d3121cb76234f4345a7607a30dc9cd33f3e7aa",
-    "sha256": "b7c705839b75ebc3289a6dc5b3cbe2db6b28a0266f037234a420abe44667e874",
-    "source_bytes": 10639,
-    "bytes": 10194,
-    "method": "lossless-optimized"
+    "source_sha256": "89c90c1795953945c0c5c21aa3ce585549579a626ac79840b682f054884c2189",
+    "sha256": "89c90c1795953945c0c5c21aa3ce585549579a626ac79840b682f054884c2189",
+    "source_bytes": 8712,
+    "bytes": 8712,
+    "method": "original-copy"
   },
   "patryk-wojciechowicz/images/patryk-wojciechowicz-010.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/images/patryk-wojciechowicz-010.jpg",
@@ -2193,11 +2193,11 @@
   },
   "patryk-wojciechowicz/glass/patryk-wojciechowicz-010.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/glass/patryk-wojciechowicz-010.jpg",
-    "source_sha256": "f563fce6c26d0b30a93f945cc48e27b40300db2d1b2277c8c4f47cd1ae0ac5d7",
-    "sha256": "9dba8fadb3abeb89fcdee5a09a35505ce488a0122092c922739c2a5e2d12c8dc",
-    "source_bytes": 23709,
-    "bytes": 23008,
-    "method": "lossless-optimized"
+    "source_sha256": "37fee7625a8280314d17796decd8fc816b925a65447b4031f292d405ebd5c0fa",
+    "sha256": "37fee7625a8280314d17796decd8fc816b925a65447b4031f292d405ebd5c0fa",
+    "source_bytes": 19160,
+    "bytes": 19160,
+    "method": "original-copy"
   },
   "patryk-wojciechowicz/images/patryk-wojciechowicz-011.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/images/patryk-wojciechowicz-011.jpg",
@@ -2217,11 +2217,11 @@
   },
   "patryk-wojciechowicz/glass/patryk-wojciechowicz-011.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/glass/patryk-wojciechowicz-011.jpg",
-    "source_sha256": "e52301be86267d0ab2f496c0d815e3be428bf5ea9495cd1c3af2a2ab82549286",
-    "sha256": "93804781954576a7913b9d260bdbb318eb1a69e56d0e9c989d23f632748e3ff5",
-    "source_bytes": 30972,
-    "bytes": 30704,
-    "method": "lossless-optimized"
+    "source_sha256": "06167bf54a7b38415d95e09a519268cd8e562fed29ce2387cb268ff932c42821",
+    "sha256": "06167bf54a7b38415d95e09a519268cd8e562fed29ce2387cb268ff932c42821",
+    "source_bytes": 24810,
+    "bytes": 24810,
+    "method": "original-copy"
   },
   "patryk-wojciechowicz/images/patryk-wojciechowicz-012.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/images/patryk-wojciechowicz-012.jpg",
@@ -2241,11 +2241,11 @@
   },
   "patryk-wojciechowicz/glass/patryk-wojciechowicz-012.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/glass/patryk-wojciechowicz-012.jpg",
-    "source_sha256": "504e84020ee75b2c099894068ab32f55c67f186da14751966102ea74daf4992c",
-    "sha256": "8b948f5809df2a79b299e182be2b23c7a985c75a5a8ee03475ce3d7b6ac716b4",
-    "source_bytes": 26659,
-    "bytes": 26075,
-    "method": "lossless-optimized"
+    "source_sha256": "77ec5f7fa5099a478b5d111d2a91a892ed6c10edc5186881a6fce3a7441b93a5",
+    "sha256": "77ec5f7fa5099a478b5d111d2a91a892ed6c10edc5186881a6fce3a7441b93a5",
+    "source_bytes": 21560,
+    "bytes": 21560,
+    "method": "original-copy"
   },
   "patryk-wojciechowicz/images/patryk-wojciechowicz-013.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/images/patryk-wojciechowicz-013.jpg",
@@ -2265,11 +2265,11 @@
   },
   "patryk-wojciechowicz/glass/patryk-wojciechowicz-013.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/glass/patryk-wojciechowicz-013.jpg",
-    "source_sha256": "f53b23669f5819e5e50ab4bc8b5ac3bc23d61a85c7a48c80800050b2dca85dcc",
-    "sha256": "7720603b72e91322ec81707e19db9d17e1c4948819e2e53c9536e84fe8023a81",
-    "source_bytes": 13654,
-    "bytes": 13265,
-    "method": "lossless-optimized"
+    "source_sha256": "cb880acc59ec2246a0b9ad97d04c0c3f10a18f25d3b1e4eeded5c78388fcc3bb",
+    "sha256": "cb880acc59ec2246a0b9ad97d04c0c3f10a18f25d3b1e4eeded5c78388fcc3bb",
+    "source_bytes": 11369,
+    "bytes": 11369,
+    "method": "original-copy"
   },
   "patryk-wojciechowicz/images/patryk-wojciechowicz-014.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/images/patryk-wojciechowicz-014.jpg",
@@ -2289,10 +2289,10 @@
   },
   "patryk-wojciechowicz/glass/patryk-wojciechowicz-014.jpg": {
     "path": "jpeg-q88-v1/patryk-wojciechowicz/glass/patryk-wojciechowicz-014.jpg",
-    "source_sha256": "e12c2eadca6c1f0d3f5ac0717ffc1829d4c9225f826ff7216807e2d1c60ec426",
-    "sha256": "0065940432ae884e91b05188a266c81e16f172403a64c76ce1c79e6c6fe68083",
-    "source_bytes": 28133,
-    "bytes": 27733,
-    "method": "lossless-optimized"
+    "source_sha256": "1af97545f336f344fd4b168a38be93adcc9b0d1cffa72871b66a6eac2134bee4",
+    "sha256": "1af97545f336f344fd4b168a38be93adcc9b0d1cffa72871b66a6eac2134bee4",
+    "source_bytes": 22551,
+    "bytes": 22551,
+    "method": "original-copy"
   }
 }

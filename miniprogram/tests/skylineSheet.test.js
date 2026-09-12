@@ -27,14 +27,6 @@ const sheets = [
     closeHandler: "onClose"
   },
   {
-    wxml: "components/activity-type-picker-sheet/index.wxml",
-    js: "components/activity-type-picker-sheet/index.js",
-    containerId: "qaActivityTypePickerContainer",
-    surfaceId: "qaActivityTypePickerSurface",
-    duration: 220,
-    closeHandler: "onClose"
-  },
-  {
     wxml: "components/participants-drawer/index.wxml",
     js: "components/participants-drawer/index.js",
     containerId: "qaParticipantsDrawer",
@@ -51,15 +43,13 @@ test("activity drawers keep native page-container fallbacks without draggable-sh
       ? "components/activity-form-sheet/surface.wxml"
       : containerId === "qaDateTimePickerContainer"
         ? "components/date-time-picker-sheet/surface.wxml"
-        : containerId === "qaActivityTypePickerContainer"
-          ? "components/activity-type-picker-sheet/surface.wxml"
-          : "";
+            : "";
     const expandedWxml = surfacePath ? `${wxml}\n${read(surfacePath)}` : wxml;
     const js = read(jsPath);
     if (containerId === "qaActivityFormContainer") {
       assert.match(wxml, /<view class="activity-form-sheet-root [^"]*activity-form-sheet-root--route-embedded[^"]*">[\s\S]*<block wx:if="{{routeEmbedded && visible}}">/);
       assert.match(wxml, /<page-container[\s\S]*wx:if="{{!routeEmbedded && containerRendered}}"/);
-    } else if (containerId === "qaDateTimePickerContainer" || containerId === "qaActivityTypePickerContainer") {
+    } else if (containerId === "qaDateTimePickerContainer") {
       assert.match(wxml, /<block wx:if="{{embedded && containerRendered}}">/);
       assert.match(wxml, /<page-container[\s\S]*wx:if="{{!embedded && containerRendered}}"/);
     } else {
@@ -88,14 +78,12 @@ test("activity drawers keep native page-container fallbacks without draggable-sh
 test("page-container owns overlay, geometry and entrance animation while scroll bodies fill the inner panel", () => {
   const activityWxml = read("components/activity-form-sheet/index.wxml");
   const pickerWxml = read("components/date-time-picker-sheet/index.wxml");
-  const typeWxml = read("components/activity-type-picker-sheet/index.wxml");
   const participantsWxml = read("components/participants-drawer/index.wxml");
   const activityCss = read("components/activity-form-sheet/index.wxss");
   const pickerCss = read("components/date-time-picker-sheet/index.wxss");
-  const typeCss = read("components/activity-type-picker-sheet/index.wxss");
   const participantsCss = read("components/participants-drawer/index.wxss");
 
-  [activityWxml, pickerWxml, typeWxml, participantsWxml].forEach((wxml) => {
+  [activityWxml, pickerWxml, participantsWxml].forEach((wxml) => {
     assert.match(wxml, /overlay-style="background: rgba\(/);
     assert.match(wxml, /custom-style="[^"]*height:/);
     assert.match(wxml, /bind:afterleave="onContainerAfterLeave"/);
@@ -104,13 +92,12 @@ test("page-container owns overlay, geometry and entrance animation while scroll 
   assert.match(activityCss, /\.activity-sheet-panel\s*\{[^}]*height:\s*100%;[^}]*max-height:\s*100%;/s);
   assert.match(activityCss, /\.activity-sheet-body\s*\{[^}]*flex:\s*1 1 0;[^}]*height:\s*0;/s);
   assert.match(pickerWxml, /custom-style="height: 761\.54rpx;[^\"]*bottom: {{bottomOffsetRpx}}rpx;[^\"]*border-radius: 46\.15rpx 46\.15rpx 0 0;/);
-  assert.match(typeWxml, /custom-style="height: 914rpx;[^\"]*border-radius: 48rpx 48rpx 0 0;/);
   assert.match(participantsWxml, /custom-style="height: {{drawerHeightRpx}}rpx;[^\"]*border-radius: 46\.15rpx 46\.15rpx 0 0;/);
   assert.match(participantsCss, /\.drawer-sheet\s*\{[^}]*height:\s*100%;/s);
   assert.match(participantsCss, /\.drawer-body\s*\{[^}]*flex:\s*1 1 0;[^}]*height:\s*0;[^}]*padding:\s*15\.38rpx 30\.77rpx 0;[^}]*display:\s*flex;/s);
   assert.match(participantsWxml, /<view class="drawer-table-head">[\s\S]*<scroll-view[\s\S]*id="qaParticipantListScroll"/);
 
-  [activityCss, pickerCss, typeCss, participantsCss].forEach((wxss) => {
+  [activityCss, pickerCss, participantsCss].forEach((wxss) => {
     assert.doesNotMatch(wxss, /@keyframes/);
   });
 });

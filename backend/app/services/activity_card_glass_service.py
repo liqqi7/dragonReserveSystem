@@ -24,12 +24,12 @@ from app.services.activity_type_style_service import get_activity_style
 settings = get_settings()
 MEDIA_ROOT = Path(settings.media_root).resolve()
 CARD_GLASS_CACHE_DIR = MEDIA_ROOT / "card-glass"
-CARD_GLASS_RENDER_VERSION = "v3"
+CARD_GLASS_RENDER_VERSION = "v4"
 CARD_GLASS_REMOTE_IMAGE_TIMEOUT = 8.0
 # The previous 13px Pillow radius was visually calibrated against Pencil's
 # former 24px background blur. Pencil is now 12px, so preserve that calibration
 # ratio and halve the equivalent Pillow radius to 6.5px at the reference width.
-CARD_GLASS_BLUR_RADIUS_RATIO = 6.5 / (530.77 * 420 / 750)
+CARD_GLASS_BLUR_RADIUS_RATIO = 6.5 / (469.23 * 420 / 750)
 
 
 class ActivityCardGlassNotFoundError(ValueError):

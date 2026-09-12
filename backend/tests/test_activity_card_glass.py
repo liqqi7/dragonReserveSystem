@@ -27,7 +27,7 @@ def test_card_glass_output_keeps_source_size_and_has_no_alpha() -> None:
 
 
 def test_card_glass_radius_tracks_the_twelve_pixel_prototype_blur() -> None:
-    reference_width = 530.77 * 420 / 750
+    reference_width = 469.23 * 420 / 750
 
     assert glass_service.CARD_GLASS_BLUR_RADIUS_RATIO * reference_width == pytest.approx(6.5)
 
