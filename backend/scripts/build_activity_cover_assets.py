@@ -43,7 +43,7 @@ def save_glass_jpeg(source: Path, destination: Path) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     with Image.open(source) as image:
         image = ImageOps.exif_transpose(image).convert("RGB")
-        image.thumbnail((531, 708), Image.Resampling.LANCZOS)
+        image.thumbnail((469, 627), Image.Resampling.LANCZOS)
         image = image.filter(ImageFilter.GaussianBlur(radius=6.5))
         image.save(destination, "JPEG", quality=80, optimize=True, progressive=True)
 

@@ -5,7 +5,6 @@
 </template>
 <template name="home-card-skeleton">
   <view class="card-skeleton card-skeleton--{{size}} {{revealed ? 'card-skeleton--revealed' : ''}}" aria-hidden="{{revealed ? true : false}}" aria-label="{{failed ? '卡片加载失败' : '卡片加载中'}}">
-    <template wx:if="{{size === 'large'}}" is="home-skeleton-shape" data="{{shape: 'skeleton-date', running: running && !failed}}" />
     <template is="home-skeleton-shape" data="{{shape: size === 'large' ? 'skeleton-large' : 'skeleton-small', running: running && !failed}}" />
     <view wx:if="{{failed}}" class="home-card-retry home-card-retry--{{size}}" role="button" aria-label="重新加载这张卡片" catchtap="onRetryHomeCard" data-group="{{group}}" data-activity-id="{{activityId}}">
       <text>加载失败，点击重试</text>
@@ -77,7 +76,7 @@
           duration="300"
           easing-function="easeOutCubic"
           previous-margin="38.46rpx"
-          next-margin="157.69rpx"
+          next-margin="219.23rpx"
           cache-extent="1"
           data-group="joined"
           bindchange="onGroupSwiperChange"
@@ -92,7 +91,6 @@
             <view
               class="large-card-wrap home-card-entrance home-card-entrance--{{!(item._homeMediaReady && item._homeSlotEntered) ? 'pending' : (item._id == createdCardEntranceId ? createdCardEntranceState : 'entered')}}"
             >
-              <text class="card-datetime-label">{{item.cardDateTimeLabel || item.startTime}}</text>
               <open-container
                 class="large-card-transition"
                 closed-color="transparent"
@@ -192,13 +190,16 @@
                   <view class="glass-tint-layer"></view>
                   <view class="glass-content">
                     <text class="glass-name">{{item.name}}</text>
-                    <text class="glass-remark">{{item.remark || ''}}</text>
+                    <view class="glass-time-row">
+                      <image class="glass-meta-icon-img" src="/images/icon-home-card-time.svg" mode="aspectFit" />
+                      <text class="glass-time-text">{{item.cardDateTimeLabel || item.startTime}}</text>
+                    </view>
                     <view class="glass-meta-row">
                       <view wx:if="{{item.locationName}}" class="glass-meta-item">
                         <image class="glass-meta-icon-img" src="/images/icon-home-card-location.svg" mode="aspectFit" />
                         <text class="glass-meta-text">{{item.locationName}}</text>
                       </view>
-                      <view class="glass-meta-item">
+                      <view class="glass-meta-item glass-meta-item--people">
                         <image class="glass-meta-icon-img" src="/images/icon-home-card-people.svg" mode="aspectFit" />
                         <text class="glass-meta-text" wx:if="{{item.maxParticipants != null}}">{{item.participantCount}}/{{item.maxParticipants}} 人</text>
                         <text class="glass-meta-text" wx:elif="{{item.participantCount > 0}}">{{item.participantCount}} 人</text>
@@ -227,7 +228,7 @@
           duration="300"
           easing-function="easeOutCubic"
           previous-margin="26.92rpx"
-          next-margin="353.85rpx"
+          next-margin="392.31rpx"
           cache-extent="1"
           data-group="accepting"
           bindchange="onGroupSwiperChange"
@@ -326,7 +327,7 @@
           duration="300"
           easing-function="easeOutCubic"
           previous-margin="26.92rpx"
-          next-margin="353.85rpx"
+          next-margin="392.31rpx"
           cache-extent="1"
           data-group="notStarted"
           bindchange="onGroupSwiperChange"
@@ -425,7 +426,7 @@
           duration="300"
           easing-function="easeOutCubic"
           previous-margin="26.92rpx"
-          next-margin="353.85rpx"
+          next-margin="392.31rpx"
           cache-extent="1"
           data-group="ended"
           bindchange="onGroupSwiperChange"

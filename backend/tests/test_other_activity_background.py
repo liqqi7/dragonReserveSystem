@@ -36,4 +36,4 @@ def test_other_activity_background_assets_and_configs_stay_in_sync() -> None:
     glass_service = (
         PROJECT_ROOT / "backend/app/services/activity_card_glass_service.py"
     ).read_text(encoding="utf-8")
-    assert 'CARD_GLASS_RENDER_VERSION = "v3"' in glass_service
+    assert 'CARD_GLASS_RENDER_VERSION = "v4"' in glass_service

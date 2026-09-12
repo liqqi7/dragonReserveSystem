@@ -9,8 +9,8 @@ function rule(name) { return css.match(new RegExp('\\.' + name + ' \\{([^}]+)\\}
 test('home skeleton matches Pencil bxNIN geometry at 390px design width', () => {
   const expected = {
     'skeleton-date': [280.77, 38.46, 19.23],
-    'skeleton-large': [530.77, 707.69, 30.77],
-    'skeleton-small': [346.15, 346.15, 23.08],
+    'skeleton-large': [469.23, 626.92, 46.15],
+    'skeleton-small': [307.69, 307.69, 46.15],
     'skeleton-heading': [153.85, 38.46, 19.23],
     'skeleton-name': [246.15, 23.08, 11.54],
     'skeleton-time': [184.62, 23.08, 11.54],
@@ -21,10 +21,10 @@ test('home skeleton matches Pencil bxNIN geometry at 390px design width', () => 
     });
   }
   assert.match(rule('skeleton-block'), /background: #EAECEF;/);
-  assert.match(rule('skeleton-large'), /margin-top: 15.38rpx;/);
+  assert.doesNotMatch(rule('skeleton-large'), /margin-top:/);
 });
-test('large skeleton separates date and image while retaining failure shimmer gate', () => {
-  assert.match(wxml, /wx:if="\{\{size === 'large'\}\}" is="home-skeleton-shape" data="\{\{shape: 'skeleton-date', running: running && !failed\}\}"/);
+test('large skeleton renders as single visual block matching prototype while small skeleton retains info placeholders', () => {
+  assert.doesNotMatch(wxml, /shape:\s*'skeleton-date'/);
   assert.match(wxml, /shape: size === 'large' \? 'skeleton-large' : 'skeleton-small', running: running && !failed/);
   assert.match(css, /transition: transform 1400ms linear/);
 });

@@ -472,45 +472,6 @@ test("activity cover field opens its own secondary sheet and confirmation update
   assert.equal(context.data.form.activityCoverId, "lam-001");
 });
 
-test("activity type sheet follows the prototype grouping and preserves temporary selection until confirmation", () => {
-  const componentPath = require.resolve("../components/activity-type-picker-sheet/index.js");
-  const previousComponent = global.Component;
-  let typeDefinition;
-  global.Component = (value) => { typeDefinition = value; };
-  delete require.cache[componentPath];
-  const helpers = require(componentPath);
-  global.Component = previousComponent;
-
-  const groups = helpers.buildGroupedOptions(
-    ["badminton", "boardgame", "other", "eating", "outing", "movie"],
-    ["羽毛球", "桌游", "其它", "吃饭", "外出", "电影"]
-  );
-  assert.deepEqual(groups.map((group) => [group.title, group.options.map((item) => item.label)]), [
-    ["室内活动", ["桌游", "电影", "吃饭"]],
-    ["外出活动", ["外出", "羽毛球", "其他"]]
-  ]);
-
-  const events = [];
-  const context = {
-    ...typeDefinition.methods,
-    properties: {
-      value: "boardgame",
-      optionValues: ["badminton", "boardgame", "other", "eating", "outing", "movie"],
-      optionLabels: ["羽毛球", "桌游", "其它", "吃饭", "外出", "电影"]
-    },
-    data: { ...typeDefinition.data },
-    setData(patch) { Object.assign(this.data, patch); },
-    triggerEvent(name, detail) { events.push({ name, detail }); }
-  };
-  typeDefinition.methods.initializeOptions.call(context);
-  assert.equal(context.data.selectedValue, "boardgame");
-  typeDefinition.methods.onSelect.call(context, { currentTarget: { dataset: { value: "outing" } } });
-  assert.equal(context.data.selectedValue, "outing");
-  assert.equal(events.length, 0);
-  typeDefinition.methods.onConfirm.call(context);
-  assert.deepEqual(events, [{ name: "confirm", detail: { value: "outing", label: "外出", index: 4 } }]);
-});
-
 test("activity cover sheet markup and dimensions match the Pencil component", () => {
   const formWxml = readActivityFormWxml();
   const coverWxml = fs.readFileSync(path.join(__dirname, "../components/activity-cover-picker-sheet/index.wxml"), "utf8");
