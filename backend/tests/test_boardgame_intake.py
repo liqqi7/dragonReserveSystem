@@ -99,6 +99,11 @@ def test_search_pages_then_prepare_without_creating_games(client, db_session, us
     assert details['next_offset'] == 1
     english = client.get(path+'?q=English', headers=user_headers).json()
     assert len(english['versions']) == 1 and english['versions'][0]['languages'] == ['English']
+    chinese_query = client.get(path+'?q=英文', headers=user_headers).json()
+    assert [v['bgg_version_id'] for v in chinese_query['versions']] == [english['versions'][0]['bgg_version_id']]
+    assert chinese_query['versions'][0]['name'] == 'English edition'
+    assert chinese_query['versions'][0]['display_name'] == '英文版'
+    assert chinese_query['versions'][0]['language_label'] == '英文'
     assert client.get('/api/v1/boardgame-imports', headers=user_headers).json()['items'] == []
 
 
@@ -109,6 +114,15 @@ def test_confirm_version_inventory_atomic_and_idempotent(client, db_session, use
     assert result.status_code == 201, result.text
     data = result.json()
     assert data['game']['name'] == '用户确认的中文名'
+    assert data['game']['original_name'] == 'Test Game 701001'
+    local = client.patch(f'/api/v1/boardgames/{data["game_id"]}', headers=user_headers,
+        json={'expected_revision':data['game']['revision'], 'set_overrides':{'description':'已核对的中文介绍'}})
+    assert local.status_code == 200, local.text
+    preview_item = preview['items'][0]
+    localized = client.get(f'/api/v1/boardgame-intake-previews/{preview["id"]}/items/{preview_item["item_id"]}',
+                           headers=user_headers).json()['game']
+    assert localized['name'] == localized['original_name'] == 'Test Game 701001'
+    assert localized['display_name'] == '用户确认的中文名' and localized['description'] == '已核对的中文介绍'
     db_session.expire_all()
     stored_game = db_session.get(BoardGame, data['game_id'])
     # Physical inventory creation locks/reloads this row. Source provenance must

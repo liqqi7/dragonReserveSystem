@@ -43,6 +43,51 @@ def play_form(game_id, persons, **extra):
         players=[dict(person_id=pid, seat_order=i+1, score=str(10-i)) for i, pid in enumerate(persons)], **extra)
 
 
+def test_local_titles_keep_original_search_and_historical_snapshots(client, db_session, user_headers,
+        admin_headers, normal_user, second_user):
+    from copy import deepcopy
+    from sqlalchemy import inspect
+    from sqlalchemy.orm import load_only
+    from app.services.boardgame_catalog import project_game, GAME_PUBLIC
+    g = game(client, user_headers, 'Synthetic Original')
+    assert g['original_name'] is None
+    stored = db_session.get(BoardGame, g['id'])
+    stored.bgg_payload = {'projection': {'name': 'Synthetic Original', 'aliases': ['Source Alias']},
+                          'raw': {'never_rewrite': 'upstream'}}
+    project_game(stored)
+    db_session.commit()
+    obj = create(client, user_headers, '/boardgame-plays', play_form(g['id'], people(db_session, normal_user, second_user)))
+    snapshot = deepcopy(obj['game_snapshot'])
+    changed = client.patch(f'/api/v1/boardgames/{g["id"]}', headers=admin_headers,
+        json={'expected_revision': g['revision'], 'set_overrides': {'name': '已核对的中文名', 'aliases': ['本地别名']},
+              'reason': '采用已核对的 BG Stats 中文名称'})
+    assert changed.status_code == 200, changed.text
+    assert changed.json()['original_name'] == 'Synthetic Original'
+    for query in ('已核对的中文名', 'Synthetic Original', 'Source Alias', '本地别名'):
+        found = client.get('/api/v1/boardgames', headers=user_headers, params={'q': query}).json()['items']
+        assert [r['id'] for r in found] == [g['id']]
+        assert found[0]['name'] == '已核对的中文名' and found[0]['original_name'] == 'Synthetic Original'
+    current = client.get(f'/api/v1/boardgame-plays/{obj["id"]}', headers=user_headers).json()
+    history = client.get('/api/v1/boardgame-plays', headers=user_headers).json()['items'][0]
+    for row in (current, history):
+        assert row['game']['name'] == '已核对的中文名'
+        assert row['game']['original_name'] == 'Synthetic Original'
+        assert row['game_snapshot'] == snapshot
+        assert row['players'] == obj['players'] and row['revision'] == obj['revision']
+    top = client.get('/api/v1/boardgame-stats/most-played', headers=user_headers).json()['items'][0]
+    assert top['game']['name'] == '已核对的中文名' and top['game']['original_name'] == 'Synthetic Original'
+    db_session.expire_all()
+    stored = db_session.get(BoardGame, g['id'])
+    stored.bgg_payload = {**stored.bgg_payload, 'projection': {'name': 'Synthetic Original', 'aliases': ['Fresh Source Alias']}}
+    project_game(stored)
+    db_session.commit()
+    assert stored.name == '已核对的中文名' and stored.bgg_payload['raw'] == {'never_rewrite': 'upstream'}
+    db_session.expunge_all()
+    light = db_session.scalar(select(BoardGame).options(load_only(*(getattr(BoardGame, k) for k in GAME_PUBLIC))))
+    assert light.original_name == 'Synthetic Original'
+    assert {'bgg_payload', 'bgg_raw_xml'}.issubset(inspect(light).unloaded)
+
+
 def test_catalog_inventory_permissions_and_idempotency(client, db_session, user_headers, normal_user, second_user_headers, second_user, admin_headers):
     key = str(uuid4())
     g = create(client, user_headers, '/boardgames', {'name': '虚构库存游戏'}, key=key)
@@ -135,8 +180,38 @@ def test_nomination_withdrawal_does_not_auto_restore(client, db_session, user_he
     assert row.state == 'ineligible'
     assert client.post(f'/api/v1/activities/{signed_up_activity.id}/signup', headers=user_headers).status_code == 200
     assert client.get('/api/v1/boardgame-stats/wanted', headers=user_headers).json()['items'] == []
-    restored = client.put(path, headers=user_headers, json={'expected_revision': row.revision})
+    summary = client.get(f'/api/v1/activities/{signed_up_activity.id}/boardgames', headers=user_headers).json()
+    assert summary['nominations'] == []
+    assert summary['my_nominations'][0]['state'] == 'ineligible'
+    restored = client.put(path, headers=user_headers, json={'expected_revision': summary['my_nominations'][0]['revision']})
     assert restored.status_code == 200, restored.text
+
+
+def test_withdrawn_nomination_can_be_explicitly_readded_without_exposing_other_private_rows(
+        client, user_headers, admin_headers, second_user_headers, signed_up_activity):
+    g = game(client, user_headers)
+    base = f'/api/v1/activities/{signed_up_activity.id}'
+    path = f'{base}/nominations/{g["id"]}/me'
+    organizer = client.put(path, headers=admin_headers, json={'expected_revision': 0})
+    assert organizer.status_code == 200, organizer.text
+    vote = client.put(path, headers=user_headers, json={'expected_revision': 0, 'note': '自己的想玩备注'})
+    assert vote.status_code == 200, vote.text
+    assert client.delete(path, headers=user_headers, params={'expected_revision': vote.json()['revision']}).status_code == 204
+    own = client.get(f'{base}/boardgames', headers=user_headers).json()
+    assert own['nominations'][0]['nomination_count'] == 1
+    assert own['nominations'][0]['mine'] is None
+    assert len(own['my_nominations']) == 1
+    withdrawn = own['my_nominations'][0]
+    assert withdrawn['state'] == 'withdrawn' and withdrawn['note'] == '自己的想玩备注'
+    outsider = client.get(f'{base}/boardgames', headers=second_user_headers).json()
+    assert outsider['my_nominations'] == []
+    assert outsider['nominations'][0]['nomination_count'] == 1
+    assert client.put(path, headers=user_headers, json={'expected_revision': 0}).status_code == 409
+    restored = client.put(path, headers=user_headers, json={'expected_revision': withdrawn['revision']})
+    assert restored.status_code == 200, restored.text
+    final = client.get(f'{base}/boardgames', headers=user_headers).json()
+    assert final['my_nominations'][0]['state'] == 'active'
+    assert final['nominations'][0]['nomination_count'] == 2
 
 
 @pytest.mark.parametrize('score_status', ['unrecorded', 'gave_up', 'unfinished', 'table_flip'])

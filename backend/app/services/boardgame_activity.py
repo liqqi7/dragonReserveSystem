@@ -113,10 +113,10 @@ def sync_all(db):
 
 
 def expansion_names(db, rows):
-    names = dict(db.execute(select(BoardGame.id, BoardGame.name).where(
-        BoardGame.id.in_([row['game_id'] for row in rows]), BoardGame.is_visible.is_(True))).all()) if rows else {}
+    names = {gid: (name, original) for gid, name, original in db.execute(select(BoardGame.id, BoardGame.name, BoardGame.original_name).where(
+        BoardGame.id.in_([row['game_id'] for row in rows]), BoardGame.is_visible.is_(True))).all()} if rows else {}
     for row in rows:
-        row['game_name'] = names.get(row['game_id'], '扩展已不可用')
+        row['game_name'], row['original_name'] = names.get(row['game_id'], ('扩展已不可用', None))
     return rows
 
 
@@ -250,7 +250,7 @@ def activity_summary(db, obj, actor):
                      Nomination.state.in_(['active', 'frozen'])).order_by(Nomination.id)))
     groups = {}
     for row in rows:
-        group = groups.setdefault(row.game_id, dict(game=columns(catalog.game(db, row.game_id, actor), ['id', 'name', 'cover_url']),
+        group = groups.setdefault(row.game_id, dict(game_id=row.game_id, game=columns(catalog.game(db, row.game_id, actor), ['id', 'name', 'original_name', 'cover_url']),
                                   nomination_count=0, mine=None, expansion_demands={}, people_preview=[]))
         group['nomination_count'] += 1
         if len(group['people_preview']) < 5:
@@ -261,15 +261,19 @@ def activity_summary(db, obj, actor):
             group['expansion_demands'][e.expansion_game_id] = group['expansion_demands'].get(e.expansion_game_id, 0) + 1
     for group in groups.values():
         group['expansion_demands'] = [dict(game_id=k, nomination_count=v) for k, v in group['expansion_demands'].items()]
+    # Keep the caller's withdrawn/ineligible revisions available for an explicit
+    # re-nomination. They must not reappear in public demand counts on their own.
+    my_nominations = [nomination_detail(db, row) for row in db.scalars(select(Nomination).where(
+        Nomination.activity_id == obj.id, Nomination.user_id == actor.id).order_by(Nomination.id))]
     counts = dict(db.execute(select(Play.status, func.count()).where(Play.activity_id == obj.id,
         Play.publication_status == 'published', Play.status.in_(['completed', 'abandoned'])).group_by(Play.status)).all())
     return dict(activity_id=obj.id, nomination_state=dict(editable=editable, cutoff_at=safe(obj.start_time),
         frozen_at=safe(state.frozen_at) if state else None, revision=state.revision if state else 0),
-        nominations=list(groups.values()), plans=[plan_detail(db, p, actor) for p in db.scalars(
+        nominations=list(groups.values()), my_nominations=my_nominations, plans=[plan_detail(db, p, actor) for p in db.scalars(
             select(GamePlan).where(GamePlan.activity_id == obj.id).order_by(GamePlan.sort_order, GamePlan.id))],
         play_summary=dict(completed_count=counts.get('completed', 0), abandoned_count=counts.get('abandoned', 0)),
         permissions=dict(can_nominate=editable and eligible(db, obj, actor), can_record=can_record(db, obj, actor),
-                         can_manage_plans=actor.role == 'admin' or actor.id == obj.created_by))
+                         can_manage_plans=obj.status not in INACTIVE and (actor.role == 'admin' or actor.id == obj.created_by)))
 
 
 def preserve_activity_history(db, obj):

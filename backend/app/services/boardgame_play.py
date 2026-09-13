@@ -166,13 +166,14 @@ def duplicate_candidates(db, form, actor, exclude_id=None):
         return ('p', pid) if pid else ('u', p.user_id) if p.user_id else ('g', str(p.guest_key))
     proposed = sorted(identity(p) for p in form.players)
     candidates = []
+    current_game = catalog.display_games(db, {form.game_id}, actor).get(form.game_id)
     for obj in db.scalars(stmt.order_by(Play.id)):
         if not readable(db, obj, actor):
             continue
         people, _, _ = children(db, obj)
         identity = sorted(('p', p.person_id) if p.person_id else ('g', p.guest_key) for p in people)
         if identity == proposed and (form.activity_id is None or form.activity_id == obj.activity_id):
-            candidates.append(dict(id=obj.id, game=obj.game_snapshot, played_on=safe(obj.played_on),
+            candidates.append(dict(id=obj.id, game=current_game or obj.game_snapshot, played_on=safe(obj.played_on),
                 player_names=[p.display_name_snapshot for p in people], revision=obj.revision))
     return candidates
 
@@ -401,7 +402,18 @@ def save_play(db, actor, payload, existing=None, *, internal=False, origin='manu
     return obj
 
 
-def detail(db, obj, actor, internal=False):
+def attach_display_games(db, rows, actor):
+    ids = {r['game_id'] for r in rows}
+    ids.update(e['expansion_game_id'] for r in rows for e in r['expansions'])
+    games = catalog.display_games(db, ids, actor)
+    for row in rows:
+        row['game'] = games.get(row['game_id'], row['game_snapshot'])
+        for expansion in row['expansions']:
+            expansion['game'] = games.get(expansion['expansion_game_id'], expansion['game_snapshot'])
+    return rows
+
+
+def detail(db, obj, actor, internal=False, current_names=True):
     if not internal and not readable(db, obj, actor):
         fail('not_found', 404)
     out = columns(obj, PLAY_FIELDS)
@@ -427,7 +439,7 @@ def detail(db, obj, actor, internal=False):
                 ('unknown_result', obj.result_status == 'unknown'), ('excluded', obj.stats_exclusion != 'none')) if yes]),
         open_report_count=db.scalar(select(func.count()).select_from(PlayReport).where(
             PlayReport.play_id == obj.id, PlayReport.status == 'open')))
-    return out
+    return attach_display_games(db, [out], actor)[0] if current_names else out
 
 
 def settle_timer(obj, preserve_duration=False):

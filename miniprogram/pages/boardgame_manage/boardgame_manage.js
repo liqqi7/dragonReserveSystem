@@ -5,8 +5,8 @@ const PATHS = {games:'/boardgames',inventory:'/boardgame-inventory',people:'/boa
 const STATUS = {open:'待处理',resolved:'已解决',dismissed:'无需更改'};
 const CONFLICTS = {distinct_game_identity:'两条记录属于不同游戏，不能合并',distinct_accounts:'两位玩家绑定了不同账号，不能合并',same_play_people:'两位玩家在同一局出现，不能合并'};
 function rowView(row,kind) {
-  return {...row,label:kind==='reports'?row.game.name:kind==='inventory'?row.game.name:row.display_name||row.name,
-    caption:kind==='reports'?`${row.played_on} · ${STATUS[row.status]}`:kind==='inventory'?`${row.owner.display_name} · ${row.edition_name||'未标版本'}`:
+  return {...row,original_name:(row.game||row).original_name,label:kind==='reports'?row.game.name:kind==='inventory'?row.game.name:row.display_name||row.name,
+    caption:kind==='reports'?`${row.played_on} · ${STATUS[row.status]}`:kind==='inventory'?`${row.owner.display_name} · ${row.edition_label||row.edition_name||'未标版本'}`:
       kind==='people'?(row.user?'已匹配 '+row.user.nickname:'未匹配小程序账号'):row.archived_at?'已归档':'使用中'};
 }
 function impactRows(preview) {

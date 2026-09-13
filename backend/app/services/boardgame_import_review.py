@@ -6,7 +6,7 @@ source item and mapping revisions, and runs in one transaction.
 """
 from sqlalchemy import select, or_, func
 
-from app.models.boardgame import (ImportItem, ImportMapping, Play, PlaySource, Person,
+from app.models.boardgame import (ImportItem, ImportMapping, Play, PlayPlayer, PlayObserver, PlaySource, Person,
                                   BoardGame, Location, AuditEvent, PlayScoresheet)
 from app.schemas.boardgame import PlayCreate
 from app.services import boardgame_import as imports, boardgame_play as plays
@@ -142,6 +142,27 @@ def report(db, job):
                    automatic_source_deletions=False))
 
 
+def publish_referenced_identities(db, rows, actor, reason):
+    """Expose only identities referenced by explicitly published history."""
+    if any(row.publication_status != 'published' for row in rows):
+        fail('historical_play_not_published', 409)
+    play_ids = [row.id for row in rows]
+    people = set(db.scalars(select(PlayPlayer.person_id).where(
+        PlayPlayer.play_id.in_(play_ids), PlayPlayer.person_id.is_not(None))))
+    people.update(db.scalars(select(PlayObserver.person_id).where(
+        PlayObserver.play_id.in_(play_ids), PlayObserver.person_id.is_not(None))))
+    locations = {row.location_id for row in rows if row.location_id}
+    for cls, ids in ((Person, people), (Location, locations)):
+        for identity in sorted(ids):
+            obj = get(db, cls, identity, True)
+            if not obj.is_visible:
+                obj.is_visible = True
+                touch(obj, actor)
+                audit(db, obj, actor, 'publish_history_identity', reason=reason,
+                      before={'is_visible': False}, after={'is_visible': True})
+    db.flush()
+
+
 def publish(db, job, actor, payload):
     check_revision(job, payload.expected_revision)
     if job.state not in ('ready', 'applied', 'partial'):
@@ -176,6 +197,9 @@ def publish(db, job, actor, payload):
         touch(obj, actor)
         audit(db, obj, actor, 'publish_history', reason=payload.reason,
               before={'publication_status':'held'}, after={'publication_status':'published'})
+    # Validate the whole batch before changing shared identity revisions. A
+    # published ranking must also have usable person/location drilldown links.
+    publish_referenced_identities(db, rows, actor, payload.reason)
     job.revision += 1
     job.updated_at = now()
     audit(db, job, actor, 'publish_history', reason=payload.reason, after={'play_ids':[p.id for p in rows]})

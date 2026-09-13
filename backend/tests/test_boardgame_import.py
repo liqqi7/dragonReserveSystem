@@ -321,6 +321,72 @@ def test_review_mapping_history_and_publication(client, db_session, user_headers
     assert client.get(prefix+'/report', headers=user_headers).json()['publication_counts']['published'] == 1
 
 
+def test_publication_exposes_only_selected_identities_and_working_drilldowns(
+        client, db_session, user_headers, second_user_headers):
+    from app.models.boardgame import Location
+
+    data = fixture()
+    data['players'].append(dict(id=24, uuid=str(uuid4()), name='仍未公开的玩家'))
+    data['locations'].append(dict(id=32, name='仍未公开的地点'))
+    second, private = deepcopy(data['plays'][0]), deepcopy(data['plays'][0])
+    second.update(uuid=str(uuid4()), playDate='2026-07-02 18:30:00')
+    private.update(uuid=str(uuid4()), playDate='2026-07-03 18:30:00', locationRefId=32)
+    private['playerScores'][0]['playerRefId'] = 23
+    private['playerScores'][1]['playerRefId'] = 24
+    data['plays'].extend([second, private])
+    job = upload(client, user_headers, data)
+    worker(db_session)
+    rows = items(client, user_headers, job)
+    game = next(row for row in rows if row['source_kind'] == 'bgstats_game')
+    rows = decide_and_apply(client, user_headers, job, [(game, dict(action='create_game'))], db_session)
+    game_id = next(row for row in rows if row['id'] == game['id'])['applied_result']['game_ids'][0]
+    decisions = [(row, dict(action='create_play', target_game_id=game_id,
+        create_location={'name': row['normalized']['location_name']}, players=[
+            dict(source_player_ref=p['source_player_ref'], source_slot=p['source_slot'],
+                 create_person={'display_name': p['name']}) for p in row['normalized']['players']]))
+        for row in rows if row['source_kind'] == 'bgstats_play']
+    rows = decide_and_apply(client, user_headers, job, decisions, db_session)
+    histories = [row for row in rows if row['source_kind'] == 'bgstats_play']
+    assert all(row['state'] == 'applied' for row in histories)
+    prefix = f'/api/v1/boardgame-imports/{job["id"]}'
+    assert not any(p.is_visible for p in db_session.scalars(select(Person)))
+    assert not any(p.is_visible for p in db_session.scalars(select(Location)))
+    selection = []
+    for row in histories[:2]:
+        play = client.get(f'{prefix}/items/{row["id"]}/preview', headers=user_headers).json()['applied_plays'][0]
+        selection.append(dict(item_id=row['id'], play_id=play['id'],
+                              expected_revision=play['revision'], review_token=play['review_token']))
+    body = dict(expected_revision=client.get(prefix, headers=user_headers).json()['revision'],
+        reason='只发布选中的两局合成历史', acknowledge_public=True,
+        acknowledge_unmatched_people=True, selection=selection)
+    stale = deepcopy(body)
+    stale['selection'][1]['review_token'] = '0' * 64
+    rejected = client.post(prefix+'/publish', headers={**user_headers, 'Idempotency-Key': str(uuid4())}, json=stale)
+    assert rejected.status_code == 409
+    db_session.expire_all()
+    assert not any(p.is_visible for p in db_session.scalars(select(Person)))
+    assert not any(p.is_visible for p in db_session.scalars(select(Location)))
+    published = client.post(prefix+'/publish', headers={**user_headers, 'Idempotency-Key': str(uuid4())}, json=body)
+    assert published.status_code == 200, published.text
+    db_session.expire_all()
+    people = list(db_session.scalars(select(Person)))
+    assert len(people) == 4 and sum(p.is_visible for p in people) == 2
+    assert all(p.user_id is None for p in people)
+    locations = list(db_session.scalars(select(Location)))
+    assert len(locations) == 2 and sum(p.is_visible for p in locations) == 1
+    for metric in ('players', 'locations'):
+        ranked = client.get(f'/api/v1/boardgame-stats/{metric}', headers=second_user_headers)
+        assert ranked.status_code == 200, ranked.text
+        for row in ranked.json()['items']:
+            link = row['drilldown']
+            history = client.get('/api/v1'+link['path'], params=link['query'], headers=second_user_headers)
+            assert history.status_code == 200, history.text
+            assert len(history.json()['items']) == 2
+    assert len(client.get('/api/v1/boardgame-people', headers=second_user_headers).json()['items']) == 2
+    assert len(client.get('/api/v1/boardgame-locations', headers=second_user_headers).json()['items']) == 1
+    assert client.get(prefix+'/source', headers=second_user_headers).status_code == 404
+
+
 def test_source_team_cooperative_time_cost_and_update(client, db_session, user_headers):
     data = fixture(); data['games'][0]['cooperative'] = True
     data['games'][0]['copies'][0]['metaData'] = json.dumps({'Quantity':'1','PricePaid':'0','PricePaidCurrency':'CNY','AcquisitionDate':'2026-01-01'})

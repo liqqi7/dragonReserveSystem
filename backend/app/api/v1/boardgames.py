@@ -42,7 +42,7 @@ def management_resources(kind: Literal['games', 'inventory', 'people', 'location
             stmt = stmt.where(BoardGame.name.contains(q.strip(), autoescape=True))
         def render(row):
             return {**c.inventory_detail(db, row, actor),
-                    'game': columns(get(db, BoardGame, row.game_id), ['id', 'name', 'cover_url'])}
+                    'game': columns(get(db, BoardGame, row.game_id), ['id', 'name', 'original_name', 'cover_url'])}
     else:
         stmt = stmt.where(cls.is_visible.is_(True))
         if kind == 'games' and actor.role != 'admin':

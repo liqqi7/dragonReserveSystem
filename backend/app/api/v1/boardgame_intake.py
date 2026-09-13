@@ -12,6 +12,7 @@ from app.schemas.boardgame import Revision
 from app.schemas.boardgame_intake import IntakeConfirm, PreviewCreate
 from app.services import boardgame_intake as intake, boardgame_import as imports
 from app.services.boardgame_common import create_once
+from app.services.boardgame_labels import version_view
 
 router = APIRouter(tags=['boardgame-intake'], dependencies=[Depends(enabled), Depends(body_limit)])
 
@@ -39,8 +40,10 @@ def details(preview_id: UUID, item_id: int, q: str = Query('', max_length=255),
     item = imports.private_item(db, job, item_id)
     game = intake.candidate(db, item, actor, detail=True)
     search = q.strip().casefold()
-    editions = [v for v, _ in intake.versions(item).values() if not search or search in ' '.join(
-        [v['name'] or '', str(v['year_published'] or ''), *v['languages'], *v['publishers']]).casefold()]
+    editions = [version_view(v) for v, _ in intake.versions(item).values()]
+    editions = [v for v in editions if not search or search in ' '.join(
+        [v['name'] or '', v['display_name'], v['language_label'], str(v['year_published'] or ''),
+         *v['languages'], *v['publishers']]).casefold()]
     return dict(game=game, versions=editions[offset:offset+limit], total=len(editions),
                 next_offset=offset+limit if offset+limit < len(editions) else None)
 

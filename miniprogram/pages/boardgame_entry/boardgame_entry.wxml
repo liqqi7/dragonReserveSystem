@@ -1,3 +1,4 @@
+<import src="../../templates/boardgame-name.wxml"/>
 <view class="entry-page {{stage === 'form' ? 'form-stage' : ''}} {{stage === 'version' || stage === 'form' ? 'has-footer' : ''}}">
   <view wx:if="{{stage !== 'success' && stage !== 'recover'}}" class="entry-steps"><text class="{{stage === 'search' ? 'current' : ''}}">1 查找桌游</text><text>›</text><text class="{{stage === 'version' ? 'current' : ''}}">2 选择版本</text><text>›</text><text class="{{stage === 'form' ? 'current' : ''}}">3 确认录入</text></view>
   <block wx:if="{{stage === 'search'}}">
@@ -10,8 +11,8 @@
       <view wx:if="{{preparing || (preview && preview.state !== 'ready' && preview.state !== 'applied' && !previewError)}}" class="entry-note entry-progress">正在获取封面、人数和版本资料…</view>
       <view wx:if="{{previewError}}" class="entry-error">{{previewError}}<button class="entry-link" bindtap="retryPreview" disabled="{{preparing}}">重新获取资料</button></view>
       <button wx:for="{{results}}" wx:key="bgg_id" class="entry-result entry-card" data-id="{{item.bgg_id}}" bindtap="chooseCandidate" disabled="{{item.detail_state !== 'ready' || !preview || preview.state !== 'ready'}}">
-        <image wx:if="{{item.cover_url}}" class="entry-cover" data-id="{{item.bgg_id}}" binderror="imageError" src="{{item.cover_url}}" mode="aspectFit"/><view wx:else class="entry-cover placeholder">{{item.detail_state === 'pending' ? '加载中' : '暂无封面'}}</view>
-        <view class="grow"><view class="entry-name">{{item.name}}</view><view class="entry-muted">{{item.year_published || '年份未知'}} · {{item.game_type === 'expansion' || item.game_type === 'boardgameexpansion' ? '扩展' : '本体'}}</view>
+        <image wx:if="{{item.cover_url}}" class="entry-cover" data-id="{{item.bgg_id}}" binderror="imageError" src="{{item.cover_url}}" mode="aspectFill"/><view wx:else class="entry-cover placeholder">{{item.detail_state === 'pending' ? '加载中' : '暂无封面'}}</view>
+        <view class="grow"><template is="boardgame-name" data="{{game:item, titleClass:'entry-name'}}"/><view class="entry-muted">{{item.year_published || '年份未知'}} · {{item.game_type === 'expansion' || item.game_type === 'boardgameexpansion' ? '扩展' : '本体'}}</view>
           <view wx:if="{{item.detail_state === 'ready'}}" class="entry-meta">{{item.min_players || '?'}}–{{item.max_players || '?'}} 人 · {{item.max_playtime_minutes || '?'}} 分钟</view>
           <view wx:if="{{item.local_game_id}}" class="entry-accent">馆藏已有资料，可登记你的这一盒</view>
           <view wx:elif="{{item.detail_state === 'unavailable'}}" class="entry-muted">资料暂不可用</view>
@@ -26,18 +27,18 @@
 
   <block wx:elif="{{stage === 'version'}}">
     <button class="entry-link back" bindtap="back">‹ 返回搜索结果</button>
-    <view class="entry-card game-summary"><image wx:if="{{candidate.cover_url}}" class="entry-hero" data-kind="game" binderror="imageError" src="{{candidate.cover_url}}" mode="aspectFit"/><view class="entry-title">{{candidate.name}}</view><view class="entry-meta">{{candidate.year_published || '年份未知'}} · {{candidate.game_type === 'expansion' ? '扩展' : '本体'}} · {{candidate.min_players || '?'}}–{{candidate.max_players || '?'}} 人</view><view class="entry-meta">时长 {{candidate.min_playtime_minutes || '?'}}–{{candidate.max_playtime_minutes || '?'}} 分钟</view><text wx:if="{{candidate.description}}" class="entry-description" user-select>{{descriptionExpanded ? candidate.description : candidate.descriptionShort}}{{!descriptionExpanded && candidate.description.length > 120 ? '…' : ''}}</text><button wx:if="{{candidate.description.length > 120}}" class="entry-link" bindtap="toggleDescription">{{descriptionExpanded ? '收起介绍' : '展开介绍'}}</button></view>
+    <view class="entry-card game-summary"><image wx:if="{{candidate.cover_url}}" class="entry-hero" data-kind="game" binderror="imageError" src="{{candidate.cover_url}}" mode="aspectFill"/><template is="boardgame-name" data="{{game:candidate, titleClass:'entry-title'}}"/><view class="entry-meta">{{candidate.year_published || '年份未知'}} · {{candidate.game_type === 'expansion' ? '扩展' : '本体'}} · {{candidate.min_players || '?'}}–{{candidate.max_players || '?'}} 人</view><view class="entry-meta">时长 {{candidate.min_playtime_minutes || '?'}}–{{candidate.max_playtime_minutes || '?'}} 分钟</view><text wx:if="{{candidate.description}}" class="entry-description" user-select>{{descriptionExpanded ? candidate.description : candidate.descriptionShort}}{{!descriptionExpanded && candidate.description.length > 120 ? '…' : ''}}</text><button wx:if="{{candidate.description.length > 120}}" class="entry-link" bindtap="toggleDescription">{{descriptionExpanded ? '收起介绍' : '展开介绍'}}</button></view>
     <view wx:if="{{candidate.local_game_id}}" class="entry-notice">这款游戏已有馆藏资料，确认后会复用，并登记本次录入的实物。</view>
     <view class="entry-card entry-row between"><view><view class="entry-heading">同时登记实物</view><view class="entry-muted">记录这一盒的归属和购入信息</view></view><switch checked="{{includeInventory}}" color="#FF9800" bindchange="toggleInventory"/></view>
     <block wx:if="{{includeInventory}}">
       <view class="entry-heading entry-section">选择你拥有的版本</view>
       <view class="entry-search"><input class="entry-input grow" value="{{versionQuery}}" bindinput="versionInput" bindconfirm="searchVersions" confirm-type="search" maxlength="255" placeholder="筛选语言、出版商或年份"/><button class="entry-button compact secondary" bindtap="searchVersions" disabled="{{versionLoading}}">筛选</button></view>
-      <view wx:if="{{selectedVersion}}" class="entry-notice">已选：{{selectedVersion.name}} · {{selectedVersion.languageLabel || '语言未知'}}</view>
+      <view wx:if="{{selectedVersion}}" class="entry-notice">已选：{{selectedVersion.display_name || selectedVersion.name}} · {{selectedVersion.languageLabel || '语言未知'}}</view>
       <view wx:if="{{versionError}}" class="entry-error">{{versionError}}<button class="entry-link" bindtap="searchVersions">重新获取版本</button></view>
       <view wx:if="{{versionLoading}}" class="entry-empty">正在获取版本…</view>
       <button wx:for="{{versions}}" wx:key="bgg_version_id" class="entry-result entry-card edition {{selection == item.bgg_version_id ? 'selected' : ''}}" data-id="{{item.bgg_version_id}}" bindtap="chooseVersion">
-        <image wx:if="{{item.cover_url}}" class="edition-cover" data-kind="version" data-id="{{item.bgg_version_id}}" binderror="imageError" src="{{item.cover_url}}" mode="aspectFit"/><view wx:else class="edition-cover placeholder">暂无版本图</view>
-        <view class="grow"><view class="entry-name">{{item.name || '版本名称未知'}}</view><view class="entry-meta">{{item.languageLabel || '语言未知'}} · {{item.year_published || '年份未知'}}</view><view class="entry-muted">{{item.publisherLabel || '出版商未知'}}</view></view><text class="choice">{{selection == item.bgg_version_id ? '✓' : '○'}}</text>
+        <image wx:if="{{item.cover_url}}" class="edition-cover" data-kind="version" data-id="{{item.bgg_version_id}}" binderror="imageError" src="{{item.cover_url}}" mode="aspectFill"/><view wx:else class="edition-cover placeholder">暂无版本图</view>
+        <view class="grow"><view class="entry-name">{{item.display_name || item.name || '版本名称未知'}}</view><view class="entry-meta">{{item.languageLabel || '语言未知'}} · {{item.year_published || '年份未知'}}</view><view class="entry-muted">{{item.publisherLabel || '出版商未知'}}</view></view><text class="choice">{{selection == item.bgg_version_id ? '✓' : '○'}}</text>
       </button>
       <view wx:if="{{!versions.length && !versionLoading && !versionError}}" class="entry-empty">{{versionQuery ? '没有符合筛选条件的版本' : 'BGG 暂无版本资料'}}</view>
       <button wx:if="{{versionNext !== null}}" class="entry-button secondary full" bindtap="moreVersions" disabled="{{versionLoading}}">更多版本（共 {{versionTotal}} 个）</button>
@@ -50,7 +51,7 @@
   <block wx:elif="{{stage === 'form'}}">
     <button class="entry-link back" bindtap="back" disabled="{{saving || submitUnknown}}">‹ {{source === 'bgg' ? '返回选择版本' : '返回搜索'}}</button>
     <view class="entry-title">确认录入</view>
-    <view wx:if="{{source === 'bgg'}}" class="entry-note">{{candidate.name}} · {{candidate.year_published || '年份未知'}}</view>
+    <view wx:if="{{source === 'bgg'}}" class="entry-note">{{candidate.display_name || candidate.name}} · {{candidate.year_published || '年份未知'}}</view>
     <view wx:else class="entry-note">手工填写桌游资料</view>
     <view class="entry-label">桌游名称 <text class="required">*</text></view>
     <input class="entry-input" value="{{form.name}}" maxlength="255" data-key="name" bindinput="field" disabled="{{saving || submitUnknown || (source === 'bgg' && candidate.local_game_id)}}" placeholder="填写你熟悉的名称"/>
@@ -61,7 +62,7 @@
     </block>
     <view class="entry-card entry-row between entry-section"><text class="entry-heading">同时登记实物</text><switch checked="{{includeInventory}}" color="#FF9800" bindchange="toggleInventory" disabled="{{saving || submitUnknown}}"/></view>
     <block wx:if="{{includeInventory}}">
-      <view wx:if="{{selectedVersion}}" class="entry-card"><view class="entry-heading">已选版本</view><view class="entry-meta">{{selectedVersion.name}}</view><view class="entry-muted">{{selectedVersion.languageLabel || '语言未知'}} · {{selectedVersion.year_published || '年份未知'}}<view>{{selectedVersion.publisherLabel || '出版商未知'}}</view></view></view>
+      <view wx:if="{{selectedVersion}}" class="entry-card"><view class="entry-heading">已选版本</view><view class="entry-meta">{{selectedVersion.display_name || selectedVersion.name}}</view><view class="entry-muted">{{selectedVersion.languageLabel || '语言未知'}} · {{selectedVersion.year_published || '年份未知'}}<view>{{selectedVersion.publisherLabel || '出版商未知'}}</view></view></view>
       <block wx:else><view class="entry-label">版本 / 语言（可稍后填写）</view><view class="entry-row"><input class="entry-input grow" value="{{form.edition_name}}" data-key="edition_name" bindinput="field" maxlength="255" placeholder="版本名称" disabled="{{saving || submitUnknown}}"/><input class="entry-input grow" value="{{form.language}}" data-key="language" bindinput="field" maxlength="64" placeholder="语言" disabled="{{saving || submitUnknown}}"/></view></block>
       <view class="entry-label">归属 <text class="required">*</text></view>
       <picker range="{{ownerOptions}}" range-key="label" value="{{ownerIndex}}" bindchange="ownerChange" disabled="{{saving || submitUnknown}}"><view class="entry-input entry-row between"><text>{{ownerOptions[ownerIndex].label}}</text><text>⌄</text></view></picker>

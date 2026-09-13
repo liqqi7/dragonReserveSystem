@@ -23,6 +23,8 @@ node scripts/init_miniprogram_config.cjs
 
 桌游入口为“工具 → 桌游库”。浏览器原型、后端设置、成员登录和页面入口见 [UI评审说明](miniprogram/BOARDGAME_UI_REVIEW.md)。
 
+另一台电脑从零启动本地环境、交给大模型接手，以及导入 BGG / BG Stats 的完整步骤见 [本地启动与导入交接](docs/LOCAL_BOARDGAME_HANDOFF.md)。包含可复制的接手任务、独立 MySQL、私有配置、worker、迁移、人员匹配和验收；该流程不使用下方的服务器测试库联调脚本。
+
 ## 目录和约定
 
 - `miniprogram/`：微信小程序前端。

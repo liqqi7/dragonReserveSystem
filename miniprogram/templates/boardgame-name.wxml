@@ -1,0 +1,8 @@
+<!-- Shared catalog title. Original spelling is optional and never repeats the title. -->
+<wxs module="names" src="./boardgame-name.wxs"/>
+<template name="boardgame-name">
+  <view class="bg-name-block {{compact ? 'bg-name-compact' : ''}}">
+    <view class="{{titleClass || 'bg-name-title'}}">{{game.display_name || game.name || fallback}}</view>
+    <view wx:if="{{names.secondary(game)}}" class="bg-original-name">{{names.secondary(game)}}</view>
+  </view>
+</template>

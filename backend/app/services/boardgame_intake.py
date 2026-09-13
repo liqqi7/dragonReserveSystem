@@ -97,13 +97,15 @@ def candidate(db, item, actor, detail=False):
     out = {k: p.get(k) for k in ('name', 'aliases', 'game_type', 'year_published', 'min_players',
                                   'max_players', 'min_playtime_minutes', 'max_playtime_minutes')}
     out.update(item_id=item.id, revision=item.revision, bgg_id=item.bgg_id,
+               display_name=existing.name if local_id else p.get('name'), original_name=p.get('name'),
                cover_url=image_url(root.findtext('image')), thumbnail_url=image_url(root.findtext('thumbnail')),
                local_game_id=local_id, local_game_name=existing.name if local_id else None,
                detail_state='ready', version_count=len(versions(item)),
                source_url=f'https://boardgamegeek.com/boardgame/{item.bgg_id}')
     if detail:
         parser = PlainText()
-        parser.feed(p.get('description') or '')
+        parser.feed((existing.local_overrides['description'] if local_id and
+                     'description' in existing.local_overrides else p.get('description')) or '')
         out.update(description=''.join(parser.parts).strip(), publishers=links(root, 'boardgamepublisher'))
     return safe(out)
 

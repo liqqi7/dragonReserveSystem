@@ -1,0 +1,4 @@
+.bg-name-block { min-width:0; max-width:100%; }
+.bg-name-title { overflow-wrap:anywhere; }
+.bg-original-name { color:#4B5563; font-size:23.08rpx; line-height:34.62rpx; font-weight:400; overflow-wrap:anywhere; margin-top:3.85rpx; }
+.bg-name-compact .bg-original-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }

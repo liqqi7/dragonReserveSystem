@@ -10,7 +10,7 @@ Page({...require('../../utils/boardgameMedia'),
     modes:f.MODES,statuses:f.STATUSES,personalStatuses:f.STATUSES.filter(s=>s.value!=='recorded'),environments:[{value:'offline',label:'线下'},{value:'online',label:'线上'},{value:'unknown',label:'未知'}],environmentIndex:0,dateMode:'date',dateTitle:'对局日期',dateValue:'',results:RESULT,directions:DIRECTIONS,exclusions:EXCLUSIONS,modeIndex:0,resultIndex:0,directionIndex:0,exclusionIndex:0,
     newFlags:['未记录','第一次玩','玩过了'],sharedResults:['结果未知','成功','失败'],sharedResultIndex:0,sharedStatusIndex:0,
     locationOpen:false,locationQuery:'',locations:[],locationCursor:null,locationError:'',locationSaving:false,dateOpen:false,memberOpen:false,memberRole:'player',memberQuery:'',members:[],memberCursor:null,gameOpen:false,gameQuery:'',games:[],
-    expansions:[],expansionOpen:false,boxes:[],boxIndex:0,duplicates:[],duplicateOpen:false,endOpen:false,timerText:'00:00:00',dirty:false},
+    expansions:[],expansionOpen:false,boxes:[],boxIndex:0,duplicates:[],duplicateOpen:false,endOpen:false,timerText:'00:00:00',dirty:false,activityContext:null},
   onLoad(options){this._options=options;this._segmentKey=options.segment_key||null;this._segmentIndex=Number(options.segment_index)||0;this.setData({segmentMode:!!this._segmentKey,segmentNumber:this._segmentIndex+1});this._importPath=options.job_id&&options.item_id?`/boardgame-imports/${options.job_id}/items/${options.item_id}/plays/${options.id}`:null;this.setData({importedHeld:!!this._importPath});this.setData({id:options.id?Number(options.id):null});},
   onShow(){this.load();},
   onHide(){this.stopTicker();},
@@ -26,19 +26,34 @@ Page({...require('../../utils/boardgameMedia'),
     try{
       if(this._segmentKey){const bundle=segments.read(this._segmentKey);if(!bundle||!bundle.entries[this._segmentIndex])throw new Error('分局草稿已失效，请回到来源条目重新核对');this.applyForm(bundle.entries[this._segmentIndex].form,{game:bundle.game,editing:true,dirty:true});await this.loadGameOptions();return;}
       if(this.data.id){const r=await api.get(this._importPath||`/boardgame-plays/${this.data.id}`),play=this._importPath?r.play:r,game=await api.get(`/boardgames/${play.game_id}`);this._importItemRevision=r.item_revision;
-        this.applyForm(f.fromDetail(play),{play,game,editing:false});
+        this.applyForm(f.fromDetail(play),{play,game,editing:false,activityContext:play.activity_snapshot||null});
         try{this._sheet=await api.get((this._importPath||`/boardgame-plays/${this.data.id}`)+'/scoresheet');this.setData({hasSheet:true});}catch(e){if(e.statusCode!==404)throw e;this._sheet=null;this.setData({hasSheet:false});}
         try{wx.setStorageSync(this.cacheKey(),{play,game,sheet:this._sheet});}catch(e){}
       }else{const game=this._options.game_id?await api.get(`/boardgames/${this._options.game_id}`):{id:null,name:'选择游戏',default_rules:{}};
         const self={id:Number(wx.getStorageSync('userId')),nickname:wx.getStorageSync('userNickname')||'我',avatar_url:wx.getStorageSync('userAvatarUrl')||null};
-        this.applyForm(f.initial(game,self,Number(this._options.activity_id),Number(this._options.plan_id)),{game,editing:true});}
-      if(!this.data.id&&this._options.plan_id&&this._options.activity_id){const a=await api.get(`/activities/${this._options.activity_id}/boardgames`),plan=a.plans.find(p=>p.id===Number(this._options.plan_id));if(plan)this.applyForm({...this.data.form,inventory_id:plan.inventory_id,expansions:plan.expansions.map(e=>({...e}))});}await this.loadGameOptions();this.startTicker();
+        let form=f.initial(game,self,Number(this._options.activity_id),Number(this._options.plan_id)),activityContext=null;
+        if(form.activity_id){
+          const [summary,activity]=await Promise.all([api.get(`/activities/${form.activity_id}/boardgames`),api.get(`/activities/${form.activity_id}`)]);
+          if(!summary.permissions.can_record)throw new Error('签到后才可以记录活动对局；已取消的活动不可新建记录');
+          const plan=form.plan_id?summary.plans.find(p=>p.id===form.plan_id):null;
+          if(form.plan_id&&(!plan||plan.game_id!==form.game_id))throw new Error('桌游计划已变化，请返回活动重新选择');
+          const nomination=this._options.from_nomination==='1'?summary.nominations.find(n=>n.game.id===form.game_id):null;
+          if(this._options.from_nomination==='1'&&!nomination)throw new Error('这款桌游的提名已变化，请返回活动重新选择');
+          // Other members may nominate different modules. Only preselect the
+          // caller's own request; the recorder confirms what this table uses.
+          const selected=plan||(nomination&&nomination.mine);
+          if(selected)form={...form,inventory_id:selected.inventory_id||null,expansions:selected.expansions.map(e=>({...e}))};
+          activityContext={id:activity.id,name:activity.name,table_label:plan&&plan.table_label||null};
+        }
+        this.applyForm(form,{game,editing:true,activityContext,timingOpen:this._options.quick_start==='1'});}
+      await this.loadGameOptions();this.startTicker();
     }catch(error){const cache=this.data.id&&wx.getStorageSync(this.cacheKey());if(error.statusCode===0&&cache){this._sheet=cache.sheet||null;this.setData({hasSheet:!!this._sheet});this.applyForm(f.fromDetail(cache.play),{play:cache.play,game:cache.game,editing:false,notice:'正在查看本机缓存，联网后将重新核对版本'});}else this.setData({error:api.message(error)});}
     finally{this.setData({loading:false});}
   },
+  openActivity(){if(this.data.form.activity_id)wx.navigateTo({url:'/pages/boardgame_activity/boardgame_activity'+api.query({id:this.data.form.activity_id})});},
   async loadGameOptions(){if(!this.data.form.game_id)return;const [exp,boxes]=await Promise.all([api.get(`/boardgames/${this.data.form.game_id}/expansions`),api.get('/boardgame-inventory',{game_id:this.data.form.game_id,limit:100})]);
     this.setData({expansions:exp.items.map(e=>({...e,selected:this.data.form.expansions.some(x=>x.game_id===e.game.id)})),
-      boxes:[{id:null,label:'未指定使用哪一盒'},...boxes.items.map(b=>({...b,label:`${b.owner.display_name} · ${b.edition_name||'未标版本'}`}))],
+      boxes:[{id:null,label:'未指定使用哪一盒'},...boxes.items.map(b=>({...b,label:`${b.owner.display_name} · ${b.edition_label||b.edition_name||'未标版本'}`}))],
       boxIndex:Math.max(0,boxes.items.findIndex(b=>b.id===this.data.form.inventory_id)+1)});},
   toggleSection(e){const k=e.currentTarget.dataset.key;if(['detailsOpen','playerOptionsOpen','timingOpen','advancedOpen'].includes(k))this.setData({[k]:!this.data[k]});},
   edit(){if(this.data.play&&!this.data.play.permissions.can_edit)return;this.setData({editing:true});},
@@ -81,7 +96,7 @@ Page({...require('../../utils/boardgameMedia'),
   chooseLocation(e){const loc=this.data.locations.find(l=>l.id===Number(e.currentTarget.dataset.id));if(loc)this.setData({'form.location_id':loc.id,'form.location_label':loc.name,dirty:true,locationOpen:false});},
   async createLocation(){if(this.data.segmentMode||this._importPath){this.setData({'form.location_id':null,'form.location_label':this.data.locationQuery.trim()||null,locationOpen:false,dirty:true});return;}if(this.data.locationSaving)return;const name=this.data.locationQuery.trim();if(!name){this.setData({locationError:'先填写地点名称'});return;}this.setData({locationSaving:true,locationError:''});try{const loc=await api.send('/boardgame-locations','POST',{name},this._locationKey);this.setData({'form.location_id':loc.id,'form.location_label':loc.name,dirty:true,locationOpen:false});}catch(e){this.setData({locationError:api.message(e)});}finally{this.setData({locationSaving:false});}},
   openDate(){this.setData({dateOpen:true,dateMode:'date',dateTitle:'对局日期',dateValue:this.data.form.played_on});},openStart(){this.setData({dateOpen:true,dateMode:'datetime',dateTitle:'开始时间（北京时间）',dateValue:this.data.form.started_at?this.data.form.started_at_label:this.data.form.played_on+' 12:00'});},clearStart(){this.applyForm({...this.data.form,started_at:null},{dirty:true});},environment(e){const i=Number(e.detail.value);this.setData({environmentIndex:i,'form.play_environment':this.data.environments[i].value,dirty:true});},location(e){this.setData({'form.location_id':null,'form.location_label':e.detail.value,dirty:true});},closeDate(){this.setData({dateOpen:false});},dateConfirm(e){this.applyForm({...this.data.form,played_on:e.detail.dateValue,started_at:this.data.dateMode==='datetime'?`${e.detail.dateValue}T${e.detail.timeValue}:00+08:00`:null},{dateOpen:false,dirty:true});},
-  async openExpansions(){this.setData({expansionOpen:true});try{const rows=await Promise.all(this.data.expansions.map(async e=>{const r=await api.get('/boardgame-inventory',{game_id:e.game.id,limit:100}),selected=this.data.form.expansions.find(x=>x.game_id===e.game.id)||{};const boxes=[{id:null,label:'未指定实物'},...r.items.map(b=>({...b,label:`${b.owner.display_name} · ${b.edition_name||'未标版本'}`}))];return {...e,modules_note:selected.modules_note||'',compatibility_note:selected.compatibility_note||'',boxes,boxIndex:Math.max(0,boxes.findIndex(b=>b.id===selected.inventory_id))};}));this.setData({expansions:rows});}catch(e){this.setData({error:api.message(e)});}},closeExpansions(){this.setData({expansionOpen:false});},
+  async openExpansions(){this.setData({expansionOpen:true});try{const rows=await Promise.all(this.data.expansions.map(async e=>{const r=await api.get('/boardgame-inventory',{game_id:e.game.id,limit:100}),selected=this.data.form.expansions.find(x=>x.game_id===e.game.id)||{};const boxes=[{id:null,label:'未指定实物'},...r.items.map(b=>({...b,label:`${b.owner.display_name} · ${b.edition_label||b.edition_name||'未标版本'}`}))];return {...e,modules_note:selected.modules_note||'',compatibility_note:selected.compatibility_note||'',boxes,boxIndex:Math.max(0,boxes.findIndex(b=>b.id===selected.inventory_id))};}));this.setData({expansions:rows});}catch(e){this.setData({error:api.message(e)});}},closeExpansions(){this.setData({expansionOpen:false});},
   expansionToggle(e){const id=Number(e.currentTarget.dataset.id),selected=e.detail.value;let list=this.data.form.expansions.filter(x=>x.game_id!==id);if(selected)list.push({game_id:id,game_name:(this.data.expansions.find(e=>e.game.id===id)||{game:{}}).game.name,modules_note:null,compatibility_note:null,inventory_id:null});
     this.setData({'form.expansions':list,expansions:this.data.expansions.map(x=>({...x,selected:list.some(r=>r.game_id===x.game.id)})),dirty:true});},
   expansionBox(e){const id=Number(e.currentTarget.dataset.id),index=Number(e.detail.value),entry=this.data.expansions.find(x=>x.game.id===id);this.setData({'form.expansions':this.data.form.expansions.map(x=>x.game_id===id?{...x,inventory_id:entry.boxes[index].id}:x),expansions:this.data.expansions.map(x=>x.game.id===id?{...x,boxIndex:index}:x),dirty:true});},

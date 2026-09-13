@@ -1,6 +1,7 @@
 """Board game domain tables. Explicit constraints also apply to import workers."""
 from sqlalchemy import (Table, Column, Integer, String, Text, Boolean, Date, DateTime, Numeric, JSON, ForeignKeyConstraint, UniqueConstraint, CheckConstraint, Index, MetaData, text)
 from sqlalchemy.dialects import mysql
+from sqlalchemy.orm import column_property
 
 
 def define_tables(metadata):
@@ -634,6 +635,8 @@ TABLES = define_tables(Base.metadata)
 
 class BoardGame(Base):
     __table__ = TABLES['boardgames']
+    # Read only projection: keep upstream spelling without loading the full BGG payload.
+    original_name = column_property(__table__.c.bgg_payload['projection']['name'].as_string())
 
 
 class Inventory(Base):

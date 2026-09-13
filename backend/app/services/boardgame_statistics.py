@@ -399,7 +399,7 @@ def most_played(db, q, actor):
     player_count = select(func.count()).select_from(PlayPlayer).where(PlayPlayer.play_id == Play.id).correlate(Play).scalar_subquery()
     stmt = select(Play.game_id.label('key'), func.count().label('play_count'), cast(func.sum(player_count), Integer).label('player_appearances'),
                   func.max(Play.played_on).label('last_played_on')).where(Play.id.in_(ids)).group_by(Play.game_id)
-    return ranked(db, q, stmt, 'play_count', lambda r: dict(**safe(r), game=columns(get(db, BoardGame, r['key']), ['id', 'name', 'cover_url']),
+    return ranked(db, q, stmt, 'play_count', lambda r: dict(**safe(r), game=columns(get(db, BoardGame, r['key']), ['id', 'name', 'original_name', 'cover_url']),
                                                            drilldown=drilldown(q, game_id=r['key'])))
 
 
@@ -473,7 +473,7 @@ def comparison_groups(db, q, actor):
 def expansions(db, q, actor):
     stmt = select(PlayExpansion.expansion_game_id.label('key'), func.count().label('play_count')).where(
         PlayExpansion.play_id.in_(filtered_ids(db, q, actor))).group_by(PlayExpansion.expansion_game_id)
-    return ranked(db, q, stmt, 'play_count', lambda r: dict(**safe(r), game=columns(get(db, BoardGame, r['key']), ['id', 'name']),
+    return ranked(db, q, stmt, 'play_count', lambda r: dict(**safe(r), game=columns(get(db, BoardGame, r['key']), ['id', 'name', 'original_name']),
         drilldown=drilldown(q, expansion_ids=[r['key']], expansion_match='all', without_expansions=False)))
 
 
@@ -610,7 +610,7 @@ def wanted(db, q, actor, game_id=None):
         if game_id:
             out['activity'] = columns(get(db, Activity, r['key']), ['id', 'name', 'start_time'])
         else:
-            out['game'] = columns(get(db, BoardGame, r['key']), ['id', 'name', 'cover_url'])
+            out['game'] = columns(get(db, BoardGame, r['key']), ['id', 'name', 'original_name', 'cover_url'])
             out['drilldown'] = {'path': f'/boardgame-stats/wanted/{r["key"]}/sources', 'query': q.model_dump(
                 mode='json', by_alias=True, include=allowed - {'limit', 'cursor', 'sort'}, exclude_none=True)}
         return out

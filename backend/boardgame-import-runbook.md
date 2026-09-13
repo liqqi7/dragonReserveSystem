@@ -1,12 +1,12 @@
 # BGG / BG Stats 持续导入操作说明
 
-更新：2026-09-13。适用于后续新开的 Codex 对话；不依赖旧对话记忆。
+更新：2026-09-14。适用于后续新开的 Codex 对话；不依赖旧对话记忆。另一台电脑从零启动环境见 [本地启动与导入交接](../docs/LOCAL_BOARDGAME_HANDOFF.md)。
 
 用户要求：可以继续在小程序、BGG、BG Stats 任意一处记局；以后通过接口追加新桌游、实物和对局。旧数据不重复新增，来源修改不作为新局，跨来源的同一局只保留一条本地对局。
 
-**本说明记录导入操作契约和当前接口状态，不代表已上线或已导入真实数据。** 本轮已实现本地导入API、来源worker、核对页面和回归测试，未运行真实导入。执行时先核对当前代码、运行环境和接口版本。技术背景见 [完整方案](boardgame-library-technical-solution.md)、[历史导入设计](design/boardgame-library/05-history-import.md)、[真实文件格式核验](design/boardgame-library/07-bgstats-real-export.md)。
+**当前已在用户授权的独立本地测试库导入 BGG / BG Stats，未上线。** 数据库、原件、来源数据集和人工映射不随 Git 分发，另一设备需重新导入或转移完整本地备份。执行时先核对当前代码、运行环境和接口版本，不据此假设其他环境已导入。技术背景见 [完整方案](boardgame-library-technical-solution.md)、[历史导入设计](design/boardgame-library/05-history-import.md)、[真实文件格式核验](design/boardgame-library/07-bgstats-real-export.md)。
 
-2026-09-13 已完成 [真实来源联调](design/boardgame-library/16-live-integration.md)：BGG 名称录入使用临时账号和临时库通过；用户 BG Stats 原件用当前生产解析器只读通过，发现 4 局结果待核对、9 条实物来源非当前持有。liqqi 收藏及首页对局只读查询成功。以上均不代表已完成真实历史导入或人员匹配。
+2026-09-13 的 [真实来源联调](design/boardgame-library/16-live-integration.md) 是此前只读/合成写入验证。随后本地真实导入完成，4 局结果冲突继续留待核对，历史来源玩家尚未与小程序用户人工匹配；最新范围见 [验证记录](design/boardgame-library/verification.md)。
 
 ## 1. 新对话从这里开始
 
@@ -24,6 +24,16 @@
 - 当前历史策略仍是 `held`：规范化入库后不公开、不入榜。小程序已存在的公开对局可以关联外部来源，关联不改变其原有公开状态。
 
 ## 2. 三类数据分别去重
+
+### 名称展示与来源保留
+
+- `boardgames.name` 是小程序主标题，使用已核对的中文名；优先采用持有者在 BG Stats 中填写的名称，其次采用人工确认的 BGG 中文别名。保留用户选用的简繁体和版本限定；BGG 别名没有可靠语言标签，不能只按“含汉字”自动选取。
+- 用现有 `PATCH /boardgames/{id}` 的 `set_overrides.name` 保存已确认名称（携带当前 `expected_revision` 和来源核对说明）。既有人工维护的中文名有冲突时先保留，不由文件上传或重复导入静默覆盖共享资料。中文名不能作为作品或实物的合并依据。
+- 游戏摘要新增只读 `original_name`，从 BGG 原始投影提取，不需要数据库迁移。页面只在它与主标题不同时显示为副标题；无中文名时保留原名，无来源原名时不显示空白副标题。
+- 搜索包含主标题、本地别名和 BGG 原名、别名。BGG 刷新继续尊重本地名称覆盖；原始 JSON/XML 保持原样。
+- 对局接口新增当前资料 `game`，扩展条目也带 `game`；`game_snapshot` 仍是记录当时的快照。列表、计分表等展示优先读取 `game`，旧缓存兼容回退到快照。改中文名不修改历史成绩、规则、统计或对局版本。
+- 已有中文介绍用 `set_overrides.description` 保存经人工核对的中文段落；原始多语言介绍继续保存在 `bgg_payload` / XML。录入候选的 `display_name`、`description` 优先使用已有本地覆盖，`name` / `original_name` 保留 BGG 作品原名。
+- 库存摘要新增 `edition_label`、`language_label`，候选版次新增 `display_name`、`language_label`，用于常见版次与语言的中文展示；它们由已知词典生成，不覆写 `edition_name` / `language` 或版本 ID。版次筛选同时匹配中文标签与原始字段，未知术语原样返回。
 
 | 对象 | 去重依据 | 操作规则 |
 | --- | --- | --- |
@@ -124,7 +134,7 @@ BG Stats 第一次上传可省略 source_dataset，保存响应中的 source_dat
   "expected_revision": 3,
   "items": [{
     "provider": "bgstats",
-    "source_namespace": "u:7:dataset:11111111-1111-4111-8111-111111111111",
+    "source_namespace": "u:7:r:7:dataset:11111111-1111-4111-8111-111111111111",
     "entity_type": "player",
     "external_id": "uuid:00000000-0000-4000-8000-000000000021",
     "mapping_revision": 0,
@@ -223,12 +233,15 @@ link_play 不覆盖本地成绩。对局已关联到另一 ID 时出现冲突，
 | 处理报告 | application_outcomes区分created/reused/linked/updated/skipped；每组含items/games/inventory/plays，统计已成功操作快照；publication_counts按本任务涉及的不同play_id统计 |
 | 新任务复用旧局 | 可继续通过新任务核对、读取、发布复用的私有历史，不篡改最早来源关联 |
 | 受控公开 | selection包含item_id/play_id/expected_revision/review_token，另需job版本、原因、acknowledge_public；未绑定人物需acknowledge_unmatched_people |
+| 发布后筛选 | 整批核对通过后，仅将已发布对局引用的人物、观察者和地点设为可见，保证排行下钻和筛选可用；不自动绑定小程序账号，未发布历史独有的身份仍私有 |
 | 来源记分语义 | 已知团队/合作、日期/时区、轮数、变体、备注、价格、数值/安全算式可投影；已知v1个人数值/文本计分表可展示。未知规则或其他版本保留原件并留待核对 |
 | BGA/Yucata | 尚未核实可用的官方外部历史接口和账号条件，capabilities如实报告unavailable；不把其他开发接口冒充历史接入 |
 
 报告数量按成功来源项的动作及关联ID计算，不能将同一结果经不同来源引用理解为新增多条物理记录。分页items保留逐项本地ID和问题；实际完成后同时核对资源总数和来源关联。当前实现不是无人值守的模糊匹配系统。
 
-发布操作需要真实用户的公开意图；本轮只是开发该能力，没有调用用户真实任务发布。样例测试只处理虚构记录。
+发布操作需要真实用户的公开意图，并遵守授权的环境范围。仅获准本地测试时，只能在隔离的本地数据库展示真实历史；提交到代码库的样例测试只处理虚构记录。
+
+如果旧版本已发布的历史仍引用不可见人物或地点，可在获准的目标环境备份后，用 `boardgame_import_review.publish_referenced_identities` 对这些已发布对局执行一次修复并提交事务。该函数拒绝未发布对局，保留账号绑定和归档状态，并记录可见性审计。此项无需表结构迁移。
 
 ## 9. “追加且不重复”的验收清单
 

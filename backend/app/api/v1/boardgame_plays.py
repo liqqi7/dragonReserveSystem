@@ -43,7 +43,10 @@ def play_options(actor: User = Depends(get_current_user)):
 def play_list(request: Request, db: Session = Depends(get_db), actor: User = Depends(get_current_user)):
     q = stats.parse_query(request)
     stmt = select(Play).where(*stats.predicates(db, q, actor, public_list=True))
-    return page(db, stmt, Play.id, lambda r: p.detail(db, r, actor), q.limit, q.cursor, {**stats.echo(q), 'actor': actor.id})
+    result = page(db, stmt, Play.id, lambda r: p.detail(db, r, actor, current_names=False), q.limit, q.cursor,
+                  {**stats.echo(q), 'actor': actor.id})
+    p.attach_display_games(db, result['items'], actor)
+    return result
 
 
 @router.post('/boardgame-plays/duplicate-preview')
@@ -154,7 +157,7 @@ def reports(scope: str = 'actionable', status: Literal['open', 'resolved', 'dism
         stmt = stmt.where(PlayReport.status == status)
     def render(row):
         play = get(db, Play, row.play_id)
-        return {**columns(row), 'game': columns(get(db, BoardGame, play.game_id), ['id', 'name', 'cover_url']),
+        return {**columns(row), 'game': columns(get(db, BoardGame, play.game_id), ['id', 'name', 'original_name', 'cover_url']),
                 'played_on': safe(play.played_on), 'reporter': user_summary(db, row.reported_by),
                 'resolver': user_summary(db, row.resolved_by), 'permissions': {'can_resolve': p.can_edit(db, play, actor)}}
     return page(db, stmt, PlayReport.id, render, limit, cursor, dict(scope=scope, status=status, actor=actor.id))

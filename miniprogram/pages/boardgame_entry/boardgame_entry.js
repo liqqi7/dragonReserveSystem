@@ -8,7 +8,7 @@ const blankForm = () => ({name:'', aliases:'', game_type:'base', owner_type:'', 
   owner_label:'', status:'unverified', available_for_activity:false, quantity:'1', purchased_on:null,
   purchase_price:'', purchase_currency:'CNY', edition_name:'', language:'', remark:''});
 const pending = state => ['queued','fetching','parsing','retry_wait'].includes(state);
-const versionView = v => ({...v, languageLabel:(v.languages || []).join(' / '), publisherLabel:(v.publishers || []).join(' / ')});
+const versionView = v => ({...v, languageLabel:v.language_label || (v.languages || []).join(' / '), publisherLabel:(v.publishers || []).join(' / ')});
 
 Page({
   data: {stage:'search', query:'', searched:false, results:[], total:0, offset:0, nextOffset:null,

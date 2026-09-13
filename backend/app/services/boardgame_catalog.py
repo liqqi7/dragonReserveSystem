@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 from decimal import Decimal
 
 from sqlalchemy import func, or_, select, update, UniqueConstraint
+from sqlalchemy.orm import load_only
 
 from app.models import User
 from app.models.boardgame import (BoardGame, Inventory, InventorySource, ExpansionLink, Person, Location,
@@ -13,7 +14,7 @@ from app.schemas.boardgame import GameFields
 from app.services.boardgame_common import (admin, audit, check_revision, columns, digest, fail, get,
     member, now, safe, stamp, touch, unique, user_summary)
 
-GAME_PUBLIC = ['id', 'bgg_id', 'name', 'game_type', 'is_standalone', 'cover_url', 'min_players',
+GAME_PUBLIC = ['id', 'bgg_id', 'name', 'original_name', 'game_type', 'is_standalone', 'cover_url', 'min_players',
     'max_players', 'min_playtime_minutes', 'max_playtime_minutes', 'min_age', 'year_published',
     'complexity', 'sort_order', 'archived_at', 'revision']
 GAME_DEFAULTS = dict(aliases=[], is_standalone=False, cover_url=None, description=None,
@@ -69,6 +70,20 @@ def game_detail(db, obj, actor, detail=True):
     return out
 
 
+def display_games(db, identities, actor):
+    """Small, current catalog summaries; never reveal hidden games through play history."""
+    if not identities:
+        return {}
+    visible = BoardGame.is_visible.is_(True)
+    if actor.role == 'admin':
+        visible = True
+    else:
+        visible = or_(visible, BoardGame.created_by == actor.id)
+    rows = db.scalars(select(BoardGame).options(load_only(*(getattr(BoardGame, k) for k in GAME_PUBLIC)))
+                      .where(BoardGame.id.in_(identities), visible))
+    return {g.id: columns(g, GAME_PUBLIC) for g in rows}
+
+
 def validate_cover(url, imported=False):
     if url is None:
         return
@@ -92,7 +107,9 @@ def project_game(obj):
             fail('invalid_range')
     for k, v in values.items():
         setattr(obj, k, Decimal(str(v)) if k == 'complexity' and v is not None else v)
-    obj.search_text = ' '.join([obj.name, *(obj.aliases or [])]).casefold()
+    # A local title/alias edit must not make the upstream title unsearchable.
+    obj.search_text = ' '.join(dict.fromkeys(filter(None, [obj.name, base.get('name'),
+                                                         *(base.get('aliases') or []), *(obj.aliases or [])]))).casefold()
 
 
 def create_game(db, actor, payload, source=None):
@@ -163,8 +180,10 @@ def inventory_private(obj, actor):
 
 
 def inventory_detail(db, obj, actor):
+    from app.services.boardgame_labels import edition_label, language_label
     out = columns(obj, ['id', 'game_id', 'status', 'available_for_activity', 'edition_name', 'language',
                         'photo_url', 'sort_order', 'archived_at', 'revision', 'bgg_version_id'])
+    out.update(edition_label=edition_label(obj.edition_name), language_label=language_label(obj.language))
     snapshot = obj.bgg_version_snapshot or {}
     out['bgg_version'] = {k: snapshot.get(k) for k in ('name', 'year_published', 'languages', 'publishers',
                                                      'cover_url', 'thumbnail_url')} if snapshot else None

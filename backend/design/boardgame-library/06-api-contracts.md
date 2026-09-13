@@ -88,12 +88,14 @@ ActivityBoardgamesResponse：
   },
   "nominations": [
     {
+      "game_id": 10,
       "game": {"id": 10, "name": "示例桌游"},
       "nomination_count": 3,
       "mine": {"id": 301, "revision": 2, "state": "active"},
       "expansion_demands": [{"game_id": 11, "nomination_count": 2}]
     }
   ],
+  "my_nominations": [{"id": 301, "activity_id": 81, "game_id": 10, "revision": 2, "state": "active", "note": null, "expansions": []}],
   "plans": [],
   "play_summary": {"completed_count": 0, "abandoned_count": 0},
   "permissions": {"can_nominate": true, "can_manage_plans": false, "can_record": false}
@@ -101,6 +103,10 @@ ActivityBoardgamesResponse：
 ```
 
 summary 中的对局计数执行公开与状态过滤；不返回其他人的草稿/held 数量。人员名单独立分页。扩展人数不能与主游戏人数相加；一人选择两个扩展仍是主游戏一票。
+
+`my_nominations` 只返回当前登录人的提名，包含已撤回和因退出报名失效的记录及其当前 revision。公开分组与想玩计数仍仅使用 active/frozen；重新报名不会自动恢复提名，用户主动重新保存时使用该 revision。取消或流局活动不开放计划管理、提名和新建对局入口。
+
+小程序提名卡和计划卡均提供“记录开局”：校验 can_record 后进入预填表单，不自动生成完成局。提名带入当前人的扩展与模块（无个人提名时仅预选本体）；计划带入 plan_id、桌次、实物和扩展。两者都绑定 activity_id，可继续调整实际参与人及扩展，确认后暂存或开始计时。页面展示所属活动并支持返回查看；独立录入的活动选择器尚未提供。
 
 PlanCreate：game_id、inventory_id?、table_label?、bring_user_id?/bring_label?、note?、sort_order、expansions；PlanPatch 带 expected_revision。PlanDetail 返回以上字段、revision、game 摘要及 warnings（库存当前不可用/同时被其他活动选择）；扩展各自返回可用性。库存并非同款或跨活动 plan_id 为 422；当前实物不可用为 409，可清空实物继续保存。
 

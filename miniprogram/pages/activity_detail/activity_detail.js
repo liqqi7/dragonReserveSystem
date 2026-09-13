@@ -148,7 +148,12 @@ Page({
   _sharePreviewGen: 0,
   _windowWidthPx: 390,
 
-  openBoardGames() { if (this.data.activity) wx.navigateTo({ url: `/pages/boardgame_activity/boardgame_activity?id=${this.data.activity.id}` }); },
+  openBoardGames() {
+    const id = Number(this.data.activityId);
+    if (this.data.activity && Number.isSafeInteger(id) && id > 0) {
+      wx.navigateTo({ url: `/pages/boardgame_activity/boardgame_activity?id=${id}` });
+    }
+  },
 
   onLoad(options) {
     const id = (options && options.id) || "";

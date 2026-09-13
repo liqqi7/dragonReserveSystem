@@ -1,3 +1,4 @@
+@import "../../styles/boardgame-name.wxss";
 page { background:#FFFFFF; color:#111827; font-size:26.92rpx; line-height:42.31rpx; }
 .entry-page { padding:30.77rpx; box-sizing:border-box; min-height:100vh; }
 .entry-page.has-footer { padding-bottom:calc(184.62rpx + env(safe-area-inset-bottom)); }
