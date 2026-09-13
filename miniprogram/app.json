@@ -4,9 +4,9 @@
     "pages/activity_calendar/activity_calendar",
     "pages/tools/tools",
     "pages/activity_detail/activity_detail",
+    "pages/activity_cover_preview/activity_cover_preview",
     "pages/welcome/welcome",
     "pages/history/history",
-    "pages/clear_data/clear_data",
     "pages/profile/profile",
     "pages/checkin_map/checkin_map",
     "pages/chwazi/chwazi",
@@ -44,12 +44,6 @@
         "selectedIconPath": "images/tab-home-active.jpg"
       },
       {
-        "pagePath": "pages/activity_calendar/activity_calendar",
-        "text": "Schedule",
-        "iconPath": "images/icon-detail-time.png",
-        "selectedIconPath": "images/icon-detail-time.png"
-      },
-      {
         "pagePath": "pages/tools/tools",
         "text": "Tools",
         "iconPath": "images/tab-home.png",
@@ -70,6 +64,17 @@
     ]
   },
   "style": "v2",
+  "componentFramework": "glass-easel",
+  "rendererOptions": {
+    "skyline": {
+      "defaultDisplayBlock": true,
+      "defaultContentBox": true,
+      "tagNameStyleIsolation": "legacy",
+      "keyframeStyleIsolation": "legacy",
+      "disableABTest": true,
+      "sdkVersionBegin": "3.0.0"
+    }
+  },
   "lazyCodeLoading": "requiredComponents",
   "sitemapLocation": "sitemap.json",
   "requiredPrivateInfos": [

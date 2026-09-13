@@ -18,7 +18,13 @@ function estimateResponseBytes(data) {
   }
 }
 
-function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQUEST_TIMEOUT, idempotencyKey }) {
+function resolveApiBaseUrl(apiVersion) {
+  const baseUrl = getApiBaseUrl();
+  if (!apiVersion) return baseUrl;
+  return baseUrl.replace(/\/api\/v\d+\/?$/, `/api/v${apiVersion}`);
+}
+
+function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQUEST_TIMEOUT, apiVersion, idempotencyKey }) {
   const traceId = createTraceId("req");
   const startAt = Date.now();
   const header = {
@@ -36,7 +42,7 @@ function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQ
 
   return new Promise((resolve, reject) => {
     wx.request({
-      url: `${getApiBaseUrl()}${url}`,
+      url: `${resolveApiBaseUrl(apiVersion)}${url}`,
       method,
       data,
       header,
@@ -126,5 +132,6 @@ function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQ
 
 module.exports = {
   request,
+  resolveApiBaseUrl,
   DEFAULT_REQUEST_TIMEOUT
 };

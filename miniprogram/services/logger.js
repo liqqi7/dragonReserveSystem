@@ -1,4 +1,5 @@
 const { getApiBaseUrl } = require("./config");
+const { createDiagnosticOutbox } = require("./diagnosticOutbox");
 
 function createTraceId(prefix = "trace") {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
@@ -10,12 +11,18 @@ let cachedSystemMeta;
 let clientDiagnosticSessionId;
 const backendUploadThrottleMap = new Map();
 const wechatAnalyticsTransportThrottleMap = new Map();
-const backendUploadQueue = [];
-let backendUploadTimer = null;
-let backendUploadInFlight = false;
-const BACKEND_UPLOAD_BATCH_SIZE = 8;
-const BACKEND_UPLOAD_DELAY_MS = 1200;
-const BACKEND_UPLOAD_MAX_RETRIES = 1;
+let diagnosticOutbox;
+
+function resumeDiagnosticUploads() {
+  if (typeof wx === "undefined" || !wx) return;
+  try {
+    if (!diagnosticOutbox) diagnosticOutbox = createDiagnosticOutbox({
+      wxApi: wx, getApiBaseUrl, createId: () => createTraceId("diag"),
+      onFailure: summary => reportRealtime("error", "diagnostic_upload_fail", { summary })
+    });
+    diagnosticOutbox.resume();
+  } catch (_) { /* Diagnostic delivery must not interrupt the app. */ }
+}
 
 function getClientDiagnosticSessionId() {
   if (!clientDiagnosticSessionId) {
@@ -54,13 +61,9 @@ function getRealtimeLogger() {
 
 function shouldReportRealtime(event) {
   return (
+    event === "home_presentation_snapshot" ||
+    event === "home_media_attempt" ||
     event === "request_fail" ||
-    event === "activity_card_media_scan" ||
-    event === "activity_card_media_pending" ||
-    event === "activity_card_media_stalled" ||
-    event === "activity_card_media_error" ||
-    event === "activity_card_video_waiting" ||
-    event === "activity_card_media_all_resolved" ||
     event === "page_error" ||
     event === "diagnostic_upload_fail"
   );
@@ -68,11 +71,11 @@ function shouldReportRealtime(event) {
 
 function shouldUploadBackend(event) {
   return (
+    event === "home_presentation_snapshot" ||
+    event === "home_media_attempt" ||
     event === "request_fail" ||
     event === "request_slow" ||
     event === "page_error" ||
-    event === "activity_card_media_stalled" ||
-    event === "activity_card_media_error" ||
     event === "activity_card_video_waiting"
   );
 }
@@ -83,8 +86,10 @@ function getRuntimeEnvironment() {
 }
 
 function normalizeRealtimeValue(value, depth = 0) {
-  if (value == null) return value;
-  if (depth >= 3) {
+  if (value == null || typeof value === "boolean" || typeof value === "number") return value;
+  // Preserve payload.cards[].coverPhases/glassPhases numeric fields.
+  // Keep bounded depth, array length and object keys for diagnostic size control.
+  if (depth >= 6) {
     return typeof value === "string" ? value.slice(0, 160) : String(value);
   }
   if (Array.isArray(value)) {
@@ -92,7 +97,7 @@ function normalizeRealtimeValue(value, depth = 0) {
   }
   if (typeof value === "object") {
     const next = {};
-    Object.keys(value).slice(0, 20).forEach((key) => {
+    Object.keys(value).slice(0, 50).forEach((key) => {
       next[key] = normalizeRealtimeValue(value[key], depth + 1);
     });
     return next;
@@ -144,6 +149,9 @@ function shouldThrottleBackendUpload(event, payload) {
   const signature = JSON.stringify({
     event,
     traceId: payload && payload.traceId,
+    reason: payload && payload.reason,
+    sequence: payload && payload.sequence,
+    stage: payload && payload.stage,
     activityId: payload && payload.activityId,
     mediaType: payload && payload.mediaType,
     group: payload && payload.group,
@@ -169,6 +177,9 @@ function shouldThrottleBackendUpload(event, payload) {
 function shouldThrottleWechatAnalyticsTransport(payload) {
   const signature = JSON.stringify({
     traceId: payload && payload.traceId,
+    reason: payload && payload.reason,
+    sequence: payload && payload.sequence,
+    stage: payload && payload.stage,
     apiPath: payload && payload.apiPath,
     errMsg: payload && payload.errMsg,
     networkType: payload && payload.networkType
@@ -286,91 +297,25 @@ function logRequestTransportFail(ctx, rawErr) {
 function uploadBackendLog(level, event, payload) {
   if (!shouldUploadBackend(event)) return;
   if (typeof wx === "undefined" || !wx || typeof wx.request !== "function") return;
-  const token = wx.getStorageSync("accessToken");
-  if (!token) return;
+  let token;
+  try { token = wx.getStorageSync("accessToken"); } catch (_) { return; }
+  if (!token && !['home_presentation_snapshot', 'home_media_attempt'].includes(event)) return;
   if (shouldThrottleBackendUpload(event, payload || {})) return;
 
   const systemMeta = getSystemMeta();
-  backendUploadQueue.push({
-    retryCount: 0,
-    body: {
-      event,
-      level,
+  if (!diagnosticOutbox) resumeDiagnosticUploads();
+  try {
+    if (diagnosticOutbox) diagnosticOutbox.enqueue({
+      event, level,
       traceId: (payload && payload.traceId) || "",
       sessionId: (payload && payload.sessionId) || getClientDiagnosticSessionId(),
       page: getCurrentPageRoute(),
       clientVersion: systemMeta.clientVersion,
       baseLibVersion: systemMeta.baseLibVersion,
       systemType: systemMeta.systemType,
-      payload: {
-        environment: getRuntimeEnvironment(),
-        ...normalizeRealtimeValue(payload || {})
-      }
-    }
-  });
-  if (backendUploadQueue.length >= BACKEND_UPLOAD_BATCH_SIZE) {
-    flushBackendLogs();
-    return;
-  }
-  if (backendUploadTimer) return;
-  backendUploadTimer = setTimeout(() => {
-    backendUploadTimer = null;
-    flushBackendLogs();
-  }, BACKEND_UPLOAD_DELAY_MS);
-}
-
-function flushBackendLogs() {
-  if (backendUploadInFlight || !backendUploadQueue.length) return;
-  if (typeof wx === "undefined" || !wx || typeof wx.request !== "function") return;
-  const token = wx.getStorageSync("accessToken");
-  if (!token) {
-    backendUploadQueue.length = 0;
-    return;
-  }
-  const batch = backendUploadQueue.splice(0, BACKEND_UPLOAD_BATCH_SIZE);
-  backendUploadInFlight = true;
-  const retryOrReport = (reason) => {
-    const retryable = batch
-      .filter((entry) => entry.retryCount < BACKEND_UPLOAD_MAX_RETRIES)
-      .map((entry) => ({ ...entry, retryCount: entry.retryCount + 1 }));
-    if (retryable.length) {
-      backendUploadQueue.unshift(...retryable);
-      return;
-    }
-    const payload = {
-      summary: String(reason || "diagnostic upload failed").slice(0, 200),
-      eventCount: batch.length
-    };
-    console.error("[mini] diagnostic_upload_fail", payload);
-    reportRealtime("error", "diagnostic_upload_fail", payload);
-  };
-  try {
-    wx.request({
-      url: `${getApiBaseUrl()}/diagnostics/client-logs/batch`,
-      method: "POST",
-      timeout: 5000,
-      header: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      data: { events: batch.map((entry) => entry.body) },
-      success(res) {
-        if (res.statusCode < 200 || res.statusCode >= 300) {
-          retryOrReport(`status:${res.statusCode}`);
-        }
-      },
-      fail(err) {
-        retryOrReport((err && err.errMsg) || "network failed");
-      },
-      complete() {
-        backendUploadInFlight = false;
-        if (backendUploadQueue.length) flushBackendLogs();
-      }
+      payload: { environment: getRuntimeEnvironment(), ...normalizeRealtimeValue(payload || {}) }
     });
-  } catch (err) {
-    backendUploadInFlight = false;
-    retryOrReport((err && err.message) || "request setup failed");
-  }
+  } catch (_) { /* Storage/request failures must not affect page rendering. */ }
 }
 
 function logPageError(operation, err, context = {}) {
@@ -383,7 +328,14 @@ function logPageError(operation, err, context = {}) {
   });
 }
 
+function isNormalHomeDiagnostic(event, payload = {}) {
+  return event === 'home_presentation_snapshot' && payload.reason === 'all_ready_state_committed' ||
+    event === 'home_media_attempt' && payload.stage === 'attempt_succeeded' && !payload.slowAttempt &&
+    !/failed|timeout|invalid|error/.test(Object.keys(payload.evidence || {}).join(' '));
+}
+
 function reportRealtime(level, event, payload) {
+  if (isNormalHomeDiagnostic(event, payload)) return;
   if (!shouldReportRealtime(event)) return;
   const logger = getRealtimeLogger();
   if (!logger || typeof logger[level] !== "function") return;
@@ -402,7 +354,7 @@ function reportRealtime(level, event, payload) {
 }
 
 function logInfo(event, payload) {
-  console.info(`[mini] ${event}`, payload || {});
+  if (!isNormalHomeDiagnostic(event, payload)) console.info(`[mini] ${event}`, payload || {});
   reportRealtime("info", event, payload);
   uploadBackendLog("info", event, payload);
 }
@@ -414,6 +366,7 @@ function logError(event, payload) {
 }
 
 module.exports = {
+  resumeDiagnosticUploads,
   createTraceId,
   summarizeError,
   logInfo,

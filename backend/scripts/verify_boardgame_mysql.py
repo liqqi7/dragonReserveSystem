@@ -55,7 +55,7 @@ def main():
             subprocess.run([python, '-m', 'alembic', 'upgrade', 'head'], cwd=backend, env=env, check=True, timeout=60)
             verification = subprocess.run(client, input='USE boardgame_migration; SELECT user_id,display_name FROM boardgame_people; SELECT version_num FROM alembic_version;',
                                           text=True, capture_output=True, check=True, timeout=10)
-            assert '测试成员' in verification.stdout and '20260913_0015' in verification.stdout
+            assert '测试成员' in verification.stdout and '20260914_0018' in verification.stdout
             print('PASS: full Alembic upgrade from base, existing member backfill', flush=True)
             subprocess.run([python, '-m', 'alembic', 'downgrade', '20260810_0012'], cwd=backend, env=env, check=True, timeout=60)
             subprocess.run([python, '-m', 'alembic', 'upgrade', 'head'], cwd=backend, env=env, check=True, timeout=60)

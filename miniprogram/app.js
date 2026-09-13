@@ -1,8 +1,13 @@
 const userService = require("./services/user");
 const authService = require("./services/auth");
-const { logPageError } = require("./services/logger");
+const { logPageError, resumeDiagnosticUploads } = require("./services/logger");
 
 
+
+// Session validation remains immediate; unchanged primitive profile values need no write.
+function storeIfChanged(key, value) {
+  if (wx.getStorageSync(key) !== value) wx.setStorageSync(key, value);
+}
 
 App({
 
@@ -10,6 +15,18 @@ App({
 
     /** 自定义 TabBar 重挂载时 data.selected 会重置，用此值在 attached 中立即恢复，避免 0→正确值 二次 transition */
     tabBarSelected: 0,
+
+    /** 首页全屏抽屉存续期间跨原生页面生命周期保留隐藏态，避免 Tab 重挂载后覆盖抽屉。 */
+    tabBarHidden: false,
+
+    /** 冷启动首页卡片入场前，Tab 与卡片共用同一个延迟触发点。 */
+    homeTabEntrancePending: true,
+
+    /** 从其他 Tab 点击中央新建入口后，由首页 onShow 消费并打开一级抽屉。 */
+    pendingOpenCreateActivity: false,
+
+    /** 中央新建入口被权限拦截后，由“我的”页消费登录或获取权限引导。 */
+    pendingCreateAccessAction: "",
 
     userRole: null,
 
@@ -48,6 +65,10 @@ App({
   },
 
 
+
+  onShow() {
+    resumeDiagnosticUploads();
+  },
 
   restoreSessionFromStorage() {
 
@@ -129,7 +150,7 @@ App({
 
       this.globalData.accessToken = accessToken;
 
-      wx.setStorageSync("accessToken", accessToken);
+      storeIfChanged("accessToken", accessToken);
 
     }
 
@@ -159,17 +180,19 @@ App({
 
 
 
-    wx.setStorageSync("hasWeChatAuth", true);
+    storeIfChanged("hasWeChatAuth", true);
 
-    wx.setStorageSync("userId", String(user.id || ""));
+    storeIfChanged("userId", String(user.id || ""));
 
-    wx.setStorageSync("userNickname", user.nickname || "");
+    storeIfChanged("userNickname", user.nickname || "");
 
-    wx.setStorageSync("userAvatarUrl", user.avatar_url || "");
+    storeIfChanged("userAvatarUrl", user.avatar_url || "");
 
-    wx.setStorageSync("userRole", role);
+    storeIfChanged("userRole", role);
 
-    wx.setStorageSync("isAuthenticated", isAuthenticated);
+    resumeDiagnosticUploads();
+
+    storeIfChanged("isAuthenticated", isAuthenticated);
 
   },
 
@@ -187,9 +210,9 @@ App({
 
     try {
 
-      wx.setStorageSync("userRole", role);
+      storeIfChanged("userRole", role);
 
-      wx.setStorageSync("isAuthenticated", isAuthenticated);
+      storeIfChanged("isAuthenticated", isAuthenticated);
 
     } catch (e) {
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """Activity schemas."""
 
-from datetime import datetime
+from datetime import date as Date, datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -10,13 +10,26 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.services.activity_type_style_service import get_allowed_activity_types, normalize_activity_type_key
 
 
-ACTIVITY_STATUSES = {"未开始", "进行中", "已结束", "已取消", "已删除", "已流局"}
+ACTIVITY_STATUSES = {"未开始", "进行中", "已结束", "已取消", "已流局"}
+MAX_ACTIVITY_NAME_LENGTH = 10
+MAX_ACTIVITY_REMARK_LENGTH = 120
 
 
 def _validate_activity_status(value: str) -> str:
     normalized = value.strip()
     if normalized not in ACTIVITY_STATUSES:
         raise ValueError("status is invalid")
+    return normalized
+
+
+def _validate_required_text(value: object, field_name: str) -> object:
+    if value is None:
+        raise ValueError(f"{field_name} is required")
+    if not isinstance(value, str):
+        return value
+    normalized = value.strip()
+    if not normalized:
+        raise ValueError(f"{field_name} is required")
     return normalized
 
 
@@ -45,6 +58,8 @@ class ActivityParticipantResponse(BaseModel):
     checkin_method: Optional[str]
     checkin_lat: Optional[float]
     checkin_lng: Optional[float]
+    checkin_location_name: Optional[str]
+    checkin_address: Optional[str]
     created_at: datetime
 
 
@@ -80,12 +95,40 @@ class ActivityResponse(BaseModel):
         return normalized or "other"
 
 
+class ActivityWeatherResponse(BaseModel):
+    """Server-persisted weather state for an activity detail response."""
+
+    available: bool
+    status: str
+    reason: Optional[str] = None
+    date: Optional[Date] = None
+    temperature: Optional[int | float] = None
+    temperature_min: Optional[int | float] = None
+    temperature_max: Optional[int | float] = None
+    condition: str = ""
+    icon_code: str = ""
+    humidity: Optional[int | float] = None
+    wind_direction: str = ""
+    wind_scale: str = ""
+    air_quality: Optional[str] = None
+    attribution: str
+    fetched_at: Optional[datetime] = None
+    valid_until: Optional[datetime] = None
+    stale: bool = False
+
+
+class ActivityDetailResponse(ActivityResponse):
+    """Activity detail payload; list payloads intentionally omit weather."""
+
+    weather: ActivityWeatherResponse
+
+
 class ActivityCreateRequest(BaseModel):
     """Admin-only activity creation payload."""
 
-    name: str = Field(min_length=1, max_length=128)
+    name: str = Field(min_length=1, max_length=MAX_ACTIVITY_NAME_LENGTH)
     status: str = Field(default="未开始", max_length=32)
-    remark: str = ""
+    remark: str = Field(min_length=1, max_length=MAX_ACTIVITY_REMARK_LENGTH)
     max_participants: Optional[int] = Field(default=None, ge=1, le=999)
     start_time: datetime
     end_time: datetime
@@ -97,6 +140,11 @@ class ActivityCreateRequest(BaseModel):
     location_address: str = Field(default="", max_length=255)
     location_latitude: Optional[float] = None
     location_longitude: Optional[float] = None
+
+    @field_validator("name", "remark", mode="before")
+    @classmethod
+    def validate_required_text(cls, value: object, info) -> object:
+        return _validate_required_text(value, info.field_name)
 
     @field_validator("end_time")
     @classmethod
@@ -128,9 +176,9 @@ class ActivityCreateRequest(BaseModel):
 class ActivityUpdateRequest(BaseModel):
     """Admin-only activity update payload."""
 
-    name: Optional[str] = Field(default=None, min_length=1, max_length=128)
+    name: Optional[str] = Field(default=None, min_length=1, max_length=MAX_ACTIVITY_NAME_LENGTH)
     status: Optional[str] = Field(default=None, max_length=32)
-    remark: Optional[str] = None
+    remark: Optional[str] = Field(default=None, min_length=1, max_length=MAX_ACTIVITY_REMARK_LENGTH)
     max_participants: Optional[int] = Field(default=None, ge=1, le=999)
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
@@ -142,6 +190,11 @@ class ActivityUpdateRequest(BaseModel):
     location_address: Optional[str] = Field(default=None, max_length=255)
     location_latitude: Optional[float] = None
     location_longitude: Optional[float] = None
+
+    @field_validator("name", "remark", mode="before")
+    @classmethod
+    def validate_required_text(cls, value: object, info) -> object:
+        return _validate_required_text(value, info.field_name)
 
     @field_validator("activity_type")
     @classmethod

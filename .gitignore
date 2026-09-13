@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *.so
 .pytest_cache/
+backend/.pytest_*/
 .mypy_cache/
 .ruff_cache/
 
@@ -25,6 +26,9 @@ backend/.alembic_cache/
 .vscode/
 .cursor/debug-*.log
 .codex-backups/
+/.codex/
+/.tmp/
+/backups/
 
 # Project-local artifacts
 backend/.coverage
@@ -32,6 +36,7 @@ backend/htmlcov/
 backend/deploy/*.generated
 backend/storage/
 backend/storage-private/
+/.local-assets/
 
 # Runtime-only backend artifacts
 backend/logs/
@@ -39,3 +44,16 @@ backend/migration_backups/
 backend/test-request.log
 # WeChat miniprogram local config (do not commit env-specific base URLs)
 miniprogram/services/config.js
+
+# Backend private keys and secrets
+backend/secrets/
+
+# WeChat DevTools private project settings
+/project.private.config.json
+
+# Local runtime data
+/storage/
+
+# Pencil temporary previews
+/prototype/.tmp-*/
+/prototype/.recovery/
