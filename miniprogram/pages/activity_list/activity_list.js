@@ -1676,7 +1676,7 @@ Page({
 
     // 4. 已结束：按开始时间降序
     const ended = valid
-      .filter(a => !usedIds.has(a._id) && ["已结束", "已取消", "已流局"].includes(a.status))
+      .filter(a => !usedIds.has(a._id) && ["已结束", "已流局"].includes(a.status))
       .sort(sortByStartDesc);
 
     return { joined, accepting, notStarted, ended };
@@ -1823,7 +1823,7 @@ Page({
     if (activity.status === "已取消") return;
     wx.showModal({
       title: "确认取消活动",
-      content: `确定要取消活动"${activity.name}"吗？取消后将归入首页历史活动，不可再报名或签到。`,
+      content: `确定要取消活动"${activity.name}"吗？取消后不可再报名或签到。`,
       success: (res) => {
         if (!res.confirm) return;
         wx.showLoading({ title: "处理中..." });

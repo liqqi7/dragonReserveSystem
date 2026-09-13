@@ -292,7 +292,7 @@
   <view wx:if="{{activity}}" id="qaActivityDetailBottomBar" class="bottom-bar" style="padding-bottom: {{safeBottomRpx}}rpx">
     <view class="bottom-inner">
       <button
-        class="bottom-icon-button bottom-icon-button-share {{(!canManageActivity || activity.status === '已结束') ? 'bottom-icon-button-wide' : ''}} {{sharePreviewLoading ? 'bottom-icon-button-disabled' : ''}}"
+        class="bottom-icon-button bottom-icon-button-share {{(!canManageActivity || (!isAdmin && activity.status === '已结束')) ? 'bottom-icon-button-wide' : ''}} {{sharePreviewLoading ? 'bottom-icon-button-disabled' : ''}}"
         open-type="{{sharePreviewLoading ? '' : 'share'}}"
         disabled="{{sharePreviewLoading}}"
         hover-class="bottom-button-hover"
@@ -300,7 +300,7 @@
         <image class="bottom-button-icon" src="/images/icon-share.svg" mode="aspectFit" />
       </button>
       <button
-        wx:if="{{canManageActivity && activity.status !== '已结束'}}"
+        wx:if="{{canManageActivity && (isAdmin || activity.status !== '已结束')}}"
         class="bottom-icon-button bottom-icon-button-edit"
         hover-class="bottom-button-hover"
         bindtap="openAdminEdit"
@@ -318,7 +318,7 @@
   </view>
 
   <page-container
-    wx:if="{{activityFormContainerRendered && canManageActivity && activity && activity.status !== '已结束'}}"
+    wx:if="{{activityFormContainerRendered && canManageActivity && activity && (isAdmin || activity.status !== '已结束')}}"
     id="qaActivityEditContainer"
     show="{{showActivityForm}}"
     position="bottom"

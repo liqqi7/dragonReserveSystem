@@ -921,3 +921,26 @@ test('first entrance delay can be tuned independently of adjacent-card interval'
     assert.equal(h.page.data.groupedActivities.joined[1]._homeSlotEntered, true);
   }
 });
+
+test("cancelled activities are excluded from ended and all homepage groups", () => {
+  const h = harness();
+  const list = [
+    { _id: "act-cancelled-1", name: "取消活动1", status: "已取消", startTime: "2026-09-13 10:00", hasSignedUp: false },
+    { _id: "act-cancelled-2", name: "取消活动2", status: "已取消", startTime: "2026-09-13 11:00", hasSignedUp: true },
+    { _id: "act-ended", name: "已结束活动", status: "已结束", startTime: "2026-09-13 12:00", hasSignedUp: false },
+    { _id: "act-flow", name: "已流局活动", status: "已流局", startTime: "2026-09-13 13:00", hasSignedUp: false },
+    { _id: "act-not-started", name: "未开始活动", status: "未开始", startTime: "2026-09-14 10:00", hasSignedUp: false, signupEnabled: true, isSignupClosed: false, isFull: false },
+    { _id: "act-joined", name: "已报名活动", status: "未开始", startTime: "2026-09-14 11:00", hasSignedUp: true }
+  ];
+
+  const groups = h.page.computeGroupedActivities(list);
+  assert.equal(groups.ended.some(a => a.status === "已取消"), false);
+  assert.equal(groups.ended.some(a => a._id === "act-cancelled-1"), false);
+  assert.equal(groups.ended.some(a => a._id === "act-cancelled-2"), false);
+  assert.equal(groups.ended.some(a => a._id === "act-ended"), true);
+  assert.equal(groups.ended.some(a => a._id === "act-flow"), true);
+  assert.equal(groups.joined.some(a => a.status === "已取消"), false);
+  assert.equal(groups.accepting.some(a => a.status === "已取消"), false);
+  assert.equal(groups.notStarted.some(a => a.status === "已取消"), false);
+});
+

@@ -186,7 +186,7 @@ def post_cancel_activity_v2(
 ) -> ActivityV2Response:
     activity = get_activity_by_id(db, activity_id)
     _require_activity_manager(activity, current_user)
-    return _response(cancel_activity(db, activity), request)
+    return _response(cancel_activity(db, activity, actor=current_user), request)
 
 
 @router.delete("/activities/{activity_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -267,7 +267,7 @@ def patch_activity_v2(
 ) -> ActivityV2Response:
     activity = get_activity_by_id(db, activity_id)
     _require_activity_manager(activity, current_user)
-    return _response(update_activity(db, activity, payload), request)
+    return _response(update_activity(db, activity, payload, actor=current_user), request)
 
 
 @router.delete(

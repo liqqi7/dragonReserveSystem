@@ -17205,7 +17205,7 @@
                                           "id": "AmzjU",
                                           "name": "日期数值",
                                           "fill": "#111827",
-                                          "content": "8月31日 周一",
+                                          "content": "12月31日周一",
                                           "fontFamily": "Noto Sans SC",
                                           "fontSize": 16,
                                           "fontWeight": "600"
@@ -106201,12 +106201,12 @@
     {
       "type": "frame",
       "id": "sNAax",
-      "x": -1533,
-      "y": 4292,
+      "x": 1072,
+      "y": 3292,
       "name": "页面 · 活动详情 · 多子项目 · 管理员",
       "clip": true,
       "width": 390,
-      "height": 1184,
+      "height": 1062,
       "fill": "#F5F5F5",
       "layout": "none",
       "children": [
@@ -106349,11 +106349,11 @@
             "blur": 18
           },
           "layout": "vertical",
-          "gap": 16,
+          "gap": 14,
           "padding": [
             16,
             16,
-            32,
+            24,
             16
           ],
           "children": [
@@ -106368,84 +106368,44 @@
                   "content": "基本信息"
                 },
                 "XBGND": {
-                  "content": "子项目安排"
+                  "content": "可选子项目"
                 }
               }
             },
             {
-              "id": "svJFk",
+              "id": "jlOSo",
               "type": "ref",
               "ref": "O5XQF",
               "name": "基本信息组件 · 实例",
-              "width": "fill_container",
-              "descendants": {
-                "Vb4Ql": {
-                  "enabled": false
-                }
-              }
+              "width": "fill_container"
             },
             {
               "type": "frame",
               "id": "NX4VI",
               "name": "子项目专属标题行",
               "width": "fill_container",
-              "height": 28,
+              "height": 24,
               "justifyContent": "space_between",
               "alignItems": "center",
               "children": [
                 {
-                  "type": "frame",
-                  "id": "eRT1Z",
-                  "name": "标题与徽标",
-                  "gap": 8,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "TGATd",
-                      "name": "子项目主标题",
-                      "fill": "#111827",
-                      "content": "活动子项目",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 18,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "ubn4t",
-                      "name": "数量徽标",
-                      "height": 22,
-                      "fill": "#FFF7ED",
-                      "cornerRadius": 11,
-                      "padding": [
-                        0,
-                        8
-                      ],
-                      "justifyContent": "center",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "iyFpR",
-                          "name": "数字",
-                          "fill": "#EA580C",
-                          "content": "2 个子项目 · 可分别报名",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 11,
-                          "fontWeight": "600"
-                        }
-                      ]
-                    }
-                  ]
+                  "type": "text",
+                  "id": "ExjhZ",
+                  "name": "子项目标题",
+                  "fill": "#111827",
+                  "content": "子项目",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 18,
+                  "fontWeight": "700"
                 },
                 {
                   "type": "text",
-                  "id": "l8Kdp",
-                  "name": "提示",
+                  "id": "I6P4v",
+                  "name": "子项目统计",
                   "fill": "#9CA3AF",
-                  "content": "独立核算名额",
+                  "content": "共 2 项",
                   "fontFamily": "Noto Sans SC",
-                  "fontSize": 12,
+                  "fontSize": 13,
                   "fontWeight": "normal"
                 }
               ]
@@ -106455,239 +106415,54 @@
               "id": "F7uZGV",
               "name": "子项目卡片 · 下午桌游局",
               "width": "fill_container",
-              "fill": "#FAFAF8",
-              "cornerRadius": 16,
+              "height": 50,
+              "fill": "#F9FAFB",
+              "cornerRadius": 14,
               "stroke": "#E5E7EB",
               "strokeWidth": 1,
-              "layout": "vertical",
-              "gap": 12,
               "padding": [
-                14,
+                0,
                 16
               ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
               "children": [
                 {
-                  "type": "frame",
-                  "id": "QwWEH",
-                  "name": "标题时间与状态行",
-                  "width": "fill_container",
-                  "justifyContent": "space_between",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "SV8bH",
-                      "name": "名称与时间",
-                      "gap": 8,
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "ib7n2",
-                          "name": "项目名称",
-                          "fill": "#111827",
-                          "content": "下午桌游局",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 15,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "ygaCq",
-                          "name": "时间",
-                          "fill": "#6B7280",
-                          "content": "14:00—18:00",
-                          "fontFamily": "Inter",
-                          "fontSize": 12,
-                          "fontWeight": "500"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "LMyHz",
-                      "name": "独立报名状态",
-                      "height": 22,
-                      "fill": "#FFF7ED",
-                      "cornerRadius": 11,
-                      "padding": [
-                        0,
-                        8
-                      ],
-                      "justifyContent": "center",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "rk6xh",
-                          "name": "状态文字",
-                          "fill": "#FF9800",
-                          "content": "报名中",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 10,
-                          "fontWeight": "700"
-                        }
-                      ]
-                    }
-                  ]
+                  "type": "text",
+                  "id": "z4MeKo",
+                  "name": "项目名称",
+                  "fill": "#111827",
+                  "content": "下午桌游局",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 15,
+                  "fontWeight": "600"
                 },
                 {
                   "type": "frame",
-                  "id": "V913lP",
-                  "name": "地点行",
-                  "width": "fill_container",
-                  "gap": 6,
+                  "id": "YV6mJ",
+                  "name": "报名情况",
+                  "gap": 2,
                   "alignItems": "center",
                   "children": [
                     {
-                      "type": "icon",
-                      "id": "X0VMp",
-                      "name": "定位图标",
-                      "width": 14,
-                      "height": 14,
-                      "icon": "map-pin",
-                      "library": "lucide",
-                      "fill": "#FF9800"
+                      "type": "text",
+                      "id": "OQSl6",
+                      "name": "已报人数",
+                      "fill": "#FF9800",
+                      "content": "6",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "700"
                     },
                     {
                       "type": "text",
-                      "id": "q5LHg4",
-                      "name": "地点文字",
-                      "fill": "#4B5563",
-                      "content": "龙城桌游馆（东门店） · 2号包厢",
+                      "id": "upiup",
+                      "name": "总名额",
+                      "fill": "#6B7280",
+                      "content": " / 8 人",
                       "fontFamily": "Noto Sans SC",
-                      "fontSize": 12,
+                      "fontSize": 13,
                       "fontWeight": "500"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "a9PjK",
-                  "name": "成员与报名情况行",
-                  "width": "fill_container",
-                  "justifyContent": "space_between",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "Oj9dv",
-                      "name": "头像组与人数",
-                      "gap": 10,
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "JH1ev",
-                          "name": "头像层叠",
-                          "width": 72,
-                          "height": 28,
-                          "layout": "none",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "rTj1g",
-                              "x": 0,
-                              "y": 0,
-                              "name": "头像 · 林",
-                              "width": 28,
-                              "height": 28,
-                              "fill": "#FFD180",
-                              "cornerRadius": 14,
-                              "stroke": "#FFFFFF",
-                              "strokeWidth": 2,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "GSynh",
-                                  "name": "字",
-                                  "fill": "#123C31",
-                                  "content": "林",
-                                  "fontFamily": "Noto Sans SC",
-                                  "fontSize": 10,
-                                  "fontWeight": "700"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "gLf5K",
-                              "x": 18,
-                              "y": 0,
-                              "name": "头像 · 周",
-                              "width": 28,
-                              "height": 28,
-                              "fill": "#A5D6A7",
-                              "cornerRadius": 14,
-                              "stroke": "#FFFFFF",
-                              "strokeWidth": 2,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "hWTqU",
-                                  "name": "字",
-                                  "fill": "#123C31",
-                                  "content": "周",
-                                  "fontFamily": "Noto Sans SC",
-                                  "fontSize": 10,
-                                  "fontWeight": "700"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "ujZCT",
-                              "x": 36,
-                              "y": 0,
-                              "name": "头像 · +4",
-                              "width": 28,
-                              "height": 28,
-                              "fill": "#FFF3E0",
-                              "cornerRadius": 14,
-                              "stroke": "#FFFFFF",
-                              "strokeWidth": 2,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "OU3wg",
-                                  "name": "字",
-                                  "fill": "#123C31",
-                                  "content": "+4",
-                                  "fontFamily": "Noto Sans SC",
-                                  "fontSize": 10,
-                                  "fontWeight": "700"
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "rTb3b",
-                          "name": "报名数据",
-                          "fill": "#111827",
-                          "content": "已报 6 / 8 人",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 12,
-                          "fontWeight": "600"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "icon",
-                      "id": "TmqbY",
-                      "name": "进入箭头",
-                      "width": 16,
-                      "height": 16,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#9CA3AF"
                     }
                   ]
                 }
@@ -106698,239 +106473,54 @@
               "id": "TQxoP",
               "name": "子项目卡片 · 晚上聚餐小馆",
               "width": "fill_container",
-              "fill": "#FAFAF8",
-              "cornerRadius": 16,
+              "height": 50,
+              "fill": "#F9FAFB",
+              "cornerRadius": 14,
               "stroke": "#E5E7EB",
               "strokeWidth": 1,
-              "layout": "vertical",
-              "gap": 12,
               "padding": [
-                14,
+                0,
                 16
               ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
               "children": [
                 {
-                  "type": "frame",
-                  "id": "X93zx",
-                  "name": "标题时间与状态行",
-                  "width": "fill_container",
-                  "justifyContent": "space_between",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "yEWoN",
-                      "name": "名称与时间",
-                      "gap": 8,
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "n3A2EA",
-                          "name": "项目名称",
-                          "fill": "#111827",
-                          "content": "晚上聚餐小馆",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 15,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "text",
-                          "id": "rZiD6",
-                          "name": "时间",
-                          "fill": "#6B7280",
-                          "content": "18:30—21:30",
-                          "fontFamily": "Inter",
-                          "fontSize": 12,
-                          "fontWeight": "500"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "gn7XJ",
-                      "name": "独立报名状态",
-                      "height": 22,
-                      "fill": "#FFF3E0",
-                      "cornerRadius": 11,
-                      "padding": [
-                        0,
-                        8
-                      ],
-                      "justifyContent": "center",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "peESj",
-                          "name": "状态文字",
-                          "fill": "#EA580C",
-                          "content": "即将满员",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 10,
-                          "fontWeight": "700"
-                        }
-                      ]
-                    }
-                  ]
+                  "type": "text",
+                  "id": "GsZBP",
+                  "name": "项目名称",
+                  "fill": "#111827",
+                  "content": "晚上聚餐小馆",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 15,
+                  "fontWeight": "600"
                 },
                 {
                   "type": "frame",
-                  "id": "NNirM",
-                  "name": "地点行",
-                  "width": "fill_container",
-                  "gap": 6,
+                  "id": "QDfvV",
+                  "name": "报名情况",
+                  "gap": 2,
                   "alignItems": "center",
                   "children": [
                     {
-                      "type": "icon",
-                      "id": "c1x8U",
-                      "name": "定位图标",
-                      "width": 14,
-                      "height": 14,
-                      "icon": "map-pin",
-                      "library": "lucide",
-                      "fill": "#FF9800"
+                      "type": "text",
+                      "id": "DiSz7",
+                      "name": "已报人数",
+                      "fill": "#FF9800",
+                      "content": "10",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "700"
                     },
                     {
                       "type": "text",
-                      "id": "lYmv4",
-                      "name": "地点文字",
-                      "fill": "#4B5563",
-                      "content": "老街小馆 · 沿湖露台长桌",
+                      "id": "UbbHw",
+                      "name": "总名额",
+                      "fill": "#6B7280",
+                      "content": " / 12 人",
                       "fontFamily": "Noto Sans SC",
-                      "fontSize": 12,
+                      "fontSize": 13,
                       "fontWeight": "500"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "eG8mE",
-                  "name": "成员与报名情况行",
-                  "width": "fill_container",
-                  "justifyContent": "space_between",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "BrGIr",
-                      "name": "头像组与人数",
-                      "gap": 10,
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "BSJUd",
-                          "name": "头像层叠",
-                          "width": 72,
-                          "height": 28,
-                          "layout": "none",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "jjDTr",
-                              "x": 0,
-                              "y": 0,
-                              "name": "头像 · 陈",
-                              "width": 28,
-                              "height": 28,
-                              "fill": "#CE93D8",
-                              "cornerRadius": 14,
-                              "stroke": "#FFFFFF",
-                              "strokeWidth": 2,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "H4jtv8",
-                                  "name": "字",
-                                  "fill": "#123C31",
-                                  "content": "陈",
-                                  "fontFamily": "Noto Sans SC",
-                                  "fontSize": 10,
-                                  "fontWeight": "700"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "aSZR0",
-                              "x": 18,
-                              "y": 0,
-                              "name": "头像 · 许",
-                              "width": 28,
-                              "height": 28,
-                              "fill": "#80CBC4",
-                              "cornerRadius": 14,
-                              "stroke": "#FFFFFF",
-                              "strokeWidth": 2,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "ggoSF",
-                                  "name": "字",
-                                  "fill": "#123C31",
-                                  "content": "许",
-                                  "fontFamily": "Noto Sans SC",
-                                  "fontSize": 10,
-                                  "fontWeight": "700"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "F13tZ",
-                              "x": 36,
-                              "y": 0,
-                              "name": "头像 · +8",
-                              "width": 28,
-                              "height": 28,
-                              "fill": "#FFF3E0",
-                              "cornerRadius": 14,
-                              "stroke": "#FFFFFF",
-                              "strokeWidth": 2,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "j8jqL",
-                                  "name": "字",
-                                  "fill": "#123C31",
-                                  "content": "+8",
-                                  "fontFamily": "Noto Sans SC",
-                                  "fontSize": 10,
-                                  "fontWeight": "700"
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "QVr6a",
-                          "name": "报名数据",
-                          "fill": "#111827",
-                          "content": "已报 10 / 12 人",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 12,
-                          "fontWeight": "600"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "icon",
-                      "id": "G18abr",
-                      "name": "进入箭头",
-                      "width": 16,
-                      "height": 16,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#9CA3AF"
                     }
                   ]
                 }
@@ -106944,7 +106534,7 @@
           "ref": "zbByR",
           "name": "底部功能栏/详情操作 · 管理员",
           "x": 0,
-          "y": 1104,
+          "y": 982,
           "width": 390,
           "height": 80,
           "layoutPosition": "absolute"
