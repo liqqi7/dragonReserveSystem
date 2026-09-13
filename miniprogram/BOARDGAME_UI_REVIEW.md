@@ -13,6 +13,14 @@ git switch --track origin/codex/bgg-sync
 
 如果本地分支已存在，先切到 `codex/bgg-sync`，再 `git pull --ff-only`。保留自己已有的本地配置和未提交改动，遇到冲突先处理，不强制覆盖。
 
+新拉代码后先运行：
+
+```sh
+node scripts/init_miniprogram_config.cjs
+```
+
+这会生成 Git 忽略的必需文件 `miniprogram/services/config.js`，默认连接本机 8001 端口，已有配置保持原样。缺少该文件时 JS 模块无法加载，可能直接白屏；没有游戏数据时则应显示标题、按钮和空态。生成后需在开发者工具重新编译。
+
 ## 2. 浏览器查看原型
 
 只看设计和示例交互无需启动后端。在项目根执行（Windows 可将 `python3` 换成 `python`）：
@@ -31,7 +39,7 @@ python3 -m http.server 62869 --bind 127.0.0.1 --directory prototype
 1. 使用微信开发者工具导入**项目根目录**，根目录 `project.config.json` 已设置 `miniprogramRoot=miniprogram/`。使用有权限的 AppID 或自己的本地测试配置。
 2. 启动同分支的本地后端，安装 [后端依赖](../backend/requirements.txt)，使用自己的本地 MySQL 开发库并执行 `alembic upgrade head`，应到 `20260913_0015`。从 `backend/` 运行 `python -m uvicorn app.main:app --host 127.0.0.1 --port 8001`。具体环境设置见 [后端说明](../backend/README.md)，查看本地 UI 不需要连接服务器测试库或生产。
 3. 在本机环境或 `backend/.env` 配置 `BOARDGAME_ENABLED=true`。`backend/.env.test` 若存在会覆盖 `.env`，需核对最终配置；操作系统环境变量优先于文件。仅查看已有/手动录入桌游、提名、记局和统计不需要 BGG 凭据。
-4. `miniprogram/services/config.js` 不随 Git 分发。若不存在，从同目录 `config.js.template` 复制，再把 `API_BASE_URL` 改为 `http://127.0.0.1:8001/api/v1`、`API_ENVIRONMENT` 改为 `local`；保留模板中的媒体地址处理函数。若已有配置，按自己的本地地址调整。
+4. `miniprogram/services/config.js` 不随 Git 分发，运行第 1 节初始化命令生成。需要其他 API 地址时，在文件尚未生成前运行 `node scripts/init_miniprogram_config.cjs http://本机地址:端口/api/v1`；已有配置则手工调整，保留媒体地址处理函数。
 5. 开发者工具本地调试时开启“不校验合法域名、web-view（业务域名）、TLS 版本以及 HTTPS 证书”。这是模拟器本地调试设置，真机和正式发布仍需各自配置。
 6. 使用本地测试成员或管理员登录。新建空库没有展示数据，可先通过下述本地账号调试方式进入，再在小程序“录入桌游”手工录入示例；活动也使用虚构数据。不要为了看 UI 导入真实成员历史。
 

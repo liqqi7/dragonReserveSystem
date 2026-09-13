@@ -6,10 +6,10 @@
 
 ## 使用方式
 
-1. 用微信开发者工具导入项目根目录，配置见 `project.config.json`。
-2. 正式环境使用 `services/config.js.template` 中的 API 地址。
-3. 本地与服务器测试库联调时，从 `backend/` 运行 `scripts/start_backend_test.ps1`；脚本会临时生成 `services/config.js`。
-4. 编译并运行小程序。
+1. 新拉项目后，在项目根运行 `node scripts/init_miniprogram_config.cjs`，生成必需的 `services/config.js`；已有配置不会覆盖。默认 API 为本机 `http://127.0.0.1:8001/api/v1`，可以在命令末尾指定其他地址。
+2. 用微信开发者工具导入项目根目录，配置见 `project.config.json`。
+3. 配置并启动同分支本地后端，桌游功能需开启 `BOARDGAME_ENABLED=true`。随后重新编译并运行小程序。
+4. 已配置服务器测试库的开发者仍可从 `backend/` 运行 `scripts/start_backend_test.ps1`，沿用其临时配置流程；纯本地UI评审不要求连接服务器测试库。
 
 `services/config.js` 是本机文件，已被 Git 忽略，不应提交。
 
