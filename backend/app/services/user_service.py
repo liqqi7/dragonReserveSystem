@@ -59,6 +59,9 @@ def update_user_role_by_invite_code(db: Session, user: User, invite_code: str) -
         raise ValidationAppError("Invite code is invalid")
 
     db.add(user)
+    if settings.boardgame_enabled:
+        from app.services.boardgame_catalog import provision_person
+        provision_person(db, user)
     db.commit()
     db.refresh(user)
     return user
@@ -67,8 +70,12 @@ def update_user_role_by_invite_code(db: Session, user: User, invite_code: str) -
 def clear_user_role(db: Session, user: User) -> User:
     """Reset a user role back to guest."""
 
+    from app.services.boardgame_activity import before_role_change, after_existing_mutation
+    activities = before_role_change(db, user)
     user.role = "guest"
     db.add(user)
+    for activity in activities:
+        after_existing_mutation(db, activity)
     db.commit()
     db.refresh(user)
     return user

@@ -101,6 +101,8 @@ Page({
   _hasShownOnce: false,
   _sharePreviewGen: 0,
 
+  openBoardGames() { if (this.data.activity) wx.navigateTo({ url: `/pages/boardgame_activity/boardgame_activity?id=${this.data.activity.id}` }); },
+
   onLoad(options) {
     const id = (options && options.id) || "";
     try {

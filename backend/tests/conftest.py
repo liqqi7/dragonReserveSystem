@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from pathlib import Path
+import os
 from typing import Generator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.database import Base, get_db
@@ -17,9 +18,28 @@ from app.models import Activity, ActivityParticipant, User
 
 @pytest.fixture()
 def db_session(tmp_path: Path) -> Generator[Session, None, None]:
-    engine = create_engine(f"sqlite:///{tmp_path / 'test.db'}", connect_args={"check_same_thread": False}, future=True)
+    mysql_url = os.environ.get('BOARDGAME_TEST_DATABASE_URL')
+    if mysql_url:
+        from sqlalchemy.engine import make_url
+        url = make_url(mysql_url)
+        socket = Path(url.query.get('unix_socket', ''))
+        assert url.database == 'boardgame_migration' and str(socket).startswith('/tmp/dragon-bg-migration-'), 'Only the disposable verification database is allowed'
+        engine = create_engine(mysql_url, future=True)
+        with engine.begin() as connection:
+            from sqlalchemy import text
+            connection.execute(text('SET FOREIGN_KEY_CHECKS=0'))
+            for table in Base.metadata.sorted_tables:
+                connection.execute(table.delete())
+            connection.execute(text('SET FOREIGN_KEY_CHECKS=1'))
+    else:
+        engine = create_engine(f"sqlite:///{tmp_path / 'test.db'}", connect_args={"check_same_thread": False}, future=True)
+        @event.listens_for(engine, 'connect')
+        def foreign_keys(connection, _):
+            connection.execute('PRAGMA foreign_keys=ON')
     Base.metadata.create_all(bind=engine)
-    session = sessionmaker(bind=engine, expire_on_commit=False, class_=Session)()
+    # Match app.core.database.SessionLocal; autoflush=True can hide lost pending
+    # changes when a service reloads the same row with populate_existing.
+    session = sessionmaker(bind=engine, expire_on_commit=False, autoflush=False, class_=Session)()
     try:
         yield session
     finally:

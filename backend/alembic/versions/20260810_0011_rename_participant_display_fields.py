@@ -16,6 +16,11 @@ depends_on = None
 
 
 def upgrade() -> None:
+    # 0002 in newer checkouts already uses the final names. Older databases
+    # still have the snapshot columns; support both installation histories.
+    columns = {c['name'] for c in sa.inspect(op.get_bind()).get_columns('activity_participants')}
+    if {'display_nickname', 'display_avatar_url'} <= columns:
+        return
     op.alter_column(
         "activity_participants",
         "nickname_snapshot",

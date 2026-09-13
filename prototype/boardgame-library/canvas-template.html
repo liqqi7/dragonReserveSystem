@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>桌游库 · 功能补全原型</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#E7EAF0;color:#182230;font-family:"Noto Sans SC","PingFang SC",sans-serif}.toolbar{background:#fff;position:sticky;top:0;z-index:20;display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:16px 24px;border-bottom:1px solid #D0D5DD}.toolbar strong{margin-right:auto;font-size:18px}.toolbar button,.toolbar select{padding:10px 14px;border:1px solid #D0D5DD;background:#fff;border-radius:10px;color:#182230;font:inherit}.toolbar button[aria-pressed=true]{background:#1768EF;color:#fff;border-color:#1768EF}.toolbar a{color:#1768EF;font-size:14px}.stage{padding:24px;overflow:auto}.surface{position:relative;overflow:hidden}.canvas{position:relative;transform-origin:top left;width:__CANVAS_W__px;height:__CANVAS_H__px}.node{position:absolute}.txt{white-space:pre-wrap;overflow:visible}.top{box-shadow:0 4px 12px #10182812}.node img{width:100%;height:100%;object-fit:cover;border-radius:inherit}.caption{margin:0;padding:0 24px 16px;color:#475467;font-size:13px} @media(max-width:600px){.toolbar{padding:12px}.toolbar strong{width:100%}.stage{padding:12px}.toolbar select{max-width:100%}}
+</style>
+<div class="toolbar"><strong>桌游库 · 功能补全</strong><button type="button" data-view="all" aria-pressed="true">全画布</button><button type="button" data-view="page" aria-pressed="false">页面原尺寸</button><button type="button" data-view="fit" aria-pressed="false">适应窗口</button><select aria-label="选择功能页面" data-select></select><a href="桌游库-功能补全.pen">Pencil 源文件</a></div>
+<div class="stage"><div class="surface"><div class="canvas"><!-- CANVAS --></div></div></div>
+<p class="caption">示例数据 · 设计与交互预览；小程序实际页面与接口在当前分支中。</p>
+<script>
+const geometry=__GEOMETRY__;
+const canvas=document.querySelector('.canvas'),surface=document.querySelector('.surface'),stage=document.querySelector('.stage'),select=document.querySelector('[data-select]');
+select.innerHTML=geometry.map(n=>`<option value="${n.id}">${n.name}</option>`).join('');
+let view='all';
+function draw(){
+ const n=geometry.find(x=>x.id===select.value)||geometry[0];
+ const top=[...canvas.children];top.forEach(el=>el.style.display=view==='all'||el.dataset.node===n.id?'':'none');
+ if(view==='all'){
+  const available=stage.clientWidth-parseFloat(getComputedStyle(stage).paddingLeft)-parseFloat(getComputedStyle(stage).paddingRight),scale=Math.min(1,available/__CANVAS_W__,Math.max(400,innerHeight-150)/__CANVAS_H__);
+  canvas.style.transform=`scale(${scale})`;surface.style.width=`${__CANVAS_W__*scale}px`;surface.style.height=`${__CANVAS_H__*scale}px`;canvas.style.left='0';canvas.style.top='0';
+ }else{
+  const scale=view==='fit'?Math.min(1,(stage.clientWidth-48)/n.width,(innerHeight-150)/n.height):1;canvas.style.transform=`scale(${scale})`;canvas.style.left=`-${n.x*scale}px`;canvas.style.top=`-${n.y*scale}px`;surface.style.width=`${n.width*scale}px`;surface.style.height=`${n.height*scale}px`;
+ }
+ document.querySelectorAll('[data-view]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.view===view)));
+}
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{view=b.dataset.view;draw()}));
+select.addEventListener('change',()=>{view='page';draw()});window.addEventListener('resize',draw);draw();
+</script>
+</html>

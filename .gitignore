@@ -31,6 +31,7 @@ backend/.coverage
 backend/htmlcov/
 backend/deploy/*.generated
 backend/storage/
+backend/storage-private/
 
 # Runtime-only backend artifacts
 backend/logs/

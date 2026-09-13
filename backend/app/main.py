@@ -13,7 +13,7 @@ from app.api.v1 import api_router
 from app.core.config import get_settings
 from app.core.exceptions import AppError
 from app.core.logging import error_summary, logger, request_context
-from app.middleware import RequestContextMiddleware
+from app.middleware import RequestContextMiddleware, BoardgameBodyLimitMiddleware
 
 
 settings = get_settings()
@@ -26,6 +26,7 @@ app = FastAPI(
     debug=settings.debug,
 )
 
+app.add_middleware(BoardgameBodyLimitMiddleware)
 app.add_middleware(RequestContextMiddleware)
 app.add_middleware(
     CORSMiddleware,
@@ -53,7 +54,7 @@ def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
     )
     response = JSONResponse(
         status_code=exc.status_code,
-        content={"code": exc.code, "message": exc.message, "request_id": context["trace_id"]},
+        content={"code": exc.code, "message": exc.message, "request_id": context["trace_id"], **({"details": exc.details} if exc.details else {})},
     )
     response.headers["X-Request-Id"] = context["trace_id"]
     return response

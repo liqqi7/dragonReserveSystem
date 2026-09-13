@@ -1,0 +1,2 @@
+@import "../../styles/boardgames.wxss";
+.import-actions{display:flex;gap:12rpx;flex-wrap:wrap;margin-top:20rpx}.import-diff{padding:16rpx 0;border-bottom:1rpx solid #E5E7EB;font-size:26.92rpx;line-height:1.6;white-space:pre-wrap;overflow-wrap:break-word}

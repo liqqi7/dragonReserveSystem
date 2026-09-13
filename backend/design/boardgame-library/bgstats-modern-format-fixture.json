@@ -1,0 +1,197 @@
+{
+  "games": [
+    {
+      "id": 11,
+      "uuid": "00000000-0000-4000-8000-000000000011",
+      "name": "Synthetic base",
+      "bggId": 5001,
+      "isBaseGame": 1,
+      "isExpansion": 0,
+      "copies": [
+        {
+          "uuid": "00000000-0000-4000-8000-000000000051",
+          "statusOwned": 1,
+          "metaData": "{\"Quantity\":\"\"}"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "uuid": "00000000-0000-4000-8000-000000000012",
+      "name": "Synthetic expansion",
+      "bggId": 5002,
+      "isBaseGame": 0,
+      "isExpansion": 1,
+      "copies": []
+    }
+  ],
+  "players": [
+    {
+      "id": 1,
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "name": "Synthetic A",
+      "isAnonymous": false
+    },
+    {
+      "id": 2,
+      "uuid": "00000000-0000-4000-8000-000000000002",
+      "name": "Anonymous",
+      "isAnonymous": true
+    },
+    {
+      "id": 3,
+      "uuid": "00000000-0000-4000-8000-000000000003",
+      "name": "Synthetic B",
+      "isAnonymous": false
+    }
+  ],
+  "locations": [
+    {
+      "id": 1,
+      "uuid": "00000000-0000-4000-8000-000000000021",
+      "name": "Synthetic location"
+    }
+  ],
+  "plays": [
+    {
+      "uuid": "00000000-0000-4000-8000-000000000101",
+      "gameRefId": 11,
+      "bggId": 9001,
+      "playDate": "2026-01-01 12:00:00",
+      "playDateYmd": 20260101,
+      "durationMin": 0,
+      "ignored": false,
+      "usesTeams": false,
+      "expansionPlays": [
+        {
+          "gameRefId": 12,
+          "bggId": 0
+        }
+      ],
+      "playImages": "[]",
+      "playerScores": [
+        {
+          "playerRefId": 1,
+          "score": "10",
+          "rank": 1,
+          "winner": true,
+          "seatOrder": 0,
+          "team": "0",
+          "metaData": "{\"scoreUuid\":\"00000000-0000-4000-8000-000000000201\"}"
+        },
+        {
+          "playerRefId": 2,
+          "score": "null",
+          "rank": 0,
+          "winner": false,
+          "team": "0",
+          "metaData": ""
+        },
+        {
+          "playerRefId": 2,
+          "score": "",
+          "rank": 0,
+          "winner": false
+        }
+      ],
+      "locationRefId": 1,
+      "metaData": "{\"isOnlinePlay\":1,\"futureSourceField\":{\"keep\":true}}",
+      "scoresheet": "{\"groups\":[{\"rows\":[{\"scores\":{\"00000000-0000-4000-8000-000000000201\":\"10\"},\"label\":\"Synthetic points\"}]}]}"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000000000102",
+      "gameRefId": 11,
+      "bggId": 9002,
+      "playDate": "2026-01-02 12:00:00",
+      "playDateYmd": 20260102,
+      "durationMin": 30,
+      "ignored": false,
+      "usesTeams": false,
+      "expansionPlays": [],
+      "playImages": "[\"synthetic-image-reference\"]",
+      "playerScores": [
+        {
+          "playerRefId": 1,
+          "score": "0",
+          "rank": 1,
+          "winner": true
+        },
+        {
+          "playerRefId": 3,
+          "score": "-2.5",
+          "rank": 2,
+          "winner": false
+        }
+      ]
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000000000103",
+      "gameRefId": 11,
+      "bggId": 9003,
+      "playDate": "2026-01-03 12:00:00",
+      "playDateYmd": 20260103,
+      "durationMin": 0,
+      "ignored": false,
+      "usesTeams": false,
+      "expansionPlays": [],
+      "playImages": "[]",
+      "playerScores": [
+        {
+          "playerRefId": 1,
+          "score": "20",
+          "rank": 2,
+          "winner": true,
+          "metaData": "{\"scoreUuid\":\"00000000-0000-4000-8000-000000000203\"}"
+        },
+        {
+          "playerRefId": 3,
+          "score": "30",
+          "rank": 1,
+          "winner": true
+        }
+      ],
+      "scoresheet": "{\"rounds\":[{\"rows\":[{\"scores\":{\"00000000-0000-4000-8000-000000000203\":\"20\"}}]}]}"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000000000104",
+      "gameRefId": 11,
+      "bggId": 9004,
+      "playDate": "2026-01-04 12:00:00",
+      "playDateYmd": 20260104,
+      "durationMin": 0,
+      "ignored": false,
+      "usesTeams": false,
+      "expansionPlays": [],
+      "playImages": "[]",
+      "playerScores": [
+        {
+          "playerRefId": 1,
+          "score": "2+3",
+          "rank": 0,
+          "winner": true
+        },
+        {
+          "playerRefId": 3,
+          "score": "5",
+          "rank": 1,
+          "winner": true
+        }
+      ]
+    }
+  ],
+  "deletedObjects": [
+    {
+      "objectType": "Player",
+      "uuid": "00000000-0000-4000-8000-000000000999",
+      "modificationDate": "2026-01-05 00:00:00"
+    }
+  ],
+  "challenges": [],
+  "groups": [],
+  "tags": [],
+  "userInfo": {
+    "appVersion": "synthetic-modern",
+    "exportDate": "2026-01-06 12:00:00",
+    "meRefId": 1
+  }
+}

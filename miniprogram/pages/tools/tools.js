@@ -22,11 +22,7 @@ Page({
   },
 
   onBoardGameTap() {
-    wx.showToast({
-      title: "黑黑正在做，别催",
-      icon: "none",
-      duration: 1800
-    });
+    wx.navigateTo({ url: "/pages/boardgames/boardgames" });
   },
 
   onChwaziTap() {

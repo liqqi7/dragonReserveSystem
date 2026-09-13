@@ -9,7 +9,19 @@
     "pages/clear_data/clear_data",
     "pages/profile/profile",
     "pages/checkin_map/checkin_map",
-    "pages/chwazi/chwazi"
+    "pages/chwazi/chwazi",
+    "pages/boardgames/boardgames",
+    "pages/boardgame_entry/boardgame_entry",
+    "pages/boardgame_detail/boardgame_detail",
+    "pages/boardgame_play/boardgame_play",
+    "pages/boardgame_offline/boardgame_offline",
+    "pages/boardgame_scoresheet/boardgame_scoresheet",
+    "pages/boardgame_collection/boardgame_collection",
+    "pages/boardgame_imports/boardgame_imports",
+    "pages/boardgame_activity/boardgame_activity",
+    "pages/boardgame_history/boardgame_history",
+    "pages/boardgame_stats/boardgame_stats",
+    "pages/boardgame_manage/boardgame_manage"
   ],
   "window": {
     "navigationBarTitleText": "Dragon Reserve",

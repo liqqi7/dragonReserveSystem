@@ -175,6 +175,8 @@
           </view>
         </view>
 
+        <view class="boardgames-entry" bindtap="openBoardGames"><view><text class="boardgames-entry-title">这次玩什么</text><text class="boardgames-entry-caption">提名想玩的桌游 · 桌次计划 · 对局记录</text></view><text>›</text></view>
+
         <view class="scroll-bottom-spacer"></view>
       </view>
     </block>

@@ -18,7 +18,7 @@ function estimateResponseBytes(data) {
   }
 }
 
-function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQUEST_TIMEOUT }) {
+function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQUEST_TIMEOUT, idempotencyKey }) {
   const traceId = createTraceId("req");
   const startAt = Date.now();
   const header = {
@@ -26,6 +26,7 @@ function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQ
     "X-Request-Id": traceId
   };
   const token = wx.getStorageSync("accessToken");
+  if (idempotencyKey) header["Idempotency-Key"] = idempotencyKey;
 
   if (auth && token) {
     header.Authorization = `Bearer ${token}`;

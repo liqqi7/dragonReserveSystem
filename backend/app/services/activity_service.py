@@ -25,6 +25,7 @@ from app.services.activity_type_style_service import (
     normalize_activity_type_key,
 )
 from app.utils.geo import haversine_distance_meters
+from app.services.boardgame_activity import before_existing_mutation, after_existing_mutation, preserve_activity_history
 
 
 settings = get_settings()
@@ -49,10 +50,16 @@ def get_activity_by_id(db: Session, activity_id: int) -> Activity:
     activity = db.scalar(_get_activity_query().where(Activity.id == activity_id))
     if activity is None:
         raise NotFoundError("Activity not found")
-    if _sync_activity_status(activity, _app_now()):
+    if _sync_activity_and_nominations(db, activity, _app_now()):
         db.commit()
         db.refresh(activity)
     return activity
+
+
+def _sync_activity_and_nominations(db: Session, activity: Activity, at: datetime) -> bool:
+    changed = before_existing_mutation(db, activity)
+    changed = _sync_activity_status(activity, at) or changed
+    return after_existing_mutation(db, activity) or changed
 
 
 def _sync_activity_status(activity: Activity, now: datetime) -> bool:
@@ -89,7 +96,8 @@ def list_activities(db: Session) -> list[Activity]:
     )
     activities = list(db.scalars(stmt).unique().all())
     now = _app_now()
-    if any(_sync_activity_status(a, now) for a in activities):
+    changes = [_sync_activity_and_nominations(db, a, now) for a in sorted(activities, key=lambda a: a.id)]
+    if any(changes):
         db.commit()
     return activities
 
@@ -105,7 +113,8 @@ def list_my_activities(db: Session, user: User) -> list[Activity]:
     )
     activities = list(db.scalars(stmt).unique().all())
     now = _app_now()
-    if any(_sync_activity_status(a, now) for a in activities):
+    changes = [_sync_activity_and_nominations(db, a, now) for a in sorted(activities, key=lambda a: a.id)]
+    if any(changes):
         db.commit()
     return activities
 
@@ -208,6 +217,7 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
 def update_activity(db: Session, activity: Activity, payload: ActivityUpdateRequest) -> Activity:
     """Update an activity."""
 
+    before_existing_mutation(db, activity)
     data = payload.model_dump(exclude_unset=True)
     prev_type = activity.activity_type
     for key, value in data.items():
@@ -245,6 +255,7 @@ def update_activity(db: Session, activity: Activity, payload: ActivityUpdateRequ
     _sync_activity_status(activity, _app_now())
 
     db.add(activity)
+    after_existing_mutation(db, activity)
     db.commit()
     db.refresh(activity)
     return get_activity_by_id(db, activity.id)
@@ -253,6 +264,7 @@ def update_activity(db: Session, activity: Activity, payload: ActivityUpdateRequ
 def delete_activity(db: Session, activity: Activity) -> None:
     """Delete an activity and its participants."""
 
+    preserve_activity_history(db, activity)
     db.delete(activity)
     db.commit()
 
@@ -260,6 +272,7 @@ def delete_activity(db: Session, activity: Activity) -> None:
 def signup_activity(db: Session, activity: Activity, user: User) -> ActivityParticipant:
     """Register the current user for an activity."""
 
+    before_existing_mutation(db, activity)
     if activity.status == "已取消":
         raise ValidationAppError("Activity has been cancelled")
 
@@ -295,6 +308,7 @@ def signup_activity(db: Session, activity: Activity, user: User) -> ActivityPart
         display_avatar_url=user.avatar_url,
     )
     db.add(participant)
+    after_existing_mutation(db, activity)
     db.commit()
     db.refresh(participant)
     return participant
@@ -303,6 +317,7 @@ def signup_activity(db: Session, activity: Activity, user: User) -> ActivityPart
 def cancel_signup(db: Session, activity: Activity, user: User) -> None:
     """Remove the current user's signup if still allowed."""
 
+    before_existing_mutation(db, activity)
     participant = db.scalar(
         select(ActivityParticipant).where(
             ActivityParticipant.activity_id == activity.id,
@@ -317,12 +332,14 @@ def cancel_signup(db: Session, activity: Activity, user: User) -> None:
         raise ValidationAppError("Signup deadline has passed; contact an admin to remove this signup")
 
     db.delete(participant)
+    after_existing_mutation(db, activity)
     db.commit()
 
 
 def remove_participant(db: Session, activity: Activity, participant_id: int, actor: User) -> None:
     """Remove a participant from an activity."""
 
+    before_existing_mutation(db, activity)
     participant = db.scalar(
         select(ActivityParticipant).where(
             ActivityParticipant.activity_id == activity.id,
@@ -340,6 +357,7 @@ def remove_participant(db: Session, activity: Activity, participant_id: int, act
         raise ValidationAppError("Signup deadline has passed; contact an admin to remove this signup")
 
     db.delete(participant)
+    after_existing_mutation(db, activity)
     db.commit()
 
 
@@ -355,6 +373,7 @@ def admin_checkin_participant(
     after an activity has completed or when on-site checkin failed.
     """
 
+    before_existing_mutation(db, activity)
     if actor.role != "admin":
         raise ValidationAppError("Only admins can perform retroactive checkin")
     if activity.status in {"已取消", "已删除"}:
@@ -389,6 +408,7 @@ def admin_cancel_checkin_participant(
 ) -> ActivityParticipant:
     """Admin-only cancel checkin for a participant."""
 
+    before_existing_mutation(db, activity)
     if actor.role != "admin":
         raise ValidationAppError("Only admins can cancel checkin")
     if activity.status in {"已取消", "已删除"}:
@@ -423,6 +443,7 @@ def checkin_activity(
 ) -> ActivityParticipant:
     """Check the current user in to an activity."""
 
+    before_existing_mutation(db, activity)
     if activity.status == "已取消":
         raise ValidationAppError("Activity has been cancelled")
 

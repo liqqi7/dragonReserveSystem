@@ -1,0 +1,2 @@
+@import "../../styles/boardgames.wxss";
+.offline-diff{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18rpx;margin:20rpx 0}.offline-side{background:#F5F5F5;padding:20rpx;border-radius:18rpx;min-width:0}.offline-value{font-size:23.08rpx;line-height:1.7;word-break:break-all;white-space:pre-wrap}.offline-actions{display:flex;gap:14rpx;flex-wrap:wrap;margin-top:20rpx}

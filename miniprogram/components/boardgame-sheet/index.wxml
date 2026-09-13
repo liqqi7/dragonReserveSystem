@@ -1,0 +1,13 @@
+<root-portal enable="{{visible}}">
+  <view wx:if="{{visible}}" class="bg-sheet-overlay">
+    <view class="bg-sheet-mask" catchtouchmove="stop" bindtap="close"/>
+    <view class="bg-sheet-panel {{kind}} {{size}}" catchtap="stop">
+      <view class="bg-sheet-header">
+        <view class="bg-sheet-handle-zone"><view class="bg-sheet-handle"/></view>
+        <view class="bg-sheet-heading"><text class="bg-sheet-title">{{title}}</text><button class="bg-sheet-close" bindtap="close" disabled="{{busy}}" aria-label="关闭"><image src="/images/icon-close.svg" mode="aspectFit"/></button></view>
+      </view>
+      <scroll-view class="bg-sheet-content" scroll-y enhanced><slot/></scroll-view>
+      <view wx:if="{{kind === 'form'}}" class="bg-sheet-footer"><slot name="footer"/></view>
+    </view>
+  </view>
+</root-portal>

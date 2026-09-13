@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "桌游统计",
+  "usingComponents": {
+    "boardgame-sheet": "/components/boardgame-sheet/index",
+    "boardgame-filters": "/components/boardgame-filters/index"
+  }
+}

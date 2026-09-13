@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "活动桌游",
+  "usingComponents": {
+    "boardgame-sheet": "/components/boardgame-sheet/index"
+  }
+}

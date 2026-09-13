@@ -1,6 +1,10 @@
 # 后端说明
 
+持续追加 BGG / BG Stats 数据的操作入口：[导入与防重复说明](boardgame-import-runbook.md)。后续 Codex 对话可从这里恢复来源数据集、映射和任务进度；文档记录当前接口与来源适配边界。
+
 后端基于 FastAPI、SQLAlchemy、Alembic 和 MySQL，为微信小程序提供认证、活动、报名、签到、用户资料和排行榜接口。
+
+桌游库开发与评审入口见 [完整技术方案](boardgame-library-technical-solution.md)，含34表及0013/0014/0015迁移、运行OpenAPI、核心事务、12个真实小程序页面和本地验收；业务决策见 [范围与设计索引](boardgame-library-scope.md)。当前已在本地实现，尚未部署或导入真实数据；结果见[验证报告](design/boardgame-library/verification.md)。
 
 ## 目录
 
@@ -28,7 +32,7 @@ cd backend
 .\.venv\Scripts\python.exe -m pytest tests -q
 ```
 
-最近完整结果为 `30 passed`。pytest 使用临时 SQLite 数据库，不连接生产库或服务器测试库。
+最新桌游及既有功能回归结果见[验证报告](design/boardgame-library/verification.md)。pytest 使用临时 SQLite 数据库，不连接生产库或服务器测试库。
 
 ## 小程序联调测试库
 
@@ -94,7 +98,7 @@ cd /home/ubuntu/apps/dragonReserveSystem/backend
 sudo systemctl restart dragonreserve-backend
 ```
 
-当前数据库迁移版本为 `20260810_0011`。涉及数据删除或结构调整前，先导出数据库备份。
+当前仓库 Alembic head 为 `20260913_0015`；实际业务库版本需在部署时核对，本地开发没有对生产执行迁移。涉及数据删除或结构调整前，先导出数据库备份。
 
 ## 部署后验证
 

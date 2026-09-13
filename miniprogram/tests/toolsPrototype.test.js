@@ -54,7 +54,7 @@ test("tools page uses the Pencil Lucide icon sizes and colors", () => {
   assert.match(arrow, /M7 7h10v10/);
 });
 
-test("tools cards keep their existing toast and Chwazi navigation behavior", () => {
+test("tools cards open the game library and Chwazi", () => {
   const previousWx = global.wx;
   const calls = [];
   global.wx = {
@@ -70,7 +70,6 @@ test("tools cards keep their existing toast and Chwazi navigation behavior", () 
     else global.wx = previousWx;
   }
 
-  assert.equal(calls[0][0], "toast");
-  assert.equal(calls[0][1].title, "黑黑正在做，别催");
+  assert.deepEqual(calls[0], ["navigate", { url: "/pages/boardgames/boardgames" }]);
   assert.deepEqual(calls[1], ["navigate", { url: "/pages/chwazi/chwazi" }]);
 });

@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "对局历史",
+  "usingComponents": {
+    "boardgame-sheet": "/components/boardgame-sheet/index",
+    "boardgame-filters": "/components/boardgame-filters/index"
+  }
+}

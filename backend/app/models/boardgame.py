@@ -1,0 +1,768 @@
+"""Board game domain tables. Explicit constraints also apply to import workers."""
+from sqlalchemy import (Table, Column, Integer, String, Text, Boolean, Date, DateTime, Numeric, JSON, ForeignKeyConstraint, UniqueConstraint, CheckConstraint, Index, MetaData, text)
+from sqlalchemy.dialects import mysql
+
+
+def define_tables(metadata):
+    tables = {}
+    tables['boardgames'] = Table('boardgames', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('bgg_id', Integer, primary_key=False, nullable=True),
+        Column('name', String(255), primary_key=False, nullable=False),
+        Column('aliases', JSON, primary_key=False, nullable=False),
+        Column('game_type', String(16), primary_key=False, nullable=False),
+        Column('is_standalone', Boolean, primary_key=False, nullable=False, server_default=text('false')),
+        Column('cover_url', String(1024), primary_key=False, nullable=True),
+        Column('description', Text, primary_key=False, nullable=True),
+        Column('min_players', Integer, primary_key=False, nullable=True),
+        Column('max_players', Integer, primary_key=False, nullable=True),
+        Column('min_playtime_minutes', Integer, primary_key=False, nullable=True),
+        Column('max_playtime_minutes', Integer, primary_key=False, nullable=True),
+        Column('min_age', Integer, primary_key=False, nullable=True),
+        Column('year_published', Integer, primary_key=False, nullable=True),
+        Column('local_overrides', JSON, primary_key=False, nullable=False),
+        Column('search_text', Text, primary_key=False, nullable=False),
+        Column('default_rules', JSON, primary_key=False, nullable=False),
+        Column('is_visible', Boolean, primary_key=False, nullable=False, server_default=text('true')),
+        Column('sort_order', Integer, primary_key=False, nullable=False, server_default=text('0')),
+        Column('archived_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=True),
+        Column('merged_into_id', Integer, primary_key=False, nullable=True),
+        Column('bgg_payload', JSON, primary_key=False, nullable=True),
+        Column('bgg_raw_xml', Text().with_variant(mysql.LONGTEXT(), "mysql"), primary_key=False, nullable=True),
+        Column('bgg_request_params', JSON, primary_key=False, nullable=True),
+        Column('bgg_synced_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=True),
+        Column('bgg_parser_version', String(32), primary_key=False, nullable=True),
+        Column('bgg_content_hash', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=True),
+        Column('projection_warnings', JSON, primary_key=False, nullable=False),
+        Column('created_by', Integer, primary_key=False, nullable=False),
+        Column('updated_by', Integer, primary_key=False, nullable=False),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        UniqueConstraint('bgg_id', name='uq_bg_bgg'),
+        ForeignKeyConstraint(['merged_into_id'], ['boardgames.id'], name='fk_bg_merged'),
+        CheckConstraint("game_type IN ('base','expansion')", name='ck_bg_type'),
+        CheckConstraint('bgg_id IS NULL OR bgg_id > 0', name='ck_bg_bgg'),
+        CheckConstraint('(min_players IS NULL OR min_players > 0) AND (max_players IS NULL OR max_players > 0) AND (min_players IS NULL OR max_players IS NULL OR min_players <= max_players)', name='ck_bg_players'),
+        CheckConstraint('(min_playtime_minutes IS NULL OR min_playtime_minutes > 0) AND (max_playtime_minutes IS NULL OR max_playtime_minutes > 0) AND (min_playtime_minutes IS NULL OR max_playtime_minutes IS NULL OR min_playtime_minutes <= max_playtime_minutes)', name='ck_bg_time'),
+        CheckConstraint('min_age IS NULL OR min_age >= 0', name='ck_bg_age'),
+        ForeignKeyConstraint(['created_by'], ['users.id'], name='bg1_creator'),
+        ForeignKeyConstraint(['updated_by'], ['users.id'], name='bg1_updater'),
+        CheckConstraint('revision >= 1', name='bg1_revision'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_bg_library', tables['boardgames'].c['is_visible'], tables['boardgames'].c['archived_at'], tables['boardgames'].c['sort_order'], tables['boardgames'].c['id'])
+    Index('ix_bg_type', tables['boardgames'].c['game_type'], tables['boardgames'].c['archived_at'])
+    tables['boardgame_inventory'] = Table('boardgame_inventory', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('game_id', Integer, primary_key=False, nullable=False),
+        Column('owner_type', String(16), primary_key=False, nullable=False),
+        Column('owner_user_id', Integer, primary_key=False, nullable=True),
+        Column('owner_label', String(64), primary_key=False, nullable=True),
+        Column('status', String(16), primary_key=False, nullable=False, server_default=text("'unverified'")),
+        Column('available_for_activity', Boolean, primary_key=False, nullable=False, server_default=text('false')),
+        Column('purchased_on', Date, primary_key=False, nullable=True),
+        Column('storage_location', String(255), primary_key=False, nullable=True),
+        Column('edition_name', String(255), primary_key=False, nullable=True),
+        Column('language', String(64), primary_key=False, nullable=True),
+        Column('bgg_version_id', Integer, primary_key=False, nullable=True),
+        Column('photo_url', String(1024), primary_key=False, nullable=True),
+        Column('remark', Text, primary_key=False, nullable=True),
+        Column('sort_order', Integer, primary_key=False, nullable=False, server_default=text('0')),
+        Column('entry_source', String(16), primary_key=False, nullable=False, server_default=text("'manual'")),
+        Column('source_username', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=True),
+        Column('source_collection_id', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=True),
+        Column('source_snapshot', JSON, primary_key=False, nullable=True),
+        Column('source_synced_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=True),
+        Column('archived_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=True),
+        Column('created_by', Integer, primary_key=False, nullable=False),
+        Column('updated_by', Integer, primary_key=False, nullable=False),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        ForeignKeyConstraint(['game_id'], ['boardgames.id'], name='fk_inventory_game'),
+        ForeignKeyConstraint(['owner_user_id'], ['users.id'], name='fk_inventory_owner'),
+        UniqueConstraint('source_username', 'source_collection_id', name='uq_inventory_source'),
+        CheckConstraint("(owner_type='member' AND owner_user_id IS NOT NULL AND owner_label IS NULL) OR (owner_type='external' AND owner_user_id IS NULL AND owner_label IS NOT NULL AND length(TRIM(owner_label)) > 0) OR (owner_type='club' AND owner_user_id IS NULL AND owner_label IS NULL)", name='ck_inventory_owner'),
+        CheckConstraint("status IN ('unverified','available','borrowed','unavailable','retired')", name='ck_inventory_status'),
+        CheckConstraint("entry_source IN ('manual','bgg_collection','bgstats')", name='ck_inventory_entry'),
+        CheckConstraint('(source_username IS NULL AND source_collection_id IS NULL) OR (source_username IS NOT NULL AND source_collection_id IS NOT NULL)', name='ck_inventory_source'),
+        ForeignKeyConstraint(['created_by'], ['users.id'], name='bg2_creator'),
+        ForeignKeyConstraint(['updated_by'], ['users.id'], name='bg2_updater'),
+        CheckConstraint('revision >= 1', name='bg2_revision'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_inventory_available', tables['boardgame_inventory'].c['game_id'], tables['boardgame_inventory'].c['status'], tables['boardgame_inventory'].c['available_for_activity'])
+    Index('ix_inventory_owner', tables['boardgame_inventory'].c['owner_user_id'], tables['boardgame_inventory'].c['archived_at'], tables['boardgame_inventory'].c['id'])
+    tables['boardgame_inventory_sources'] = Table('boardgame_inventory_sources', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('inventory_id', Integer, primary_key=False, nullable=False),
+        Column('provider', String(16), primary_key=False, nullable=False),
+        Column('source_namespace', String(128).with_variant(mysql.VARCHAR(128, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('source_id', String(128).with_variant(mysql.VARCHAR(128, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('copy_index', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        Column('source_item_id', Integer, primary_key=False, nullable=False),
+        Column('content_hash', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        UniqueConstraint('provider', 'source_namespace', 'source_id', 'copy_index', name='uq_inventory_provider_source'),
+        ForeignKeyConstraint(['inventory_id'], ['boardgame_inventory.id'], name='fk_inventory_source_box'),
+        ForeignKeyConstraint(['source_item_id'], ['boardgame_import_items.id'], name='fk_inventory_source_item'),
+        CheckConstraint("provider IN ('bgg','bgstats')", name='ck_inventory_provider'),
+        CheckConstraint('copy_index >= 1', name='ck_inventory_copy'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    tables['boardgame_rulesets'] = Table('boardgame_rulesets', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('game_id', Integer, primary_key=False, nullable=False),
+        Column('name', String(128), primary_key=False, nullable=False),
+        Column('configuration', JSON, primary_key=False, nullable=False),
+        Column('configuration_hash', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('archived_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=True),
+        Column('created_by', Integer, primary_key=False, nullable=False),
+        Column('updated_by', Integer, primary_key=False, nullable=False),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        UniqueConstraint('game_id', 'configuration_hash', name='uq_ruleset_configuration'),
+        ForeignKeyConstraint(['game_id'], ['boardgames.id'], name='fk_ruleset_game'),
+        ForeignKeyConstraint(['created_by'], ['users.id'], name='fk_ruleset_creator'),
+        ForeignKeyConstraint(['updated_by'], ['users.id'], name='fk_ruleset_updater'),
+        CheckConstraint('revision >= 1', name='ck_ruleset_revision'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    tables['boardgame_scoresheet_templates'] = Table('boardgame_scoresheet_templates', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('game_id', Integer, primary_key=False, nullable=False),
+        Column('definition_hash', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('definition', JSON, primary_key=False, nullable=False),
+        Column('semantic_version', String(64), primary_key=False, nullable=False),
+        Column('additive_row_keys', JSON, primary_key=False, nullable=False),
+        Column('created_by', Integer, primary_key=False, nullable=False),
+        Column('updated_by', Integer, primary_key=False, nullable=False),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        UniqueConstraint('game_id', 'definition_hash', name='uq_sheet_template_definition'),
+        ForeignKeyConstraint(['game_id'], ['boardgames.id'], name='fk_template_game'),
+        ForeignKeyConstraint(['created_by'], ['users.id'], name='fk_template_creator'),
+        ForeignKeyConstraint(['updated_by'], ['users.id'], name='fk_template_updater'),
+        CheckConstraint('revision >= 1', name='ck_template_revision'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    tables['boardgame_expansion_links'] = Table('boardgame_expansion_links', metadata,
+        Column('base_game_id', Integer, primary_key=True, nullable=False),
+        Column('expansion_game_id', Integer, primary_key=True, nullable=False),
+        Column('bgg_suggested', Boolean, primary_key=False, nullable=False, server_default=text('false')),
+        Column('manual_decision', String(16), primary_key=False, nullable=False, server_default=text("'inherit'")),
+        Column('note', String(500), primary_key=False, nullable=True),
+        Column('updated_by', Integer, primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        ForeignKeyConstraint(['base_game_id'], ['boardgames.id'], name='fk_compat_base'),
+        ForeignKeyConstraint(['expansion_game_id'], ['boardgames.id'], name='fk_compat_expansion'),
+        ForeignKeyConstraint(['updated_by'], ['users.id'], name='fk_compat_actor'),
+        CheckConstraint("manual_decision IN ('inherit','allow','block')", name='ck_compat_decision'),
+        CheckConstraint('revision >= 1', name='ck_compat_revision'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    tables['activity_game_settings'] = Table('activity_game_settings', metadata,
+        Column('activity_id', Integer, primary_key=True, nullable=False),
+        Column('frozen_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=True),
+        Column('cutoff_snapshot', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=True),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        ForeignKeyConstraint(['activity_id'], ['activities.id'], name='fk_game_settings_activity', ondelete='CASCADE'),
+        CheckConstraint('revision >= 1', name='ck_game_settings_revision'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    tables['activity_game_nominations'] = Table('activity_game_nominations', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('activity_id', Integer, primary_key=False, nullable=False),
+        Column('game_id', Integer, primary_key=False, nullable=False),
+        Column('user_id', Integer, primary_key=False, nullable=False),
+        Column('state', String(16), primary_key=False, nullable=False, server_default=text("'active'")),
+        Column('frozen_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=True),
+        Column('note', String(500), primary_key=False, nullable=True),
+        Column('created_by', Integer, primary_key=False, nullable=False),
+        Column('updated_by', Integer, primary_key=False, nullable=False),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        ForeignKeyConstraint(['activity_id'], ['activities.id'], name='fk_nom_activity', ondelete='CASCADE'),
+        ForeignKeyConstraint(['game_id'], ['boardgames.id'], name='fk_nom_game'),
+        ForeignKeyConstraint(['user_id'], ['users.id'], name='fk_nom_user'),
+        UniqueConstraint('activity_id', 'game_id', 'user_id', name='uq_nom_vote'),
+        CheckConstraint("state IN ('active','frozen','withdrawn','ineligible','removed')", name='ck_nom_state'),
+        ForeignKeyConstraint(['created_by'], ['users.id'], name='bg5_creator'),
+        ForeignKeyConstraint(['updated_by'], ['users.id'], name='bg5_updater'),
+        CheckConstraint('revision >= 1', name='bg5_revision'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_nom_game', tables['activity_game_nominations'].c['game_id'], tables['activity_game_nominations'].c['state'], tables['activity_game_nominations'].c['user_id'], tables['activity_game_nominations'].c['activity_id'])
+    Index('ix_nom_user', tables['activity_game_nominations'].c['user_id'], tables['activity_game_nominations'].c['state'], tables['activity_game_nominations'].c['activity_id'])
+    tables['activity_game_nomination_expansions'] = Table('activity_game_nomination_expansions', metadata,
+        Column('nomination_id', Integer, primary_key=True, nullable=False),
+        Column('expansion_game_id', Integer, primary_key=True, nullable=False),
+        Column('sort_order', Integer, primary_key=False, nullable=False, server_default=text('0')),
+        Column('modules_note', String(500), primary_key=False, nullable=True),
+        Column('compatibility_note', String(500), primary_key=False, nullable=True),
+        ForeignKeyConstraint(['nomination_id'], ['activity_game_nominations.id'], name='fk_nomexp_nom', ondelete='CASCADE'),
+        ForeignKeyConstraint(['expansion_game_id'], ['boardgames.id'], name='fk_nomexp_game'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    tables['activity_game_plans'] = Table('activity_game_plans', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('activity_id', Integer, primary_key=False, nullable=False),
+        Column('game_id', Integer, primary_key=False, nullable=False),
+        Column('inventory_id', Integer, primary_key=False, nullable=True),
+        Column('table_label', String(64), primary_key=False, nullable=True),
+        Column('bring_user_id', Integer, primary_key=False, nullable=True),
+        Column('bring_label', String(64), primary_key=False, nullable=True),
+        Column('note', String(1000), primary_key=False, nullable=True),
+        Column('sort_order', Integer, primary_key=False, nullable=False, server_default=text('0')),
+        Column('created_by', Integer, primary_key=False, nullable=False),
+        Column('updated_by', Integer, primary_key=False, nullable=False),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        ForeignKeyConstraint(['activity_id'], ['activities.id'], name='fk_plan_activity', ondelete='CASCADE'),
+        ForeignKeyConstraint(['game_id'], ['boardgames.id'], name='fk_plan_game'),
+        ForeignKeyConstraint(['inventory_id'], ['boardgame_inventory.id'], name='fk_plan_inventory'),
+        ForeignKeyConstraint(['bring_user_id'], ['users.id'], name='fk_plan_bringer'),
+        CheckConstraint('bring_user_id IS NULL OR bring_label IS NULL', name='ck_plan_bringer'),
+        ForeignKeyConstraint(['created_by'], ['users.id'], name='bg7_creator'),
+        ForeignKeyConstraint(['updated_by'], ['users.id'], name='bg7_updater'),
+        CheckConstraint('revision >= 1', name='bg7_revision'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_plan_order', tables['activity_game_plans'].c['activity_id'], tables['activity_game_plans'].c['sort_order'], tables['activity_game_plans'].c['id'])
+    Index('ix_plan_inventory', tables['activity_game_plans'].c['inventory_id'], tables['activity_game_plans'].c['activity_id'])
+    tables['activity_game_plan_expansions'] = Table('activity_game_plan_expansions', metadata,
+        Column('plan_id', Integer, primary_key=True, nullable=False),
+        Column('expansion_game_id', Integer, primary_key=True, nullable=False),
+        Column('inventory_id', Integer, primary_key=False, nullable=True),
+        Column('bring_user_id', Integer, primary_key=False, nullable=True),
+        Column('bring_label', String(64), primary_key=False, nullable=True),
+        Column('modules_note', String(500), primary_key=False, nullable=True),
+        Column('compatibility_note', String(500), primary_key=False, nullable=True),
+        Column('sort_order', Integer, primary_key=False, nullable=False, server_default=text('0')),
+        ForeignKeyConstraint(['plan_id'], ['activity_game_plans.id'], name='fk_planexp_plan', ondelete='CASCADE'),
+        ForeignKeyConstraint(['expansion_game_id'], ['boardgames.id'], name='fk_planexp_game'),
+        ForeignKeyConstraint(['inventory_id'], ['boardgame_inventory.id'], name='fk_planexp_inventory'),
+        ForeignKeyConstraint(['bring_user_id'], ['users.id'], name='fk_planexp_bringer'),
+        CheckConstraint('bring_user_id IS NULL OR bring_label IS NULL', name='ck_planexp_bringer'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_planexp_inventory', tables['activity_game_plan_expansions'].c['inventory_id'], tables['activity_game_plan_expansions'].c['plan_id'])
+    tables['boardgame_people'] = Table('boardgame_people', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('user_id', Integer, primary_key=False, nullable=True),
+        Column('display_name', String(64), primary_key=False, nullable=False),
+        Column('is_visible', Boolean, primary_key=False, nullable=False, server_default=text('false')),
+        Column('archived_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=True),
+        Column('merged_into_id', Integer, primary_key=False, nullable=True),
+        Column('created_by', Integer, primary_key=False, nullable=False),
+        Column('updated_by', Integer, primary_key=False, nullable=False),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        UniqueConstraint('user_id', name='uq_person_user'),
+        ForeignKeyConstraint(['user_id'], ['users.id'], name='fk_person_user'),
+        ForeignKeyConstraint(['merged_into_id'], ['boardgame_people.id'], name='fk_person_merge'),
+        ForeignKeyConstraint(['created_by'], ['users.id'], name='fk_person_creator'),
+        ForeignKeyConstraint(['updated_by'], ['users.id'], name='fk_person_updater'),
+        CheckConstraint('revision >= 1', name='ck_person_revision'),
+        CheckConstraint('length(TRIM(display_name)) > 0', name='ck_person_name'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_person_options', tables['boardgame_people'].c['is_visible'], tables['boardgame_people'].c['archived_at'], tables['boardgame_people'].c['id'])
+    tables['boardgame_locations'] = Table('boardgame_locations', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('name', String(255), primary_key=False, nullable=False),
+        Column('is_visible', Boolean, primary_key=False, nullable=False, server_default=text('false')),
+        Column('archived_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=True),
+        Column('created_by', Integer, primary_key=False, nullable=False),
+        Column('updated_by', Integer, primary_key=False, nullable=False),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        ForeignKeyConstraint(['created_by'], ['users.id'], name='fk_location_creator'),
+        ForeignKeyConstraint(['updated_by'], ['users.id'], name='fk_location_updater'),
+        CheckConstraint('revision >= 1', name='ck_location_revision'),
+        CheckConstraint('length(TRIM(name)) > 0', name='ck_location_name'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_location_options', tables['boardgame_locations'].c['is_visible'], tables['boardgame_locations'].c['archived_at'], tables['boardgame_locations'].c['id'])
+    tables['boardgame_plays'] = Table('boardgame_plays', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('game_id', Integer, primary_key=False, nullable=False),
+        Column('activity_id', Integer, primary_key=False, nullable=True),
+        Column('plan_id', Integer, primary_key=False, nullable=True),
+        Column('inventory_id', Integer, primary_key=False, nullable=True),
+        Column('origin', String(16), primary_key=False, nullable=False, server_default=text("'manual'")),
+        Column('publication_status', String(16), primary_key=False, nullable=False, server_default=text("'held'")),
+        Column('stats_exclusion', String(16), primary_key=False, nullable=False, server_default=text("'none'")),
+        Column('original_activity_id', Integer, primary_key=False, nullable=True),
+        Column('status', String(16), primary_key=False, nullable=False, server_default=text("'draft'")),
+        Column('played_on', Date, primary_key=False, nullable=True),
+        Column('started_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=True),
+        Column('duration_minutes', Integer, primary_key=False, nullable=True),
+        Column('location_label', String(255), primary_key=False, nullable=True),
+        Column('location_id', Integer, primary_key=False, nullable=True),
+        Column('play_environment', String(16), primary_key=False, nullable=False, server_default=text("'unknown'")),
+        Column('competition_mode', String(16), primary_key=False, nullable=False, server_default=text("'unscored'")),
+        Column('score_direction', String(16), primary_key=False, nullable=False, server_default=text("'none'")),
+        Column('result_status', String(16), primary_key=False, nullable=False, server_default=text("'unknown'")),
+        Column('tie_policy', String(16), primary_key=False, nullable=False, server_default=text("'shared_win'")),
+        Column('shared_score', Numeric(12,3), primary_key=False, nullable=True),
+        Column('shared_score_status', String(16), primary_key=False, nullable=False, server_default=text("'unrecorded'")),
+        Column('end_reason', String(16), primary_key=False, nullable=True),
+        Column('cooperative_result', String(16), primary_key=False, nullable=True),
+        Column('rules_snapshot', JSON, primary_key=False, nullable=False),
+        Column('comparison_key', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=True),
+        Column('game_snapshot', JSON, primary_key=False, nullable=False),
+        Column('activity_snapshot', JSON, primary_key=False, nullable=True),
+        Column('note', Text, primary_key=False, nullable=True),
+        Column('change_reason', String(500), primary_key=False, nullable=True),
+        Column('created_by', Integer, primary_key=False, nullable=False),
+        Column('updated_by', Integer, primary_key=False, nullable=False),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        ForeignKeyConstraint(['game_id'], ['boardgames.id'], name='fk_play_game'),
+        ForeignKeyConstraint(['activity_id'], ['activities.id'], name='fk_play_activity', ondelete='SET NULL'),
+        ForeignKeyConstraint(['plan_id'], ['activity_game_plans.id'], name='fk_play_plan', ondelete='SET NULL'),
+        ForeignKeyConstraint(['inventory_id'], ['boardgame_inventory.id'], name='fk_play_inventory'),
+        ForeignKeyConstraint(['location_id'], ['boardgame_locations.id'], name='fk_play_location'),
+        CheckConstraint("play_environment IN ('online','offline','unknown')", name='ck_play_environment'),
+        CheckConstraint("origin IN ('manual','bgg','bgstats')", name='ck_play_origin'),
+        CheckConstraint("publication_status IN ('published','held')", name='ck_play_publication'),
+        CheckConstraint("stats_exclusion IN ('none','wins','all')", name='ck_play_exclusion'),
+        CheckConstraint("status IN ('draft','completed','abandoned','voided')", name='ck_play_status'),
+        CheckConstraint("competition_mode IN ('unscored','individual','team','cooperative','solo')", name='ck_play_mode'),
+        CheckConstraint("score_direction IN ('high','low','manual','none')", name='ck_play_direction'),
+        CheckConstraint("result_status IN ('unknown','resolved')", name='ck_play_result'),
+        CheckConstraint("tie_policy IN ('shared_win','draw')", name='ck_play_tie'),
+        CheckConstraint("cooperative_result IS NULL OR cooperative_result IN ('success','failure')", name='ck_play_cooperative'),
+        CheckConstraint('duration_minutes IS NULL OR duration_minutes >= 1', name='ck_play_duration'),
+        CheckConstraint("status NOT IN ('completed','abandoned') OR played_on IS NOT NULL", name='ck_play_date'),
+        ForeignKeyConstraint(['created_by'], ['users.id'], name='bg9_creator'),
+        ForeignKeyConstraint(['updated_by'], ['users.id'], name='bg9_updater'),
+        CheckConstraint('revision >= 1', name='bg9_revision'),
+        CheckConstraint("shared_score_status IN ('unrecorded','recorded','gave_up','unfinished','table_flip')", name="ck_play_shared_score_status"),
+        CheckConstraint("(shared_score_status='recorded' AND shared_score IS NOT NULL) OR (shared_score_status<>'recorded' AND shared_score IS NULL)", name="ck_play_shared_score_value"),
+        CheckConstraint("end_reason IS NULL OR (status IN ('abandoned','voided') AND end_reason IN ('unfinished','table_flip'))", name="ck_play_end_reason"),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",    )
+    Index('ix_play_location', tables['boardgame_plays'].c['location_id'], tables['boardgame_plays'].c['publication_status'], tables['boardgame_plays'].c['status'], tables['boardgame_plays'].c['played_on'])
+    Index('ix_play_environment', tables['boardgame_plays'].c['play_environment'], tables['boardgame_plays'].c['publication_status'], tables['boardgame_plays'].c['status'], tables['boardgame_plays'].c['played_on'])
+    Index('ix_play_public_date', tables['boardgame_plays'].c['publication_status'], tables['boardgame_plays'].c['status'], tables['boardgame_plays'].c['played_on'], tables['boardgame_plays'].c['id'])
+    Index('ix_play_game_date', tables['boardgame_plays'].c['game_id'], tables['boardgame_plays'].c['publication_status'], tables['boardgame_plays'].c['status'], tables['boardgame_plays'].c['played_on'])
+    Index('ix_play_activity_history', tables['boardgame_plays'].c['original_activity_id'], tables['boardgame_plays'].c['played_on'], tables['boardgame_plays'].c['status'])
+    Index('ix_play_origin', tables['boardgame_plays'].c['origin'], tables['boardgame_plays'].c['publication_status'])
+    Index('ix_play_comparison', tables['boardgame_plays'].c['comparison_key'], tables['boardgame_plays'].c['status'])
+    Index('ix_play_author', tables['boardgame_plays'].c['created_by'], tables['boardgame_plays'].c['status'], tables['boardgame_plays'].c['id'])
+    tables['boardgame_play_expansions'] = Table('boardgame_play_expansions', metadata,
+        Column('play_id', Integer, primary_key=True, nullable=False),
+        Column('expansion_game_id', Integer, primary_key=True, nullable=False),
+        Column('inventory_id', Integer, primary_key=False, nullable=True),
+        Column('modules_note', String(500), primary_key=False, nullable=True),
+        Column('compatibility_note', String(500), primary_key=False, nullable=True),
+        Column('game_snapshot', JSON, primary_key=False, nullable=False),
+        Column('sort_order', Integer, primary_key=False, nullable=False, server_default=text('0')),
+        ForeignKeyConstraint(['play_id'], ['boardgame_plays.id'], name='fk_playexp_play', ondelete='CASCADE'),
+        ForeignKeyConstraint(['expansion_game_id'], ['boardgames.id'], name='fk_playexp_game'),
+        ForeignKeyConstraint(['inventory_id'], ['boardgame_inventory.id'], name='fk_playexp_inventory'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_playexp_game', tables['boardgame_play_expansions'].c['expansion_game_id'], tables['boardgame_play_expansions'].c['play_id'])
+    tables['boardgame_play_teams'] = Table('boardgame_play_teams', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('play_id', Integer, primary_key=False, nullable=False),
+        Column('name', String(64), primary_key=False, nullable=False),
+        Column('score', Numeric(12,3), primary_key=False, nullable=True),
+        Column('score_status', String(16), primary_key=False, nullable=False, server_default=text("'unrecorded'")),
+        Column('rank', Integer, primary_key=False, nullable=True),
+        Column('outcome', String(16), primary_key=False, nullable=True),
+        Column('sort_order', Integer, primary_key=False, nullable=False, server_default=text('0')),
+        UniqueConstraint('play_id', 'id', name='uq_team_play_id'),
+        ForeignKeyConstraint(['play_id'], ['boardgame_plays.id'], name='fk_team_play', ondelete='CASCADE'),
+        CheckConstraint('`rank` IS NULL OR `rank` >= 1', name='ck_team_rank'),
+        CheckConstraint("outcome IS NULL OR outcome IN ('win','loss','draw')", name='ck_team_outcome'),
+        CheckConstraint("score_status IN ('unrecorded','recorded','gave_up','unfinished','table_flip')", name="ck_team_score_status"),
+        CheckConstraint("(score_status='recorded' AND score IS NOT NULL) OR (score_status<>'recorded' AND score IS NULL)", name="ck_team_score_value"),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",    )
+    tables['boardgame_play_players'] = Table('boardgame_play_players', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('play_id', Integer, primary_key=False, nullable=False),
+        Column('person_id', Integer, primary_key=False, nullable=True),
+        Column('guest_key', String(36).with_variant(mysql.VARCHAR(36, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=True),
+        Column('display_name_snapshot', String(64), primary_key=False, nullable=False),
+        Column('avatar_snapshot', String(1024), primary_key=False, nullable=True),
+        Column('team_id', Integer, primary_key=False, nullable=True),
+        Column('score', Numeric(12,3), primary_key=False, nullable=True),
+        Column('score_status', String(16), primary_key=False, nullable=False, server_default=text("'unrecorded'")),
+        Column('rank', Integer, primary_key=False, nullable=True),
+        Column('outcome', String(16), primary_key=False, nullable=True),
+        Column('seat_order', Integer, primary_key=False, nullable=False),
+        Column('is_start_player', Boolean, primary_key=False, nullable=False, server_default=text('false')),
+        Column('role_label', String(100), primary_key=False, nullable=True),
+        Column('is_new_to_player', Boolean, primary_key=False, nullable=True),
+        UniqueConstraint('play_id', 'id', name='uq_player_play_id'),
+        ForeignKeyConstraint(['play_id'], ['boardgame_plays.id'], name='fk_player_play', ondelete='CASCADE'),
+        ForeignKeyConstraint(['person_id'], ['boardgame_people.id'], name='fk_player_person'),
+        ForeignKeyConstraint(['play_id', 'team_id'], ['boardgame_play_teams.play_id', 'boardgame_play_teams.id'], name='fk_player_team'),
+        UniqueConstraint('play_id', 'person_id', name='uq_player_person'),
+        UniqueConstraint('play_id', 'guest_key', name='uq_player_guest'),
+        UniqueConstraint('play_id', 'seat_order', name='uq_player_seat'),
+        CheckConstraint('(person_id IS NOT NULL AND guest_key IS NULL) OR (person_id IS NULL AND guest_key IS NOT NULL)', name='ck_player_identity'),
+        CheckConstraint('seat_order >= 1', name='ck_player_seat'),
+        CheckConstraint('`rank` IS NULL OR `rank` >= 1', name='ck_player_rank'),
+        CheckConstraint("outcome IS NULL OR outcome IN ('win','loss','draw')", name='ck_player_outcome'),
+        CheckConstraint("score_status IN ('unrecorded','recorded','gave_up','unfinished','table_flip')", name="ck_player_score_status"),
+        CheckConstraint("(score_status='recorded' AND score IS NOT NULL) OR (score_status<>'recorded' AND score IS NULL)", name="ck_player_score_value"),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",    )
+    Index('ix_player_person', tables['boardgame_play_players'].c['person_id'], tables['boardgame_play_players'].c['play_id'])
+    tables['boardgame_play_reports'] = Table('boardgame_play_reports', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('play_id', Integer, primary_key=False, nullable=False),
+        Column('reported_by', Integer, primary_key=False, nullable=False),
+        Column('message', String(1000), primary_key=False, nullable=False),
+        Column('status', String(16), primary_key=False, nullable=False, server_default=text("'open'")),
+        Column('resolution', String(1000), primary_key=False, nullable=True),
+        Column('resolved_by', Integer, primary_key=False, nullable=True),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        ForeignKeyConstraint(['play_id'], ['boardgame_plays.id'], name='fk_report_play'),
+        ForeignKeyConstraint(['reported_by'], ['users.id'], name='fk_report_author'),
+        ForeignKeyConstraint(['resolved_by'], ['users.id'], name='fk_report_resolver'),
+        CheckConstraint("status IN ('open','resolved','dismissed')", name='ck_report_status'),
+        CheckConstraint('revision >= 1', name='ck_report_revision'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_report_status', tables['boardgame_play_reports'].c['status'], tables['boardgame_play_reports'].c['play_id'])
+    Index('ix_report_author', tables['boardgame_play_reports'].c['reported_by'], tables['boardgame_play_reports'].c['created_at'])
+    tables['boardgame_audit_events'] = Table('boardgame_audit_events', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('entity_type', String(32), primary_key=False, nullable=False),
+        Column('entity_id', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('entity_revision', Integer, primary_key=False, nullable=False),
+        Column('action', String(32), primary_key=False, nullable=False),
+        Column('actor_user_id', Integer, primary_key=False, nullable=True),
+        Column('before_data', JSON, primary_key=False, nullable=True),
+        Column('after_data', JSON, primary_key=False, nullable=True),
+        Column('reason', String(1000), primary_key=False, nullable=True),
+        Column('request_id', String(64), primary_key=False, nullable=True),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        ForeignKeyConstraint(['actor_user_id'], ['users.id'], name='fk_audit_actor'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_audit_entity', tables['boardgame_audit_events'].c['entity_type'], tables['boardgame_audit_events'].c['entity_id'], tables['boardgame_audit_events'].c['id'])
+    tables['boardgame_import_jobs'] = Table('boardgame_import_jobs', metadata,
+        Column('id', String(36).with_variant(mysql.VARCHAR(36, collation="utf8mb4_bin"), "mysql"), primary_key=True, nullable=False),
+        Column('kind', String(32), primary_key=False, nullable=False),
+        Column('requested_by', Integer, primary_key=False, nullable=False),
+        Column('params', JSON, primary_key=False, nullable=False),
+        Column('state', String(32), primary_key=False, nullable=False, server_default=text("'queued'")),
+        Column('progress', JSON, primary_key=False, nullable=False),
+        Column('error_code', String(255), primary_key=False, nullable=True),
+        Column('error_message', String(255), primary_key=False, nullable=True),
+        Column('attempt_count', Integer, primary_key=False, nullable=False, server_default=text('0')),
+        Column('next_attempt_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=True),
+        Column('lease_owner', String(64), primary_key=False, nullable=True),
+        Column('lease_expires_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=True),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        ForeignKeyConstraint(['requested_by'], ['users.id'], name='fk_import_job_actor'),
+        CheckConstraint("kind IN ('bgg_thing','bgg_collection','bgg_plays','bgstats_file')", name='ck_import_job_kind'),
+        CheckConstraint("state IN ('queued','fetching','parsing','retry_wait','ready','applying','applied','partial','failed')", name='ck_import_job_state'),
+        CheckConstraint('revision >= 1', name='ck_import_job_revision'),
+        CheckConstraint('attempt_count >= 0', name='ck_import_job_attempt'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_import_job_queue', tables['boardgame_import_jobs'].c['state'], tables['boardgame_import_jobs'].c['next_attempt_at'], tables['boardgame_import_jobs'].c['lease_expires_at'])
+    Index('ix_import_job_author', tables['boardgame_import_jobs'].c['requested_by'], tables['boardgame_import_jobs'].c['created_at'])
+    tables['boardgame_import_items'] = Table('boardgame_import_items', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('job_id', String(36).with_variant(mysql.VARCHAR(36, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('source_kind', String(32), primary_key=False, nullable=False),
+        Column('source_key', String(128).with_variant(mysql.VARCHAR(128, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('bgg_id', Integer, primary_key=False, nullable=True),
+        Column('raw_xml', Text().with_variant(mysql.LONGTEXT(), "mysql"), primary_key=False, nullable=True),
+        Column('payload', JSON, primary_key=False, nullable=False),
+        Column('content_hash', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('decision', JSON, primary_key=False, nullable=True),
+        Column('target_game_id', Integer, primary_key=False, nullable=True),
+        Column('target_inventory_id', Integer, primary_key=False, nullable=True),
+        Column('state', String(32), primary_key=False, nullable=False, server_default=text("'pending'")),
+        Column('error_code', String(64), primary_key=False, nullable=True),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        ForeignKeyConstraint(['job_id'], ['boardgame_import_jobs.id'], name='fk_import_item_job', ondelete='CASCADE'),
+        ForeignKeyConstraint(['target_game_id'], ['boardgames.id'], name='fk_import_item_game'),
+        ForeignKeyConstraint(['target_inventory_id'], ['boardgame_inventory.id'], name='fk_import_item_inventory'),
+        UniqueConstraint('job_id', 'source_kind', 'source_key', name='uq_import_item_source'),
+        CheckConstraint("state IN ('pending','ready','needs_mapping','needs_review','applied','linked','skipped','failed')", name='ck_import_item_state'),
+        CheckConstraint('revision >= 1', name='ck_import_item_revision'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_import_item_state', tables['boardgame_import_items'].c['job_id'], tables['boardgame_import_items'].c['state'], tables['boardgame_import_items'].c['id'])
+    tables['boardgame_play_sources'] = Table('boardgame_play_sources', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('play_id', Integer, primary_key=False, nullable=False),
+        Column('provider', String(16), primary_key=False, nullable=False),
+        Column('source_namespace', String(128).with_variant(mysql.VARCHAR(128, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('source_play_id', String(128).with_variant(mysql.VARCHAR(128, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('segment_index', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        Column('source_item_id', Integer, primary_key=False, nullable=False),
+        Column('content_hash', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('source_modified_at', String(64), primary_key=False, nullable=True),
+        Column('last_applied_play_revision', Integer, primary_key=False, nullable=False),
+        Column('mapping_snapshot', JSON, primary_key=False, nullable=False),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        ForeignKeyConstraint(['play_id'], ['boardgame_plays.id'], name='fk_play_source_play'),
+        ForeignKeyConstraint(['source_item_id'], ['boardgame_import_items.id'], name='fk_play_source_item'),
+        UniqueConstraint('provider', 'source_namespace', 'source_play_id', 'segment_index', name='uq_play_source_identity'),
+        CheckConstraint("provider IN ('bgg','bgstats')", name='ck_play_source_provider'),
+        CheckConstraint('segment_index >= 1', name='ck_play_source_segment'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_play_source_play', tables['boardgame_play_sources'].c['play_id'])
+    tables['boardgame_import_mappings'] = Table('boardgame_import_mappings', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('provider', String(16), primary_key=False, nullable=False),
+        Column('source_namespace', String(128).with_variant(mysql.VARCHAR(128, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('entity_type', String(16), primary_key=False, nullable=False),
+        Column('external_id', String(128).with_variant(mysql.VARCHAR(128, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('target_game_id', Integer, primary_key=False, nullable=True),
+        Column('target_person_id', Integer, primary_key=False, nullable=True),
+        Column('target_location_id', Integer, primary_key=False, nullable=True),
+        Column('confirmed_by', Integer, primary_key=False, nullable=False),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        ForeignKeyConstraint(['target_game_id'], ['boardgames.id'], name='fk_mapping_game'),
+        ForeignKeyConstraint(['target_person_id'], ['boardgame_people.id'], name='fk_mapping_person'),
+        ForeignKeyConstraint(['target_location_id'], ['boardgame_locations.id'], name='fk_mapping_location'),
+        ForeignKeyConstraint(['confirmed_by'], ['users.id'], name='fk_mapping_actor'),
+        UniqueConstraint('provider', 'source_namespace', 'entity_type', 'external_id', name='uq_mapping_identity'),
+        CheckConstraint("provider IN ('bgg','bgstats')", name='ck_mapping_provider'),
+        CheckConstraint("(entity_type='game' AND target_game_id IS NOT NULL AND target_person_id IS NULL AND target_location_id IS NULL) OR (entity_type='player' AND target_game_id IS NULL AND target_person_id IS NOT NULL AND target_location_id IS NULL) OR (entity_type='location' AND target_game_id IS NULL AND target_person_id IS NULL AND target_location_id IS NOT NULL)", name='ck_mapping_target'),
+        CheckConstraint('revision >= 1', name='ck_mapping_revision'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    tables['boardgame_request_keys'] = Table('boardgame_request_keys', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('actor_user_id', Integer, primary_key=False, nullable=False),
+        Column('operation', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('key', String(36).with_variant(mysql.VARCHAR(36, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('request_hash', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('resource_type', String(32), primary_key=False, nullable=False),
+        Column('resource_ids', JSON, primary_key=False, nullable=False),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        ForeignKeyConstraint(['actor_user_id'], ['users.id'], name='fk_request_actor'),
+        UniqueConstraint('actor_user_id', 'operation', 'key', name='uq_request_key'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    tables['boardgame_play_scoresheets'] = Table('boardgame_play_scoresheets', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('play_id', Integer, primary_key=False, nullable=False),
+        Column('source_item_id', Integer, primary_key=False, nullable=True),
+        Column('source_sheet_id', String(128).with_variant(mysql.VARCHAR(128, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=True),
+        Column('schema_version', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        Column('template_key', String(128).with_variant(mysql.VARCHAR(128, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=True),
+        Column('sheet_comparison_key', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=True),
+        Column('parse_status', String(16), primary_key=False, nullable=False, server_default=text("'partial'")),
+        Column('display_data', JSON, primary_key=False, nullable=False),
+        Column('issues', JSON, primary_key=False, nullable=False),
+        Column('content_hash', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('projection_version', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        Column('play_revision', Integer, primary_key=False, nullable=False),
+        Column('created_by', Integer, primary_key=False, nullable=False),
+        Column('updated_by', Integer, primary_key=False, nullable=False),
+        Column('created_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('updated_at', DateTime().with_variant(mysql.DATETIME(fsp=6), "mysql"), primary_key=False, nullable=False),
+        Column('revision', Integer, primary_key=False, nullable=False, server_default=text('1')),
+        UniqueConstraint('play_id', name='uq_sheet_play'),
+        UniqueConstraint('id', 'play_id', name='uq_sheet_play_id'),
+        ForeignKeyConstraint(['play_id'], ['boardgame_plays.id'], name='fk_sheet_play'),
+        ForeignKeyConstraint(['source_item_id'], ['boardgame_import_items.id'], name='fk_sheet_source'),
+        ForeignKeyConstraint(['created_by'], ['users.id'], name='fk_sheet_creator'),
+        ForeignKeyConstraint(['updated_by'], ['users.id'], name='fk_sheet_updater'),
+        CheckConstraint("parse_status IN ('parsed','partial','unsupported')", name='ck_sheet_state'),
+        CheckConstraint('schema_version >= 1 AND projection_version >= 1 AND play_revision >= 1 AND revision >= 1', name='ck_sheet_versions'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_sheet_compare', tables['boardgame_play_scoresheets'].c['sheet_comparison_key'], tables['boardgame_play_scoresheets'].c['parse_status'], tables['boardgame_play_scoresheets'].c['play_id'])
+    tables['boardgame_scoresheet_cells'] = Table('boardgame_scoresheet_cells', metadata,
+        Column('id', Integer, primary_key=True, nullable=False, autoincrement=True),
+        Column('sheet_id', Integer, primary_key=False, nullable=False),
+        Column('play_id', Integer, primary_key=False, nullable=False),
+        Column('row_key', String(128).with_variant(mysql.VARCHAR(128, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('group_key', String(128).with_variant(mysql.VARCHAR(128, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('row_label', String(255), primary_key=False, nullable=False),
+        Column('row_order', Integer, primary_key=False, nullable=False, server_default=text('0')),
+        Column('subject_kind', String(16), primary_key=False, nullable=False),
+        Column('subject_key', String(64).with_variant(mysql.VARCHAR(64, collation="utf8mb4_bin"), "mysql"), primary_key=False, nullable=False),
+        Column('player_id', Integer, primary_key=False, nullable=True),
+        Column('team_id', Integer, primary_key=False, nullable=True),
+        Column('value_number', Numeric(18,6), primary_key=False, nullable=True),
+        Column('value_text', String(1000), primary_key=False, nullable=True),
+        Column('is_aggregate', Boolean, primary_key=False, nullable=False, server_default=text('false')),
+        Column('projection_version', Integer, primary_key=False, nullable=False),
+        UniqueConstraint('sheet_id', 'row_key', 'subject_key', name='uq_cell'),
+        ForeignKeyConstraint(['sheet_id', 'play_id'], ['boardgame_play_scoresheets.id', 'boardgame_play_scoresheets.play_id'], name='fk_cell_sheet', ondelete='CASCADE'),
+        ForeignKeyConstraint(['play_id', 'player_id'], ['boardgame_play_players.play_id', 'boardgame_play_players.id'], name='fk_cell_player'),
+        ForeignKeyConstraint(['play_id', 'team_id'], ['boardgame_play_teams.play_id', 'boardgame_play_teams.id'], name='fk_cell_team'),
+        CheckConstraint("(subject_kind='player' AND player_id IS NOT NULL AND team_id IS NULL AND subject_key=CONCAT('p:',player_id)) OR (subject_kind='team' AND player_id IS NULL AND team_id IS NOT NULL AND subject_key=CONCAT('t:',team_id)) OR (subject_kind='shared' AND player_id IS NULL AND team_id IS NULL AND subject_key='shared')", name='ck_cell_subject'),
+        CheckConstraint('projection_version >= 1', name='ck_cell_projection'),
+        mysql_engine="InnoDB", mysql_charset="utf8mb4", mysql_collate="utf8mb4_unicode_ci",
+    )
+    Index('ix_cell_row', tables['boardgame_scoresheet_cells'].c['sheet_id'], tables['boardgame_scoresheet_cells'].c['row_key'], tables['boardgame_scoresheet_cells'].c['is_aggregate'])
+    from app.models.boardgame_extensions import extend_tables
+    tables.update(extend_tables(metadata, tables))
+    tables['boardgame_inventory'].append_column(Column('bgg_version_snapshot', JSON, nullable=True))
+    return tables
+
+from app.core.database import Base
+
+TABLES = define_tables(Base.metadata)
+
+
+class BoardGame(Base):
+    __table__ = TABLES['boardgames']
+
+
+class Inventory(Base):
+    __table__ = TABLES['boardgame_inventory']
+
+
+class InventorySource(Base):
+    __table__ = TABLES['boardgame_inventory_sources']
+
+
+class Ruleset(Base):
+    __table__ = TABLES['boardgame_rulesets']
+
+
+class ScoresheetTemplate(Base):
+    __table__ = TABLES['boardgame_scoresheet_templates']
+
+
+class ExpansionLink(Base):
+    __table__ = TABLES['boardgame_expansion_links']
+
+
+class ActivityGameSettings(Base):
+    __table__ = TABLES['activity_game_settings']
+
+
+class Nomination(Base):
+    __table__ = TABLES['activity_game_nominations']
+
+
+class NominationExpansion(Base):
+    __table__ = TABLES['activity_game_nomination_expansions']
+
+
+class GamePlan(Base):
+    __table__ = TABLES['activity_game_plans']
+
+
+class PlanExpansion(Base):
+    __table__ = TABLES['activity_game_plan_expansions']
+
+
+class Person(Base):
+    __table__ = TABLES['boardgame_people']
+
+
+class Location(Base):
+    __table__ = TABLES['boardgame_locations']
+
+
+class Play(Base):
+    __table__ = TABLES['boardgame_plays']
+
+
+class PlayExpansion(Base):
+    __table__ = TABLES['boardgame_play_expansions']
+
+
+class PlayTeam(Base):
+    __table__ = TABLES['boardgame_play_teams']
+
+
+class PlayPlayer(Base):
+    __table__ = TABLES['boardgame_play_players']
+
+
+class PlayReport(Base):
+    __table__ = TABLES['boardgame_play_reports']
+
+
+class AuditEvent(Base):
+    __table__ = TABLES['boardgame_audit_events']
+
+
+class ImportJob(Base):
+    __table__ = TABLES['boardgame_import_jobs']
+
+
+class ImportItem(Base):
+    __table__ = TABLES['boardgame_import_items']
+
+
+class PlaySource(Base):
+    __table__ = TABLES['boardgame_play_sources']
+
+
+class ImportMapping(Base):
+    __table__ = TABLES['boardgame_import_mappings']
+
+
+class RequestKey(Base):
+    __table__ = TABLES['boardgame_request_keys']
+
+
+class PlayScoresheet(Base):
+    __table__ = TABLES['boardgame_play_scoresheets']
+
+
+class ScoresheetCell(Base):
+    __table__ = TABLES['boardgame_scoresheet_cells']
+
+
+class PlayObserver(Base):
+    __table__ = TABLES['boardgame_play_observers']
+
+
+class GamePreference(Base):
+    __table__ = TABLES['boardgame_preferences']
+
+
+class PriorPlay(Base):
+    __table__ = TABLES['boardgame_prior_plays']
+
+
+class GameTag(Base):
+    __table__ = TABLES['boardgame_tags']
+
+
+class GameTagLink(Base):
+    __table__ = TABLES['boardgame_game_tags']
+
+
+class PlayTagLink(Base):
+    __table__ = TABLES['boardgame_play_tags']
+
+
+class SavedFilter(Base):
+    __table__ = TABLES['boardgame_saved_filters']
+
+
+class SyncOperation(Base):
+    __table__ = TABLES['boardgame_sync_operations']

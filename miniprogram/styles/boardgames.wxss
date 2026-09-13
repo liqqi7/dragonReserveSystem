@@ -1,0 +1,39 @@
+/* Canonical 390px design, scaled by 750 / 390. See prototype/design-system/tokens.json. */
+page { background:#FFFFFF; color:#111827; font-size:26.92rpx; line-height:42.31rpx; }
+.bg-page { padding:30.77rpx 30.77rpx calc(46.15rpx + env(safe-area-inset-bottom)); min-height:100vh; box-sizing:border-box; }
+.bg-title { font-size:46.15rpx; line-height:65.38rpx; font-weight:700; overflow-wrap:break-word; }
+.bg-subtitle { color:#4B5563; font-size:23.08rpx; line-height:34.62rpx; margin-top:7.69rpx; overflow-wrap:break-word; }
+.bg-heading { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; margin:46.15rpx 0 23.08rpx; gap:15.38rpx; font-size:38.46rpx; line-height:53.85rpx; font-weight:700; }
+.bg-toolbar,.bg-row { display:flex; align-items:center; gap:15.38rpx; min-width:0; }
+.bg-between { justify-content:space-between; }.bg-wrap { flex-wrap:wrap; }.bg-grow { flex:1; min-width:0; }
+.bg-row>picker,.bg-grid-2>view,.bg-grid-2>picker { min-width:0; }
+.bg-card { background:#FFFFFF; border:1rpx solid #E5E7EB; border-radius:30.77rpx; padding:23.08rpx; margin:23.08rpx 0; box-sizing:border-box; overflow-wrap:break-word; }
+.bg-muted { color:#9CA3AF; font-size:23.08rpx; line-height:34.62rpx; }.bg-small { font-size:23.08rpx; line-height:34.62rpx; }
+.bg-label { display:block; color:#4B5563; font-size:23.08rpx; line-height:34.62rpx; margin:30.77rpx 0 15.38rpx; }
+.bg-input { display:block; width:100%; min-width:0; min-height:84.62rpx; height:84.62rpx; background:#FFFFFF; border:1rpx solid #E5E7EB; border-radius:23.08rpx; padding:15.38rpx 23.08rpx; font-size:26.92rpx; line-height:53.85rpx; box-sizing:border-box; color:#111827; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.bg-input.bg-grow { width:0; }.bg-textarea { width:100%; height:184.62rpx; min-height:184.62rpx; white-space:pre-wrap; line-height:42.31rpx; }
+.bg-button { display:flex; align-items:center; justify-content:center; margin:0; background:#FF9800; color:#FFFFFF; font-size:26.92rpx; font-weight:700; border-radius:23.08rpx; padding:0 23.08rpx; line-height:42.31rpx; min-height:84.62rpx; box-sizing:border-box; flex-shrink:0; }
+.bg-button::after,.bg-chip::after { border:0; }.bg-button[disabled],.bg-chip[disabled] { background:#F5F5F5!important; color:#9CA3AF!important; }
+.bg-button.secondary { background:#FFF3E0; color:#7C3A05; }.bg-button.danger { background:#FEF2F2; color:#B91C1C; }
+.bg-button.small { min-height:61.54rpx; font-size:23.08rpx; line-height:34.62rpx; padding:7.69rpx 15.38rpx; }.bg-button.full { width:100%; }
+.bg-chip { display:inline-flex; align-items:center; justify-content:center; margin:0; background:#F5F5F5; color:#4B5563; border:1rpx solid transparent; line-height:34.62rpx; min-height:61.54rpx; border-radius:23.08rpx; padding:7.69rpx 23.08rpx; font-size:23.08rpx; font-weight:400; flex:none; box-sizing:border-box; }
+.bg-chip.active { background:#FFF3E0; color:#7C3A05; border-color:#FFE0B2; font-weight:700; }
+.bg-chips { display:flex; gap:15.38rpx; white-space:nowrap; }.bg-scroll { margin:23.08rpx 0; width:100%; }
+.bg-error { background:#FEF2F2; color:#B91C1C; border-radius:23.08rpx; padding:23.08rpx; margin:23.08rpx 0; overflow-wrap:break-word; }
+.bg-notice { background:#FFF3E0; color:#7C3A05; border-radius:23.08rpx; padding:23.08rpx; margin:23.08rpx 0; font-size:23.08rpx; line-height:34.62rpx; overflow-wrap:break-word; }
+.bg-empty { text-align:center; color:#9CA3AF; padding:61.54rpx 23.08rpx; line-height:42.31rpx; }.bg-link { color:#7C3A05; font-size:26.92rpx; line-height:42.31rpx; font-weight:400; }
+.bg-number { font-size:46.15rpx; line-height:65.38rpx; font-weight:700; color:#111827; }
+.bg-grid,.bg-grid-2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:23.08rpx; }.bg-grid.three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.bg-game { display:flex; flex-direction:column; background:#FFFFFF; border:1rpx solid #E5E7EB; border-radius:30.77rpx; padding:15.38rpx; height:442.31rpx; box-sizing:border-box; overflow:hidden; min-width:0; box-shadow:0 11.54rpx 38.46rpx #0000000D; }
+.bg-cover { display:block; width:100%; flex:1; min-height:0; background:#F5F5F5; border-radius:15.38rpx; }
+.bg-cover.placeholder { display:flex; align-items:center; justify-content:center; color:#9CA3AF; font-size:23.08rpx; font-weight:400; }
+.bg-game-body { padding-top:15.38rpx; flex:none; min-width:0; }.bg-game-name { font-weight:700; font-size:26.92rpx; line-height:42.31rpx; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }
+.bg-game-meta { display:block; color:#4B5563; font-size:19.23rpx; line-height:26.92rpx; margin-top:7.69rpx; }
+.bg-list-item { padding:23.08rpx 0; border-bottom:1rpx solid #E5E7EB; overflow-wrap:break-word; }.bg-list-item:last-child { border:0; }
+.bg-avatar { width:61.54rpx; height:61.54rpx; border-radius:50%; background:#F5F5F5; color:#4B5563; display:flex; align-items:center; justify-content:center; flex:none; font-size:23.08rpx; }
+.bg-thumb { width:76.92rpx; height:92.31rpx; border-radius:15.38rpx; background:#F5F5F5; flex:none; }
+.bg-divider { height:1rpx; background:#E5E7EB; margin:23.08rpx 0; }
+.bg-badge { background:#FFF3E0; color:#7C3A05; padding:3.85rpx 7.69rpx; font-size:19.23rpx; line-height:26.92rpx; border-radius:15.38rpx; display:inline-block; font-weight:400; }
+.bg-footer-space { height:184.62rpx; }.bg-fixed-actions { position:fixed; left:0; right:0; bottom:0; height:153.85rpx; box-sizing:border-box; background:#FFFFFF; padding:15.38rpx 30.77rpx 0; display:flex; align-items:flex-start; gap:15.38rpx; z-index:10; box-shadow:0 -9.62rpx 34.62rpx #414A8A14; }
+.bg-score { font-variant-numeric:tabular-nums; font-weight:700; }.bg-table { min-width:640rpx; }.bg-table-row { display:flex; border-bottom:1rpx solid #E5E7EB; align-items:center; min-height:76.92rpx; gap:15.38rpx; }
+.bg-table-cell { width:123.08rpx; flex:none; font-size:23.08rpx; }.bg-table-cell.label { flex:1; min-width:169.23rpx; }.bg-sheet-field { margin-bottom:23.08rpx; }

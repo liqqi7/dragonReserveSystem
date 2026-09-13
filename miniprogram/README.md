@@ -2,6 +2,8 @@
 
 本目录是微信小程序前端，使用 WXML、WXSS 和 JavaScript，通过 `wx.request` 调用 FastAPI 后端。
 
+桌游分支本地查看入口：[UI 评审说明](BOARDGAME_UI_REVIEW.md)，包含浏览器原型和微信开发者工具两种方式、后端开关及 12 个页面的查看顺序。
+
 ## 使用方式
 
 1. 用微信开发者工具导入项目根目录，配置见 `project.config.json`。
