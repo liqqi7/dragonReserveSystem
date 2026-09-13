@@ -75,6 +75,7 @@ test("activity detail skeleton keeps its bottom actions visible and crossfades i
 
 test("activity detail formats date, time and the prototype month-date hero meta", () => {
   assert.equal(detail.formatActivityDate("2026-09-05 16:30"), "9月5日 周六");
+  assert.equal(detail.formatActivityDate("2026-12-31 16:30"), "12月31日 周四");
   assert.equal(detail.formatActivityTime("2026-09-05 16:30", "2026-09-05 19:00"), "16:30 - 19:00");
   assert.equal(detail.formatHeroMeta({
     startTime: "2026-09-05 16:30",
@@ -320,18 +321,56 @@ test("edit form and its time pickers share one full-height Skyline container", (
   assert.doesNotMatch(js, /openEditDateTimePicker|confirmEditDateTimePicker|editDateTimePickerVisible/);
 });
 
-test("mini-program never exposes physical deletion and ended activities cannot be edited", () => {
+test("mini-program never exposes physical deletion and non-admins cannot edit ended activities while admins can edit", () => {
   assert.doesNotMatch(wxml, /binddeleteactivity|删除活动/);
   assert.doesNotMatch(js, /deleteActivityFromForm|\.deleteActivity\(/);
   assert.doesNotMatch(activityServiceSource, /function deleteActivity|\bdeleteActivity,/);
-  assert.match(wxml, /wx:if="{{canManageActivity && activity\.status !== '已结束'}}"/);
-  assert.match(wxml, /activityFormContainerRendered && canManageActivity && activity && activity\.status !== '已结束'/);
-  assert.match(js, /openAdminEdit\(\)\s*\{[\s\S]*activity\.status === "已结束"[\s\S]*\) return;/);
+  assert.match(wxml, /wx:if="{{canManageActivity && \(isAdmin \|\| activity\.status !== '已结束'\)}}"/);
+  assert.match(wxml, /activityFormContainerRendered && canManageActivity && activity && \(isAdmin \|\| activity\.status !== '已结束'\)/);
+  assert.match(js, /openAdminEdit\(\)\s*\{[\s\S]*\(!this\.data\.isAdmin && activity\.status === "已结束"\)[\s\S]*return;/);
   assert.match(js, /resolveCanManageActivity\(activity,[\s\S]*?role === "admin"[\s\S]*?role !== "user"[\s\S]*?activity\.createdBy/);
   assert.match(wxml, /can-manage="\{\{canManageActivity\}\}"/);
   assert.match(wxml, /is-admin="\{\{isAdmin\}\}"/);
   assert.match(js, /adminRetroCheckin\(e\)\s*\{[\s\S]*?if \(!this\.data\.isAdmin/);
   assert.match(js, /adminCancelCheckin\(e\)\s*\{[\s\S]*?if \(!this\.data\.isAdmin/);
+
+  const vm = require("node:vm");
+  const makePage = (initialData) => {
+    let pageDef = null;
+    const app = { globalData: { userRole: initialData.isAdmin ? "admin" : "user", userId: "u-1" } };
+    vm.runInNewContext(js, {
+      getApp: () => app,
+      Page: (def) => { pageDef = def; },
+      require: () => ({}),
+      wx: { getStorageSync: () => "", nextTick: (fn) => fn() }
+    });
+    return {
+      ...pageDef,
+      data: { ...pageDef.data, ...initialData },
+      setData(patch, cb) {
+        Object.assign(this.data, patch);
+        if (cb) cb();
+      }
+    };
+  };
+
+  const adminOnEnded = makePage({
+    isAdmin: true,
+    canManageActivity: true,
+    activity: { _id: "act-1", status: "已结束" }
+  });
+  adminOnEnded.openAdminEdit();
+  assert.equal(adminOnEnded.data.activityFormContainerRendered, true);
+  assert.equal(adminOnEnded.data.showActivityForm, true);
+
+  const userOnEnded = makePage({
+    isAdmin: false,
+    canManageActivity: true,
+    activity: { _id: "act-2", status: "已结束" }
+  });
+  userOnEnded.openAdminEdit();
+  assert.equal(userOnEnded.data.activityFormContainerRendered, false);
+  assert.equal(userOnEnded.data.showActivityForm, false);
 });
 
 test("activity detail removes the legacy countdown and standalone pigeon sections", () => {
@@ -523,7 +562,9 @@ test("prototype key sizes, colors, typography and action layout do not regress",
   assert.match(wxss, /\.nav-back-icon\s*\{[^}]*width:\s*34\.62rpx;[^}]*height:\s*34\.62rpx;/s);
   assert.match(wxss, /\.fact-item\s*\{[^}]*padding:\s*0;[^}]*gap:\s*7\.69rpx;/s);
   assert.match(wxml, /class="fact-item fact-item-time"/);
-  assert.match(wxss, /\.fact-item:first-child\s*\{[^}]*flex:\s*0 0 184\.62rpx;/s);
+  assert.match(wxss, /\.fact-item:first-child\s*\{[^}]*flex:\s*0 0 201\.92rpx;/s);
+  assert.match(wxss, /\.detail-skeleton-fact-date\s*\{\s*width:\s*201\.92rpx;\s*\}/);
+  assert.match(wxss, /\.detail-skeleton-fact-value-date\s*\{\s*width:\s*201\.92rpx;\s*\}/);
   assert.match(wxss, /\.fact-item-time\s*\{[^}]*flex:\s*0 0 196\.15rpx;/s);
   assert.match(wxss, /\.fact-label\s*\{[^}]*font-size:\s*23\.08rpx;[^}]*font-weight:\s*500;[^}]*line-height:\s*32\.69rpx;/s);
   assert.match(wxss, /\.fact-value,[\s\S]*?\{[^}]*font-size:\s*30\.77rpx;[^}]*font-weight:\s*600;[^}]*line-height:\s*44\.23rpx;/s);
@@ -548,9 +589,9 @@ test("prototype key sizes, colors, typography and action layout do not regress",
   assert.match(wxss, /\.bottom-primary\s*\{[^}]*left:\s*238\.46rpx;[^}]*width:\s*473\.08rpx;[^}]*height:/s);
   assert.match(wxss, /\.bottom-primary-cancel\s*\{[^}]*background:\s*rgba\(255, 255, 255, 0\);[^}]*border:\s*1\.92rpx solid #ff9800;[^}]*color:\s*#ff9800;[^}]*font-weight:\s*600;/s);
   assert.match(wxss, /\.bottom-primary-disabled\s*\{[^}]*background:\s*#e5e7eb;[^}]*color:\s*#9ca3af;/s);
-  assert.match(wxml, /\{\{\(!canManageActivity \|\| activity\.status === '已结束'\) \? 'bottom-icon-button-wide' : ''\}\}/);
-  assert.match(wxml, /wx:if="\{\{canManageActivity && activity\.status !== '已结束'\}\}"/);
-  assert.match(js, /openAdminEdit\(\)\s*\{[\s\S]*?!this\.data\.canManageActivity[\s\S]*?activity\.status === "已结束"/);
+  assert.match(wxml, /\{\{\(!canManageActivity \|\| \(!isAdmin && activity\.status === '已结束'\)\) \? 'bottom-icon-button-wide' : ''\}\}/);
+  assert.match(wxml, /wx:if="\{\{canManageActivity && \(isAdmin \|\| activity\.status !== '已结束'\)\}\}"/);
+  assert.match(js, /openAdminEdit\(\)\s*\{[\s\S]*?!this\.data\.canManageActivity[\s\S]*?\(!this\.data\.isAdmin && activity\.status === "已结束"\)/);
   assert.match(wxml, /primaryActionType === 'cancel' \? 'bottom-primary-cancel'/);
   assert.match(js, /const shouldExpandRemarkByDefault = activity\.status === "已结束";/);
   assert.match(js, /const expandByDefault = !!\([\s\S]*?this\.data\.activity\.status === "已结束"[\s\S]*?remarkExpanded:\s*expandByDefault,[\s\S]*?remarkToggleRotationDeg:\s*expandByDefault \? 180 : 0/);

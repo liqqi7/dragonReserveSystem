@@ -200,10 +200,16 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
     return get_activity_by_id(db, activity.id)
 
 
-def update_activity(db: Session, activity: Activity, payload: ActivityUpdateRequest) -> Activity:
+def update_activity(
+    db: Session,
+    activity: Activity,
+    payload: ActivityUpdateRequest,
+    actor: User | None = None,
+) -> Activity:
     """Update an activity."""
 
-    if activity.status in TERMINAL_ACTIVITY_STATUSES:
+    is_admin = bool(actor and getattr(actor, "role", None) == "admin")
+    if activity.status in TERMINAL_ACTIVITY_STATUSES and not is_admin:
         raise ValidationAppError("Terminal activities cannot be edited")
 
     data = payload.model_dump(exclude_unset=True)
@@ -255,11 +261,16 @@ def update_activity(db: Session, activity: Activity, payload: ActivityUpdateRequ
     return get_activity_by_id(db, activity.id)
 
 
-def cancel_activity(db: Session, activity: Activity) -> Activity:
-    """Cancel a mutable activity through an explicit state transition."""
+def cancel_activity(db: Session, activity: Activity, actor: User | None = None) -> Activity:
+    """Cancel an activity through an explicit state transition."""
 
-    if activity.status in TERMINAL_ACTIVITY_STATUSES:
+    if activity.status == "已取消":
+        raise ValidationAppError("Activity is already cancelled")
+
+    is_admin = bool(actor and getattr(actor, "role", None) == "admin")
+    if activity.status in TERMINAL_ACTIVITY_STATUSES and not is_admin:
         raise ValidationAppError("Terminal activities cannot be cancelled")
+
     activity.status = "已取消"
     db.add(activity)
     db.commit()

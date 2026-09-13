@@ -202,7 +202,7 @@ page {
   gap: 7.69rpx;
 }
 
-.detail-skeleton-fact-date { width: 184.62rpx; }
+.detail-skeleton-fact-date { width: 201.92rpx; }
 .detail-skeleton-fact-time { width: 196.15rpx; }
 .detail-skeleton-fact-people { width: 180.77rpx; }
 
@@ -219,7 +219,7 @@ page {
   border-radius: 11.54rpx;
 }
 
-.detail-skeleton-fact-value-date { width: 184.62rpx; }
+.detail-skeleton-fact-value-date { width: 201.92rpx; }
 .detail-skeleton-time-value { width: 196.15rpx; }
 .detail-skeleton-fact-value-people { width: 180.77rpx; }
 
@@ -909,7 +909,7 @@ page {
 }
 
 .fact-item:first-child {
-  flex: 0 0 184.62rpx;
+  flex: 0 0 201.92rpx;
 }
 
 .fact-item-time {

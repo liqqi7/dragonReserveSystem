@@ -728,7 +728,7 @@ Page({
       !this.data.canManageActivity ||
       !activity ||
       !activity._id ||
-      activity.status === "已结束" ||
+      (!this.data.isAdmin && activity.status === "已结束") ||
       this.data.showActivityForm ||
       this.data.activityFormSubmitting
     ) return;

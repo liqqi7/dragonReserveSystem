@@ -804,3 +804,164 @@ def test_signup_after_deadline_returns_validation_error(client, db_session, admi
 
     assert response.status_code == 422
     assert response.json()["code"] == "VALIDATION_ERROR"
+
+
+def test_admin_can_update_terminal_activity(client, db_session, admin_user, admin_headers) -> None:
+    now = datetime.now()
+    start_time = now - timedelta(hours=3)
+    end_time = now - timedelta(hours=1)
+    from app.models import Activity
+
+    activity = Activity(
+        name="已结束拼豆活动",
+        status="已结束",
+        remark="原始备注",
+        max_participants=10,
+        start_time=start_time,
+        end_time=end_time,
+        signup_deadline=start_time - timedelta(hours=1),
+        location_name="龙城俱乐部",
+        location_address="常州龙城",
+        location_latitude=31.8112,
+        location_longitude=119.9741,
+        created_by=admin_user.id,
+    )
+    db_session.add(activity)
+    db_session.commit()
+    db_session.refresh(activity)
+
+    # 管理员通过 v1 更新
+    v1_response = client.patch(
+        f"/api/v1/activities/{activity.id}",
+        headers=admin_headers,
+        json={"remark": "管理员更新已结束活动备注v1", "name": "拼豆手工活动"},
+    )
+    assert v1_response.status_code == 200
+    assert v1_response.json()["remark"] == "管理员更新已结束活动备注v1"
+    assert v1_response.json()["status"] == "已结束"
+
+    # 管理员通过 v2 更新
+    v2_response = client.patch(
+        f"/api/v2/activities/{activity.id}",
+        headers=admin_headers,
+        json={"remark": "管理员更新已结束活动备注v2"},
+    )
+    assert v2_response.status_code == 200
+    assert v2_response.json()["remark"] == "管理员更新已结束活动备注v2"
+    assert v2_response.json()["status"] == "已结束"
+
+
+def test_non_admin_owner_cannot_update_terminal_activity(client, db_session, normal_user, user_headers) -> None:
+    now = datetime.now()
+    start_time = now - timedelta(hours=3)
+    end_time = now - timedelta(hours=1)
+    from app.models import Activity
+
+    activity = Activity(
+        name="普通用户的已结束活动",
+        status="已结束",
+        remark="普通用户创建",
+        max_participants=10,
+        start_time=start_time,
+        end_time=end_time,
+        signup_deadline=start_time - timedelta(hours=1),
+        location_name="龙城俱乐部",
+        location_address="常州龙城",
+        location_latitude=31.8112,
+        location_longitude=119.9741,
+        created_by=normal_user.id,
+    )
+    db_session.add(activity)
+    db_session.commit()
+    db_session.refresh(activity)
+
+    # 普通创建者尝试通过 v2 更新已结束活动
+    response = client.patch(
+        f"/api/v2/activities/{activity.id}",
+        headers=user_headers,
+        json={"remark": "普通用户尝试修改"},
+    )
+    assert response.status_code == 422
+    assert response.json()["code"] == "VALIDATION_ERROR"
+    assert "Terminal activities cannot be edited" in response.json()["message"]
+
+
+def test_admin_can_cancel_ended_terminal_activity(client, db_session, admin_user, admin_headers) -> None:
+    now = datetime.now()
+    start_time = now - timedelta(hours=3)
+    end_time = now - timedelta(hours=1)
+    from app.models import Activity
+
+    activity = Activity(
+        name="已结束拼豆活动待取消",
+        status="已结束",
+        remark="原始备注",
+        max_participants=10,
+        start_time=start_time,
+        end_time=end_time,
+        signup_deadline=start_time - timedelta(hours=1),
+        location_name="龙城俱乐部",
+        location_address="常州龙城",
+        location_latitude=31.8112,
+        location_longitude=119.9741,
+        created_by=admin_user.id,
+    )
+    db_session.add(activity)
+    db_session.commit()
+    db_session.refresh(activity)
+
+    # 管理员通过 v2 取消已结束活动
+    response = client.post(
+        f"/api/v2/activities/{activity.id}/cancel",
+        headers=admin_headers,
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "已取消"
+
+    # 再次获取活动详情，验证其状态不会被时间同步覆盖回已结束
+    get_res = client.get(f"/api/v2/activities/{activity.id}", headers=admin_headers)
+    assert get_res.status_code == 200
+    assert get_res.json()["status"] == "已取消"
+
+    # 重复取消已取消活动应返回 422
+    repeat_response = client.post(
+        f"/api/v2/activities/{activity.id}/cancel",
+        headers=admin_headers,
+    )
+    assert repeat_response.status_code == 422
+    assert repeat_response.json()["code"] == "VALIDATION_ERROR"
+    assert "Activity is already cancelled" in repeat_response.json()["message"]
+
+
+def test_non_admin_cannot_cancel_ended_terminal_activity(client, db_session, normal_user, user_headers) -> None:
+    now = datetime.now()
+    start_time = now - timedelta(hours=3)
+    end_time = now - timedelta(hours=1)
+    from app.models import Activity
+
+    activity = Activity(
+        name="普通用户的已结束活动",
+        status="已结束",
+        remark="普通用户创建",
+        max_participants=10,
+        start_time=start_time,
+        end_time=end_time,
+        signup_deadline=start_time - timedelta(hours=1),
+        location_name="龙城俱乐部",
+        location_address="常州龙城",
+        location_latitude=31.8112,
+        location_longitude=119.9741,
+        created_by=normal_user.id,
+    )
+    db_session.add(activity)
+    db_session.commit()
+    db_session.refresh(activity)
+
+    # 普通用户尝试取消已结束活动
+    response = client.post(
+        f"/api/v2/activities/{activity.id}/cancel",
+        headers=user_headers,
+    )
+    assert response.status_code == 422
+    assert response.json()["code"] == "VALIDATION_ERROR"
+    assert "Terminal activities cannot be cancelled" in response.json()["message"]

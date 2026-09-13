@@ -183,12 +183,12 @@ def patch_activity(
     activity_id: int,
     payload: ActivityUpdateRequest,
     db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
+    current_user: User = Depends(require_admin),
 ) -> ActivityResponse:
     """Update an activity."""
 
     activity = get_activity_by_id(db, activity_id)
-    updated = update_activity(db, activity, payload)
+    updated = update_activity(db, activity, payload, actor=current_user)
     return ActivityResponse.model_validate(updated, from_attributes=True)
 
 
