@@ -146,20 +146,11 @@ test("create secondary pickers stay on the same page without drawer z-index", ()
   assert.doesNotMatch(coverPickerWxml, /z-index="/);
 });
 
-test("home opens the create form on one page, hides Tab during its lifecycle, and does not use a route", () => {
+test("home opens the three-step create route and receives the created activity", () => {
   const listJs = read("pages/activity_list/activity_list.js");
-  const listWxml = read("pages/activity_list/activity_list.wxml");
   const appJson = JSON.parse(read("app.json"));
-
-  assert.match(listJs, /showCreateModal\(\)\s*\{[\s\S]*?createFormContainerRendered:\s*true[\s\S]*?showCreateForm:\s*false[\s\S]*?wx\.nextTick\(\(\) => this\.setData\(\{ showCreateForm: true \}\)\)/);
-  assert.match(listJs, /submitCreateActivity\(e\)\s*\{[\s\S]*?activityService\.createActivity\(payload\)/);
-  assert.doesNotMatch(listJs, /wx\.navigateTo\(\{[\s\S]*activity_create/);
-  assert.doesNotMatch(appJson.pages.join("\n"), /pages\/activity_create\/activity_create/);
-  assert.match(listWxml, /id="qaActivityCreateContainer"[\s\S]*?bind:afterleave="onCreateFormAfterLeave"/);
-  assert.match(listJs, /showCreateModal\(\)\s*\{[\s\S]*?_setTabBarHidden\(true\)/);
-  assert.match(listJs, /onCreateFormAfterLeave\(\)\s*\{[\s\S]*?_setTabBarHidden\(false, \{ animate: true \}\)/);
-  assert.match(listJs, /onShow\(\)\s*\{[\s\S]*?_setTabBarHidden\(!!\([\s\S]*?this\.data\.createFormContainerRendered[\s\S]*?this\.data\.showCreateForm[\s\S]*?this\._coldStartTabEntrancePending[\s\S]*?\)\)/);
-  assert.match(listJs, /onHide\(\)\s*\{[\s\S]*?keepTabBarHidden\s*=\s*!!\([\s\S]*?this\.data\.createFormContainerRendered[\s\S]*?this\.data\.showCreateForm[\s\S]*?\)[\s\S]*?_setTabBarHidden\(keepTabBarHidden\)/);
-  assert.match(listJs, /_setTabBarHidden\(hidden,[\s\S]*?app\.globalData\.tabBarHidden\s*=\s*nextHidden/);
-  assert.doesNotMatch(listJs, /_syncTabBarVisibility/);
+  assert.match(listJs, /showCreateModal\(\)\s*\{[\s\S]*?hasCreateActivityPermission[\s\S]*?wx\.navigateTo/);
+  assert.match(listJs, /url: "\/pages\/activity_create\/activity_create"/);
+  assert.ok(appJson.pages.includes("pages/activity_create/activity_create"));
+  assert.match(listJs, /activityCreated: \(activity\) => this\.insertCreatedActivity\(activity\)/);
 });

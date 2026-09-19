@@ -1528,3 +1528,33 @@ button.bottom-primary {
   min-width: 473.08rpx !important;
   max-width: 473.08rpx !important;
 }
+
+.project-tabs { display:flex; align-items:center; height:84.62rpx; gap:38.46rpx; font-size:30.77rpx; color:#111827; }
+.projects-section { margin:30.77rpx 0; }
+.project-heading, .project-sheet-heading { display:flex; align-items:center; justify-content:space-between; height:84.62rpx; }
+.project-title { font-size:34.62rpx; font-weight:600; color:#111827; }
+.project-muted { font-size:25rpx; color:#9CA3AF; }
+.project-card { display:flex; align-items:center; justify-content:space-between; height:100rpx; border-radius:26.92rpx; padding:0 30.77rpx; background:#F5F5F5; margin-top:15.38rpx; box-sizing:border-box; }
+.project-name { flex:1; min-width:0; font-size:26.92rpx; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.project-count { flex-shrink:0; margin-left:15.38rpx; font-size:26.92rpx; }
+.project-sheet { background:#FFFFFF; border-radius:46.15rpx 46.15rpx 0 0; }
+.project-handle-zone { height:23.08rpx; display:flex; justify-content:center; align-items:center; }
+.project-handle { width:69.23rpx; height:7.69rpx; border-radius:3.85rpx; background:#D1D5DB; }
+.project-sheet-heading { margin:0 30.77rpx; }
+.project-options { padding:0 30.77rpx 15.38rpx; }
+.project-option { height:107.69rpx; border-radius:30.77rpx; display:flex; align-items:center; background:#F5F5F5; padding:0 30.77rpx; margin-top:15.38rpx; box-sizing:border-box; border:1.92rpx solid transparent; }
+.project-option--selected { border-color:#FF9800; background:#FFF7ED; }
+.project-option--full { opacity:0.45; }
+.project-check { margin-left:23.08rpx; font-size:26.92rpx; color:#FF9800; }
+.project-confirm-bar { height:153.85rpx; padding:23.08rpx 30.77rpx; box-sizing:border-box; background:#FFFFFF; }
+.project-confirm { height:107.69rpx; line-height:107.69rpx; border-radius:53.85rpx; background:#111827; color:#FFFFFF; font-size:30.77rpx; }
+.project-confirm::after { border:0; }
+.project-confirm--disabled { background:#F5F5F5; color:#9CA3AF; }
+.project-members { max-height:650rpx; min-height:200rpx; padding:0 30.77rpx; box-sizing:border-box; }
+.project-member { height:100rpx; display:flex; align-items:center; font-size:26.92rpx; }
+.project-avatar { width:69.23rpx; height:69.23rpx; border-radius:34.62rpx; margin-right:23.08rpx; }
+.project-empty { color:#9CA3AF; font-size:26.92rpx; }
+
+.detail-scroll-content { display:flex; flex-direction:column; height:100%; }
+.detail-scroll-content--projects { height:auto; min-height:100%; }
+.detail-scroll-content--projects .immersive-hero { flex:0 0 750rpx; }

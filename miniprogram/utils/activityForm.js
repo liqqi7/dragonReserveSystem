@@ -2,7 +2,7 @@ const { roundUpToMinuteStep, formatDate, formatTime } = require("./dateTimePicke
 
 const DEFAULT_MAX_PARTICIPANTS = 12;
 const MAX_NAME_LENGTH = 10;
-const MAX_REMARK_LENGTH = 120;
+const MAX_REMARK_LENGTH = 200;
 
 function splitDateTime(value, fallback = {}) {
   const text = String(value || "").trim();
@@ -29,10 +29,8 @@ function dateParts(date) {
 function buildCreateForm(now = new Date()) {
   const start = roundUpToMinuteStep(new Date(now.getTime() + 2 * 60 * 60 * 1000), 5);
   const end = new Date(start.getTime() + 60 * 60 * 1000);
-  const deadline = new Date(start.getTime() - 60 * 60 * 1000);
   const startParts = dateParts(start);
   const endParts = dateParts(end);
-  const deadlineParts = dateParts(deadline);
 
   return {
     name: "",
@@ -42,8 +40,6 @@ function buildCreateForm(now = new Date()) {
     startTime: startParts.time,
     endDate: endParts.date,
     endTime: endParts.time,
-    signupDeadlineDate: deadlineParts.date,
-    signupDeadlineTime: deadlineParts.time,
     locationName: "",
     locationAddress: "",
     locationLatitude: null,
@@ -51,6 +47,8 @@ function buildCreateForm(now = new Date()) {
     signupEnabled: true,
     limitEnabled: true,
     maxParticipants: DEFAULT_MAX_PARTICIPANTS,
+    subItemsEnabled: false,
+    subItems: [],
     activityCoverId: ""
   };
 }
@@ -58,12 +56,6 @@ function buildCreateForm(now = new Date()) {
 function buildEditForm(activity = {}) {
   const start = splitDateTime(activity.startTime, { date: activity.date || "", time: "00:00" });
   const end = splitDateTime(activity.endTime, { date: activity.date || start.date, time: "01:00" });
-  let deadline = splitDateTime(activity.signupDeadline);
-  if (!deadline.date || !deadline.time) {
-    const startDateTime = toLocalDateTime(start.date, start.time);
-    if (startDateTime) deadline = dateParts(new Date(startDateTime.getTime() - 60 * 60 * 1000));
-    else deadline = { date: start.date, time: start.time };
-  }
   const maxParticipants = activity.maxParticipants == null
     ? DEFAULT_MAX_PARTICIPANTS
     : Number(activity.maxParticipants);
@@ -76,8 +68,6 @@ function buildEditForm(activity = {}) {
     startTime: start.time,
     endDate: end.date,
     endTime: end.time,
-    signupDeadlineDate: deadline.date,
-    signupDeadlineTime: deadline.time,
     locationName: String(activity.locationName || ""),
     locationAddress: String(activity.locationAddress || ""),
     locationLatitude: activity.locationLatitude == null ? null : activity.locationLatitude,
@@ -85,6 +75,8 @@ function buildEditForm(activity = {}) {
     signupEnabled: activity.signupEnabled !== false,
     limitEnabled: activity.maxParticipants != null,
     maxParticipants,
+    subItemsEnabled: (activity.subItems || activity.sub_items || []).length > 0,
+    subItems: (activity.subItems || activity.sub_items || []).map(item => ({ ...item })),
     activityCoverId: String(activity.activityCoverId || activity.activity_cover_id || "")
   };
 }
@@ -102,11 +94,6 @@ function applyStartDateTime(form, value) {
     const end = dateParts(new Date(startDateTime.getTime() + 60 * 60 * 1000));
     next.endDate = end.date;
     next.endTime = end.time;
-  }
-  if (!next.signupDeadlineDate || !next.signupDeadlineTime) {
-    const deadline = dateParts(new Date(startDateTime.getTime() - 60 * 60 * 1000));
-    next.signupDeadlineDate = deadline.date;
-    next.signupDeadlineTime = deadline.time;
   }
   return next;
 }
@@ -126,16 +113,12 @@ function validateActivityForm(form, options = {}) {
 
   const start = toLocalDateTime(form.startDate, form.startTime);
   const end = toLocalDateTime(form.endDate, form.endTime);
-  const deadline = toLocalDateTime(form.signupDeadlineDate, form.signupDeadlineTime);
   if (!start) return { ok: false, message: "请选择有效的开始时间" };
   if (!end) return { ok: false, message: "请选择有效的结束时间" };
-  if (!deadline) return { ok: false, message: "请选择有效的报名截止时间" };
   if (mode === "create" && start.getTime() < now.getTime()) {
     return { ok: false, message: "开始时间不能早于当前时间" };
   }
   if (end.getTime() <= start.getTime()) return { ok: false, message: "结束时间必须晚于开始时间" };
-  if (deadline.getTime() > start.getTime()) return { ok: false, message: "报名截止时间必须早于或等于开始时间" };
-  if (deadline.getTime() >= end.getTime()) return { ok: false, message: "报名截止时间必须早于结束时间" };
 
   if (form.limitEnabled) {
     const maxParticipants = Number(form.maxParticipants);
@@ -148,6 +131,17 @@ function validateActivityForm(form, options = {}) {
     }
   }
 
+  if (form.subItemsEnabled) {
+    const items = form.subItems || [];
+    if (!items.length || items.length > 4) return { ok: false, message: "请添加1–4个子项目" };
+    for (const item of items) {
+      if (!String(item.name || "").trim() || String(item.name).trim().length > 64) return { ok: false, message: "请填写1–64字的子项目名称" };
+      const capacity = Number(item.max_participants);
+      if (!Number.isInteger(capacity) || capacity < 1 || capacity > 999) return { ok: false, message: "子项目名额需为1–999的整数" };
+      if (capacity < Number(item.current_participants || 0)) return { ok: false, message: "子项目名额不能少于已报名人数" };
+      if (form.limitEnabled && capacity > Number(form.maxParticipants)) return { ok: false, message: "子项目名额不能超过活动人数上限" };
+    }
+  }
   return { ok: true, message: "" };
 }
 
@@ -157,14 +151,17 @@ function buildActivityPayload(form, options = {}) {
     remark: String(form.remark || "").trim(),
     start_time: `${form.startDate}T${form.startTime}:00`,
     end_time: `${form.endDate}T${form.endTime}:00`,
-    signup_deadline: `${form.signupDeadlineDate}T${form.signupDeadlineTime}:00`,
     location_name: String(form.locationName || ""),
     location_address: String(form.locationAddress || ""),
     location_latitude: form.locationLatitude == null ? null : form.locationLatitude,
     location_longitude: form.locationLongitude == null ? null : form.locationLongitude,
     max_participants: form.limitEnabled ? Number(form.maxParticipants) : null,
     signup_enabled: form.signupEnabled !== false,
-    activity_cover_id: String(form.activityCoverId || "").trim()
+    activity_cover_id: String(form.activityCoverId || "").trim(),
+    sub_items: form.subItemsEnabled ? (form.subItems || []).map(item => ({
+      ...(item.id != null ? { id: item.id } : {}),
+      name: String(item.name || "").trim(), max_participants: Number(item.max_participants)
+    })) : []
   };
   return payload;
 }

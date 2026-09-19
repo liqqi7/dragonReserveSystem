@@ -281,7 +281,7 @@ test("primary action keeps signup, cancel, checkin and disabled business states"
 test("signup permission is enforced before the signup request and guides guests to Profile", () => {
   assert.match(js, /showSignupPermissionDenied\(\)\s*\{[\s\S]*?title:\s*"暂无报名权限"[\s\S]*?confirmText:\s*"去我的"[\s\S]*?wx\.switchTab\(\{\s*url:\s*"\/pages\/profile\/profile"\s*\}\)/);
   assert.match(js, /const userRole = app\.globalData\.userRole \|\| wx\.getStorageSync\("userRole"\) \|\| "guest";\s*if \(userRole !== "user" && userRole !== "admin"\) \{\s*this\.showSignupPermissionDenied\(\);\s*return;/s);
-  assert.ok(js.indexOf('if (userRole !== "user" && userRole !== "admin")') < js.indexOf('.signupActivity(activity._id)'));
+  assert.ok(js.indexOf('if (userRole !== "user" && userRole !== "admin")') < js.indexOf('.signupActivity(activity._id,'));
 });
 
 test("activity detail keeps QA anchors and the existing participants drawer", () => {
@@ -465,8 +465,8 @@ test("basic information header has no right-side status text", () => {
 
 test("activity detail locks the viewport instead of exposing page overscroll", () => {
   assert.equal(pageJson.disableScroll, true);
-  assert.match(wxml, /<view\s+class="main-scroll"[\s\S]*?height: calc\(100vh - \{\{bottomBarHeightRpx\}\}rpx\)/);
-  assert.doesNotMatch(wxml, /<scroll-view\s+[\s\S]*?class="main-scroll"/);
+  assert.match(wxml, /<scroll-view[^>]*\s+class="main-scroll"[\s\S]*?height: calc\(100vh - \{\{bottomBarHeightRpx\}\}rpx\)/);
+  assert.match(wxml, /scroll-into-view="{{detailAnchor}}"/);
   assert.doesNotMatch(wxml, /class="scroll-bottom-spacer"/);
   assert.match(wxss, /^page\s*\{[^}]*height:\s*100%;[^}]*overflow:\s*hidden;/s);
   assert.match(wxss, /\.page-wrap\s*\{[^}]*height:\s*100vh;[^}]*overflow:\s*hidden;/s);
@@ -645,6 +645,7 @@ test("signup executes the real page handler for each role without contacting a s
     };
     page.showSignupPermissionDenied = () => events.push("denied");
     page.refreshDetail = async () => {};
+    page.setData = patch => Object.assign(page.data, patch);
     const activity = { _id: 1, status: "未开始", participants: [] };
     page.directSignup(activity);
     await new Promise(setImmediate);

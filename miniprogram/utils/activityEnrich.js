@@ -256,6 +256,7 @@ function adaptParticipant(participant) {
   return {
     id: participant.id,
     name,
+    subItemIds: participant.sub_item_ids || [],
     userId: participant.user_id != null ? String(participant.user_id) : null,
     avatarUrl: normalizeAvatarUrl(participant.display_avatar_url),
     checkedInAt: formatDateTime(participant.checked_in_at),
@@ -283,8 +284,10 @@ function adaptActivity(item) {
     participants,
     maxParticipants: item.max_participants == null ? null : item.max_participants,
     startTime,
+    startTimeRaw: item.start_time,
     endTime: formatDateTime(item.end_time),
-    signupDeadline: formatDateTime(item.signup_deadline),
+    subItems: (item.sub_items || []).map(project => ({ ...project })),
+    signupDeadline: formatDateTime(item.start_time),
     locationName: item.location_name || "",
     locationAddress: item.location_address || "",
     locationLatitude: item.location_latitude,
@@ -344,14 +347,7 @@ function enrichSingleActivity(rawItem, typeStyles, myUserId, myNickname, now) {
   const typeEntry = typeStyleMap[normalizedType] || typeStyleMap[DEFAULT_ACTIVITY_TYPE_KEY];
   activity.typeDisplayName = typeEntry ? typeEntry.displayName : "其它";
 
-  let signupDeadline = activity.signupDeadline;
-  if (!signupDeadline && activity.startTime) {
-    const base = new Date(activity.startTime.replace(" ", "T") + ":00");
-    if (!isNaN(base.getTime())) {
-      const dl = new Date(base.getTime() - 60 * 60 * 1000);
-      signupDeadline = `${dl.getFullYear()}-${pad(dl.getMonth() + 1)}-${pad(dl.getDate())} ${pad(dl.getHours())}:${pad(dl.getMinutes())}`;
-    }
-  }
+  const signupDeadline = activity.startTime;
   activity.signupDeadline = signupDeadline;
 
   let hasSignedUp = false;
@@ -399,7 +395,7 @@ function enrichSingleActivity(rawItem, typeStyles, myUserId, myNickname, now) {
   if (activity.signupEnabled === false) {
     isSignupClosed = true;
   } else if (signupDeadline) {
-    const dl = new Date(signupDeadline.replace(" ", "T") + ":00");
+    const dl = new Date(activity.startTimeRaw || (signupDeadline.replace(" ", "T") + ":00"));
     if (!isNaN(dl.getTime())) {
       isSignupClosed = nowDate.getTime() >= dl.getTime();
     }
@@ -407,7 +403,7 @@ function enrichSingleActivity(rawItem, typeStyles, myUserId, myNickname, now) {
   activity.isSignupClosed = isSignupClosed;
 
   const parseDateTime = (s) => new Date(s.replace(" ", "T") + ":00");
-  const start = parseDateTime(activity.startTime);
+  const start = activity.startTimeRaw ? new Date(activity.startTimeRaw) : parseDateTime(activity.startTime);
   const end = parseDateTime(activity.endTime);
   let autoStatus = activity.status || "未开始";
   if (["已取消", "已流局"].includes(activity.status)) {
@@ -427,10 +423,10 @@ function enrichSingleActivity(rawItem, typeStyles, myUserId, myNickname, now) {
 
   const startTimeStr = activity.startTime || (activity.date ? `${activity.date} 00:00` : "");
   activity.activityStarted = startTimeStr
-    ? new Date(startTimeStr.replace(" ", "T") + ":00").getTime() <= Date.now()
+    ? new Date(activity.startTimeRaw || (startTimeStr.replace(" ", "T") + ":00")).getTime() <= nowDate.getTime()
     : false;
   activity.signupDeadlinePassed = signupDeadline
-    ? new Date(signupDeadline.replace(" ", "T") + ":00").getTime() <= Date.now()
+    ? new Date(activity.startTimeRaw || (signupDeadline.replace(" ", "T") + ":00")).getTime() <= nowDate.getTime()
     : false;
 
   const acceptingLike =

@@ -6,13 +6,13 @@
 <template name="home-card-skeleton">
   <view class="card-skeleton card-skeleton--{{size}} {{revealed ? 'card-skeleton--revealed' : ''}}" aria-hidden="{{revealed ? true : false}}" aria-label="{{failed ? '卡片加载失败' : '卡片加载中'}}">
     <template is="home-skeleton-shape" data="{{shape: size === 'large' ? 'skeleton-large' : 'skeleton-small', running: running && !failed}}" />
-    <view wx:if="{{failed}}" class="home-card-retry home-card-retry--{{size}}" role="button" aria-label="重新加载这张卡片" catchtap="onRetryHomeCard" data-group="{{group}}" data-activity-id="{{activityId}}">
-      <text>加载失败，点击重试</text>
-    </view>
     <block wx:if="{{size === 'small'}}">
       <template is="home-skeleton-shape" data="{{shape: 'skeleton-name', running: running && !failed}}" />
       <template is="home-skeleton-shape" data="{{shape: 'skeleton-time', running: running && !failed}}" />
     </block>
+  </view>
+  <view wx:if="{{failed}}" class="home-card-retry home-card-retry--{{size}}" role="button" aria-label="重新加载这张卡片" catchtap="onRetryHomeCard" data-group="{{group}}" data-activity-id="{{activityId}}">
+    <text>加载失败，点击重试</text>
   </view>
 </template>
 <!-- 页面容器 -->

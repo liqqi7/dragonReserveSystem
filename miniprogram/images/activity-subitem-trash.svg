@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" stroke="#EF4444" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Pencil prototype gag4D/yC97u: Phosphor trash, weight 300 -->
+  <line x1="216" y1="48" x2="40" y2="48"/>
+  <line x1="104" y1="104" x2="104" y2="168"/>
+  <line x1="152" y1="104" x2="152" y2="168"/>
+  <path d="M200 48V224a8 8 0 0 1-8 8H64a8 8 0 0 1-8-8V48"/>
+  <path d="M168 48V32a16 16 0 0 0-16-16h-48a16 16 0 0 0-16 16v16"/>
+</svg>

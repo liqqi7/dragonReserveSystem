@@ -9,6 +9,8 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.schemas.activity import (
     ActivityParticipantResponse,
+    ActivitySubItemInput,
+    ActivitySubItemResponse,
     ActivityWeatherResponse,
     MAX_ACTIVITY_NAME_LENGTH,
     MAX_ACTIVITY_REMARK_LENGTH,
@@ -58,6 +60,7 @@ class ActivityV2Response(BaseModel):
     created_at: datetime
     updated_at: datetime
     participants: list[ActivityParticipantResponse]
+    sub_items: list[ActivitySubItemResponse] = Field(default_factory=list)
     activity_cover_id: str
     activity_cover: Optional[ActivityCoverArtworkResponse] = None
 
@@ -67,6 +70,7 @@ class ActivityDetailV2Response(ActivityV2Response):
 
 
 class ActivityCreateV2Request(BaseModel):
+    sub_items: list[ActivitySubItemInput] = Field(default_factory=list, max_length=4)
     model_config = ConfigDict(extra="forbid")
 
     name: str = Field(min_length=1, max_length=MAX_ACTIVITY_NAME_LENGTH)
@@ -103,12 +107,10 @@ class ActivityCreateV2Request(BaseModel):
     @field_validator("signup_deadline")
     @classmethod
     def validate_signup_deadline(cls, value: Optional[datetime], info) -> Optional[datetime]:
-        start_time = info.data.get("start_time")
-        if value and start_time and value > start_time:
-            raise ValueError("signup_deadline must be earlier than or equal to start_time")
-        return value
+        return None  # Deprecated compatibility input; cutoff is start_time.
 
 class ActivityUpdateV2Request(BaseModel):
+    sub_items: list[ActivitySubItemInput] = Field(default_factory=list, max_length=4)
     model_config = ConfigDict(extra="forbid")
 
     name: Optional[str] = Field(default=None, min_length=1, max_length=MAX_ACTIVITY_NAME_LENGTH)

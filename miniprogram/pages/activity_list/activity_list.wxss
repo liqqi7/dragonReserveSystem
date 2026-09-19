@@ -1353,8 +1353,8 @@ button.create-btn-fixed.create-btn-hover {
 .home-card-slot { position: relative; }
 .home-card-slot--large { width: 469.23rpx; }
 .home-card-slot--small { width: 307.69rpx; }
-.card-skeleton { position: absolute; top: 0; left: 0; z-index: 2; opacity: 1; transition: opacity 440ms ease-out; }
-/* Keep the placeholder mounted for a same-position crossfade; hidden layers cannot intercept taps. */
+.card-skeleton { position: absolute; top: 0; left: 0; z-index: 2; opacity: 1; pointer-events: none; transition: opacity 440ms ease-out; }
+/* The placeholder remains mounted for its crossfade but must never block card navigation. */
 .card-skeleton--revealed { opacity: 0; pointer-events: none; }
 .card-skeleton--large { width: 469.23rpx; }
 .card-skeleton--small { width: 307.69rpx; }

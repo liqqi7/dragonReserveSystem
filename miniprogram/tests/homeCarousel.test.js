@@ -6,6 +6,7 @@ const path = require("node:path");
 const pageDir = path.join(__dirname, "../pages/activity_list");
 const js = fs.readFileSync(path.join(pageDir, "activity_list.js"), "utf8");
 const wxml = fs.readFileSync(path.join(pageDir, "activity_list.wxml"), "utf8");
+const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");
 const pageConfig = JSON.parse(fs.readFileSync(path.join(pageDir, "activity_list.json"), "utf8"));
 const detailConfig = JSON.parse(fs.readFileSync(path.join(__dirname, "../pages/activity_detail/activity_detail.json"), "utf8"));
 const appConfig = JSON.parse(fs.readFileSync(path.join(__dirname, "../app.json"), "utf8"));
@@ -53,6 +54,8 @@ test("home carousels use native Skyline swiper paging", () => {
   assert.match(js, /onGroupSwiperChange\(e\)/);
   assert.match(js, /this\._syncVideoFocus\(group, previous, current\)/);
   assert.match(js, /group === "ended" && this\.data\.endedHasMore && current === endedCount/);
+  assert.doesNotMatch(js, /activity\._homeMediaReady\) return;/);
+  assert.match(wxss, /\.card-skeleton\s*\{[^}]*pointer-events:\s*none;/s);
 });
 
 test("home activity refresh stays silent without a global loading overlay", () => {

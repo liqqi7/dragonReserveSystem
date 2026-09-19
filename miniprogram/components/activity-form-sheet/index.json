@@ -3,6 +3,7 @@
   "usingComponents": {
     "date-time-picker-sheet": "../date-time-picker-sheet/index",
     "activity-cover-picker-sheet": "../activity-cover-picker-sheet/index",
-    "create-access-dialog": "../create-access-dialog/index"
+    "create-access-dialog": "../create-access-dialog/index",
+    "activity-subitems-editor": "../activity-subitems-editor/index"
   }
 }

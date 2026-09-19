@@ -90,10 +90,11 @@
   </view>
 
   <view wx:if="{{activity || loadError}}" class="detail-content-layer {{activity && !detailContentVisible ? 'detail-content-layer--hidden' : 'detail-content-layer--visible'}}">
-  <view
+  <scroll-view type="list" scroll-y scroll-into-view="{{detailAnchor}}" scroll-with-animation
     class="main-scroll"
     style="height: calc(100vh - {{bottomBarHeightRpx}}rpx)"
   >
+    <view class="detail-scroll-content {{activity.subItems.length ? 'detail-scroll-content--projects' : ''}}">
     <view wx:if="{{loadError}}" class="state-block state-block-full">
       <text class="state-text">{{loadError}}</text>
       <button class="retry-btn" bindtap="refreshDetail">重试</button>
@@ -187,6 +188,8 @@
       </view>
 
       <view id="qaActivityDetailContent" class="detail-panel">
+        <view wx:if="{{activity.subItems.length}}" class="project-tabs"><text data-anchor="basicInformation" bindtap="selectDetailSection">基本信息</text><text data-anchor="optionalProjects" bindtap="selectDetailSection">可选子项目</text></view>
+        <view id="basicInformation"></view>
         <view class="section-title-row">
           <text class="section-title">基本信息</text>
         </view>
@@ -210,6 +213,11 @@
               <image class="fact-chevron" src="/images/activity-detail-chevron-right.svg" mode="aspectFit" />
             </view>
           </view>
+        </view>
+
+        <view wx:if="{{activity.subItems.length}}" id="optionalProjects" class="projects-section">
+          <view class="project-heading"><text class="project-title">子项目</text><text class="project-muted">共 {{activity.subItems.length}} 项</text></view>
+          <view wx:for="{{activity.subItems}}" wx:key="id" class="project-card" data-id="{{item.id}}" bindtap="openProjectMembers"><text class="project-name">{{item.name}}</text><text class="project-count">{{item.current_participants}} / {{item.max_participants}} 人 ›</text></view>
         </view>
 
         <view id="qaActivityLocationCard" class="location-card">
@@ -287,7 +295,8 @@
         </view>
       </view>
     </block>
-  </view>
+    </view>
+  </scroll-view>
 
   <view wx:if="{{activity}}" id="qaActivityDetailBottomBar" class="bottom-bar" style="padding-bottom: {{safeBottomRpx}}rpx">
     <view class="bottom-inner">
@@ -395,3 +404,19 @@
 </view>
 
 <create-access-dialog id="signup-login-dialog" bind:confirm="onSignupLoginConfirm" />
+
+<page-container show="{{showSubItemSignup}}" position="bottom" round="{{false}}" close-on-slide-down="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="background:#FFFFFF;border-radius:46.15rpx 46.15rpx 0 0;" bind:clickoverlay="closeSubItemSignup">
+  <view class="project-sheet" style="padding-bottom:{{safeBottomRpx}}rpx;">
+    <view class="project-handle-zone"><view class="project-handle"></view></view>
+    <view class="project-sheet-heading"><text class="project-title">选择子项目</text><text class="project-muted">已选 {{signupSelection.length}} 项</text></view>
+    <view class="project-options"><view wx:for="{{signupOptions}}" wx:key="id" class="project-option {{item.selected ? 'project-option--selected' : ''}} {{item.full ? 'project-option--full' : ''}}" data-id="{{item.id}}" bindtap="toggleSignupOption"><text class="project-name">{{item.name}}</text><text class="project-count">{{item.current_participants}} / {{item.max_participants}} 人</text><text class="project-check">{{item.full ? '已满' : item.selected ? '✓' : '○'}}</text></view></view>
+    <view class="project-confirm-bar"><button class="project-confirm {{!signupSelection.length || signupSubmitting ? 'project-confirm--disabled' : ''}}" disabled="{{!signupSelection.length || signupSubmitting}}" loading="{{signupSubmitting}}" bindtap="confirmSubItemSignup"><text>确认报名</text></button></view>
+  </view>
+</page-container>
+<page-container show="{{showProjectMembers}}" position="bottom" round="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="background:#FFFFFF;border-radius:46.15rpx 46.15rpx 0 0;" bind:clickoverlay="closeProjectMembers">
+  <view class="project-sheet" style="padding-bottom:{{safeBottomRpx}}rpx;">
+    <view class="project-handle-zone"><view class="project-handle"></view></view>
+    <view class="project-sheet-heading"><text class="project-title">{{projectMemberTitle}}</text><text class="project-muted">{{projectMembers.length}} 人</text></view>
+    <scroll-view type="list" scroll-y class="project-members"><view wx:for="{{projectMembers}}" wx:key="id" class="project-member"><image class="project-avatar" src="{{item.avatarUrl}}" mode="aspectFill" /><text>{{item.name}}</text></view><text wx:if="{{!projectMembers.length}}" class="project-empty">暂无成员报名</text></scroll-view>
+  </view>
+</page-container>

@@ -9,7 +9,8 @@
     "pages/history/history",
     "pages/profile/profile",
     "pages/checkin_map/checkin_map",
-    "pages/chwazi/chwazi"
+    "pages/chwazi/chwazi",
+    "pages/activity_create/activity_create"
   ],
   "window": {
     "navigationBarTitleText": "Dragon Reserve",

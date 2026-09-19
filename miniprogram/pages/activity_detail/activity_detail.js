@@ -96,6 +96,14 @@ Page({
     myUserId: "",
     myNickname: "",
     showParticipantsDrawer: false,
+    showSubItemSignup: false,
+    signupOptions: [],
+    signupSelection: [],
+    signupSubmitting: false,
+    showProjectMembers: false,
+    projectMembers: [],
+    projectMemberTitle: "",
+    detailAnchor: "",
     participantPreview: [],
     heroCardAvatars: [],
     participantDrawerList: [],
@@ -714,6 +722,28 @@ Page({
     }
   },
 
+  selectDetailSection(e) {
+    this.setData({ detailAnchor: e.currentTarget.dataset.anchor });
+  },
+  closeSubItemSignup() { if (!this.data.signupSubmitting) this.setData({ showSubItemSignup: false }); },
+  toggleSignupOption(e) {
+    if (this.data.signupSubmitting) return;
+    const id = Number(e.currentTarget.dataset.id);
+    const options = this.data.signupOptions.map(item => item.id === id && !item.full ? { ...item, selected: !item.selected } : item);
+    this.setData({ signupOptions: options, signupSelection: options.filter(item => item.selected).map(item => item.id) });
+  },
+  confirmSubItemSignup() {
+    if (this.data.signupSelection.length) this.directSignup(this.data.activity, this.data.signupSelection);
+  },
+  openProjectMembers(e) {
+    const id = Number(e.currentTarget.dataset.id);
+    const project = (this.data.activity.subItems || []).find(item => item.id === id);
+    if (!project) return;
+    this.setData({ showProjectMembers: true, projectMemberTitle: project.name,
+      projectMembers: (this.data.activity.participants || []).filter(person => (person.subItemIds || []).includes(id)) });
+  },
+  closeProjectMembers() { this.setData({ showProjectMembers: false }); },
+
   openParticipantsDrawer() {
     this.setData({ showParticipantsDrawer: true });
   },
@@ -872,7 +902,8 @@ Page({
       });
   },
 
-  directSignup(activity) {
+  directSignup(activity, selectedIds) {
+    if (this.data.signupSubmitting) return;
     if (activity.status === "已结束" || activity.status === "已取消" || activity.status === "已流局") {
       wx.showToast({ title: "该活动已结束、取消或流局", icon: "none" });
       return;
@@ -929,11 +960,18 @@ Page({
       this.refreshDetail({ silent: true });
       return;
     }
+    if ((activity.subItems || []).length && !Array.isArray(selectedIds)) {
+      this.setData({ showSubItemSignup: true, signupSelection: [], signupOptions: activity.subItems.map(item => ({ ...item, selected: false, full: item.current_participants >= item.max_participants })) });
+      return;
+    }
+    if ((activity.subItems || []).length && !selectedIds.length) return;
+    this.setData({ signupSubmitting: true });
     wx.showLoading({ title: "报名中..." });
     activityService
-      .signupActivity(activity._id)
+      .signupActivity(activity._id, selectedIds || [])
       .then(() => {
         wx.hideLoading();
+        this.setData({ showSubItemSignup: false, signupSelection: [] });
         wx.showToast({ title: "报名成功", icon: "success" });
         return this.refreshDetail({ silent: true });
       })
@@ -955,7 +993,9 @@ Page({
         } else {
           wx.showToast({ title: msg || "报名失败", icon: "none" });
         }
-      });
+        this.setData({ showSubItemSignup: false, signupSelection: [] });
+        return this.refreshDetail({ silent: true });
+      }).finally(() => this.setData({ signupSubmitting: false }));
   },
 
   checkinActivity(activity) {

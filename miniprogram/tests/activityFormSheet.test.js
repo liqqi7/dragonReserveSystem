@@ -154,12 +154,10 @@ test("remark blur provides a final native-value synchronization fallback", () =>
   assert.equal(context.data.remarkTextareaHeight, 48);
 });
 
-test("all four visible time rows open the expected picker", () => {
+test("both date-time rows open the expected picker", () => {
   const cases = [
     ["startDateTime", "datetime", "选择开始时间", "2026-08-17 19:30"],
-    ["endDateTime", "datetime", "选择结束时间", "2026-08-17 22:00"],
-    ["signupDeadlineDate", "date", "选择报名截止日期", "2026-08-17"],
-    ["signupDeadlineTime", "time", "选择报名截止时间", "18:30"]
+    ["endDateTime", "datetime", "选择结束时间", "2026-08-17 22:00"]
   ];
 
   for (const [target, mode, title, value] of cases) {
@@ -204,7 +202,7 @@ test("datetime confirmation updates both date and time and closes picker", () =>
   });
   assert.equal(startContext.data.form.startDate, "2026-08-18");
   assert.equal(startContext.data.form.startTime, "20:05");
-  assert.equal(startContext.data.startDateTimeLabel, "08/18 20:05");
+  assert.equal(startContext.data.startDateTimeLabel, "2026/08/18 20:05");
   assert.equal(startContext.data.pickerVisible, false);
 
   const endContext = createContext(definition, { pickerTarget: "endDateTime", pickerVisible: true });
@@ -213,7 +211,7 @@ test("datetime confirmation updates both date and time and closes picker", () =>
   });
   assert.equal(endContext.data.form.endDate, "2026-08-18");
   assert.equal(endContext.data.form.endTime, "23:10");
-  assert.equal(endContext.data.endDateTimeLabel, "08/18 23:10");
+  assert.equal(endContext.data.endDateTimeLabel, "2026/08/18 23:10");
   assert.equal(endContext.data.pickerVisible, false);
 });
 
@@ -227,10 +225,10 @@ test("form markup keeps prototype labels, placeholders and full-row tap targets"
   assert.match(wxml, />活动封面<\/text>/);
   assert.match(wxml, /data-target="startDateTime"/);
   assert.match(wxml, /data-target="endDateTime"/);
-  assert.match(wxml, /data-target="signupDeadlineDate"/);
-  assert.match(wxml, /data-target="signupDeadlineTime"/);
-  assert.match(wxml, />日期<\/text>/);
-  assert.match(wxml, />时间<\/text>/);
+  assert.doesNotMatch(wxml, /data-target="signupDeadlineDate"/);
+  assert.doesNotMatch(wxml, /data-target="signupDeadlineTime"/);
+  assert.match(wxml, /activity-subitems-editor/);
+  assert.doesNotMatch(wxml, />报名截止<\/text>/);
   assert.match(wxml, />活动备注<\/text>/);
   assert.doesNotMatch(wxml, /活动备注（选填）/);
   assert.match(wxml, /placeholder="请输入活动名称"/);
@@ -649,4 +647,12 @@ test("edit activity cancellation uses the shared warning dialog before emitting 
   assert.match(wxml, /<create-access-dialog[\s\S]*?id="qaCancelActivityDialog"[\s\S]*?bindconfirm="confirmCancelActivity"/);
   assert.match(js, /onCancelActivity\(\)[\s\S]*?selectComponent\("#qaCancelActivityDialog"\)[\s\S]*?title:\s*"确认取消活动？"[\s\S]*?confirmText:\s*"确认取消"[\s\S]*?confirmBehavior:\s*"emit"/);
   assert.match(js, /confirmCancelActivity\(\)[\s\S]*?this\.triggerEvent\("cancelactivity"\)/);
+});
+
+test("removed deadline targets cannot open a picker", () => {
+  for (const target of ["signupDeadlineDate", "signupDeadlineTime"]) {
+    const context = createContext(definition);
+    definition.methods.openDateTimePicker.call(context, { currentTarget: { dataset: { target } } });
+    assert.notEqual(context.data.pickerVisible, true);
+  }
 });

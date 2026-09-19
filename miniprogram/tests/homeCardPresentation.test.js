@@ -27,7 +27,8 @@ function harness() {
   const c = clock(), requests = [], logs = [], tabCalls = [], prefetchCalls = [];
   let definition;
   const app = { globalData: {} };
-  const wx = { nextTick: fn => fn(), getImageInfo: req => requests.push(req), getStorageSync: () => "" };
+  const navigationCalls = [];
+  const wx = { nextTick: fn => fn(), getImageInfo: req => requests.push(req), getStorageSync: () => "", navigateTo: options => navigationCalls.push(options) };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../pages/activity_list/activity_list.js'), 'utf8'), {
     Page: p => { definition = p; }, getApp: () => app, wx, console,
     Date: class extends Date { static now() { return c.now(); } },
@@ -68,7 +69,7 @@ function harness() {
     assert.ok(req, `preloaded ${url} without swiper callbacks`);
     req.success({ path: `/local/${url}` });
   };
-  return { page, c, requests, logs, tabCalls, prefetchCalls, app, setGroups, ready };
+  return { page, c, requests, logs, tabCalls, prefetchCalls, navigationCalls, app, setGroups, ready };
 }
 const big = (id, cover = `cover-${id}`, glass = `glass-${id}`) => ({ _id: String(id), largeCardBgImageUrl: cover, largeCardGlassImageUrl: glass });
 const small = id => ({ _id: String(id), smallCardBgImageUrl: `small-${id}` });
@@ -80,6 +81,18 @@ test('Tab appears after first frame even when the activity request never returns
   assert.equal(h.page._coldStartTabEntrancePending, false);
   assert.deepEqual(h.tabCalls.map(x => x[0]), [false]);
   assert.equal(h.tabCalls[0][1].animate, true);
+});
+
+test('card navigation does not wait for asynchronous home media readiness', () => {
+  const h = harness();
+  h.page.showDetail({
+    currentTarget: { dataset: { activity: { _id: 'pending-card', _homeMediaReady: false } } }
+  });
+  assert.equal(h.navigationCalls.length, 1);
+  assert.equal(
+    h.navigationCalls[0].url,
+    '/pages/activity_detail/activity_detail?id=pending-card'
+  );
 });
 
 test('a missing glass callback never blocks other cards or the Tab, even after 60 seconds', () => {

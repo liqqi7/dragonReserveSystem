@@ -22,6 +22,7 @@ from app.schemas.activity import (
     ActivityCheckinRequest,
     ActivitySharePreviewResponse,
     ActivitySignupResponse,
+    ActivitySignupRequest,
 )
 from app.schemas.activity_v2 import (
     ActivityCoverArtistResponse,
@@ -49,6 +50,7 @@ from app.services.activity_service import (
     remove_participant,
     signup_activity,
     update_activity,
+    replace_sub_items,
 )
 from app.services.activity_share_preview_service import get_or_create_activity_share_preview
 from app.services.activity_weather_service import ensure_weather_snapshot, get_activity_weather_snapshot
@@ -71,8 +73,12 @@ def _absolute_media_url(request: Request, image_url: str | None) -> str | None:
     return f"{base_url}{image_url}"
 
 
-def _response(activity: Activity, request: Request) -> ActivityV2Response:
+def _response(activity: Activity, request: Request, user: User | None = None) -> ActivityV2Response:
     payload = ActivityV2Response.model_validate(activity, from_attributes=True).model_dump()
+    selected = {item_id for participant in activity.participants
+                if user and participant.user_id == user.id for item_id in participant.sub_item_ids}
+    for item in payload["sub_items"]:
+        item["signed_up"] = item["id"] in selected
     payload["activity_cover"] = get_activity_cover(activity.activity_cover_id, _base_url(request))
     return ActivityV2Response(**payload)
 
@@ -120,7 +126,7 @@ def get_activities_v2(
     db: Session = Depends(get_db),
     _: User | None = Depends(get_optional_current_user),
 ) -> list[ActivityV2Response]:
-    return [_response(activity, request) for activity in list_activities(db)]
+    return [_response(activity, request, _) for activity in list_activities(db)]
 
 
 @router.get("/activities/me/signed-up", response_model=list[ActivityV2Response])
@@ -129,7 +135,7 @@ def get_my_activities_v2(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> list[ActivityV2Response]:
-    return [_response(activity, request) for activity in list_my_activities(db, current_user)]
+    return [_response(activity, request, current_user) for activity in list_my_activities(db, current_user)]
 
 
 @router.get("/activities/{activity_id}", response_model=ActivityDetailV2Response)
@@ -140,7 +146,7 @@ def get_activity_v2(
     _: User | None = Depends(get_optional_current_user),
 ) -> ActivityDetailV2Response:
     activity = get_activity_by_id(db, activity_id)
-    payload = _response(activity, request).model_dump()
+    payload = _response(activity, request, _).model_dump()
     return ActivityDetailV2Response(
         **payload,
         weather=get_activity_weather_snapshot(db, activity.id),
@@ -155,7 +161,7 @@ def post_activity_v2(
     current_user: User = Depends(require_activity_create_permission),
 ) -> ActivityV2Response:
     activity = Activity(
-        **payload.model_dump(),
+        **payload.model_dump(exclude={"sub_items", "signup_deadline"}),
         status="未开始",
         activity_type=None,
         activity_style_key=None,
@@ -164,14 +170,16 @@ def post_activity_v2(
     db.add(activity)
     db.flush()
     _sync_activity_status(activity, _app_now())
-    db.add(
-        ActivityParticipant(
-            activity_id=activity.id,
-            user_id=current_user.id,
-            display_nickname=current_user.nickname,
-            display_avatar_url=current_user.avatar_url,
+    replace_sub_items(activity, [item.model_dump() for item in payload.sub_items])
+    if not activity.sub_items:
+        db.add(
+            ActivityParticipant(
+                activity_id=activity.id,
+                user_id=current_user.id,
+                display_nickname=current_user.nickname,
+                display_avatar_url=current_user.avatar_url,
+            )
         )
-    )
     ensure_weather_snapshot(db, activity)
     db.commit()
     return _response(get_activity_by_id(db, activity.id), request)
@@ -203,15 +211,17 @@ def delete_activity_v2(
 @router.post("/activities/{activity_id}/signup", response_model=ActivitySignupResponse)
 def post_signup_v2(
     activity_id: int,
+    payload: ActivitySignupRequest | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_activity_signup_permission),
 ) -> ActivitySignupResponse:
     activity = get_activity_by_id(db, activity_id)
-    participant = signup_activity(db, activity, current_user)
+    participant = signup_activity(db, activity, current_user, payload.sub_item_ids if payload else None)
     return ActivitySignupResponse(
         activity_id=activity.id,
         participant_id=participant.id,
         status="signed_up",
+        sub_item_ids=participant.sub_item_ids,
     )
 
 
@@ -267,7 +277,7 @@ def patch_activity_v2(
 ) -> ActivityV2Response:
     activity = get_activity_by_id(db, activity_id)
     _require_activity_manager(activity, current_user)
-    return _response(update_activity(db, activity, payload, actor=current_user), request)
+    return _response(update_activity(db, activity, payload, actor=current_user), request, current_user)
 
 
 @router.delete(

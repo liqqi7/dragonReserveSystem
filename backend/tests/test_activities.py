@@ -33,7 +33,7 @@ def test_activity_does_not_flow_before_signup_deadline() -> None:
     assert activity.status == "未开始"
 
 
-def test_activity_flows_at_signup_deadline_when_fewer_than_three_people() -> None:
+def test_historical_signup_deadline_does_not_flow_before_start() -> None:
     now = datetime(2026, 8, 20, 10, 0, 0)
     activity = _activity_for_status_sync(
         now=now,
@@ -41,8 +41,8 @@ def test_activity_flows_at_signup_deadline_when_fewer_than_three_people() -> Non
         signup_deadline=now,
     )
 
-    assert _sync_activity_status(activity, now) is True
-    assert activity.status == "已流局"
+    assert _sync_activity_status(activity, now) is False
+    assert activity.status == "未开始"
 
 
 def test_activity_does_not_flow_at_signup_deadline_with_three_people() -> None:
@@ -256,14 +256,14 @@ def test_activity_name_and_remark_constraints(client, admin_headers) -> None:
     max_length_remark = client.post(
         "/api/v1/activities",
         headers=admin_headers,
-        json={**base_payload, "remark": "备" * 120},
+        json={**base_payload, "remark": "备" * 200},
     )
     assert max_length_remark.status_code == 201
 
     too_long_remark = client.post(
         "/api/v1/activities",
         headers=admin_headers,
-        json={**base_payload, "remark": "备" * 121},
+        json={**base_payload, "remark": "备" * 201},
     )
     assert too_long_remark.status_code == 422
 
@@ -284,7 +284,7 @@ def test_activity_name_and_remark_constraints(client, admin_headers) -> None:
     update_too_long_remark = client.patch(
         f"/api/v1/activities/{activity_id}",
         headers=admin_headers,
-        json={"remark": "备" * 121},
+        json={"remark": "备" * 201},
     )
     assert update_too_long_remark.status_code == 422
 
