@@ -2,10 +2,13 @@ const ACTION_OFFSET_RPX = 138.46;
 const ACTION_AREA_WIDTH_RPX = 130.77;
 const SWIPE_OPEN_THRESHOLD_RATIO = 0.25;
 const SWIPE_CLOSE_THRESHOLD_RATIO = 0.15;
-const INSERT_ANIMATION_MS = 280;
+const INSERT_ACTIVATION_DELAY_MS = 32;
+const INSERT_ANIMATION_MS = 320;
 const CONTENT_ENTER_ANIMATION_MS = 360;
 const CONTENT_EXIT_ANIMATION_MS = 360;
-const ITEM_REMOVE_ANIMATION_MS = 220;
+const ITEM_REMOVE_EXIT_ANIMATION_MS = 220;
+const ITEM_REMOVE_COLLAPSE_ANIMATION_MS = 260;
+const ITEM_REMOVE_ANIMATION_MS = ITEM_REMOVE_EXIT_ANIMATION_MS + ITEM_REMOVE_COLLAPSE_ANIMATION_MS;
 
 function getRpxPerPx() {
   try {
@@ -53,10 +56,12 @@ Component({
   data: {
     rowStates: [],
     insertingIndex: -1,
+    insertVisible: false,
     contentEntering: false,
     contentLeaving: false,
     renderContent: false,
-    removingIndex: -1
+    removingIndex: -1,
+    removalPhase: ""
   },
   observers: {
     enabled(enabled) {
@@ -85,13 +90,28 @@ Component({
       }, CONTENT_EXIT_ANIMATION_MS);
     },
     items(items) {
+      const list = Array.isArray(items) ? items : [];
       const previous = Array.isArray(this.data.rowStates) ? this.data.rowStates : [];
-      const next = (Array.isArray(items) ? items : []).map((item, index) => {
+      const removedIndex = this._pendingRemovedIndex;
+      const removalCommitted = Number.isInteger(removedIndex)
+        && list.length === Math.max(0, previous.length - 1);
+      const reusable = removalCommitted
+        ? previous.filter((_, index) => index !== removedIndex)
+        : previous;
+      const next = list.map((item, index) => {
         const key = rowKey(item, index);
-        const prior = previous.find(row => row.key === key);
-        return prior || { key, offsetX: 0, actionOpen: false };
+        const prior = removalCommitted ? reusable[index] : reusable.find(row => row.key === key);
+        return prior
+          ? { ...prior, key }
+          : { key, offsetX: 0, actionOpen: false };
       });
-      this.setData({ rowStates: next });
+      const patch = { rowStates: next };
+      if (removalCommitted) {
+        patch.removingIndex = -1;
+        patch.removalPhase = "";
+        this._pendingRemovedIndex = null;
+      }
+      this.setData(patch);
     }
   },
 
@@ -103,15 +123,21 @@ Component({
         renderContent: Boolean(this.properties.enabled),
         contentLeaving: false,
         contentEntering: false,
+        insertingIndex: -1,
+        insertVisible: false,
         removingIndex: -1,
+        removalPhase: "",
         rowStates: items.map((item, index) => ({ key: rowKey(item, index), offsetX: 0, actionOpen: false }))
       });
     },
     detached() {
+      clearTimeout(this._insertStartTimer);
       clearTimeout(this._insertTimer);
       clearTimeout(this._contentEnterTimer);
       clearTimeout(this._contentExitTimer);
+      clearTimeout(this._removeExitTimer);
       clearTimeout(this._removeTimer);
+      this._pendingRemovedIndex = null;
       this._gesture = null;
     }
   },
@@ -156,16 +182,20 @@ Component({
       const insertingIndex = items.length;
       const quota = getQuota(this.properties.maxParticipants);
       const nextItems = [...items, { name: "", max_participants: Math.min(12, quota) }];
-      this.setData({ insertingIndex }, () => {
-        // Paint the inserting row's initial state before mounting the new item data.
-        // This keeps Skyline from batching the class change away and makes the fade-in visible.
+      this.setData({ insertingIndex, insertVisible: false }, () => {
         this.emit(nextItems);
+        clearTimeout(this._insertStartTimer);
         clearTimeout(this._insertTimer);
-        this._insertTimer = setTimeout(() => {
-          this._insertTimer = null;
-          this.setData({ insertingIndex: -1 });
-        }, INSERT_ANIMATION_MS);
-        if (this._insertTimer && typeof this._insertTimer.unref === "function") this._insertTimer.unref();
+        this._insertStartTimer = setTimeout(() => {
+          this._insertStartTimer = null;
+          this.setData({ insertVisible: true });
+          this._insertTimer = setTimeout(() => {
+            this._insertTimer = null;
+            this.setData({ insertingIndex: -1, insertVisible: false });
+          }, INSERT_ANIMATION_MS);
+          if (this._insertTimer && typeof this._insertTimer.unref === "function") this._insertTimer.unref();
+        }, INSERT_ACTIVATION_DELAY_MS);
+        if (this._insertStartTimer && typeof this._insertStartTimer.unref === "function") this._insertStartTimer.unref();
       });
     },
 
@@ -268,15 +298,27 @@ Component({
         wx.showToast({ title: "已有报名的子项目不能删除", icon: "none" });
         return;
       }
-      this.setData({ removingIndex: index });
+      this.setData({ removingIndex: index, removalPhase: "exiting" });
+      clearTimeout(this._removeExitTimer);
       clearTimeout(this._removeTimer);
-      this._removeTimer = setTimeout(() => {
-        this._removeTimer = null;
-        const items = Array.isArray(this.properties.items) ? this.properties.items : [];
-        this.emit(items.filter((_, itemIndex) => itemIndex !== index));
-        this.setData({ rowStates: [], insertingIndex: -1, removingIndex: -1 });
-        this._gesture = null;
-      }, ITEM_REMOVE_ANIMATION_MS);
+      this._removeExitTimer = setTimeout(() => {
+        this._removeExitTimer = null;
+        this.setData({ removalPhase: "collapsing" });
+        this._removeTimer = setTimeout(() => {
+          this._removeTimer = null;
+          const items = Array.isArray(this.properties.items) ? this.properties.items : [];
+          this._pendingRemovedIndex = index;
+          // Keep the zero-height placeholder mounted while the parent replaces the
+          // array. The committing state has no exit animation, so an index reused by
+          // Skyline cannot make the next row inherit the deleted row's motion.
+          this.setData({ removalPhase: "committing" }, () => {
+            this.emit(items.filter((_, itemIndex) => itemIndex !== index));
+          });
+          this._gesture = null;
+        }, ITEM_REMOVE_COLLAPSE_ANIMATION_MS);
+        if (this._removeTimer && typeof this._removeTimer.unref === "function") this._removeTimer.unref();
+      }, ITEM_REMOVE_EXIT_ANIMATION_MS);
+      if (this._removeExitTimer && typeof this._removeExitTimer.unref === "function") this._removeExitTimer.unref();
     }
   }
 });
@@ -287,9 +329,12 @@ if (typeof module !== "undefined") {
     ACTION_AREA_WIDTH_RPX,
     SWIPE_OPEN_THRESHOLD_RATIO,
     SWIPE_CLOSE_THRESHOLD_RATIO,
+    INSERT_ACTIVATION_DELAY_MS,
     INSERT_ANIMATION_MS,
     CONTENT_ENTER_ANIMATION_MS,
     CONTENT_EXIT_ANIMATION_MS,
+    ITEM_REMOVE_EXIT_ANIMATION_MS,
+    ITEM_REMOVE_COLLAPSE_ANIMATION_MS,
     ITEM_REMOVE_ANIMATION_MS,
     clamp,
     getSwipeSettledState

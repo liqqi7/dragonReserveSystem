@@ -45,7 +45,7 @@ test("home carousels use native Skyline swiper paging", () => {
   assert.equal((wxml.match(/<swiper(?:\s|>)/g) || []).length, 4);
   assert.equal((wxml.match(/bindchange="onGroupSwiperChange"/g) || []).length, 4);
   assert.equal((wxml.match(/cache-extent="1"/g) || []).length, 4);
-  assert.equal((wxml.match(/duration="300"/g) || []).length, 4);
+  assert.equal((wxml.match(/duration="180"/g) || []).length, 4);
   assert.equal((wxml.match(/easing-function="easeOutCubic"/g) || []).length, 4);
   assert.match(wxml, /id="qaJoinedCardSwiper"[\s\S]*class="cards-swiper large-cards-swiper"/);
   assert.equal((wxml.match(/class="cards-swiper small-cards-swiper"/g) || []).length, 3);

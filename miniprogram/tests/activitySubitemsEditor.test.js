@@ -26,7 +26,11 @@ function context(items, locked = false, maxParticipants = 12) {
       }))
     },
     triggerEvent(name, detail) { this.result = detail; },
-    setData(patch, callback) { Object.assign(this.data, patch); if (callback) callback(); }
+    setData(patch, callback) { Object.assign(this.data, patch); if (callback) callback(); },
+    syncItems(itemsToSync = this.result.items) {
+      this.properties.items = itemsToSync;
+      definition.observers.items.call(this, itemsToSync);
+    }
   };
 }
 
@@ -37,11 +41,39 @@ test("subitems editor caps projects at four and inserts a default item with anim
   assert.equal(c.result.items[0].id, 1);
   assert.deepEqual(c.result.items[1], { name: "", max_participants: 12 });
   assert.equal(c.data.insertingIndex, 1);
+  assert.equal(c.data.insertVisible, false);
 
   c.properties.items = Array.from({ length: 4 }, () => ({ name: "A" }));
   c.result = null;
   c.add();
   assert.equal(c.result, null);
+});
+
+test("new subitem expands and fades after its transparent first frame", () => {
+  const originalSetTimeout = global.setTimeout;
+  const scheduled = [];
+  global.setTimeout = (callback, delay) => {
+    const timer = { callback, delay, unref() {} };
+    scheduled.push(timer);
+    return timer;
+  };
+  try {
+    const c = context([{ id: 1, name: "A", max_participants: 4 }]);
+    c.add();
+    assert.equal(c.data.insertingIndex, 1);
+    assert.equal(c.data.insertVisible, false);
+    assert.equal(scheduled[0].delay, exported.INSERT_ACTIVATION_DELAY_MS);
+
+    scheduled[0].callback();
+    assert.equal(c.data.insertVisible, true);
+    assert.equal(scheduled[1].delay, exported.INSERT_ANIMATION_MS);
+
+    scheduled[1].callback();
+    assert.equal(c.data.insertingIndex, -1);
+    assert.equal(c.data.insertVisible, false);
+  } finally {
+    global.setTimeout = originalSetTimeout;
+  }
 });
 
 test("subitem capacity and new-item defaults never exceed the activity quota", () => {
@@ -78,15 +110,46 @@ test("occupied subitems cannot be removed and signup locks mode changes", () => 
   }
 });
 
-test("removing an empty subitem preserves stable IDs of other projects and closes swipe state", async () => {
-  const c = context([{ id: 1, current_participants: 0 }, { id: 2, current_participants: 1 }]);
-  c.data.rowStates[0] = { ...c.data.rowStates[0], offsetX: -exported.ACTION_OFFSET_RPX, actionOpen: true };
-  c.remove({ currentTarget: { dataset: { index: 0 } } });
-  assert.equal(c.data.removingIndex, 0);
-  await new Promise(resolve => setTimeout(resolve, exported.ITEM_REMOVE_ANIMATION_MS + 20));
-  assert.deepEqual(c.result.items.map(item => item.id), [2]);
-  assert.deepEqual(c.data.rowStates, []);
-  assert.equal(c.data.insertingIndex, -1);
+test("removing the first subitem exits left, collapses its space, and does not transfer delete state", () => {
+  const originalSetTimeout = global.setTimeout;
+  const scheduled = [];
+  global.setTimeout = (callback, delay) => {
+    const timer = { callback, delay, unref() {} };
+    scheduled.push(timer);
+    return timer;
+  };
+  try {
+    const c = context([
+      { name: "A", current_participants: 0 },
+      { name: "B", current_participants: 0 }
+    ]);
+    c.data.rowStates[0] = {
+      ...c.data.rowStates[0],
+      offsetX: -exported.ACTION_OFFSET_RPX,
+      actionOpen: true
+    };
+    c.remove({ currentTarget: { dataset: { index: 0 } } });
+    assert.equal(c.data.removingIndex, 0);
+    assert.equal(c.data.removalPhase, "exiting");
+    assert.equal(scheduled[0].delay, exported.ITEM_REMOVE_EXIT_ANIMATION_MS);
+
+    scheduled[0].callback();
+    assert.equal(c.data.removalPhase, "collapsing");
+    assert.equal(scheduled[1].delay, exported.ITEM_REMOVE_COLLAPSE_ANIMATION_MS);
+
+    scheduled[1].callback();
+    assert.equal(c.data.removalPhase, "committing");
+    assert.deepEqual(c.result.items.map(item => item.name), ["B"]);
+    c.syncItems();
+    assert.equal(c.data.rowStates.length, 1);
+    assert.equal(c.data.rowStates[0].key, "subitem-new-0");
+    assert.equal(c.data.rowStates[0].offsetX, 0);
+    assert.equal(c.data.rowStates[0].actionOpen, false);
+    assert.equal(c.data.removingIndex, -1);
+    assert.equal(c.data.removalPhase, "");
+  } finally {
+    global.setTimeout = originalSetTimeout;
+  }
 });
 
 
@@ -94,13 +157,13 @@ test("switching off fades the content before unmounting it", async () => {
   const c = context([{ id: 1 }]);
   c.data.renderContent = true;
   c.toggle({ detail: { value: false } });
-  assert.deepEqual(c.result, { items: [{ id: 1 }], enabled: false });
+  assert.equal(c.result.enabled, false);
+  assert.equal(c.result.items[0].id, 1);
   assert.equal(c.data.contentLeaving, true);
   assert.equal(c.data.renderContent, true);
   await new Promise(resolve => setTimeout(resolve, exported.CONTENT_EXIT_ANIMATION_MS + 20));
   assert.equal(c.data.renderContent, false);
   assert.equal(c.data.contentLeaving, false);
-  assert.deepEqual(c.result, { items: [{ id: 1 }], enabled: false });
 });
 test("row swipe follows the finger, opens one delete action, and a short right swipe closes it", () => {
   const oldWx = global.wx;
@@ -154,27 +217,43 @@ test("stepper spacing, prototype SVG icons, and dashed add button match the expa
   assert.match(wxss, /\.add-border \{[^}]*position:absolute;[^}]*width:100%;[^}]*height:100%;/);
   assert.match(wxml, /src="\/images\/activity-subitem-add-border\.svg"/);
   assert.match(wxml, /src="\/images\/activity-subitem-minus\.svg"/);
-  assert.equal((wxml.match(/src="\/images\/activity-subitem-plus\.svg"/g) || []).length, 2);
+  assert.equal((wxml.match(/src="\/images\/activity-subitem-plus\.svg"/g) || []).length, 1);
+  assert.match(wxml, /class="step-icon step-plus"/);
+  assert.match(wxss, /\.plus-bar \{[^}]*background:#FF9800;/);
   assert.match(wxml, /src="\/images\/activity-subitem-trash\.svg"/);
   assert.doesNotMatch(wxml, /[−＋]/);
   assert.match(wxml, />添加项目</);
 });
 
-test("expanded content and appended rows use progressive enter animations", () => {
-  assert.equal(exported.INSERT_ANIMATION_MS, 280);
+test("insert and removal animations move surrounding layout without leaking delete state", () => {
+  assert.equal(exported.INSERT_ACTIVATION_DELAY_MS, 32);
+  assert.equal(exported.INSERT_ANIMATION_MS, 320);
   assert.equal(exported.CONTENT_ENTER_ANIMATION_MS, 360);
   assert.equal(exported.CONTENT_EXIT_ANIMATION_MS, 360);
-  assert.equal(exported.ITEM_REMOVE_ANIMATION_MS, 220);
+  assert.equal(exported.ITEM_REMOVE_EXIT_ANIMATION_MS, 220);
+  assert.equal(exported.ITEM_REMOVE_COLLAPSE_ANIMATION_MS, 260);
+  assert.equal(exported.ITEM_REMOVE_ANIMATION_MS, 480);
   assert.match(wxml, /wx:if="{{renderContent}}"/);
   assert.match(wxml, /subitems-content--leaving/);
-  assert.match(wxml, /item-wrap--removing/);
+  assert.match(wxml, /class="item-visual"/);
+  assert.match(wxml, /removalPhase !== 'committing'/);
+  assert.match(wxml, /removalPhase === 'exiting' \? 'item-wrap--removing-exiting'/);
+  assert.match(wxml, /removalPhase === 'collapsing' \? 'item-wrap--removing-collapsing'/);
+  assert.match(wxml, /removalPhase === 'committing' \? 'item-wrap--removing-committing'/);
   assert.match(wxss, /\.subitems-content--leaving \{[^}]*animation-name:subitems-content-leave;[^}]*animation-duration:360ms;[^}]*animation-timing-function:cubic-bezier\(0\.42,0,0\.58,1\);[^}]*animation-fill-mode:forwards;/);
-  assert.match(wxss, /\.item-wrap--removing \{[^}]*animation-name:subitem-remove;[^}]*animation-duration:220ms;[^}]*animation-timing-function:ease-out;[^}]*animation-fill-mode:forwards;/);
+  assert.match(wxss, /\.item-wrap--removing \.item-visual \{[^}]*animation-name:subitem-remove-left;[^}]*animation-duration:220ms;[^}]*animation-fill-mode:forwards;/);
+  assert.match(wxss, /\.item-wrap--removing-collapsing \{ height:0; margin-top:0; transition:height 260ms[^}]*margin-top 260ms/);
+  assert.match(wxss, /\.item-wrap--removing-committing \{ height:0; margin-top:0; pointer-events:none; \}/);
+  assert.match(wxss, /@keyframes subitem-remove-left \{ from \{ opacity:1; transform:translateX\(0\); \} to \{ opacity:0; transform:translateX\(-100%\); \} \}/);
   assert.match(wxml, /subitems-content--entering/);
   assert.match(wxml, /item-wrap--inserting/);
+  assert.match(wxml, /item-wrap--insert-visible/);
+  assert.match(wxml, /wx:for="{{items}}"/);
+  assert.match(wxml, /wx:key="index"/);
   assert.match(wxss, /\.subitems-content--entering \{[^}]*animation-name:subitems-content-enter;[^}]*animation-duration:360ms;[^}]*animation-timing-function:cubic-bezier\(0\.42,0,0\.58,1\);[^}]*animation-fill-mode:forwards;/);
-  assert.match(wxss, /\.item-wrap--inserting \{[^}]*animation-name:subitem-insert;[^}]*animation-duration:280ms;[^}]*animation-timing-function:cubic-bezier\(0\.22,1,0\.36,1\);[^}]*animation-fill-mode:forwards;/);
-  assert.match(wxss, /@keyframes subitem-insert \{ from \{ height:0; margin-top:0; opacity:0; transform:translateY\(15\.38rpx\); \} to \{ height:107\.69rpx; margin-top:15\.38rpx; opacity:1; transform:translateY\(0\); \} \}/);
+  assert.match(wxss, /\.item-wrap--inserting \{[^}]*height:0;[^}]*margin-top:0;[^}]*opacity:0;[^}]*transform:translateY\(11\.54rpx\);[^}]*transition:height 320ms[^}]*opacity 260ms/);
+  assert.match(wxss, /\.item-wrap--inserting\.item-wrap--insert-visible \{ height:107\.69rpx; margin-top:15\.38rpx; opacity:1; transform:translateY\(0\); \}/);
+  assert.doesNotMatch(wxss, /@keyframes subitem-insert/);
   assert.match(wxss, /@keyframes subitems-content-leave \{ from \{ opacity:1; transform:translateY\(0\); \} to \{ opacity:0; transform:translateY\(15\.38rpx\); \} \}/);
 });
 

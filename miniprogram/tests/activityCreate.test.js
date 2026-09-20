@@ -83,8 +83,8 @@ test("cover page keeps the prototype spacing and full-width action", () => {
   assert.match(wxss, /\.gallery-page \{ width:657\.69rpx;/);
   assert.match(wxml, /<view class="wizard" style="padding-top:\{\{statusBarHeight\}\}px;">/);
   assert.doesNotMatch(wxml, /class="wizard"[^>]*padding-bottom/);
-  assert.match(wxml, /<view class="footer" style="bottom:\{\{footerBottomPx\}\}px;">/);
-  assert.doesNotMatch(wxml, /footer" style="padding-bottom/);
+  assert.match(wxml, /<view class="footer" style="padding-bottom:\{\{footerSafeAreaRpx\}\}rpx;">/);
+  assert.doesNotMatch(wxml, /footer" style="bottom:/);
   assert.match(wxss, /\.footer \{[^}]*position:absolute;[^}]*left:0;[^}]*right:0;[^}]*bottom:0;[^}]*padding:23\.08rpx 46\.15rpx 0;[^}]*background:transparent;[^}]*z-index:2;/);
   assert.match(wxml, /<view class="gallery-indicator" aria-hidden="true"><view wx:for="\{\{galleryPages\}\}" wx:key="id" wx:for-item="indicatorPage" wx:for-index="indicatorIndex" class="\{\{galleryCurrent === indicatorIndex \? 'gallery-indicator-active' : 'gallery-indicator-dot'\}\}"><\/view><\/view>/);
   assert.match(wxml, /bindchange="onGalleryChange"/);
@@ -111,6 +111,15 @@ test("activity cover uses the homepage-quality source with the same shimmer and 
   assert.doesNotMatch(wxml, /<image class="cover-image" src="\{\{item\.thumbnailUrl\}\}"/);
   assert.match(wxml, /class="cover-skeleton \{\{coverImageStates\[item\.id\] === 'loaded' \? 'cover-skeleton--revealed' : ''\}\}"/);
   assert.match(wxml, /wx:if="\{\{coverImageStates\[item\.id\] === 'loading'\}\}" class="cover-skeleton-shimmer/);
+  assert.doesNotMatch(wxml, /正在加载封面/);
+  assert.equal((wxml.match(/is="activity-cover-loading-gallery"/g) || []).length, 2);
+  const loadingTemplate = wxml.match(/<template name="activity-cover-loading-gallery">([\s\S]*?)<\/template>/);
+  assert.ok(loadingTemplate);
+  assert.equal((loadingTemplate[1].match(/<view class="cover"/g) || []).length, 4);
+  assert.match(loadingTemplate[1], /class="cover-skeleton-shimmer \{\{shimmerRunning \? 'cover-skeleton-shimmer--running' : ''\}\}"/);
+  assert.match(wxml, /此分类暂无已标注素材，请在“全部”中选择/);
+  assert.match(js, /this\.setData\(\{ loadingCovers: true, coverError: "" \}, \(\) => this\.startCoverSkeletonShimmer\(\)\);/);
+  assert.match(js, /const hasPendingCover = this\.data\.loadingCovers \|\|/);
   assert.match(js, /id: item.id, thumbnailUrl: item.thumbnail_url, imageUrl: item.image_url,/);
   assert.match(js, /coverImageStates: {}, coverSkeletonShimmerRunning: false/);
   assert.match(js, /onCoverImageLoad\(e\) \{/);
@@ -211,15 +220,18 @@ test("wizard markup retains a non-interactive outgoing scene and directional fad
   assert.match(wxss, /@keyframes create-step-enter-forward \{ from \{ transform:translateX\(100%\); opacity:0; \} to \{ transform:translateX\(0\); opacity:1; \} \}/);
   assert.match(wxss, /@keyframes create-step-leave-forward \{ from \{ transform:translateX\(0\); opacity:1; \} to \{ transform:translateX\(-100%\); opacity:0; \} \}/);
 });
-test("footer reserves the same 52px tab-bar footprint plus the runtime safe area", () => {
+test("footer matches the prototype action stack and keeps only the runtime safe area below it", () => {
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const js = fs.readFileSync(path.join(pageDir, "activity_create.js"), "utf8");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
   const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
-  assert.match(js, /getBottomSafeAreaRpx/);
-  assert.match(js, /footerBottomPx: 52 \+ safeBottomPx/);
-  assert.match(wxml, /<view class="footer" style="bottom:\{\{footerBottomPx\}\}px;">/);
+  assert.match(js, /footerSafeAreaRpx: 7\.69/);
+  assert.match(js, /footerSafeAreaRpx = Math\.round\(\(getBottomSafeAreaRpx\(\) \+ 7\.69\) \* 100\) \/ 100/);
+  assert.match(wxml, /<view class="footer" style="padding-bottom:\{\{footerSafeAreaRpx\}\}rpx;">/);
+  assert.doesNotMatch(wxml, /footerBottomPx/);
   assert.match(wxss, /\.footer \{[^}]*bottom:0;[^}]*padding:23\.08rpx 46\.15rpx 0;/);
+  assert.match(wxss, /\.primary \{[^}]*height:107\.69rpx;/);
+  assert.match(wxss, /\.previous \{[^}]*height:76\.92rpx;/);
 });
 test("remark placeholder remains before typing and hides during IME composition", () => {
   const c = context({ form: { remark: "" }, remarkComposing: false });

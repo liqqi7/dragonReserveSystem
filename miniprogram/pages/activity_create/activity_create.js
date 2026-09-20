@@ -17,7 +17,7 @@ Page({
   data: {
     step: 1, form: {}, covers: [], columns: [], galleryPages: [], galleryCurrent: 0, categories: CATEGORIES, category: "全部",
     loadingCovers: true, coverError: "", coverImageStates: {}, coverSkeletonShimmerRunning: false, submitting: false, pickerVisible: false,
-    pickerTarget: "start", pickerValue: "", statusBarHeight: 20, footerBottomPx: 52, startDateDisplay: "", endDateDisplay: "",
+    pickerTarget: "start", pickerValue: "", statusBarHeight: 20, footerSafeAreaRpx: 7.69, startDateDisplay: "", endDateDisplay: "",
     leavingStep: 0, stepTransitioning: false, stepTransitionDirection: "forward", remarkComposing: false, subItemsClosing: false,
     titles: ["选择活动封面", "活动基本信息", "活动细节安排"],
     subtitles: ["都是成年人了，请减少二次元图片的使用", "取个正经名字吧，求求你了", "工作日出去玩的话别让我知道"]
@@ -29,11 +29,8 @@ Page({
     }
     const info = getWindowInfoCompat();
     const initialForm = { ...buildCreateForm(), startDate: "", startTime: "", endDate: "", endTime: "", maxParticipants: 16 };
-    const windowWidth = Number(info.windowWidth);
-    const safeBottomPx = windowWidth > 0
-      ? Math.round(getBottomSafeAreaRpx() * windowWidth / 750 * 100) / 100
-      : 0;
-    this.setData({ form: initialForm, startDateDisplay: String(initialForm.startDate || "").replace(/-/g, "/"), endDateDisplay: String(initialForm.endDate || "").replace(/-/g, "/"), statusBarHeight: info.statusBarHeight || 20, footerBottomPx: 52 + safeBottomPx });
+    const footerSafeAreaRpx = Math.round((getBottomSafeAreaRpx() + 7.69) * 100) / 100;
+    this.setData({ form: initialForm, startDateDisplay: String(initialForm.startDate || "").replace(/-/g, "/"), endDateDisplay: String(initialForm.endDate || "").replace(/-/g, "/"), statusBarHeight: info.statusBarHeight || 20, footerSafeAreaRpx });
     this.loadCovers();
   },
   onReady() {
@@ -50,7 +47,7 @@ Page({
     });
   },
   loadCovers() {
-    this.setData({ loadingCovers: true, coverError: "" });
+    this.setData({ loadingCovers: true, coverError: "" }, () => this.startCoverSkeletonShimmer());
     return activityService.listActivityCovers().then(artists => {
       const covers = (artists || []).flatMap(artist => (artist.artworks || []).map(item => ({
         id: item.id, thumbnailUrl: item.thumbnail_url, imageUrl: item.image_url,
@@ -93,7 +90,7 @@ Page({
     if (this._coverSkeletonShimmerTimer) return;
     const tick = () => {
       const imageStates = this.data.coverImageStates || {};
-      const hasPendingCover = (this.data.galleryPages || []).some(page =>
+      const hasPendingCover = this.data.loadingCovers || (this.data.galleryPages || []).some(page =>
         page.columns.some(column => column.items.some(item => imageStates[item.id] === "loading"))
       );
       if (!hasPendingCover) {

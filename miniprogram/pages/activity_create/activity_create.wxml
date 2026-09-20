@@ -1,3 +1,19 @@
+<template name="activity-cover-loading-gallery">
+  <swiper class="gallery" current="0" circular="{{false}}" duration="0" previous-margin="38.46rpx" next-margin="30.77rpx" aria-label="封面加载中">
+    <swiper-item>
+      <view class="gallery-page">
+        <view class="cover-column">
+          <view class="cover" aria-hidden="{{true}}"><view class="cover-media"><view class="cover-skeleton"><view class="cover-skeleton-shimmer {{shimmerRunning ? 'cover-skeleton-shimmer--running' : ''}}"></view></view></view></view>
+          <view class="cover" aria-hidden="{{true}}"><view class="cover-media"><view class="cover-skeleton"><view class="cover-skeleton-shimmer {{shimmerRunning ? 'cover-skeleton-shimmer--running' : ''}}"></view></view></view></view>
+        </view>
+        <view class="cover-column">
+          <view class="cover" aria-hidden="{{true}}"><view class="cover-media"><view class="cover-skeleton"><view class="cover-skeleton-shimmer {{shimmerRunning ? 'cover-skeleton-shimmer--running' : ''}}"></view></view></view></view>
+          <view class="cover" aria-hidden="{{true}}"><view class="cover-media"><view class="cover-skeleton"><view class="cover-skeleton-shimmer {{shimmerRunning ? 'cover-skeleton-shimmer--running' : ''}}"></view></view></view></view>
+        </view>
+      </view>
+    </swiper-item>
+  </swiper>
+</template>
 <view class="wizard" style="padding-top:{{statusBarHeight}}px;">
   <view class="nav"><view class="back" bindtap="backHome" aria-role="button" aria-label="返回首页"><image class="back-icon" src="/images/activity-create-chevron-left.svg" mode="aspectFit" /></view></view>
   <view class="step-stage">
@@ -6,7 +22,7 @@
         <view class="heading"><text class="title">{{titles[step - 1]}}</text><text class="subtitle">{{subtitles[step - 1]}}</text></view>
         <block wx:if="{{step === 1}}">
           <scroll-view id="categoryScroller" type="list" scroll-x="{{true}}" enable-flex="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}" fast-deceleration="{{true}}" bounces="{{false}}" min-drag-distance="8" class="categories"><view list-item class="category-edge-spacer"></view><view wx:for="{{categories}}" wx:key="*this" list-item class="category-slot"><view class="category {{category === item ? 'category--active' : ''}}" data-category="{{item}}" bindtap="categoryTap"><text>{{item}}</text></view></view><view list-item class="category-edge-spacer"></view></scroll-view>
-          <text wx:if="{{loadingCovers}}" class="empty">正在加载封面…</text>
+          <template wx:if="{{loadingCovers}}" is="activity-cover-loading-gallery" data="{{shimmerRunning: coverSkeletonShimmerRunning}}" />
           <text wx:elif="{{coverError}}" class="empty" bindtap="loadCovers">{{coverError}}</text>
           <text wx:elif="{{!columns.length}}" class="empty">此分类暂无已标注素材，请在“全部”中选择</text>
           <swiper wx:else class="gallery" current="{{galleryCurrent}}" circular="{{false}}" duration="300" easing-function="easeOutCubic" previous-margin="38.46rpx" next-margin="30.77rpx" bindchange="onGalleryChange"><swiper-item wx:for="{{galleryPages}}" wx:key="id" wx:for-item="page"><view class="gallery-page"><view wx:for="{{page.columns}}" wx:key="id" wx:for-item="column" class="cover-column"><view wx:for="{{column.items}}" wx:key="id" class="cover" data-id="{{item.id}}" bindtap="chooseCover"><view class="cover-media"><image class="cover-image" src="{{item.imageUrl}}" mode="aspectFill" fade-in="{{true}}" bindload="onCoverImageLoad" binderror="onCoverImageError" data-id="{{item.id}}" /><view class="cover-skeleton {{coverImageStates[item.id] === 'loaded' ? 'cover-skeleton--revealed' : ''}}" aria-hidden="{{coverImageStates[item.id] === 'loaded' ? true : false}}"><view wx:if="{{coverImageStates[item.id] === 'loading'}}" class="cover-skeleton-shimmer {{coverSkeletonShimmerRunning ? 'cover-skeleton-shimmer--running' : ''}}"></view></view></view><view class="cover-outline {{form.activityCoverId === item.id ? 'cover-outline--selected' : ''}}"></view><view wx:if="{{form.activityCoverId === item.id}}" class="selected"><image class="selected-icon" src="/images/activity-create-check.svg" mode="aspectFit" /></view></view></view></view></swiper-item></swiper><view class="gallery-indicator" aria-hidden="true"><view wx:for="{{galleryPages}}" wx:key="id" wx:for-item="indicatorPage" wx:for-index="indicatorIndex" class="{{galleryCurrent === indicatorIndex ? 'gallery-indicator-active' : 'gallery-indicator-dot'}}"></view></view>
@@ -22,14 +38,14 @@
           <view class="subitems-section"><activity-subitems-editor enabled="{{form.subItemsEnabled}}" items="{{form.subItems}}" max-participants="{{form.maxParticipants}}" bindchange="onSubItemsChange" /></view>
         </view>
       </view>
-      <view class="footer" style="bottom:{{footerBottomPx}}px;"><view class="primary {{submitting || (step === 1 && !form.activityCoverId) ? 'primary--disabled' : ''}}" bindtap="next" aria-role="button" aria-disabled="{{submitting || (step === 1 && !form.activityCoverId)}}"><text>{{submitting ? '发布中…' : (step === 3 ? '立即发布' : '下一步')}}</text></view><view wx:if="{{step > 1}}" class="previous" bindtap="previousStep"><text>返回上一步</text></view></view>
+      <view class="footer" style="padding-bottom:{{footerSafeAreaRpx}}rpx;"><view class="primary {{submitting || (step === 1 && !form.activityCoverId) ? 'primary--disabled' : ''}}" bindtap="next" aria-role="button" aria-disabled="{{submitting || (step === 1 && !form.activityCoverId)}}"><text>{{submitting ? '发布中…' : (step === 3 ? '立即发布' : '下一步')}}</text></view><view wx:if="{{step > 1}}" class="previous" bindtap="previousStep"><text>返回上一步</text></view></view>
     </view>
     <view wx:if="{{leavingStep}}" class="step-scene step-scene--leaving step-scene--leaving--{{stepTransitionDirection}}">
       <view class="body body--step-{{leavingStep}} body--subitems-{{form.subItemsEnabled ? 'open' : 'closed'}}">
         <view class="heading"><text class="title">{{titles[leavingStep - 1]}}</text><text class="subtitle">{{subtitles[leavingStep - 1]}}</text></view>
         <block wx:if="{{leavingStep === 1}}">
           <scroll-view id="leavingCategoryScroller" type="list" scroll-x="{{true}}" enable-flex="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}" fast-deceleration="{{true}}" bounces="{{false}}" min-drag-distance="8" class="categories"><view list-item class="category-edge-spacer"></view><view wx:for="{{categories}}" wx:key="*this" list-item class="category-slot"><view class="category {{category === item ? 'category--active' : ''}}"><text>{{item}}</text></view></view><view list-item class="category-edge-spacer"></view></scroll-view>
-          <text wx:if="{{loadingCovers}}" class="empty">正在加载封面…</text>
+          <template wx:if="{{loadingCovers}}" is="activity-cover-loading-gallery" data="{{shimmerRunning: coverSkeletonShimmerRunning}}" />
           <text wx:elif="{{coverError}}" class="empty">{{coverError}}</text>
           <text wx:elif="{{!columns.length}}" class="empty">此分类暂无已标注素材，请在“全部”中选择</text>
           <swiper wx:else class="gallery" current="{{galleryCurrent}}" circular="{{false}}" duration="300" easing-function="easeOutCubic" previous-margin="38.46rpx" next-margin="30.77rpx"><swiper-item wx:for="{{galleryPages}}" wx:key="id" wx:for-item="page"><view class="gallery-page"><view wx:for="{{page.columns}}" wx:key="id" wx:for-item="column" class="cover-column"><view wx:for="{{column.items}}" wx:key="id" class="cover"><view class="cover-media"><image class="cover-image" src="{{item.imageUrl}}" mode="aspectFill" fade-in="{{true}}" /><view class="cover-skeleton {{coverImageStates[item.id] === 'loaded' ? 'cover-skeleton--revealed' : ''}}" aria-hidden="{{coverImageStates[item.id] === 'loaded' ? true : false}}"><view wx:if="{{coverImageStates[item.id] === 'loading'}}" class="cover-skeleton-shimmer {{coverSkeletonShimmerRunning ? 'cover-skeleton-shimmer--running' : ''}}"></view></view></view><view class="cover-outline {{form.activityCoverId === item.id ? 'cover-outline--selected' : ''}}"></view><view wx:if="{{form.activityCoverId === item.id}}" class="selected"><image class="selected-icon" src="/images/activity-create-check.svg" mode="aspectFit" /></view></view></view></view></swiper-item></swiper><view class="gallery-indicator" aria-hidden="true"><view wx:for="{{galleryPages}}" wx:key="id" wx:for-item="indicatorPage" wx:for-index="indicatorIndex" class="{{galleryCurrent === indicatorIndex ? 'gallery-indicator-active' : 'gallery-indicator-dot'}}"></view></view>
@@ -45,7 +61,7 @@
           <view class="subitems-section"><activity-subitems-editor enabled="{{form.subItemsEnabled}}" items="{{form.subItems}}" max-participants="{{form.maxParticipants}}" /></view>
         </view>
       </view>
-      <view class="footer" style="bottom:{{footerBottomPx}}px;"><view class="primary {{submitting || (leavingStep === 1 && !form.activityCoverId) ? 'primary--disabled' : ''}}" aria-role="button" aria-disabled="{{true}}"><text>{{submitting ? '发布中…' : (leavingStep === 3 ? '立即发布' : '下一步')}}</text></view><view wx:if="{{leavingStep > 1}}" class="previous"><text>返回上一步</text></view></view>
+      <view class="footer" style="padding-bottom:{{footerSafeAreaRpx}}rpx;"><view class="primary {{submitting || (leavingStep === 1 && !form.activityCoverId) ? 'primary--disabled' : ''}}" aria-role="button" aria-disabled="{{true}}"><text>{{submitting ? '发布中…' : (leavingStep === 3 ? '立即发布' : '下一步')}}</text></view><view wx:if="{{leavingStep > 1}}" class="previous"><text>返回上一步</text></view></view>
     </view>
   </view>
   <date-time-picker-sheet visible="{{pickerVisible}}" mode="datetime" title="{{pickerTarget === 'start' ? '开始时间' : '结束时间'}}" value="{{pickerValue}}" minute-step="{{1}}" bindclose="closePicker" bindconfirm="confirmPicker" />
