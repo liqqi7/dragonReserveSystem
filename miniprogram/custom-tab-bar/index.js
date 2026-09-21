@@ -6,6 +6,7 @@ const TAB_GLASS_TUNING = Object.freeze({
 });
 
 const ACTIVITY_LIST_ROUTE = "pages/activity_list/activity_list";
+const TAB_MIN_BOTTOM_GAP_PX = 24;
 const { getBottomSafeAreaRpx, getWindowInfoCompat } = require("../utils/safeArea");
 
 const TAB_URLS = [
@@ -125,6 +126,10 @@ function getBottomSafeAreaCssPx() {
   return Math.round(getBottomSafeAreaRpx() * windowWidth / 750 * 100) / 100;
 }
 
+function getTabBottomInsetCssPx() {
+  return Math.max(TAB_MIN_BOTTOM_GAP_PX, getBottomSafeAreaCssPx());
+}
+
 function syncSelectedFromCurrentRoute(component) {
   const state = getCurrentTabState();
   if (state.selected < 0) return state;
@@ -169,7 +174,7 @@ Component({
     tabGlassBlurRadiusRpx: TAB_GLASS_TUNING.blurRadiusRpx,
     tabGlassBlurOpacity: TAB_GLASS_TUNING.blurLayerOpacity,
     tabGlassFillOpacity: TAB_GLASS_TUNING.whiteFillOpacity,
-    safeBottomPx: 0,
+    bottomInsetPx: TAB_MIN_BOTTOM_GAP_PX,
     modalMaskVisible: false,
     modalMaskOpacity: 0.4
   },
@@ -226,9 +231,9 @@ Component({
     },
 
     syncBottomSafeArea() {
-      const safeBottomPx = getBottomSafeAreaCssPx();
-      if (safeBottomPx !== Number(this.data.safeBottomPx)) {
-        this.setData({ safeBottomPx });
+      const bottomInsetPx = getTabBottomInsetCssPx();
+      if (bottomInsetPx !== Number(this.data.bottomInsetPx)) {
+        this.setData({ bottomInsetPx });
       }
     },
 

@@ -57,8 +57,6 @@
     "skyline": {
       "defaultDisplayBlock": true,
       "defaultContentBox": true,
-      "tagNameStyleIsolation": "legacy",
-      "keyframeStyleIsolation": "legacy",
       "disableABTest": true,
       "sdkVersionBegin": "3.0.0"
     }

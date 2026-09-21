@@ -13,7 +13,7 @@
   bind:clickoverlay="onMaskTap"
   bind:afterleave="onContainerAfterLeave"
 >
-    <view id="qaParticipantsSurface" class="drawer-sheet" style="padding-bottom: {{safeBottomRpx}}rpx;">
+    <view id="qaParticipantsSurface" class="drawer-sheet" style="height: {{drawerHeightRpx}}rpx; max-height: {{maxHeightRpx}}rpx; padding-bottom: {{safeBottomRpx}}rpx;">
     <view class="drawer-handle-zone" aria-label="拖拽区">
       <view class="drawer-handle"></view>
     </view>
