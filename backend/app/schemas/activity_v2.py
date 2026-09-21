@@ -29,6 +29,7 @@ class ActivityCoverArtworkResponse(BaseModel):
     thumbnail_url: str
     image_url: str
     large_card_glass_image_url: str
+    categories: list[str] = Field(default_factory=list)
 
 
 class ActivityCoverArtistResponse(BaseModel):
