@@ -21,6 +21,7 @@ test("participants drawer uses prototype RPX geometry and palette", () => {
   assert.match(wxml, /overlay="{{true}}"[\s\S]*close-on-slide-down="{{false}}"[\s\S]*bind:clickoverlay="onMaskTap"/);
   assert.doesNotMatch(wxml, /draggable-sheet|root-portal|worklet:onsizeupdate|associative-container/);
   assert.match(wxss, /\.drawer-sheet\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;/s);
+  assert.match(wxml, /id="qaParticipantsSurface"[^>]*style="height: \{\{drawerHeightRpx\}\}rpx; max-height: \{\{maxHeightRpx\}\}rpx; padding-bottom: \{\{safeBottomRpx\}\}rpx;"/);
   assert.match(wxss, /\.drawer-body\s*\{[^}]*flex:\s*1 1 0;[^}]*height:\s*0;[^}]*min-height:\s*0;[^}]*padding:\s*15\.38rpx\s+30\.77rpx\s+0;[^}]*display:\s*flex;[^}]*flex-direction:\s*column;/s);
   assert.doesNotMatch(wxss, /participants-drawer-sheet-enter|participants-drawer-mask-enter|@keyframes/);
   assert.match(wxss, /border-radius:\s*46\.15rpx\s+46\.15rpx\s+0\s+0/);

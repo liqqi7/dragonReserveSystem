@@ -69,11 +69,13 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.doesNotMatch(wxml, /material-rounded-states\.svg/);
   assert.doesNotMatch(wxml, /active-positive/);
 
-  assert.match(wxml, /style="height: calc\(52px \+ \{\{safeBottomPx\}\}px\); padding-bottom: \{\{safeBottomPx\}\}px;"/);
+  assert.match(wxml, /style="height: calc\(52px \+ \{\{bottomInsetPx\}\}px\); padding-bottom: \{\{bottomInsetPx\}\}px;"/);
   assert.match(js, /function getBottomSafeAreaCssPx\(\)/);
   assert.match(js, /getBottomSafeAreaRpx\(\) \* windowWidth \/ 750/);
-  assert.match(js, /safeBottomPx:\s*0/);
-  assert.doesNotMatch(js, /safeBottomRpx:\s*0/);
+  assert.match(js, /const TAB_MIN_BOTTOM_GAP_PX = 24/);
+  assert.match(js, /function getTabBottomInsetCssPx\(\)[\s\S]*?Math\.max\(TAB_MIN_BOTTOM_GAP_PX, getBottomSafeAreaCssPx\(\)\)/);
+  assert.match(js, /bottomInsetPx:\s*TAB_MIN_BOTTOM_GAP_PX/);
+  assert.doesNotMatch(js, /safeBottom(?:Px|Rpx):\s*0/);
   assert.doesNotMatch(wxss, /107\.69231rpx|safe-area-inset-bottom/);
   assert.doesNotMatch(wxml, /107\.69231rpx|safe-area-inset-bottom/);
   assert.match(wxss, /background:\s*transparent/);

@@ -1,4 +1,4 @@
-<view id="qa-custom-tab-bar" class="tab-bar-wrap {{!hidden && !entering ? 'tab-bar-wrap--visible' : ''}}" hidden="{{hidden}}" style="height: calc(52px + {{safeBottomPx}}px); padding-bottom: {{safeBottomPx}}px;">
+<view id="qa-custom-tab-bar" class="tab-bar-wrap {{!hidden && !entering ? 'tab-bar-wrap--visible' : ''}}" hidden="{{hidden}}" style="height: calc(52px + {{bottomInsetPx}}px); padding-bottom: {{bottomInsetPx}}px;">
   <view id="qa-tab-glass" class="tab-items-wrap {{modalMaskVisible ? 'tab-items-wrap--modal' : ''}}">
     <view id="qa-tab-glass-blur" class="tab-glass-blur" style="opacity: {{tabGlassBlurOpacity}}; -webkit-backdrop-filter: blur({{tabGlassBlurRadiusRpx}}rpx); backdrop-filter: blur({{tabGlassBlurRadiusRpx}}rpx);"></view>
     <view id="qa-tab-glass-fill" class="tab-glass-fill" style="background: rgba(255, 255, 255, {{tabGlassFillOpacity}});"></view>
