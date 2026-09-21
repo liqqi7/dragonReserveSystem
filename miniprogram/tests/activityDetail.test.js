@@ -110,19 +110,20 @@ test("activity remark uses measured one-line overflow and restores the prototype
   assert.match(wxml, /remark-toggle-text-active' : 'remark-toggle-text-out-down'\}\}">收起<\/text>/);
   assert.match(wxml, /class="hero-remark"[\s\S]*?overflow="ellipsis"[\s\S]*?max-lines="\{\{remarkExpanded \? 999 : 1\}\}"/);
   assert.match(wxml, /class="remark-chevron-rotator" style="transform: rotate\(\{\{remarkToggleRotationDeg\}\}deg\);"[\s\S]*?<view class="remark-chevron"><\/view>/);
-  assert.match(wxml, /class="hero-remark-measure"/);
+  assert.doesNotMatch(wxml, /class="hero-remark-measure"/);
   assert.match(wxml, /class="hero-remark-full-measure"/);
   assert.match(wxml, /class="hero-remark-viewport"/);
   assert.match(wxml, /class="remark-toggle-measure"/);
   assert.match(js, /updateRemarkOverflow\(\)/);
   assert.match(js, /select\("\.hero-remark-row"\)\.boundingClientRect\(\)/);
-  assert.match(js, /select\("\.hero-remark-measure"\)\.boundingClientRect\(\)/);
+  assert.doesNotMatch(js, /select\("\.hero-remark-measure"\)\.boundingClientRect\(\)/);
   assert.match(js, /select\("\.remark-toggle-measure"\)\.boundingClientRect\(\)/);
   assert.match(js, /select\("\.hero-remark-full-measure"\)\.boundingClientRect\(\)/);
-  assert.match(js, /naturalTextOverflowsRow = naturalTextWidth > rowWidth \+ 0\.5/);
-  assert.match(js, /if \(!naturalTextOverflowsRow\) \{[\s\S]*?remarkExpandable:\s*false/);
+  assert.match(js, /collapsedHeight = Math\.ceil\(Math\.max\(1, Number\(toggleRect\.height\) \|\| 0\)\)/);
+  assert.match(js, /textOverflowsOneLine = fullRowHeight > collapsedHeight \+ 0\.5/);
+  assert.match(js, /if \(!textOverflowsOneLine\) \{[\s\S]*?remarkExpandable:\s*false/);
   assert.match(js, /availableTextWidth = Math\.max\(0, rowWidth - toggleWidth - 7\.69\)/);
-  assert.doesNotMatch(js, /textRect\.width > availableTextWidth/);
+  assert.doesNotMatch(js, /naturalTextWidth/);
   assert.doesNotMatch(js, /remark\.length\s*>/);
   assert.match(wxss, /\.hero-remark-viewport\s*\{[^}]*overflow:\s*hidden;[^}]*transition:\s*height 260ms/s);
   assert.match(wxss, /\.hero-copy\s*\{[^}]*left:\s*38\.46rpx;[^}]*right:\s*38\.46rpx;/s);
@@ -141,10 +142,10 @@ test("activity remark uses measured one-line overflow and restores the prototype
   assert.match(wxml, /<\/view>\s*<\/view>\s*<!-- 测量节点必须放在 hero-copy 外/);
 });
 
-function measureRemarkOverflow({ rowWidth, naturalTextWidth, toggleWidth, expandedHeight, textHeight = 20, toggleHeight = 20, status = "未开始" }) {
+function measureRemarkOverflow({ rowWidth, fullRowHeight, toggleWidth, expandedHeight, toggleHeight = 20, status = "未开始" }) {
   const vm = require("node:vm");
   let page;
-  let fullMeasureRequested = false;
+  let fullMeasureCount = 0;
   const wx = {
     nextTick(callback) { callback(); },
     createSelectorQuery() {
@@ -154,13 +155,13 @@ function measureRemarkOverflow({ rowWidth, naturalTextWidth, toggleWidth, expand
         boundingClientRect() { return this; },
         exec(callback) {
           if (selectors.includes(".hero-remark-full-measure")) {
-            fullMeasureRequested = true;
-            callback([{ height: expandedHeight }]);
+            const height = fullMeasureCount === 0 ? fullRowHeight : expandedHeight;
+            fullMeasureCount += 1;
+            callback([{ height }]);
             return;
           }
           callback([
             { width: rowWidth },
-            { width: naturalTextWidth, height: textHeight },
             { width: toggleWidth, height: toggleHeight }
           ]);
         }
@@ -188,32 +189,46 @@ function measureRemarkOverflow({ rowWidth, naturalTextWidth, toggleWidth, expand
       if (typeof callback === "function") callback();
     }
   });
-  return { data, fullMeasureRequested };
+  return { data, fullMeasureCount };
 }
 
-test("activity remark only reserves toggle space after the text truly overflows the full row", () => {
+test("activity remark detects wrapping by height on PC, phone and DevTools", () => {
   const singleLine = measureRemarkOverflow({
     rowWidth: 250,
-    naturalTextWidth: 220,
+    fullRowHeight: 20,
     toggleWidth: 60,
-    expandedHeight: 40,
+    expandedHeight: 20,
     status: "已结束"
   });
   assert.equal(singleLine.data.remarkExpandable, false);
   assert.equal(singleLine.data.remarkExpanded, false);
-  assert.equal(singleLine.fullMeasureRequested, false);
+  assert.equal(singleLine.data.remarkViewportHeightPx, 20);
+  assert.equal(singleLine.fullMeasureCount, 1);
 
   const multiLine = measureRemarkOverflow({
     rowWidth: 250,
-    naturalTextWidth: 251,
+    fullRowHeight: 40,
     toggleWidth: 60,
-    expandedHeight: 40,
-    status: "已结束"
+    expandedHeight: 60,
+    status: "未开始"
   });
   assert.equal(multiLine.data.remarkExpandable, true);
-  assert.equal(multiLine.data.remarkExpanded, true);
-  assert.equal(multiLine.data.remarkViewportHeightPx, 40);
-  assert.equal(multiLine.fullMeasureRequested, true);
+  assert.equal(multiLine.data.remarkExpanded, false);
+  assert.equal(multiLine.data.remarkViewportHeightPx, 20);
+  assert.equal(multiLine.data.remarkExpandedHeightPx, 60);
+  assert.equal(multiLine.data.remarkTextWidthPx, 182.31);
+  assert.equal(multiLine.fullMeasureCount, 2);
+
+  const ended = measureRemarkOverflow({
+    rowWidth: 250,
+    fullRowHeight: 40,
+    toggleWidth: 60,
+    expandedHeight: 60,
+    status: "已结束"
+  });
+  assert.equal(ended.data.remarkExpandable, true);
+  assert.equal(ended.data.remarkExpanded, true);
+  assert.equal(ended.data.remarkViewportHeightPx, 60);
 });
 
 test("activity detail calculates and formats location distance", () => {
@@ -281,7 +296,7 @@ test("primary action keeps signup, cancel, checkin and disabled business states"
 test("signup permission is enforced before the signup request and guides guests to Profile", () => {
   assert.match(js, /showSignupPermissionDenied\(\)\s*\{[\s\S]*?title:\s*"暂无报名权限"[\s\S]*?confirmText:\s*"去我的"[\s\S]*?wx\.switchTab\(\{\s*url:\s*"\/pages\/profile\/profile"\s*\}\)/);
   assert.match(js, /const userRole = app\.globalData\.userRole \|\| wx\.getStorageSync\("userRole"\) \|\| "guest";\s*if \(userRole !== "user" && userRole !== "admin"\) \{\s*this\.showSignupPermissionDenied\(\);\s*return;/s);
-  assert.ok(js.indexOf('if (userRole !== "user" && userRole !== "admin")') < js.indexOf('.signupActivity(activity._id)'));
+  assert.ok(js.indexOf('if (userRole !== "user" && userRole !== "admin")') < js.indexOf('.signupActivity(activity._id,'));
 });
 
 test("activity detail keeps QA anchors and the existing participants drawer", () => {
@@ -302,6 +317,17 @@ test("activity detail keeps QA anchors and the existing participants drawer", ()
   assert.match(wxml, /bindretrocheckin="adminRetroCheckin"/);
   assert.match(wxml, /bindcancelcheckin="adminCancelCheckin"/);
   assert.match(wxml, /bindremove="removeParticipant"/);
+});
+
+test("activity detail mounts only the drawer that is currently opening", () => {
+  assert.match(wxml, /<page-container wx:if="\{\{subItemSignupContainerRendered\}\}"[\s\S]*show="\{\{showSubItemSignup\}\}"[\s\S]*bind:afterleave="onSubItemSignupAfterLeave"/);
+  assert.match(wxml, /<page-container wx:if="\{\{projectMembersContainerRendered\}\}"[\s\S]*show="\{\{showProjectMembers\}\}"[\s\S]*bind:afterleave="onProjectMembersAfterLeave"/);
+  assert.match(js, /subItemSignupContainerRendered:\s*false/);
+  assert.match(js, /projectMembersContainerRendered:\s*false/);
+  assert.match(js, /subItemSignupContainerRendered:\s*true,[\s\S]*showSubItemSignup:\s*false[\s\S]*wx\.nextTick\(\(\) => this\.setData\(\{ showSubItemSignup: true \}\)\)/);
+  assert.match(js, /projectMembersContainerRendered:\s*true,[\s\S]*showProjectMembers:\s*false[\s\S]*wx\.nextTick\(\(\) => this\.setData\(\{ showProjectMembers: true \}\)\)/);
+  assert.match(js, /onSubItemSignupAfterLeave\(\)[\s\S]*subItemSignupContainerRendered:\s*false/);
+  assert.match(js, /onProjectMembersAfterLeave\(\)[\s\S]*projectMembersContainerRendered:\s*false/);
 });
 
 test("detail exposes checkin only after the activity enters the ongoing state", () => {
@@ -465,8 +491,8 @@ test("basic information header has no right-side status text", () => {
 
 test("activity detail locks the viewport instead of exposing page overscroll", () => {
   assert.equal(pageJson.disableScroll, true);
-  assert.match(wxml, /<view\s+class="main-scroll"[\s\S]*?height: calc\(100vh - \{\{bottomBarHeightRpx\}\}rpx\)/);
-  assert.doesNotMatch(wxml, /<scroll-view\s+[\s\S]*?class="main-scroll"/);
+  assert.match(wxml, /<scroll-view[^>]*\s+class="main-scroll"[\s\S]*?height: calc\(100vh - \{\{bottomBarHeightRpx\}\}rpx\)/);
+  assert.match(wxml, /scroll-into-view="{{detailAnchor}}"/);
   assert.doesNotMatch(wxml, /class="scroll-bottom-spacer"/);
   assert.match(wxss, /^page\s*\{[^}]*height:\s*100%;[^}]*overflow:\s*hidden;/s);
   assert.match(wxss, /\.page-wrap\s*\{[^}]*height:\s*100vh;[^}]*overflow:\s*hidden;/s);
@@ -645,6 +671,7 @@ test("signup executes the real page handler for each role without contacting a s
     };
     page.showSignupPermissionDenied = () => events.push("denied");
     page.refreshDetail = async () => {};
+    page.setData = patch => Object.assign(page.data, patch);
     const activity = { _id: 1, status: "未开始", participants: [] };
     page.directSignup(activity);
     await new Promise(setImmediate);
@@ -657,9 +684,9 @@ test("signup executes the real page handler for each role without contacting a s
 });
 
 
-test("remark line box cannot be shortened by iOS text bounds and rounds outward", () => {
-  const result = measureRemarkOverflow({ rowWidth: 250, naturalTextWidth: 300,
-    toggleWidth: 50, textHeight: 12.1, toggleHeight: 21.54,
+test("remark line box uses the fixed one-line toggle height and rounds outward", () => {
+  const result = measureRemarkOverflow({ rowWidth: 250, fullRowHeight: 64.62,
+    toggleWidth: 50, toggleHeight: 21.54,
     expandedHeight: 64.62, status: "已结束" });
   assert.equal(result.data.remarkCollapsedHeightPx, 22);
   assert.equal(result.data.remarkExpandedHeightPx, 65);
@@ -669,12 +696,15 @@ test("remark line box cannot be shortened by iOS text bounds and rounds outward"
 test("remark toggle stays bottom-anchored during expansion and measurement uses layout boxes", () => {
   assert.match(wxss, /\.hero-remark-row\s*\{[^}]*align-items: flex-end;/s);
   assert.match(wxss, /\.hero-copy\s*\{[^}]*bottom: calc\(94\.23rpx \+ 46\.15rpx\);/s);
-  for (const name of ["hero-remark", "hero-remark-measure", "hero-remark-full-measure"]) {
+  for (const name of ["hero-remark", "hero-remark-full-measure"]) {
     assert.match(wxss, new RegExp("\\." + name + "\\s*\\{[^}]*line-height: 38\\.46rpx;", "s"));
   }
+  assert.match(wxss, /\.remark-toggle-measure\s*\{[^}]*height: 38\.46rpx;/s);
   assert.match(wxss, /\.hero-remark-viewport\s*\{[^}]*min-height: 38\.46rpx;/s);
-  assert.match(wxml, /<view[^>]*class="hero-remark-measure"/);
-  assert.match(wxml, /<view\s+wx:if="\{\{activity.remark\}\}"\s+class="hero-remark-full-measure"/);
+  assert.doesNotMatch(wxss, /\.hero-remark-measure\s*\{/);
+  assert.doesNotMatch(wxml, /class="hero-remark-measure"/);
+  assert.match(wxml, /<view\s+wx:if="\{\{activity\.remark\}\}"\s+class="hero-remark-full-measure"/);
+  assert.match(wxml, /class="remark-toggle-measure"/);
 });
 
 
