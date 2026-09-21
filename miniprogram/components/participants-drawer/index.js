@@ -17,6 +17,15 @@ function getRpxPerPx() {
   }
 }
 
+function shouldUseExplicitSurfaceHeight(renderer) {
+  return String(renderer || "").toLowerCase() === "webview";
+}
+
+function getSurfaceSizingStyle(explicit, drawerHeightRpx, maxHeightRpx) {
+  if (!explicit) return "";
+  return `height: ${drawerHeightRpx}rpx; max-height: ${maxHeightRpx}rpx;`;
+}
+
 function getDrawerHeightRpx(rowCount, maxHeightRpx, safeBottomRpx) {
   const count = Math.max(0, Math.floor(Number(rowCount) || 0));
   const safeBottom = Math.max(0, Number(safeBottomRpx) || 0);
@@ -43,6 +52,7 @@ Component({
     containerRendered: false,
     containerVisible: false,
     drawerHeightRpx: 984.61,
+    surfaceSizingStyle: "",
     rows: [],
     memberListScrollEnabled: true,
     actionOffsetRpx: 0,
@@ -81,6 +91,7 @@ Component({
 
   lifetimes: {
     attached() {
+      this._useExplicitSurfaceHeight = shouldUseExplicitSurfaceHeight(this.renderer);
       this.updateHeightConstraints();
       this.setRows(this.properties.participants || []);
       this.setProgress();
@@ -113,10 +124,16 @@ Component({
       const maxHeightRpx = getMaxHeightRpx();
       const fixedChromeRpx = 130.77;
       const safeBottomRpx = Number(this.properties.safeBottomRpx) || 0;
+      const drawerHeightRpx = getDrawerHeightRpx(this.data.rows.length, maxHeightRpx, safeBottomRpx);
       this.setData({
         maxHeightRpx,
         bodyMaxHeightRpx: Math.max(0, Math.round((maxHeightRpx - fixedChromeRpx - safeBottomRpx) * 100) / 100),
-        drawerHeightRpx: getDrawerHeightRpx(this.data.rows.length, maxHeightRpx, safeBottomRpx)
+        drawerHeightRpx,
+        surfaceSizingStyle: getSurfaceSizingStyle(
+          this._useExplicitSurfaceHeight,
+          drawerHeightRpx,
+          maxHeightRpx
+        )
       });
     },
 
@@ -157,13 +174,19 @@ Component({
           actionOpen: false
         };
       });
+      const drawerHeightRpx = getDrawerHeightRpx(
+        rows.length,
+        this.data.maxHeightRpx,
+        this.properties.safeBottomRpx
+      );
       this.setData({
         rows,
         ...actionMetrics,
-        drawerHeightRpx: getDrawerHeightRpx(
-          rows.length,
-          this.data.maxHeightRpx,
-          this.properties.safeBottomRpx
+        drawerHeightRpx,
+        surfaceSizingStyle: getSurfaceSizingStyle(
+          this._useExplicitSurfaceHeight,
+          drawerHeightRpx,
+          this.data.maxHeightRpx
         )
       }, callback);
     },

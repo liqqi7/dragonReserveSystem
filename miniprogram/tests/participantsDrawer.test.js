@@ -13,6 +13,47 @@ function readSvg(name) {
   return fs.readFileSync(path.join(__dirname, `../images/${name}.svg`), "utf8");
 }
 
+function createParticipantsDrawerInstance(renderer) {
+  const componentPath = require.resolve("../components/participants-drawer/index.js");
+  const previousComponent = global.Component;
+  const previousWx = global.wx;
+  let componentDefinition;
+  global.Component = value => { componentDefinition = value; };
+  global.wx = {
+    getWindowInfo() {
+      return { windowWidth: 390, windowHeight: 844 };
+    }
+  };
+  delete require.cache[componentPath];
+  require(componentPath);
+  const instance = {
+    renderer,
+    properties: {
+      visible: false,
+      participants: [],
+      participantCount: 0,
+      checkinCount: 0,
+      maxParticipants: null,
+      canManage: false,
+      isAdmin: false,
+      safeBottomRpx: 0
+    },
+    data: { ...componentDefinition.data },
+    setData(next, callback) {
+      Object.assign(this.data, next);
+      if (callback) callback();
+    },
+    ...componentDefinition.methods
+  };
+  componentDefinition.lifetimes.attached.call(instance);
+  delete require.cache[componentPath];
+  if (previousComponent === undefined) delete global.Component;
+  else global.Component = previousComponent;
+  if (previousWx === undefined) delete global.wx;
+  else global.wx = previousWx;
+  return instance;
+}
+
 test("participants drawer uses prototype RPX geometry and palette", () => {
   assert.match(wxss, /min-height:\s*0/);
   assert.match(wxml, /custom-style="height: \{\{drawerHeightRpx\}\}rpx; max-height: \{\{maxHeightRpx\}\}rpx;[^\"]*border-radius: 46\.15rpx 46\.15rpx 0 0;/);
@@ -21,7 +62,10 @@ test("participants drawer uses prototype RPX geometry and palette", () => {
   assert.match(wxml, /overlay="{{true}}"[\s\S]*close-on-slide-down="{{false}}"[\s\S]*bind:clickoverlay="onMaskTap"/);
   assert.doesNotMatch(wxml, /draggable-sheet|root-portal|worklet:onsizeupdate|associative-container/);
   assert.match(wxss, /\.drawer-sheet\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;/s);
-  assert.match(wxml, /id="qaParticipantsSurface"[^>]*style="height: \{\{drawerHeightRpx\}\}rpx; max-height: \{\{maxHeightRpx\}\}rpx; padding-bottom: \{\{safeBottomRpx\}\}rpx;"/);
+  assert.match(wxml, /id="qaParticipantsSurface"[^>]*style="\{\{surfaceSizingStyle\}\} padding-bottom: \{\{safeBottomRpx\}\}rpx;"/);
+  assert.match(js, /function shouldUseExplicitSurfaceHeight\(renderer\)[\s\S]*?=== "webview"/);
+  assert.match(js, /surfaceSizingStyle:\s*getSurfaceSizingStyle\(/);
+  assert.match(js, /this\._useExplicitSurfaceHeight = shouldUseExplicitSurfaceHeight\(this\.renderer\)/);
   assert.match(wxss, /\.drawer-body\s*\{[^}]*flex:\s*1 1 0;[^}]*height:\s*0;[^}]*min-height:\s*0;[^}]*padding:\s*15\.38rpx\s+30\.77rpx\s+0;[^}]*display:\s*flex;[^}]*flex-direction:\s*column;/s);
   assert.doesNotMatch(wxss, /participants-drawer-sheet-enter|participants-drawer-mask-enter|@keyframes/);
   assert.match(wxss, /border-radius:\s*46\.15rpx\s+46\.15rpx\s+0\s+0/);
@@ -39,6 +83,14 @@ test("participants drawer uses prototype RPX geometry and palette", () => {
   assert.match(wxss, /\.progress-complete\s*\{[^}]*background:\s*#ff9800;/s);
 });
 
+
+test("participants drawer keeps Skyline sizing native and only patches WebView height", () => {
+  const skyline = createParticipantsDrawerInstance("skyline");
+  assert.equal(skyline.data.surfaceSizingStyle, "");
+
+  const webview = createParticipantsDrawerInstance("webview");
+  assert.match(webview.data.surfaceSizingStyle, /^height: [0-9.]+rpx; max-height: [0-9.]+rpx;$/);
+});
 
 test("drawer height follows the viewport and caps at 85 percent", () => {
   const previousWx = global.wx;
