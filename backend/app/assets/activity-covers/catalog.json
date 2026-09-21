@@ -1155,6 +1155,18 @@
           "categories": [
             "运动"
           ]
+        },
+        {
+          "id": "pasoputi-001",
+          "width": 1800,
+          "height": 3200,
+          "thumbnail_path": "categories/外出/thumbs/pasoputi-001.jpg",
+          "image_path": "categories/外出/images/pasoputi-001.jpg",
+          "credit_name": "pasoputi",
+          "media_type": "image",
+          "categories": [
+            "外出"
+          ]
         }
       ]
     }

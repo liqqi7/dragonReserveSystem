@@ -35,7 +35,7 @@ def test_cover_catalog_exposes_only_selectable_categorized_assets(client) -> Non
         "待补充署名",
         "分类归档素材",
     ]
-    assert sum(len(artist["artworks"]) for artist in artists) == 41
+    assert sum(len(artist["artworks"]) for artist in artists) == 42
     artwork_by_id = {artwork["id"]: artwork for artist in artists for artwork in artist["artworks"]}
     assert artwork_by_id["ardhira-putra-001"]["categories"] == ["派对"]
     assert artwork_by_id["aleksey-rico-001"]["categories"] == ["电影"]
@@ -65,6 +65,8 @@ def test_cover_catalog_exposes_only_selectable_categorized_assets(client) -> Non
     assert artwork_by_id["tatsuro-kiuchi-001"]["image_url"].endswith(".jpg")
     assert artwork_by_id["gasp-art-001"]["categories"] == ["运动"]
     assert artwork_by_id["gasp-art-001"]["image_url"].endswith(".jpg")
+    assert artwork_by_id["pasoputi-001"]["categories"] == ["外出"]
+    assert artwork_by_id["pasoputi-001"]["image_url"].endswith(".jpg")
     assert "ardhira-putra-005" not in artwork_by_id
     first = next(artist for artist in artists if artist["slug"] == "aleksey-rico")["artworks"][0]
     assert first["id"] == "aleksey-rico-001"
