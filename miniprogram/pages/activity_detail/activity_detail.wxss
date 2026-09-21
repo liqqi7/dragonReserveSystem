@@ -812,7 +812,6 @@ page {
   transform-origin: center;
 }
 
-.hero-remark-measure,
 .hero-remark-full-measure,
 .remark-toggle-measure {
   position: fixed;
@@ -820,17 +819,6 @@ page {
   top: 0;
   pointer-events: none;
   visibility: hidden;
-}
-
-.hero-remark-measure {
-  min-height: 38.46rpx;
-  display: inline-block;
-  width: auto;
-  color: transparent;
-  font-size: 26.92rpx;
-  font-weight: 500;
-  line-height: 38.46rpx;
-  white-space: nowrap;
 }
 
 .hero-remark-full-measure {

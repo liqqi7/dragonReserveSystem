@@ -2,13 +2,16 @@ const ACTION_OFFSET_RPX = 138.46;
 const ACTION_AREA_WIDTH_RPX = 130.77;
 const SWIPE_OPEN_THRESHOLD_RATIO = 0.25;
 const SWIPE_CLOSE_THRESHOLD_RATIO = 0.15;
+const MIN_SUBITEM_COUNT = 2;
 const INSERT_ACTIVATION_DELAY_MS = 32;
-const INSERT_ANIMATION_MS = 320;
+const INSERT_ANIMATION_MS = 240;
 const CONTENT_ENTER_ANIMATION_MS = 360;
 const CONTENT_EXIT_ANIMATION_MS = 360;
-const ITEM_REMOVE_EXIT_ANIMATION_MS = 220;
-const ITEM_REMOVE_COLLAPSE_ANIMATION_MS = 260;
-const ITEM_REMOVE_ANIMATION_MS = ITEM_REMOVE_EXIT_ANIMATION_MS + ITEM_REMOVE_COLLAPSE_ANIMATION_MS;
+const ITEM_REMOVE_EXIT_ANIMATION_MS = 150;
+const ITEM_REMOVE_COLLAPSE_DELAY_MS = 48;
+const ITEM_REMOVE_COLLAPSE_ANIMATION_MS = 240;
+const ITEM_REMOVE_ANIMATION_MS = ITEM_REMOVE_COLLAPSE_DELAY_MS + ITEM_REMOVE_COLLAPSE_ANIMATION_MS;
+const SWIPE_TRANSITION_RESTORE_DELAY_MS = 32;
 
 function getRpxPerPx() {
   try {
@@ -40,6 +43,10 @@ function rowKey(item, index) {
   return item && item.id != null && item.id !== "" ? `subitem-${item.id}` : `subitem-new-${index}`;
 }
 
+function canRemoveSubitem(items) {
+  return Array.isArray(items) && items.length > MIN_SUBITEM_COUNT;
+}
+
 function getQuota(value) {
   const numeric = Number(value);
   return Number.isFinite(numeric) && numeric > 0 ? clamp(numeric, 1, 999) : 12;
@@ -61,7 +68,8 @@ Component({
     contentLeaving: false,
     renderContent: false,
     removingIndex: -1,
-    removalPhase: ""
+    removalPhase: "",
+    suppressSwipeTransition: false
   },
   observers: {
     enabled(enabled) {
@@ -95,12 +103,10 @@ Component({
       const removedIndex = this._pendingRemovedIndex;
       const removalCommitted = Number.isInteger(removedIndex)
         && list.length === Math.max(0, previous.length - 1);
-      const reusable = removalCommitted
-        ? previous.filter((_, index) => index !== removedIndex)
-        : previous;
       const next = list.map((item, index) => {
         const key = rowKey(item, index);
-        const prior = removalCommitted ? reusable[index] : reusable.find(row => row.key === key);
+        if (removalCommitted || !canRemoveSubitem(list)) return { key, offsetX: 0, actionOpen: false };
+        const prior = previous.find(row => row.key === key);
         return prior
           ? { ...prior, key }
           : { key, offsetX: 0, actionOpen: false };
@@ -110,6 +116,17 @@ Component({
         patch.removingIndex = -1;
         patch.removalPhase = "";
         this._pendingRemovedIndex = null;
+        this.setData(patch, () => {
+          clearTimeout(this._swipeTransitionRestoreTimer);
+          this._swipeTransitionRestoreTimer = setTimeout(() => {
+            this._swipeTransitionRestoreTimer = null;
+            this.setData({ suppressSwipeTransition: false });
+          }, SWIPE_TRANSITION_RESTORE_DELAY_MS);
+          if (this._swipeTransitionRestoreTimer && typeof this._swipeTransitionRestoreTimer.unref === "function") {
+            this._swipeTransitionRestoreTimer.unref();
+          }
+        });
+        return;
       }
       this.setData(patch);
     }
@@ -127,6 +144,7 @@ Component({
         insertVisible: false,
         removingIndex: -1,
         removalPhase: "",
+        suppressSwipeTransition: false,
         rowStates: items.map((item, index) => ({ key: rowKey(item, index), offsetX: 0, actionOpen: false }))
       });
     },
@@ -137,6 +155,7 @@ Component({
       clearTimeout(this._contentExitTimer);
       clearTimeout(this._removeExitTimer);
       clearTimeout(this._removeTimer);
+      clearTimeout(this._swipeTransitionRestoreTimer);
       this._pendingRemovedIndex = null;
       this._gesture = null;
     }
@@ -232,6 +251,11 @@ Component({
     },
 
     startSwipe(e) {
+      const items = Array.isArray(this.properties.items) ? this.properties.items : [];
+      if (!canRemoveSubitem(items)) {
+        this._gesture = null;
+        return;
+      }
       const index = Number(e.currentTarget.dataset.index);
       const touch = e.touches && e.touches[0];
       if (!Number.isFinite(index) || !touch) return;
@@ -292,32 +316,49 @@ Component({
     },
 
     remove(e) {
+      const items = Array.isArray(this.properties.items) ? this.properties.items : [];
+      if (!canRemoveSubitem(items)) return;
       const index = Number(e.currentTarget.dataset.index);
-      if (this.data.removingIndex >= 0) return;
-      if (Number(this.properties.items[index].current_participants) > 0) {
+      if (this.data.removingIndex >= 0 || !items[index]) return;
+      if (Number(items[index].current_participants) > 0) {
         wx.showToast({ title: "已有报名的子项目不能删除", icon: "none" });
         return;
       }
-      this.setData({ removingIndex: index, removalPhase: "exiting" });
+      this._gesture = null;
+      const rowStates = this.getRowStates().map(row => ({
+        ...row,
+        offsetX: 0,
+        actionOpen: false
+      }));
+      this.setData({
+        rowStates,
+        suppressSwipeTransition: true,
+        removingIndex: index,
+        removalPhase: "exiting"
+      });
       clearTimeout(this._removeExitTimer);
       clearTimeout(this._removeTimer);
+      clearTimeout(this._swipeTransitionRestoreTimer);
       this._removeExitTimer = setTimeout(() => {
         this._removeExitTimer = null;
         this.setData({ removalPhase: "collapsing" });
         this._removeTimer = setTimeout(() => {
           this._removeTimer = null;
-          const items = Array.isArray(this.properties.items) ? this.properties.items : [];
+          const currentItems = Array.isArray(this.properties.items) ? this.properties.items : [];
+          if (!canRemoveSubitem(currentItems)) {
+            this.setData({ removingIndex: -1, removalPhase: "", suppressSwipeTransition: false });
+            return;
+          }
           this._pendingRemovedIndex = index;
-          // Keep the zero-height placeholder mounted while the parent replaces the
-          // array. The committing state has no exit animation, so an index reused by
-          // Skyline cannot make the next row inherit the deleted row's motion.
+          // Keep a zero-height, horizontally neutral placeholder mounted while the
+          // parent replaces the array. This prevents Skyline's index-key reuse from
+          // transferring the deleted row's swipe transform to the next row.
           this.setData({ removalPhase: "committing" }, () => {
-            this.emit(items.filter((_, itemIndex) => itemIndex !== index));
+            this.emit(currentItems.filter((_, itemIndex) => itemIndex !== index));
           });
-          this._gesture = null;
         }, ITEM_REMOVE_COLLAPSE_ANIMATION_MS);
         if (this._removeTimer && typeof this._removeTimer.unref === "function") this._removeTimer.unref();
-      }, ITEM_REMOVE_EXIT_ANIMATION_MS);
+      }, ITEM_REMOVE_COLLAPSE_DELAY_MS);
       if (this._removeExitTimer && typeof this._removeExitTimer.unref === "function") this._removeExitTimer.unref();
     }
   }
@@ -329,15 +370,19 @@ if (typeof module !== "undefined") {
     ACTION_AREA_WIDTH_RPX,
     SWIPE_OPEN_THRESHOLD_RATIO,
     SWIPE_CLOSE_THRESHOLD_RATIO,
+    MIN_SUBITEM_COUNT,
     INSERT_ACTIVATION_DELAY_MS,
     INSERT_ANIMATION_MS,
     CONTENT_ENTER_ANIMATION_MS,
     CONTENT_EXIT_ANIMATION_MS,
     ITEM_REMOVE_EXIT_ANIMATION_MS,
+    ITEM_REMOVE_COLLAPSE_DELAY_MS,
     ITEM_REMOVE_COLLAPSE_ANIMATION_MS,
     ITEM_REMOVE_ANIMATION_MS,
+    SWIPE_TRANSITION_RESTORE_DELAY_MS,
     clamp,
-    getSwipeSettledState
+    getSwipeSettledState,
+    canRemoveSubitem
   };
 }
 

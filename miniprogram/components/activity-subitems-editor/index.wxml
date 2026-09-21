@@ -16,11 +16,11 @@
     data-index="{{index}}"
   >
     <view class="item-visual">
-      <view class="delete" data-index="{{index}}" bindtap="remove" aria-role="button" aria-label="删除子项目">
+      <view wx:if="{{items.length > 2}}" class="delete" data-index="{{index}}" bindtap="remove" aria-role="button" aria-label="删除子项目">
         <image class="delete-icon" src="/images/activity-subitem-trash.svg" mode="aspectFit" />
         <text>删除</text>
       </view>
-      <view class="project-row" style="transform:translate3d({{rowStates[index].offsetX || 0}}rpx,0,0)">
+      <view class="project-row {{suppressSwipeTransition ? 'project-row--no-transition' : ''}}" style="transform:translate3d({{rowStates[index].offsetX || 0}}rpx,0,0)">
         <input class="name" placeholder="请输入项目名称" placeholder-style="color:#9CA3AF;font-size:26.92rpx;font-weight:400;" value="{{item.name}}" maxlength="64" data-index="{{index}}" bindinput="input" />
         <view class="stepper">
           <view class="step" data-index="{{index}}" data-delta="-1" bindtap="step" aria-role="button" aria-label="减少名额"><image class="step-icon" src="/images/activity-subitem-minus.svg" mode="aspectFit" /></view>

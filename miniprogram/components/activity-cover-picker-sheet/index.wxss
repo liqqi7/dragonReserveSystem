@@ -110,9 +110,14 @@
   width: 53.85rpx;
   height: 53.85rpx;
   flex: none;
+  position: relative;
+  overflow: hidden;
   border-radius: 50%;
   background: #f5f5f5;
 }
+
+.cover-artist-avatar-image { width: 100%; height: 100%; display: block; }
+.cover-preview-avatar-image { width: 100%; height: 100%; display: block; }
 
 .cover-artist-name {
   color: #374151;
@@ -175,6 +180,15 @@
 }
 
 .cover-artwork-image { width: 100%; height: 100%; display: block; }
+.cover-artwork-placeholder {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  background-color: #eaecef;
+}
 
 .cover-sheet-skeleton {
   width: 100%;
@@ -481,6 +495,8 @@
 .cover-preview-swiper,
 .cover-preview-slide { width: 100%; height: 100%; }
 .cover-preview-slide { display: flex; align-items: center; justify-content: center; }
+.cover-preview-image-placeholder { width: 100%; height: 100%; background: #111318; }
+
 .cover-preview-image { width: 100%; height: 100%; display: block; }
 
 .cover-preview-arrow {
@@ -522,7 +538,7 @@
   align-items: center;
   gap: 23.08rpx;
 }
-.cover-preview-avatar { width: 69.23rpx; height: 69.23rpx; flex: none; border-radius: 50%; }
+.cover-preview-avatar { width: 69.23rpx; height: 69.23rpx; flex: none; border-radius: 50%; overflow: hidden; background: #252830; }
 .cover-preview-artist-copy { display: flex; flex-direction: column; }
 .cover-preview-artist-name { color: #ffffff; font-size: 26.92rpx; line-height: 38.46rpx; font-weight: 600; }
 .cover-preview-hint { color: rgba(255, 255, 255, 0.6); font-size: 23.08rpx; line-height: 30.77rpx; font-weight: 400; }

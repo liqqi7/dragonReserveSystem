@@ -33,7 +33,10 @@
   <scroll-view wx:else type="list" scroll-y="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}" class="cover-sheet-content">
     <view wx:for="{{artists}}" wx:key="slug" list-item class="cover-artist-group">
       <view class="cover-artist-header">
-        <image class="cover-artist-avatar" src="{{item.avatarUrl}}" mode="aspectFill" fade-in="{{true}}" />
+        <view class="cover-artist-avatar">
+          <image wx:if="{{item.displayAvatarUrl}}" class="cover-artist-avatar-image" src="{{item.displayAvatarUrl}}" mode="aspectFill" fade-in="{{true}}" binderror="onCoverImageError" data-url="{{item.avatarUrl}}" />
+          <view wx:elif="{{!item.avatarLoadFailed}}" class="cover-skeleton-shimmer cover-media-shimmer" aria-hidden="true"></view>
+        </view>
         <text class="cover-artist-name">{{item.displayName}}</text>
       </view>
       <scroll-view type="list" scroll-x="{{true}}" enable-flex="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}" class="cover-artwork-track">
@@ -47,6 +50,7 @@
           style="animation-delay: {{artwork.enterDelayMs}}ms;"
           bindtap="onSelect"
           data-id="{{artwork.id}}"
+          data-cover-id="{{artwork.id}}"
         >
           <open-container
             id="coverPreviewTransition-{{index}}-{{artworkIndex}}"
@@ -61,7 +65,10 @@
             transition-duration="{{previewTransitionDuration}}"
           >
             <view class="cover-artwork-media">
-              <image class="cover-artwork-image" src="{{artwork.thumbnailUrl}}" mode="aspectFill" fade-in="{{true}}" />
+              <image wx:if="{{artwork.displayUrl}}" class="cover-artwork-image" src="{{artwork.displayUrl}}" mode="aspectFill" fade-in="{{true}}" binderror="onCoverImageError" data-url="{{artwork.imageUrl}}" />
+              <view wx:else class="cover-artwork-placeholder">
+                <view wx:if="{{!artwork.imageLoadFailed}}" class="cover-skeleton-shimmer cover-media-shimmer" aria-hidden="true"></view>
+              </view>
             </view>
           </open-container>
           <view class="cover-artwork-border"></view>

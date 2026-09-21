@@ -173,7 +173,6 @@
         </view>
 
         <!-- 测量节点必须放在 hero-copy 外，避免 Skyline 将隐藏节点计入纵向 gap。 -->
-        <view wx:if="{{activity.remark}}" class="hero-remark-measure"><text class="hero-remark-measure-text">{{activity.remark}}</text></view>
         <view
           wx:if="{{activity.remark}}"
           class="hero-remark-full-measure"
@@ -405,7 +404,7 @@
 
 <create-access-dialog id="signup-login-dialog" bind:confirm="onSignupLoginConfirm" />
 
-<page-container show="{{showSubItemSignup}}" position="bottom" round="{{false}}" close-on-slide-down="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="background:#FFFFFF;border-radius:46.15rpx 46.15rpx 0 0;" bind:clickoverlay="closeSubItemSignup">
+<page-container wx:if="{{subItemSignupContainerRendered}}" show="{{showSubItemSignup}}" position="bottom" round="{{false}}" close-on-slide-down="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="background:#FFFFFF;border-radius:46.15rpx 46.15rpx 0 0;" bind:clickoverlay="closeSubItemSignup" bind:afterleave="onSubItemSignupAfterLeave">
   <view class="project-sheet" style="padding-bottom:{{safeBottomRpx}}rpx;">
     <view class="project-handle-zone"><view class="project-handle"></view></view>
     <view class="project-sheet-heading"><text class="project-title">选择子项目</text><text class="project-muted">已选 {{signupSelection.length}} 项</text></view>
@@ -413,7 +412,7 @@
     <view class="project-confirm-bar"><button class="project-confirm {{!signupSelection.length || signupSubmitting ? 'project-confirm--disabled' : ''}}" disabled="{{!signupSelection.length || signupSubmitting}}" loading="{{signupSubmitting}}" bindtap="confirmSubItemSignup"><text>确认报名</text></button></view>
   </view>
 </page-container>
-<page-container show="{{showProjectMembers}}" position="bottom" round="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="background:#FFFFFF;border-radius:46.15rpx 46.15rpx 0 0;" bind:clickoverlay="closeProjectMembers">
+<page-container wx:if="{{projectMembersContainerRendered}}" show="{{showProjectMembers}}" position="bottom" round="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="background:#FFFFFF;border-radius:46.15rpx 46.15rpx 0 0;" bind:clickoverlay="closeProjectMembers" bind:afterleave="onProjectMembersAfterLeave">
   <view class="project-sheet" style="padding-bottom:{{safeBottomRpx}}rpx;">
     <view class="project-handle-zone"><view class="project-handle"></view></view>
     <view class="project-sheet-heading"><text class="project-title">{{projectMemberTitle}}</text><text class="project-muted">{{projectMembers.length}} 人</text></view>

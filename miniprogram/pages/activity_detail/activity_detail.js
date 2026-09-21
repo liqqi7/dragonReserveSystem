@@ -96,10 +96,12 @@ Page({
     myUserId: "",
     myNickname: "",
     showParticipantsDrawer: false,
+    subItemSignupContainerRendered: false,
     showSubItemSignup: false,
     signupOptions: [],
     signupSelection: [],
     signupSubmitting: false,
+    projectMembersContainerRendered: false,
     showProjectMembers: false,
     projectMembers: [],
     projectMemberTitle: "",
@@ -557,58 +559,68 @@ Page({
     const measure = () => {
       const query = wx.createSelectorQuery();
       query.select(".hero-remark-row").boundingClientRect();
-      query.select(".hero-remark-measure").boundingClientRect();
       query.select(".remark-toggle-measure").boundingClientRect();
       query.exec((rects) => {
         const rowRect = rects && rects[0];
-        const textRect = rects && rects[1];
-        const toggleRect = rects && rects[2];
-        if (!rowRect || !textRect || !toggleRect) return;
+        const toggleRect = rects && rects[1];
+        if (!rowRect || !toggleRect) return;
         const rowWidth = Math.max(0, Number(rowRect.width) || 0);
-        const naturalTextWidth = Math.max(0, Number(textRect.width) || 0);
-        // Measure a line-box container, not native text glyph bounds; round outward.
-        const collapsedHeight = Math.ceil(Math.max(0, Number(textRect.height) || 0, Number(toggleRect.height) || 0));
-        // 先按完整一行可用宽度判断真实溢出；不能提前为“展开”预留空间，
-        // 否则 iOS/Skyline 会把本可单行展示的备注误判成可展开。
-        const naturalTextOverflowsRow = naturalTextWidth > rowWidth + 0.5;
-        if (!naturalTextOverflowsRow) {
-          this.setData({
-            remarkExpandable: false,
-            remarkExpanded: false,
-            remarkToggleRotationDeg: 0,
-            remarkTextWidthPx: rowWidth,
-            remarkCollapsedHeightPx: collapsedHeight,
-            remarkExpandedHeightPx: collapsedHeight,
-            remarkViewportHeightPx: collapsedHeight
-          });
-          return;
-        }
-
         const toggleWidth = Math.max(0, Number(toggleRect.width) || 0);
-        const availableTextWidth = Math.max(0, rowWidth - toggleWidth - 7.69);
+        // The old nowrap width probe can wrap on PC/DevTools and report its multi-line
+        // height as the collapsed height. Use the fixed one-line toggle height instead.
+        const collapsedHeight = Math.ceil(Math.max(1, Number(toggleRect.height) || 0));
+
+        const measureFullHeight = (callback) => {
+          const run = () => {
+            const fullQuery = wx.createSelectorQuery();
+            fullQuery.select(".hero-remark-full-measure").boundingClientRect();
+            fullQuery.exec((fullRects) => {
+              const fullRect = fullRects && fullRects[0];
+              callback(Math.ceil(Math.max(
+                collapsedHeight,
+                Number(fullRect && fullRect.height) || collapsedHeight
+              )));
+            });
+          };
+          if (wx.nextTick) wx.nextTick(run);
+          else setTimeout(run, 0);
+        };
+
+        // First measure the wrapped text at the complete row width. This is stable on
+        // PC, phone and DevTools, unlike measuring an unconstrained single-line width.
         this.setData({
-          remarkTextWidthPx: availableTextWidth,
+          remarkTextWidthPx: rowWidth,
           remarkCollapsedHeightPx: collapsedHeight,
           remarkViewportHeightPx: collapsedHeight
         }, () => {
-          const fullQuery = wx.createSelectorQuery();
-          fullQuery.select(".hero-remark-full-measure").boundingClientRect();
-          fullQuery.exec((fullRects) => {
-            const fullRect = fullRects && fullRects[0];
-            const expandedHeight = Math.ceil(Math.max(
-              collapsedHeight,
-              Number(fullRect && fullRect.height) || collapsedHeight
-            ));
-            const expandByDefault = !!(
-              this.data.activity &&
-              this.data.activity.status === "已结束"
-            );
-            this.setData({
-              remarkExpandable: true,
-              remarkExpanded: expandByDefault,
-              remarkToggleRotationDeg: expandByDefault ? 180 : 0,
-              remarkExpandedHeightPx: expandedHeight,
-              remarkViewportHeightPx: expandByDefault ? expandedHeight : collapsedHeight
+          measureFullHeight((fullRowHeight) => {
+            const textOverflowsOneLine = fullRowHeight > collapsedHeight + 0.5;
+            if (!textOverflowsOneLine) {
+              this.setData({
+                remarkExpandable: false,
+                remarkExpanded: false,
+                remarkToggleRotationDeg: 0,
+                remarkExpandedHeightPx: collapsedHeight,
+                remarkViewportHeightPx: collapsedHeight
+              });
+              return;
+            }
+
+            const availableTextWidth = Math.max(0, rowWidth - toggleWidth - 7.69);
+            this.setData({ remarkTextWidthPx: availableTextWidth }, () => {
+              measureFullHeight((expandedHeight) => {
+                const expandByDefault = !!(
+                  this.data.activity &&
+                  this.data.activity.status === "已结束"
+                );
+                this.setData({
+                  remarkExpandable: true,
+                  remarkExpanded: expandByDefault,
+                  remarkToggleRotationDeg: expandByDefault ? 180 : 0,
+                  remarkExpandedHeightPx: expandedHeight,
+                  remarkViewportHeightPx: expandByDefault ? expandedHeight : collapsedHeight
+                });
+              });
             });
           });
         });
@@ -725,7 +737,15 @@ Page({
   selectDetailSection(e) {
     this.setData({ detailAnchor: e.currentTarget.dataset.anchor });
   },
-  closeSubItemSignup() { if (!this.data.signupSubmitting) this.setData({ showSubItemSignup: false }); },
+  closeSubItemSignup() {
+    if (!this.data.signupSubmitting) this.setData({ showSubItemSignup: false });
+  },
+
+  onSubItemSignupAfterLeave() {
+    if (!this.data.showSubItemSignup) {
+      this.setData({ subItemSignupContainerRendered: false });
+    }
+  },
   toggleSignupOption(e) {
     if (this.data.signupSubmitting) return;
     const id = Number(e.currentTarget.dataset.id);
@@ -739,10 +759,22 @@ Page({
     const id = Number(e.currentTarget.dataset.id);
     const project = (this.data.activity.subItems || []).find(item => item.id === id);
     if (!project) return;
-    this.setData({ showProjectMembers: true, projectMemberTitle: project.name,
-      projectMembers: (this.data.activity.participants || []).filter(person => (person.subItemIds || []).includes(id)) });
+    this.setData({
+      projectMembersContainerRendered: true,
+      showProjectMembers: false,
+      projectMemberTitle: project.name,
+      projectMembers: (this.data.activity.participants || []).filter(person => (person.subItemIds || []).includes(id))
+    }, () => {
+      wx.nextTick(() => this.setData({ showProjectMembers: true }));
+    });
   },
   closeProjectMembers() { this.setData({ showProjectMembers: false }); },
+
+  onProjectMembersAfterLeave() {
+    if (!this.data.showProjectMembers) {
+      this.setData({ projectMembersContainerRendered: false });
+    }
+  },
 
   openParticipantsDrawer() {
     this.setData({ showParticipantsDrawer: true });
@@ -961,7 +993,14 @@ Page({
       return;
     }
     if ((activity.subItems || []).length && !Array.isArray(selectedIds)) {
-      this.setData({ showSubItemSignup: true, signupSelection: [], signupOptions: activity.subItems.map(item => ({ ...item, selected: false, full: item.current_participants >= item.max_participants })) });
+      this.setData({
+        subItemSignupContainerRendered: true,
+        showSubItemSignup: false,
+        signupSelection: [],
+        signupOptions: activity.subItems.map(item => ({ ...item, selected: false, full: item.current_participants >= item.max_participants }))
+      }, () => {
+        wx.nextTick(() => this.setData({ showSubItemSignup: true }));
+      });
       return;
     }
     if ((activity.subItems || []).length && !selectedIds.length) return;

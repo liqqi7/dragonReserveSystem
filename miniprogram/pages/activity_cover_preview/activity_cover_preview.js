@@ -1,4 +1,7 @@
 const { takeActivityCoverPreviewSession } = require("../../utils/activityCoverPreviewSession");
+const { createHomeCardMediaLoader } = require("../../utils/homeCardMediaLoader");
+const { prepareHomeImage, invalidateHomeImageCache } = require("../../utils/homeImagePreparation");
+const { rankActivityCoverPreviewImages } = require("../../utils/activityCoverImagePriority");
 
 const RETURN_TRANSITION_COMMIT_MS = 34;
 
@@ -68,7 +71,7 @@ Page({
       previewArtist: artist,
       previewArtwork: artwork,
       previewArtworkIndex: artworkIndex
-    });
+    }, () => this._preparePreviewImages());
   },
 
   closePreview() {
@@ -87,7 +90,19 @@ Page({
     }, RETURN_TRANSITION_COMMIT_MS);
   },
 
+  onShow() {
+    if (this._previewImageLoader) this._previewImageLoader.resume();
+  },
+
+  onHide() {
+    if (this._previewImageLoader) this._previewImageLoader.pause();
+  },
+
   onUnload() {
+    if (this._previewImageLoader) {
+      this._previewImageLoader.dispose();
+      this._previewImageLoader = null;
+    }
     if (this._closeTimer) {
       clearTimeout(this._closeTimer);
       this._closeTimer = null;
@@ -101,7 +116,7 @@ Page({
     this.setData({
       previewArtworkIndex: current,
       previewArtwork: artist.artworks[current]
-    });
+    }, () => this._preparePreviewImages());
   },
 
   movePreview(e) {
@@ -110,8 +125,73 @@ Page({
     if (!artist || !artist.artworks.length) return;
     const next = wrapPreviewIndex(this.data.previewArtworkIndex + delta, artist.artworks.length);
     if (next !== this.data.previewArtworkIndex) {
-      this.setData({ previewArtworkIndex: next, previewArtwork: artist.artworks[next] });
+      this.setData({ previewArtworkIndex: next, previewArtwork: artist.artworks[next] }, () => this._preparePreviewImages());
     }
+  },
+
+
+  _ensurePreviewImageLoader() {
+    if (this._previewImageLoader) return;
+    this._previewImageLoader = createHomeCardMediaLoader({
+      concurrency: 3,
+      load: (url, ready, failed, context) => prepareHomeImage({
+        wxApi: wx,
+        url,
+        ready,
+        failed,
+        stage: (name, details) => context.report(name, details)
+      }),
+      onReady: (url, path) => this._markPreviewImageReady(url, path),
+      onError: () => {},
+      onExhausted: () => {}
+    });
+  },
+
+  _preparePreviewImages() {
+    const artworks = this.data.previewArtist && this.data.previewArtist.artworks || [];
+    if (!artworks.length) return;
+    this._ensurePreviewImageLoader();
+    const ranked = rankActivityCoverPreviewImages(artworks, this.data.previewArtworkIndex);
+    const pending = ranked.filter((item) => !artworks[item.index].displayUrl).map((item) => item.url);
+    const artist = this.data.previewArtist;
+    const avatarUrl = artist.avatarUrl && !artist.displayAvatarUrl ? artist.avatarUrl : "";
+    if (avatarUrl) pending.splice(Math.min(1, pending.length), 0, avatarUrl);
+    this._previewImageLoader.enqueue(pending, {
+      prioritize: true,
+      foregroundUrls: ranked.length ? [ranked[0].url, avatarUrl].filter(Boolean) : [avatarUrl].filter(Boolean)
+    });
+  },
+
+  _markPreviewImageReady(url, path) {
+    const artworks = this.data.previewArtist && this.data.previewArtist.artworks || [];
+    const patch = {};
+    if (this.data.previewArtist.avatarUrl === url) patch["previewArtist.displayAvatarUrl"] = path || url;
+    artworks.forEach((artwork, index) => {
+      if (artwork.imageUrl === url) patch[`previewArtist.artworks[${index}].displayUrl`] = path || url;
+    });
+    const current = artworks[this.data.previewArtworkIndex];
+    if (current && current.imageUrl === url) patch["previewArtwork.displayUrl"] = path || url;
+    if (Object.keys(patch).length) this.setData(patch);
+  },
+
+  onPreviewImageError(e) {
+    const dataset = e.currentTarget.dataset || {};
+    const index = Number(dataset.index);
+    const artworks = this.data.previewArtist && this.data.previewArtist.artworks || [];
+    const artwork = artworks[index];
+    const url = String(dataset.url || (artwork && artwork.imageUrl) || "");
+    if (!url) return;
+    invalidateHomeImageCache(wx, url);
+    const patch = {};
+    if (url === this.data.previewArtist.avatarUrl) patch["previewArtist.displayAvatarUrl"] = "";
+    artworks.forEach((item, artworkIndex) => {
+      if (item.imageUrl === url) patch[`previewArtist.artworks[${artworkIndex}].displayUrl`] = "";
+    });
+    if (this.data.previewArtwork && this.data.previewArtwork.imageUrl === url) patch["previewArtwork.displayUrl"] = "";
+    const retryReady = this._previewImageLoader && this._previewImageLoader.invalidateReady(url);
+    this.setData(patch, () => {
+      if (!retryReady) this._previewImageLoader?.enqueue([url], { retryFailed: true, prioritize: true, foregroundUrls: [url] });
+    });
   },
 
   confirmPreviewCover() {
