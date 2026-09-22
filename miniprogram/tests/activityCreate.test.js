@@ -17,6 +17,11 @@ function context(data) {
   return { ...definition, data: { ...definition.data, ...data }, setData(patch) { Object.assign(this.data, patch); } };
 }
 
+test("cover category uses 游戏 to match the cover catalog", () => {
+  assert.deepEqual(definition.data.categories, ["派对", "运动", "外出", "游戏", "电影", "生日", "吃饭", "杂项"]);
+  assert.doesNotMatch(fs.readFileSync(path.join(__dirname, "../pages/activity_create/activity_create.js"), "utf8"), /const CATEGORIES = .*桌游/);
+});
+
 test("cover swiper advances exactly four covers per slide", () => {
   const c = context({ covers: Array.from({ length: 12 }, (_, index) => ({ id: index + 1, categories: ["派对"] })), category: "派对" });
   c.filterCovers();
@@ -168,6 +173,20 @@ test("disabled cover action cannot advance without a selected cover", () => {
   assert.equal(c.data.step, 1);
 });
 
+test("edit mode reuses the create wizard and submits a prefilled activity update", () => {
+  const pageDir = path.join(__dirname, "../pages/activity_create");
+  const js = fs.readFileSync(path.join(pageDir, "activity_create.js"), "utf8");
+  const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
+  assert.match(js, /options\.mode === "edit"/);
+  assert.match(js, /activityService\.getActivity\(activityId\)/);
+  assert.match(js, /const form = buildEditForm\(activity\)/);
+  assert.match(js, /validateActivityForm\(form, \{ mode, participantCount: this\.data\.participantCount \}\)/);
+  assert.match(js, /activityService\.updateActivity\(this\.data\.editingActivityId, buildActivityPayload\(form, \{ mode \}\)\)/);
+  assert.match(js, /channel\.emit\(result\.mode === "edit" \? "activityUpdated" : "activityCreated"/);
+  assert.match(wxml, /isEdit \? '保存修改' : '立即发布'/);
+  assert.match(wxml, /isEdit \? '返回活动详情' : '返回首页'/);
+});
+
 test("top-left back always returns to the home tab instead of an earlier wizard step", () => {
   const originalWx = global.wx;
   const switchTabCalls = [];
@@ -217,7 +236,7 @@ test("wizard markup retains a non-interactive outgoing scene and directional fad
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
   const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
-  assert.match(wxml, /class="back" bindtap="backHome"[^>]*aria-label="返回首页"/);
+  assert.match(wxml, /class="back" bindtap="backHome"[^>]*aria-label="\{\{isEdit \? '返回活动详情' : '返回首页'\}\}"/);
   assert.match(wxml, /class="previous" bindtap="previousStep"/);
   assert.match(wxml, /wx:if="\{\{leavingStep\}\}" class="step-scene step-scene--leaving step-scene--leaving--\{\{stepTransitionDirection\}\}"/);
   assert.match(wxss, /\.step-scene--entering\.step-scene--entering--forward \{[^}]*animation-name:create-step-enter-forward;[^}]*animation-duration:320ms;/);
@@ -294,7 +313,7 @@ test("details step closed state matches the prototype spacing, empty time, and c
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
   const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
 
-  assert.match(js, /const initialForm = \{ \.\.\.buildCreateForm\(\), startDate: "", startTime: "", endDate: "", endTime: "", maxParticipants: 16 \};/);
+  assert.match(js, /const initialForm = isEdit\s*\? buildCreateForm\(\)\s*:\s*\{ \.\.\.buildCreateForm\(\), startDate: "", startTime: "", endDate: "", endTime: "", maxParticipants: 16 \};/);
   assert.match(wxml, /class="fields fields--subitems-\{\{form\.subItemsEnabled \? 'open' : 'closed'\}\} \{\{subItemsClosing \? 'fields--subitems-closing' : ''\}\}"/);
   assert.match(wxml, /class="body body--step-\{\{step\}\} body--subitems-\{\{form\.subItemsEnabled \? 'open' : 'closed'\}\} \{\{subItemsClosing \? 'body--subitems-closing' : ''\}\}"/);
   assert.match(js, /"工作日出去玩的话别让我知道"/);

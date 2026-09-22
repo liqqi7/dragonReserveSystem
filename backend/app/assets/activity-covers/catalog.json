@@ -308,9 +308,7 @@
           "thumbnail_path": "ardhira-putra/thumbs/ardhira-putra-006.jpg",
           "image_path": "ardhira-putra/images/ardhira-putra-006.jpg",
           "glass_path": "ardhira-putra/glass/ardhira-putra-006.jpg",
-          "categories": [
-            "外出"
-          ]
+          "deprecated": true
         },
         {
           "id": "ardhira-putra-007",
@@ -329,7 +327,7 @@
           "image_path": "ardhira-putra/images/ardhira-putra-008.jpg",
           "glass_path": "ardhira-putra/glass/ardhira-putra-008.jpg",
           "categories": [
-            "桌游"
+            "游戏"
           ]
         },
         {
@@ -366,9 +364,7 @@
           "thumbnail_path": "ardhira-putra/thumbs/ardhira-putra-012.jpg",
           "image_path": "ardhira-putra/images/ardhira-putra-012.jpg",
           "glass_path": "ardhira-putra/glass/ardhira-putra-012.jpg",
-          "categories": [
-            "派对"
-          ]
+          "deprecated": true
         }
       ]
     },
@@ -838,9 +834,7 @@
           "thumbnail_path": "patryk-wojciechowicz/thumbs/patryk-wojciechowicz-004.jpg",
           "image_path": "patryk-wojciechowicz/images/patryk-wojciechowicz-004.jpg",
           "glass_path": "patryk-wojciechowicz/glass/patryk-wojciechowicz-004.jpg",
-          "categories": [
-            "外出"
-          ]
+          "deprecated": true
         },
         {
           "id": "patryk-wojciechowicz-005",
@@ -952,36 +946,92 @@
           "thumbnail_path": "hiroaki-seto/thumbs/hiroaki-seto-001.jpg",
           "image_path": "hiroaki-seto/images/hiroaki-seto-001.jpg",
           "glass_path": "hiroaki-seto/glass/hiroaki-seto-001.jpg",
+          "credit_name": "Hiroaki Seto",
           "categories": [
             "运动"
-          ],
-          "credit_name": "Hiroaki Seto"
+          ]
+        },
+        {
+          "id": "hiroaki-seto-002",
+          "width": 1920,
+          "height": 2444,
+          "thumbnail_path": "categories\\吃饭\\thumbs\\hiroaki-seto-002.jpg",
+          "image_path": "categories\\吃饭\\images\\hiroaki-seto-002.jpg",
+          "credit_name": "Hiroaki Seto",
+          "source_url": "https://meiye.art/role-models/items/cmosggvtd1g37dcruzqyc93gh",
+          "source_image_url": "https://image.meiye.art/pic_1732953062250",
+          "media_type": "image",
+          "categories": [
+            "吃饭"
+          ]
+        }
+      ],
+      "avatar_source_url": "https://image.meiye.art/pic_1732952169240"
+    },
+    {
+      "slug": "linn-fritz",
+      "display_name": "Linn fritz",
+      "avatar_path": "category-assets/linn-fritz/avatar.jpg",
+      "avatar_source_url": "https://image.meiye.art/pic_1695362124674",
+      "artworks": [
+        {
+          "id": "linn-fritz-001",
+          "width": 1080,
+          "height": 1080,
+          "thumbnail_path": "categories/外出/thumbs/linn-fritz-001.jpg",
+          "image_path": "categories/外出/images/linn-fritz-001.gif",
+          "credit_name": "Linn fritz",
+          "media_type": "animated_gif",
+          "deprecated": true
         }
       ]
     },
     {
-      "slug": "unattributed",
-      "display_name": "待补充署名",
-      "avatar_path": "unattributed/avatar.jpg",
+      "slug": "tatsuro-kiuchi",
+      "display_name": "Tatsuro Kiuchi",
+      "avatar_path": "category-assets/tatsuro-kiuchi/avatar.jpg",
+      "avatar_source_url": "https://image.meiye.art/pic_1628251971624",
       "artworks": [
         {
-          "id": "unattributed-001",
-          "width": 1440,
-          "height": 1833,
-          "thumbnail_path": "unattributed/thumbs/unattributed-001.jpg",
-          "image_path": "unattributed/images/unattributed-001.jpg",
-          "glass_path": "unattributed/glass/unattributed-001.jpg",
-          "credit_name": "Hiroaki Seto",
+          "id": "tatsuro-kiuchi-001",
+          "width": 710,
+          "height": 993,
+          "thumbnail_path": "categories/外出/thumbs/tatsuro-kiuchi-001.jpg",
+          "image_path": "categories/外出/images/tatsuro-kiuchi-001.jpg",
+          "credit_name": "Tatsuro Kiuchi",
+          "media_type": "image",
+          "glass_path": "categories/外出/glass/tatsuro-kiuchi-001.jpg",
           "categories": [
-            "吃饭"
+            "外出"
           ]
         }
       ]
     },
     {
-      "slug": "category-assets",
-      "display_name": "分类归档素材",
-      "avatar_path": "categories/派对/avatar.jpg",
+      "slug": "gasp-art",
+      "display_name": "Gasp art",
+      "avatar_path": "category-assets/gasp-art/avatar.jpg",
+      "avatar_source_url": "https://image.meiye.art/pic_1695699066036",
+      "artworks": [
+        {
+          "id": "gasp-art-001",
+          "width": 1280,
+          "height": 1280,
+          "thumbnail_path": "categories/运动/thumbs/gasp-art-001.jpg",
+          "image_path": "categories/运动/images/gasp-art-001.jpg",
+          "credit_name": "Gasp art",
+          "media_type": "image",
+          "categories": [
+            "运动"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "natasha-spivak",
+      "display_name": "Natasha Spivak",
+      "avatar_path": "category-assets/natasha-spivak/avatar.jpg",
+      "avatar_source_url": "https://image.meiye.art/pic_1711425550766",
       "artworks": [
         {
           "id": "natasha-spivak-001",
@@ -995,6 +1045,28 @@
             "派对"
           ]
         },
+        {
+          "id": "natasha-spivak-002",
+          "width": 2000,
+          "height": 2000,
+          "thumbnail_path": "categories\\派对\\thumbs\\natasha-spivak-002.jpg",
+          "image_path": "categories\\派对\\images\\natasha-spivak-002.jpg",
+          "credit_name": "Natasha Spivak",
+          "source_url": "https://meiye.art/role-models/items/cmosghffk2ubrdcrutp1oz8aq",
+          "source_image_url": "https://image.meiye.art/pic_1711426439825",
+          "media_type": "image",
+          "categories": [
+            "派对"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "miguel-angel-camprubi",
+      "display_name": "Miguel Ángel Camprubí",
+      "avatar_path": "category-assets/miguel-angel-camprubi/avatar.jpg",
+      "avatar_source_url": "https://image.meiye.art/pic_1749774859122",
+      "artworks": [
         {
           "id": "miguel-angel-camprubi-001",
           "width": 1000,
@@ -1027,9 +1099,7 @@
           "image_path": "categories/吃饭/images/miguel-angel-camprubi-003.gif",
           "credit_name": "Miguel Ángel Camprubí",
           "media_type": "animated_gif",
-          "categories": [
-            "生日"
-          ]
+          "deprecated": true
         },
         {
           "id": "miguel-angel-camprubi-004",
@@ -1111,45 +1181,18 @@
           "image_path": "categories/生日/images/miguel-angel-camprubi-010.gif",
           "credit_name": "Miguel Ángel Camprubí",
           "media_type": "animated_gif",
-          "deprecated": true
-        },
-        {
-          "id": "linn-fritz-001",
-          "width": 1080,
-          "height": 1080,
-          "thumbnail_path": "categories/外出/thumbs/linn-fritz-001.jpg",
-          "image_path": "categories/外出/images/linn-fritz-001.gif",
-          "credit_name": "Linn fritz",
-          "media_type": "animated_gif",
           "categories": [
-            "外出"
+            "生日"
           ]
-        },
-        {
-          "id": "tatsuro-kiuchi-001",
-          "width": 710,
-          "height": 993,
-          "thumbnail_path": "categories/外出/thumbs/tatsuro-kiuchi-001.jpg",
-          "image_path": "categories/外出/images/tatsuro-kiuchi-001.jpg",
-          "credit_name": "Tatsuro Kiuchi",
-          "media_type": "image",
-          "categories": [
-            "外出"
-          ],
-          "glass_path": "categories/外出/glass/tatsuro-kiuchi-001.jpg"
-        },
-        {
-          "id": "gasp-art-001",
-          "width": 1280,
-          "height": 1280,
-          "thumbnail_path": "categories/运动/thumbs/gasp-art-001.jpg",
-          "image_path": "categories/运动/images/gasp-art-001.jpg",
-          "credit_name": "Gasp art",
-          "media_type": "image",
-          "categories": [
-            "运动"
-          ]
-        },
+        }
+      ]
+    },
+    {
+      "slug": "pasoputi",
+      "display_name": "pasoputi",
+      "avatar_path": "category-assets/pasoputi/avatar.jpg",
+      "avatar_source_url": "https://image.meiye.art/pic_1695437872436",
+      "artworks": [
         {
           "id": "pasoputi-001",
           "width": 1800,
@@ -1161,6 +1204,186 @@
           "categories": [
             "外出"
           ]
+        }
+      ]
+    },
+    {
+      "slug": "dongkyu-lim",
+      "display_name": "dongkyu lim",
+      "avatar_path": "dongkyu-lim/avatar.jpg",
+      "avatar_source_url": "https://image.meiye.art/pic_1628214893551",
+      "artworks": [
+        {
+          "id": "dongkyu-lim-001",
+          "width": 800,
+          "height": 600,
+          "thumbnail_path": "categories\\吃饭\\thumbs\\dongkyu-lim-001.jpg",
+          "image_path": "categories\\吃饭\\images\\dongkyu-lim-001.gif",
+          "credit_name": "dongkyu lim",
+          "source_url": "https://meiye.art/role-models/items/cmosggq9y11tfdcru8b7an3wj",
+          "source_image_url": "https://image.meiye.art/pic_1628398430239",
+          "media_type": "animated_gif",
+          "categories": [
+            "吃饭"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "our-own-night",
+      "display_name": "our own night",
+      "avatar_path": "our-own-night/avatar.jpg",
+      "avatar_source_url": "https://image.meiye.art/pic_1702961191198",
+      "artworks": [
+        {
+          "id": "our-own-night-001",
+          "width": 2800,
+          "height": 1452,
+          "thumbnail_path": "categories\\电影\\thumbs\\our-own-night-001.jpg",
+          "image_path": "categories\\电影\\images\\our-own-night-001.jpg",
+          "credit_name": "our own night",
+          "source_url": "https://meiye.art/role-models/items/cmosghguw2y0ddcruztc4sx91",
+          "source_image_url": "https://image.meiye.art/pic_1702962300240",
+          "media_type": "image",
+          "categories": [
+            "电影"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "meyoco",
+      "display_name": "meyoco",
+      "avatar_path": "meyoco/avatar.jpg",
+      "avatar_source_url": "https://image.meiye.art/pic_1700653722647",
+      "artworks": [
+        {
+          "id": "meyoco-001",
+          "width": 1440,
+          "height": 1306,
+          "thumbnail_path": "categories\\吃饭\\thumbs\\meyoco-001.jpg",
+          "image_path": "categories\\吃饭\\images\\meyoco-001.jpg",
+          "credit_name": "meyoco",
+          "source_url": "https://meiye.art/role-models/items/cmosghcgw2mj7dcrui00ar0z4",
+          "source_image_url": "https://image.meiye.art/pic_1700653955573",
+          "media_type": "image",
+          "categories": [
+            "吃饭"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "clemence-thune",
+      "display_name": " Clémence Thune",
+      "avatar_path": "clemence-thune/avatar.jpg",
+      "avatar_source_url": "https://image.meiye.art/pic_1695361779395",
+      "artworks": [
+        {
+          "id": "clemence-thune-001",
+          "width": 800,
+          "height": 1000,
+          "thumbnail_path": "categories\\派对\\thumbs\\clemence-thune-001.jpg",
+          "image_path": "categories\\派对\\images\\clemence-thune-001.gif",
+          "credit_name": " Clémence Thune",
+          "source_url": "https://meiye.art/role-models/items/cmosggn9g0txndcruzfb3b4k7",
+          "source_image_url": "https://image.meiye.art/pic_1687250326255",
+          "media_type": "animated_gif",
+          "categories": [
+            "派对"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "ilya-shapko",
+      "display_name": "Ilya Shapko",
+      "avatar_path": "ilya-shapko/avatar.jpg",
+      "avatar_source_url": "https://image.meiye.art/pic_1628831114921",
+      "artworks": [
+        {
+          "id": "ilya-shapko-001",
+          "width": 1600,
+          "height": 1200,
+          "thumbnail_path": "categories\\游戏\\thumbs\\ilya-shapko-001.jpg",
+          "image_path": "categories\\游戏\\images\\ilya-shapko-001.jpg",
+          "credit_name": "Ilya Shapko",
+          "source_url": "https://meiye.art/role-models/items/cmosggxzv1kyddcrunphvngwn",
+          "source_image_url": "https://image.meiye.art/pic_16288312152593-oLWokD5uf6FoG6r-J-e",
+          "media_type": "image",
+          "categories": [
+            "游戏"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "coen-pohl",
+      "display_name": "Coen Pohl",
+      "avatar_path": "coen-pohl/avatar.jpg",
+      "avatar_source_url": "https://image.meiye.art/pic_1695564312911",
+      "artworks": [
+        {
+          "id": "coen-pohl-001",
+          "width": 650,
+          "height": 895,
+          "thumbnail_path": "categories\\派对\\thumbs\\coen-pohl-001.jpg",
+          "image_path": "categories\\派对\\images\\coen-pohl-001.jpg",
+          "credit_name": "Coen Pohl",
+          "source_url": "https://meiye.art/role-models/items/cmosggncd0u57dcru6a45ubk9",
+          "source_image_url": "https://image.meiye.art/pic_1628432934485",
+          "media_type": "image",
+          "categories": [
+            "派对"
+          ]
+        },
+        {
+          "id": "coen-pohl-002",
+          "width": 650,
+          "height": 895,
+          "thumbnail_path": "categories\\吃饭\\thumbs\\coen-pohl-002.jpg",
+          "image_path": "categories\\吃饭\\images\\coen-pohl-002.jpg",
+          "credit_name": "Coen Pohl",
+          "source_url": "https://meiye.art/role-models/items/cmosggncm0u5vdcruw55jrc2a",
+          "source_image_url": "https://image.meiye.art/pic_1628432947169",
+          "media_type": "image",
+          "categories": [
+            "吃饭"
+          ]
+        },
+        {
+          "id": "coen-pohl-003",
+          "width": 1920,
+          "height": 1920,
+          "thumbnail_path": "categories\\游戏\\thumbs\\coen-pohl-003.jpg",
+          "image_path": "categories\\游戏\\images\\coen-pohl-003.jpg",
+          "credit_name": "Coen Pohl",
+          "source_url": "https://meiye.art/role-models/items/cmosggndb0u7pdcruqz2wee28",
+          "source_image_url": "https://image.meiye.art/pic_1628432973195",
+          "media_type": "image",
+          "categories": [
+            "游戏"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "maciek-blazniak",
+      "display_name": "Maciek Blaźniak",
+      "avatar_path": "maciek-blazniak/avatar.jpg",
+      "avatar_source_url": "https://image.meiye.art/pic_1628214560430",
+      "artworks": [
+        {
+          "id": "maciek-blazniak-001",
+          "width": 1400,
+          "height": 926,
+          "thumbnail_path": "categories\\生日\\thumbs\\maciek-blazniak-001.jpg",
+          "image_path": "categories\\生日\\images\\maciek-blazniak-001.jpg",
+          "credit_name": "Maciek Blaźniak",
+          "source_url": "https://meiye.art/role-models/items/cmosgh8ci2brtdcrupmjh8t12",
+          "source_image_url": "https://image.meiye.art/pic_1628417163046",
+          "media_type": "image",
+          "deprecated": true
         }
       ]
     }

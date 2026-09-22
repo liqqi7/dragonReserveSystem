@@ -34,6 +34,18 @@ function context(items, locked = false, maxParticipants = 12) {
   };
 }
 
+test("first time enabling subitems creates two blank items", () => {
+  const c = context([]);
+  c.properties.enabled = false;
+  c.toggle({ detail: { value: true } });
+  assert.equal(c.result.enabled, true);
+  assert.equal(c.result.items.length, 2);
+  assert.deepEqual(c.result.items, [
+    { name: "", max_participants: 12 },
+    { name: "", max_participants: 12 }
+  ]);
+});
+
 test("subitems editor caps projects at four and inserts a default item with animation state", () => {
   const c = context([{ id: 1, name: "A", max_participants: 4 }]);
   c.add();

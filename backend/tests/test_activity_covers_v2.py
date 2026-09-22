@@ -32,20 +32,26 @@ def test_cover_catalog_exposes_only_selectable_categorized_assets(client) -> Non
         "magoyama",
         "venmen",
         "Hiroaki Seto",
-        "待补充署名",
-        "分类归档素材",
+        "Tatsuro Kiuchi",
+        "Gasp art",
+        "Natasha Spivak",
+        "Miguel Ángel Camprubí",
+        "pasoputi",
+        "dongkyu lim",
+        "our own night",
+        "meyoco",
+        " Clémence Thune",
+        "Ilya Shapko",
+        "Coen Pohl",
     ]
-    assert sum(len(artist["artworks"]) for artist in artists) == 42
+    assert sum(len(artist["artworks"]) for artist in artists) == 44
     artwork_by_id = {artwork["id"]: artwork for artist in artists for artwork in artist["artworks"]}
     assert artwork_by_id["ardhira-putra-001"]["categories"] == ["派对"]
     assert artwork_by_id["aleksey-rico-001"]["categories"] == ["电影"]
     assert artwork_by_id["hiroaki-seto-001"]["categories"] == ["运动"]
-    assert artwork_by_id["unattributed-001"]["categories"] == ["吃饭"]
     assert artwork_by_id["natasha-spivak-001"]["categories"] == ["派对"]
     assert artwork_by_id["miguel-angel-camprubi-001"]["categories"] == ["外出"]
     assert artwork_by_id["miguel-angel-camprubi-002"]["categories"] == ["外出"]
-    assert artwork_by_id["miguel-angel-camprubi-003"]["categories"] == ["吃饭"]
-    assert artwork_by_id["miguel-angel-camprubi-003"]["image_url"].endswith(".gif")
     assert artwork_by_id["miguel-angel-camprubi-004"]["categories"] == ["生日"]
     assert artwork_by_id["miguel-angel-camprubi-005"]["categories"] == ["吃饭"]
     assert artwork_by_id["miguel-angel-camprubi-005"]["image_url"].endswith(".gif")
@@ -59,15 +65,16 @@ def test_cover_catalog_exposes_only_selectable_categorized_assets(client) -> Non
     assert artwork_by_id["miguel-angel-camprubi-009"]["image_url"].endswith(".gif")
     assert artwork_by_id["miguel-angel-camprubi-010"]["categories"] == ["生日"]
     assert artwork_by_id["miguel-angel-camprubi-010"]["image_url"].endswith(".gif")
-    assert artwork_by_id["linn-fritz-001"]["categories"] == ["外出"]
-    assert artwork_by_id["linn-fritz-001"]["image_url"].endswith(".gif")
     assert artwork_by_id["tatsuro-kiuchi-001"]["categories"] == ["外出"]
     assert artwork_by_id["tatsuro-kiuchi-001"]["image_url"].endswith(".jpg")
     assert artwork_by_id["gasp-art-001"]["categories"] == ["运动"]
     assert artwork_by_id["gasp-art-001"]["image_url"].endswith(".jpg")
     assert artwork_by_id["pasoputi-001"]["categories"] == ["外出"]
     assert artwork_by_id["pasoputi-001"]["image_url"].endswith(".jpg")
+    assert artwork_by_id["ardhira-putra-008"]["categories"] == ["游戏"]
+    assert artwork_by_id["coen-pohl-003"]["categories"] == ["游戏"]
     assert "ardhira-putra-005" not in artwork_by_id
+    assert "magoyama-012" not in artwork_by_id
     first = next(artist for artist in artists if artist["slug"] == "aleksey-rico")["artworks"][0]
     assert first["id"] == "aleksey-rico-001"
     assert first["thumbnail_url"].endswith("/activity-cover-assets/aleksey-rico/thumbs/aleksey-rico-001.jpg")

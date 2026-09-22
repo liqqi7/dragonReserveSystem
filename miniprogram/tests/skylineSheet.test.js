@@ -94,7 +94,7 @@ test("page-container owns overlay, geometry and entrance animation while scroll 
   assert.match(pickerWxml, /custom-style="height: 761\.54rpx;[^\"]*bottom: {{bottomOffsetRpx}}rpx;[^\"]*border-radius: 46\.15rpx 46\.15rpx 0 0;/);
   assert.match(participantsWxml, /custom-style="height: {{drawerHeightRpx}}rpx;[^\"]*border-radius: 46\.15rpx 46\.15rpx 0 0;/);
   assert.match(participantsCss, /\.drawer-sheet\s*\{[^}]*height:\s*100%;/s);
-  assert.match(participantsCss, /\.drawer-body\s*\{[^}]*flex:\s*1 1 0;[^}]*height:\s*0;[^}]*padding:\s*15\.38rpx 30\.77rpx 0;[^}]*display:\s*flex;/s);
+  assert.match(participantsCss, /\.drawer-body\s*\{[^}]*flex:\s*1 1 0;[^}]*height:\s*0;[^}]*padding:\s*16rpx 32rpx 0;[^}]*display:\s*flex;/s);
   assert.match(participantsWxml, /<view class="drawer-table-head">[\s\S]*<scroll-view[\s\S]*id="qaParticipantListScroll"/);
 
   [activityCss, pickerCss, participantsCss].forEach((wxss) => {

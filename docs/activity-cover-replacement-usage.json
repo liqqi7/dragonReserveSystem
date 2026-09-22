@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-22T00:00:00+08:00",
-  "source": "read-only activity usage audit",
-  "activities_total": 32,
+  "generated_at": "2026-09-23T00:00:00+08:00",
+  "source": "read-only production activity usage audit",
+  "activities_total": 56,
   "replacements": [
     {
       "source_cover_id": "ardhira-putra-009",
@@ -9,9 +9,84 @@
       "replacement_cover_id": "ardhira-putra-001"
     },
     {
+      "source_cover_id": "patryk-wojciechowicz-002",
+      "replacement_cover_id": "coen-pohl-001",
+      "usage_count": 6
+    },
+    {
+      "source_cover_id": "patryk-wojciechowicz-004",
+      "replacement_cover_id": "patryk-wojciechowicz-007",
+      "usage_count": 3
+    },
+    {
+      "source_cover_id": "patryk-wojciechowicz-005",
+      "replacement_cover_id": "miguel-angel-camprubi-009",
+      "usage_count": 2
+    },
+    {
+      "source_cover_id": "patryk-wojciechowicz-009",
+      "replacement_cover_id": "patryk-wojciechowicz-006",
+      "usage_count": 3
+    },
+    {
+      "source_cover_id": "patryk-wojciechowicz-011",
+      "replacement_cover_id": "meyoco-001",
+      "usage_count": 1
+    },
+    {
+      "source_cover_id": "patryk-wojciechowicz-014",
+      "replacement_cover_id": "lam-002",
+      "usage_count": 2
+    },
+    {
+      "source_cover_id": "venmen-001",
+      "replacement_cover_id": "magoyama-008",
+      "usage_count": 2
+    },
+    {
+      "source_cover_id": "venmen-005",
+      "replacement_cover_id": "lam-007",
+      "usage_count": 1
+    },
+    {
       "source_cover_id": "venmen-006",
       "usage_count": 1,
       "replacement_cover_id": "patryk-wojciechowicz-007"
+    },
+    {
+      "source_cover_id": "venmen-007",
+      "replacement_cover_id": "yoneyama-mai-016",
+      "usage_count": 1
+    },
+    {
+      "source_cover_id": "yoneyama-mai-003",
+      "replacement_cover_id": "hiroaki-seto-002",
+      "usage_count": 3
+    },
+    {
+      "source_cover_id": "yoneyama-mai-004",
+      "replacement_cover_id": "tatsuro-kiuchi-001",
+      "usage_count": 2
+    },
+    {
+      "source_cover_id": "yoneyama-mai-007",
+      "replacement_cover_id": "miguel-angel-camprubi-009",
+      "usage_count": 3
+    },
+    {
+      "source_cover_id": "yoneyama-mai-010",
+      "replacement_cover_id": "ardhira-putra-008",
+      "usage_count": 1
+    },
+    {
+      "source_cover_id": "yoneyama-mai-011",
+      "replacement_cover_id": "ardhira-putra-001",
+      "usage_count": 1
+    },
+    {
+      "source_cover_id": "yoneyama-mai-013",
+      "replacement_cover_id": "ardhira-putra-002",
+      "usage_count": 1
     }
   ]
 }

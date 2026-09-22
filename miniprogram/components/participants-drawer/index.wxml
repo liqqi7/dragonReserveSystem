@@ -15,9 +15,6 @@
   bind:afterleave="onContainerAfterLeave"
 >
     <view id="qaParticipantsSurface" class="drawer-sheet" style="{{surfaceSizingStyle}} padding-bottom: {{safeBottomRpx}}rpx;">
-    <view class="drawer-handle-zone" aria-label="拖拽区">
-      <view class="drawer-handle"></view>
-    </view>
     <view class="drawer-header">
       <text class="drawer-title">参与人员</text>
       <view class="drawer-close" bindtap="onCloseTap" aria-label="关闭">

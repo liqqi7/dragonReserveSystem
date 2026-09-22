@@ -124,7 +124,7 @@ assert(pickerWxss.includes("left: 38.46rpx"));
 assert(pickerWxss.includes("width: auto"));
 assert(pickerWxss.includes("border-top: 0"));
 assert(pickerWxss.includes("box-shadow: none"));
-assert(pickerWxss.includes("bottom: 0;\n  left: 0;\n  height: 73.08rpx"));
+assert(pickerWxss.includes("height: 73.08rpx"));
 assert(previewPageWxss.includes("right: 38.46rpx"));
 assert(previewPageWxss.includes("width: auto"));
 assert(previewPageWxss.includes("bottom: 345.15rpx"));

@@ -15,7 +15,7 @@
   </swiper>
 </template>
 <view class="wizard" style="padding-top:{{statusBarHeight}}px;">
-  <view class="nav"><view class="back" bindtap="backHome" aria-role="button" aria-label="返回首页"><image class="back-icon" src="/images/activity-create-chevron-left.svg" mode="aspectFit" /></view></view>
+  <view class="nav"><view class="back" bindtap="backHome" aria-role="button" aria-label="{{isEdit ? '返回活动详情' : '返回首页'}}"><image class="back-icon" src="/images/activity-create-chevron-left.svg" mode="aspectFit" /></view></view>
   <view class="step-stage">
     <view class="step-scene {{stepTransitioning ? 'step-scene--entering' : ''}} step-scene--entering--{{stepTransitionDirection}}">
       <scroll-view class="step-scroll" type="list" scroll-y="{{true}}" show-scrollbar="{{false}}" scroll-into-view="create-step-{{step}}" bindscroll="onStepScroll">
@@ -40,7 +40,7 @@
         </view>
       </view>
       </scroll-view>
-      <view class="footer" style="padding-bottom:{{footerSafeAreaRpx}}rpx;"><view class="primary {{submitting || (step === 1 && !form.activityCoverId) ? 'primary--disabled' : ''}}" bindtap="next" aria-role="button" aria-disabled="{{submitting || (step === 1 && !form.activityCoverId)}}"><text>{{submitting ? '发布中…' : (step === 3 ? '立即发布' : '下一步')}}</text></view><view wx:if="{{step > 1}}" class="previous" bindtap="previousStep"><text>返回上一步</text></view></view>
+      <view class="footer" style="padding-bottom:{{footerSafeAreaRpx}}rpx;"><view class="primary {{submitting || loadingEditActivity || (step === 1 && !form.activityCoverId) ? 'primary--disabled' : ''}}" bindtap="next" aria-role="button" aria-disabled="{{submitting || loadingEditActivity || (step === 1 && !form.activityCoverId)}}"><text>{{submitting ? (isEdit ? '保存中…' : '发布中…') : (step === 3 ? (isEdit ? '保存修改' : '立即发布') : '下一步')}}</text></view><view wx:if="{{step > 1}}" class="previous" bindtap="previousStep"><text>返回上一步</text></view></view>
     </view>
     <view wx:if="{{leavingStep}}" class="step-scene step-scene--leaving step-scene--leaving--{{stepTransitionDirection}}">
       <scroll-view class="step-scroll" type="list" scroll-y="{{true}}" show-scrollbar="{{false}}" scroll-top="{{leavingScrollTop}}">

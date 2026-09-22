@@ -30,7 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "backend/app/assets/activity-covers/catalog.json"
 ASSET_ROOT = CATALOG_PATH.parent
 THRESHOLD = 500 * 1024
-CATEGORIES = {"派对", "运动", "外出", "桌游", "电影", "生日", "吃饭", "杂项"}
+CATEGORIES = {"派对", "运动", "外出", "游戏", "电影", "生日", "吃饭", "杂项"}
 USER_AGENT = "dragon-reserve-activity-cover-importer/1.0"
 
 
@@ -41,7 +41,7 @@ def fetch(url: str) -> bytes:
         return response.read()
 
 
-def extract_page_metadata(page: str) -> tuple[str, str, str]:
+def extract_page_metadata(page: str) -> tuple[str, str, str, str]:
     normalized = html.unescape(page).replace(r'\"', '"')
     designer = re.search(r'"designer":\{"id":"[^"]+","slug":"([^"]+)","name":"((?:\\.|[^"\\])*)"', normalized)
     if not designer:
@@ -55,7 +55,9 @@ def extract_page_metadata(page: str) -> tuple[str, str, str]:
             candidates.append(candidate)
     if not candidates:
         raise RuntimeError("未能从页面读取图片地址。")
-    return candidates[0], slug, name
+    avatar_match = re.search(r'"designer":\{"id":"[^"]+","slug":"[^"]+","name":"(?:\\.|[^"\\])*","avatar":"([^"]+)"', normalized)
+    avatar_url = html.unescape(avatar_match.group(1)) if avatar_match else ""
+    return candidates[0], slug, name, avatar_url
 
 
 def base_artist_slug(slug: str) -> str:
@@ -76,6 +78,12 @@ def save_jpeg(image: Image.Image, destination: Path, max_size: tuple[int, int], 
     image = image.copy()
     image.thumbnail(max_size, Image.Resampling.LANCZOS)
     image.convert("RGB").save(destination, "JPEG", quality=quality, optimize=True, progressive=True)
+
+
+def save_author_avatar(raw: bytes, destination: Path) -> None:
+    """Persist the original author avatar as a small local JPEG for the catalog."""
+    with Image.open(io.BytesIO(raw)) as avatar:
+        save_jpeg(ImageOps.exif_transpose(avatar).convert("RGB"), destination, (256, 256), 88)
 
 
 def compress_if_needed(raw: bytes, image: Image.Image) -> tuple[bytes, str]:
@@ -104,9 +112,10 @@ def main() -> int:
     parser.add_argument("--id")
     args = parser.parse_args()
     page = fetch(args.url).decode("utf-8", errors="replace")
-    discovered_url, discovered_slug, discovered_name = extract_page_metadata(page)
+    discovered_url, discovered_slug, discovered_name, discovered_avatar_url = extract_page_metadata(page)
     credit_name = args.credit_name or discovered_name
     raw = fetch(discovered_url)
+    avatar_payload = fetch(discovered_avatar_url) if discovered_avatar_url else None
     with Image.open(io.BytesIO(raw)) as opened:
         source_format = opened.format
         frames = getattr(opened, "n_frames", 1)
@@ -127,16 +136,23 @@ def main() -> int:
         image_path.write_bytes(payload)
         frame = image.convert("RGB")
         save_jpeg(frame, category_root / "thumbs" / f"{cover_id}.jpg", (360, 360), 82)
-    artist = next((a for a in catalog["artists"] if a["slug"] == "category-assets"), None)
+    artist = next((a for a in catalog["artists"] if a["slug"] == base_artist_slug(discovered_slug)), None)
     if artist is None:
-        artist = {"slug": "category-assets", "display_name": "分类归档素材", "avatar_path": f"categories/{args.category}/avatar.jpg", "artworks": []}
+        artist = {"slug": base_artist_slug(discovered_slug), "display_name": discovered_name, "avatar_path": f"{base_artist_slug(discovered_slug)}/avatar.jpg", "avatar_source_url": discovered_avatar_url, "artworks": []}
         catalog["artists"].append(artist)
-    artwork = {"id": cover_id, "width": width, "height": height, "thumbnail_path": f"categories/{args.category}/thumbs/{cover_id}.jpg", "image_path": f"categories/{args.category}/images/{cover_id}{extension}", "credit_name": credit_name, "media_type": media_type, "categories": [args.category]}
+    else:
+        artist["display_name"] = discovered_name or artist.get("display_name", "")
+        if discovered_avatar_url:
+            artist["avatar_source_url"] = discovered_avatar_url
+    if avatar_payload and discovered_avatar_url:
+        save_author_avatar(avatar_payload, ASSET_ROOT / artist["avatar_path"])
+    artwork = {"id": cover_id, "width": width, "height": height, "thumbnail_path": str(image_path.relative_to(ASSET_ROOT).parent.parent / "thumbs" / f"{cover_id}.jpg"), "image_path": str(image_path.relative_to(ASSET_ROOT)), "credit_name": credit_name, "source_url": args.url, "source_image_url": discovered_url, "media_type": media_type, "categories": [args.category]}
     artist["artworks"].append(artwork)
     CATALOG_PATH.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"id": cover_id, "category": args.category, "credit_name": credit_name, "source_url": discovered_url, "format": source_format, "width": width, "height": height, "frames": frames, "source_bytes": len(raw), "stored_bytes": len(payload), "compression": compression}, ensure_ascii=False))
+    print(json.dumps({"id": cover_id, "category": args.category, "credit_name": credit_name, "source_url": args.url, "source_image_url": discovered_url, "avatar_source_url": discovered_avatar_url, "format": source_format, "width": width, "height": height, "frames": frames, "source_bytes": len(raw), "stored_bytes": len(payload), "compression": compression}, ensure_ascii=False))
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

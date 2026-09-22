@@ -1374,10 +1374,10 @@ button.back-to-top {
 .signup-profile-modal-sheet {
   position: relative;
   z-index: 1;
-  width: 90%;
+  width: 76.92%;
   max-height: 80vh;
   background-color: #ffffff;
-  border-radius: 16rpx;
+  border-radius: 36.92rpx;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1387,9 +1387,13 @@ button.back-to-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24rpx;
-  border-bottom: 1rpx solid #eee;
+  padding: 36.92rpx 36.92rpx 20rpx;
+  border-bottom: none;
+  justify-content: center;
 }
+
+.signup-profile-modal-title-wrap { display: flex; align-items: center; justify-content: center; gap: 18rpx; }
+.signup-profile-modal-title-icon { width: 42rpx; height: 42rpx; }
 
 .signup-profile-modal-title {
   font-size: 32rpx;
@@ -1405,9 +1409,27 @@ button.back-to-top {
 }
 
 .signup-profile-modal-body {
-  padding: 24rpx;
-  flex: 1;
+  padding: 0 36.92rpx 20rpx;
+  /* Skyline 下未指定高度时，作为 flex 子项的 scroll-view 会被压成 0 高度。 */
+  flex: 0 0 auto;
+  height: 560rpx;
+  box-sizing: border-box;
   overflow: hidden;
+}
+
+.signup-profile-modal-handle {
+  height: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.signup-profile-modal-handle view {
+  width: 73.08rpx;
+  height: 7.69rpx;
+  border-radius: 3.85rpx;
+  background: #9ca3af;
 }
 
 .signup-profile-hint {
@@ -1427,10 +1449,20 @@ button.back-to-top {
   justify-content: space-between;
   gap: 24rpx;
   margin-bottom: 24rpx;
+  padding: 23.08rpx 26.92rpx;
+  min-height: 150rpx;
+  box-sizing: border-box;
+  background: #ffffff;
+  border-radius: 24.62rpx;
+  box-shadow: 0 3.08rpx 15.38rpx rgba(0, 0, 0, 0.08);
 }
 
 .signup-profile-form-item {
   margin-bottom: 24rpx;
+  padding: 23.08rpx 26.92rpx;
+  background: #ffffff;
+  border-radius: 24.62rpx;
+  box-shadow: 0 3.08rpx 15.38rpx rgba(0, 0, 0, 0.08);
 }
 
 .signup-profile-label {
@@ -1493,8 +1525,9 @@ button.back-to-top {
 
 .signup-profile-modal-footer {
   display: flex;
-  padding: 24rpx;
-  border-top: 1rpx solid #eee;
+  padding: 24rpx 36.92rpx 36.92rpx;
+  border-top: 1rpx solid #f0f0f0;
+  background: #ffffff;
   gap: 16rpx;
 }
 
@@ -1513,13 +1546,77 @@ button.back-to-top {
 }
 
 .signup-profile-btn-primary {
-  background-color: #1989fa;
+  background-color: #ff9800;
   color: #ffffff;
 }
 
 .signup-profile-btn-disabled {
   opacity: 0.45;
 }
+
+/* zRtfm / U9Ou4F：居中弹窗输入框双按钮实例 */
+.signup-profile-modal-sheet {
+  width: 76.92%;
+  padding: 40rpx;
+  box-sizing: border-box;
+  border-radius: 24.62rpx;
+  box-shadow: 0 15.38rpx 43.08rpx rgba(0, 0, 0, 0.15);
+  gap: 32rpx;
+}
+.signup-profile-modal-header {
+  height: auto;
+  padding: 0;
+}
+.signup-profile-modal-title-wrap { gap: 12.31rpx; }
+.signup-profile-modal-title-icon { width: 36rpx; height: 36rpx; flex: none; }
+.signup-profile-modal-title { font-size: 32rpx; font-weight: 700; color: #111827; }
+.signup-profile-modal-body {
+  width: 100%;
+  height: auto;
+  padding: 0;
+  overflow: visible;
+}
+.signup-profile-hint {
+  margin: 0 0 24rpx;
+  padding: 0;
+  background: transparent;
+  color: #4b5563;
+  font-size: 28rpx;
+  line-height: 1.5;
+  text-align: center;
+}
+.signup-profile-form-row {
+  width: 100%;
+  height: 128rpx;
+  min-height: 0;
+  margin: 0 0 24rpx;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.signup-profile-form-item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.signup-profile-label { font-size: 28rpx; color: #4b5563; }
+.signup-profile-avatar-btn,
+.signup-profile-avatar-wrap,
+.signup-profile-avatar-img,
+.signup-profile-avatar-placeholder { width: 128rpx; height: 128rpx; }
+.signup-profile-avatar-btn { width: 128rpx !important; min-width: 128rpx !important; max-width: 128rpx !important; height: 128rpx !important; min-height: 128rpx !important; max-height: 128rpx !important; display: flex; align-items: center; justify-content: center; line-height: 0; border: 1rpx solid #e5e7eb; border-radius: 24rpx; background: #f9fafb; box-sizing: border-box; }
+.signup-profile-avatar-img { width: 128rpx !important; height: 128rpx !important; display: block; border-radius: 24rpx; }
+.signup-profile-avatar-placeholder image { width: 48rpx; height: 48rpx; display: block; }
+.signup-profile-input { height: 88rpx; padding: 0 24rpx; border: none; border-radius: 24rpx; background: #f5f5f5; font-size: 28rpx; }
+.signup-profile-modal-footer { width: 100%; padding: 0; border: none; gap: 24rpx; background: transparent; }
+.signup-profile-btn { height: 88rpx; padding: 0; border-radius: 24rpx; font-size: 28rpx; font-weight: 600; }
+.signup-profile-btn-default { background: #f5f5f5; color: #4b5563; }
+.signup-profile-btn-primary { background: #ff9800; color: #fff; }
 
 
 /* 微信原生 button 会注入默认几何；用带标签的页面级规则锁定原型尺寸。 */
@@ -1619,13 +1716,18 @@ button.project-confirm { width: 100%; min-width: 0; height: 84.62rpx; margin: 0;
 .project-confirm::after { border: 0; }
 button.project-confirm--disabled { background-color: #e5e7eb !important; color: #9ca3af !important; opacity: 1; }
 
-.project-sheet { background: #ffffff; border-radius: 46.15rpx 46.15rpx 0 0; }
-.project-handle-zone { height: 23.08rpx; display: flex; justify-content: center; align-items: center; }
-.project-handle { width: 69.23rpx; height: 7.69rpx; border-radius: 3.85rpx; background: #d1d5db; }
-.project-sheet-heading { display: flex; align-items: center; justify-content: space-between; height: 84.62rpx; margin: 0 30.77rpx; }
-.project-members { max-height: 650rpx; min-height: 200rpx; padding: 0 30.77rpx; box-sizing: border-box; }
-.project-member { height: 100rpx; display: flex; align-items: center; font-size: 26.92rpx; }
-.project-avatar { width: 69.23rpx; height: 69.23rpx; border-radius: 34.62rpx; margin-right: 23.08rpx; }
+.project-sheet { position: relative; width: 100%; height: 100%; min-height: 0; padding-top: 32rpx; background: #f5f5f5; border-radius: 46.15rpx 46.15rpx 0 0; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box; }
+.project-sheet-heading { display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto; height: 76.92rpx; padding: 0 30.77rpx; box-sizing: border-box; }
+.project-sheet .project-title { font-size: 38.46rpx; line-height: 76.92rpx; font-weight: 700; color: #000000; }
+.project-sheet-close { width: 61.54rpx; height: 61.54rpx; display: flex; align-items: center; justify-content: center; }
+.project-sheet-close image { width: 38.46rpx; height: 38.46rpx; }
+.project-members { width: 100%; height: 500rpx; max-height: 650rpx; min-height: 200rpx; padding: 16rpx 32rpx 0; box-sizing: border-box; display: block; }
+.project-member-row-wrap { position: relative; width: 100%; height: 123.08rpx; overflow: hidden; border-radius: 23.08rpx; margin-bottom: 0; }
+.project-member-row-wrap--spaced { margin-bottom: 7.69rpx; }
+.project-member-row { position: relative; width: 100%; height: 123.08rpx; background: #ffffff; border-radius: 23.08rpx; display: flex; align-items: center; box-sizing: border-box; }
+.project-member-cell { height: 123.08rpx; padding-left: 23.08rpx; display: flex; align-items: center; gap: 15.38rpx; min-width: 0; }
+.project-member-avatar { flex: 0 0 76.92rpx; width: 76.92rpx; height: 76.92rpx; border-radius: 50%; background: #e5e7eb; }
+.project-member-name { width: 140.38rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 23.08rpx; line-height: 36.23rpx; font-weight: 500; color: #111827; }
 .project-empty { color: #9ca3af; font-size: 26.92rpx; }
 
 .detail-scroll-content { display: flex; flex-direction: column; height: 100%; }

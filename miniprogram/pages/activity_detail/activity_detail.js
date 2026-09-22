@@ -66,6 +66,17 @@ const DETAIL_ENTRANCE_FRAME_MS = 17;
 const DETAIL_ENTRANCE_DURATION_MS = 280;
 const BACK_TO_TOP_THRESHOLD_RPX = 375;
 
+function getProjectMembersDrawerHeightRpx(rowCount, safeBottomRpx) {
+  const count = Math.max(0, Math.floor(Number(rowCount) || 0));
+  const safeBottom = Math.max(0, Number(safeBottomRpx) || 0);
+  // 与报名人数抽屉共用同一套外壳高度节奏；子项目列表不再使用 page-container 默认高度。
+  const fixedChromeRpx = 130.77 + 15.38 + 153.85 + 15.38 + 61.54 + 30.77 + safeBottom;
+  const bodyRpx = count > 0
+    ? count * 123.08 + Math.max(0, count - 1) * 7.69
+    : 576.92;
+  return Math.min(1384.62, fixedChromeRpx + bodyRpx);
+}
+
 function buildLocationMapMarkers(latitude, longitude, windowWidthPx) {
   const viewportWidth = Number(windowWidthPx) > 0 ? Number(windowWidthPx) : 390;
   const markerSizePx = Math.max(1, Math.round(LOCATION_MAP_MARKER_DESIGN_SIZE_PX * viewportWidth / 390));
@@ -107,6 +118,8 @@ Page({
     projectMembersContainerRendered: false,
     showProjectMembers: false,
     projectMembers: [],
+    projectMembersDrawerHeightRpx: 576.92,
+    projectMembersDrawerMaxHeightRpx: 1384.62,
     projectMemberTitle: "",
     participantPreview: [],
     heroCardAvatars: [],
@@ -804,11 +817,23 @@ Page({
     const id = Number(e.currentTarget.dataset.id);
     const project = (this.data.activity.subItems || []).find(item => item.id === id);
     if (!project) return;
+    const projectMembers = (this.data.activity.participants || [])
+      .filter(person => {
+        const ids = person && (person.subItemIds || person.sub_item_ids || []);
+        return Array.isArray(ids) && ids.some(value => Number(value) === id);
+      })
+      .map((person, index) => ({
+        id: person.id != null ? person.id : `project-member-${index}`,
+        userId: person.userId != null ? person.userId : person.user_id != null ? person.user_id : null,
+        name: person.name || person.nickname || person.displayNickname || person.display_nickname || "未命名",
+        avatarUrl: person.avatarUrl || person.avatar_url || person.displayAvatarUrl || person.display_avatar_url || DEFAULT_AVATAR
+      }));
     this.setData({
       projectMembersContainerRendered: true,
       showProjectMembers: false,
       projectMemberTitle: project.name,
-      projectMembers: (this.data.activity.participants || []).filter(person => (person.subItemIds || []).includes(id))
+      projectMembers,
+      projectMembersDrawerHeightRpx: getProjectMembersDrawerHeightRpx(projectMembers.length, this.data.safeBottomRpx)
     }, () => {
       wx.nextTick(() => this.setData({ showProjectMembers: true }));
     });
@@ -843,6 +868,21 @@ Page({
       this.data.showActivityForm ||
       this.data.activityFormSubmitting
     ) return;
+    if (typeof wx.navigateTo === "function") {
+      const activityId = encodeURIComponent(String(activity._id));
+      wx.navigateTo({
+        url: `/pages/activity_create/activity_create?mode=edit&id=${activityId}`,
+        events: {
+          activityUpdated: () => this.refreshDetail({ silent: true })
+        },
+        fail: (error) => {
+          console.error(error);
+          wx.showToast({ title: "打开编辑页失败，请重试", icon: "none" });
+        }
+      });
+      return;
+    }
+    // Tests and older embedded hosts without navigateTo retain the previous state path.
     this.setData({
       activityFormContainerRendered: true,
       showActivityForm: false,
@@ -1023,15 +1063,7 @@ Page({
     const nickname = app.globalData.userProfile?.nickname?.trim();
     const avatarUrl = (app.globalData.userProfile && app.globalData.userProfile.avatarUrl) || "";
     if (isDefaultNickname(nickname) || isDefaultAvatar(avatarUrl)) {
-      wx.showModal({
-        title: "提示",
-        content: "请修改昵称和头像后再进行报名",
-        showCancel: false,
-        confirmText: "去修改",
-        success: () => {
-          this.openSignupProfileModal();
-        }
-      });
+      this.openSignupProfileModal();
       return;
     }
     const participants = activity.participants || [];

@@ -179,7 +179,10 @@ Component({
       const quota = getQuota(this.properties.maxParticipants);
       const items = this.properties.items.length
         ? this.properties.items
-        : [{ name: "", max_participants: Math.min(12, quota) }];
+        : [
+          { name: "", max_participants: Math.min(12, quota) },
+          { name: "", max_participants: Math.min(12, quota) }
+        ];
       if (!enabled && this.properties.enabled) {
         if (this._contentExitTimer) return;
         this.setData({ contentLeaving: true });

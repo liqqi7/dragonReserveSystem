@@ -384,25 +384,24 @@
     <view class="signup-profile-modal-bg" bindtap="closeSignupProfileModal"></view>
     <view class="signup-profile-modal-sheet" catchtap="stopPropagation" catchtouchmove="stopPropagation">
       <view class="signup-profile-modal-header">
-        <text class="signup-profile-modal-title">修改个人资料</text>
-        <text class="signup-profile-close-btn" bindtap="closeSignupProfileModal">×</text>
+        <view class="signup-profile-modal-title-wrap"><image class="signup-profile-modal-title-icon" src="/images/icon-message-square-text.svg" mode="aspectFit" /><text class="signup-profile-modal-title">修改个人资料</text></view>
       </view>
-      <scroll-view class="signup-profile-modal-body" type="list" scroll-y="{{true}}">
+      <view class="signup-profile-modal-body">
         <view class="signup-profile-hint">{{signupProfileHint}}</view>
         <view class="signup-profile-form-row">
           <view class="signup-profile-label">头像</view>
           <view class="signup-profile-avatar-wrap">
             <button class="signup-profile-avatar-btn" bindtap="onSignupProfileChooseAvatar">
-              <image wx:if="{{signupProfileAvatarUrl}}" class="signup-profile-avatar-img" src="{{signupProfileAvatarUrl}}" mode="aspectFill" />
-              <view wx:else class="signup-profile-avatar-placeholder">上传头像</view>
+              <image wx:if="{{signupProfileAvatarUrl}}" class="signup-profile-avatar-img" src="{{signupProfileAvatarUrl}}" mode="scaleToFill" />
+              <view wx:else class="signup-profile-avatar-placeholder"><image src="/images/icon-image-plus.svg" mode="aspectFit" /></view>
             </button>
           </view>
         </view>
         <view class="signup-profile-form-item">
           <view class="signup-profile-label">昵称</view>
-          <input type="text" class="signup-profile-input" placeholder="请输入昵称" value="{{signupProfileNickname}}" bindinput="onSignupProfileNicknameInput" />
+          <input type="text" class="signup-profile-input" placeholder="请输入昵称" placeholder-style="color:#9CA3AF;" value="{{signupProfileNickname}}" bindinput="onSignupProfileNicknameInput" />
         </view>
-      </scroll-view>
+      </view>
       <view class="signup-profile-modal-footer">
         <button class="signup-profile-btn signup-profile-btn-default" bindtap="closeSignupProfileModal">取消</button>
         <button class="signup-profile-btn signup-profile-btn-primary {{!signupProfileCanSubmit ? 'signup-profile-btn-disabled' : ''}}" bindtap="saveSignupProfile" disabled="{{!signupProfileCanSubmit}}">保存</button>
@@ -427,10 +426,16 @@
     <view class="project-confirm-bar" style="padding-bottom:{{safeBottomRpx}}rpx;"><view class="project-confirm-inner"><button class="project-confirm {{!signupSelection.length || signupSubmitting ? 'project-confirm--disabled' : ''}}" disabled="{{!signupSelection.length || signupSubmitting}}" loading="{{signupSubmitting}}" bindtap="confirmSubItemSignup"><text>{{signupSelection.length ? '确定报名' : '请选择报名的子项目'}}</text></button></view></view>
   </view>
 </page-container>
-<page-container wx:if="{{projectMembersContainerRendered}}" show="{{showProjectMembers}}" position="bottom" round="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="background:#FFFFFF;border-radius:46.15rpx 46.15rpx 0 0;" bind:clickoverlay="closeProjectMembers" bind:beforeleave="onProjectMembersBeforeLeave" bind:afterleave="onProjectMembersAfterLeave">
+<page-container wx:if="{{projectMembersContainerRendered}}" show="{{showProjectMembers}}" position="bottom" overlay="{{true}}" round="{{false}}" duration="240" z-index="1230" close-on-slide-down="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="height:{{projectMembersDrawerHeightRpx}}rpx;max-height:{{projectMembersDrawerMaxHeightRpx}}rpx;background:transparent;border-radius:46.15rpx 46.15rpx 0 0;overflow:hidden;" bind:clickoverlay="closeProjectMembers" bind:beforeleave="onProjectMembersBeforeLeave" bind:afterleave="onProjectMembersAfterLeave">
   <view class="project-sheet" style="padding-bottom:{{safeBottomRpx}}rpx;">
-    <view class="project-handle-zone"><view class="project-handle"></view></view>
-    <view class="project-sheet-heading"><text class="project-title">{{projectMemberTitle}}</text><text class="project-muted">{{projectMembers.length}} 人</text></view>
-    <scroll-view type="list" scroll-y class="project-members"><view wx:for="{{projectMembers}}" wx:key="id" class="project-member"><image class="project-avatar" src="{{item.avatarUrl}}" mode="aspectFill" /><text>{{item.name}}</text></view><text wx:if="{{!projectMembers.length}}" class="project-empty">暂无成员报名</text></scroll-view>
+    <view class="project-sheet-heading"><text class="project-title">{{projectMemberTitle}}</text><view class="project-sheet-close" bindtap="closeProjectMembers" aria-label="关闭"><image src="/images/icon-close.svg" mode="aspectFit" /></view></view>
+    <scroll-view type="list" scroll-y class="project-members">
+      <view wx:for="{{projectMembers}}" wx:key="id" class="project-member-row-wrap {{index < projectMembers.length - 1 ? 'project-member-row-wrap--spaced' : ''}}">
+        <view class="project-member-row">
+          <view class="project-member-cell"><image class="project-member-avatar" src="{{item.avatarUrl}}" mode="aspectFill" /><text class="project-member-name">{{item.name}}</text></view>
+        </view>
+      </view>
+      <text wx:if="{{!projectMembers.length}}" class="project-empty">暂无成员报名</text>
+    </scroll-view>
   </view>
 </page-container>
