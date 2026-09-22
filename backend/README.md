@@ -94,7 +94,7 @@ cd /home/ubuntu/apps/dragonReserveSystem/backend
 sudo systemctl restart dragonreserve-backend
 ```
 
-当前数据库迁移版本为 `20260810_0011`。涉及数据删除或结构调整前，先导出数据库备份。
+当前数据库迁移版本为 `20260923_0019`。涉及数据删除或结构调整前，先导出数据库备份；历史封面替换迁移 `20260923_0019` 为不可逆数据迁移，回滚需恢复迁移前数据库备份。
 
 ## 部署后验证
 
