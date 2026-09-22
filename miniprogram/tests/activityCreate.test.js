@@ -18,7 +18,7 @@ function context(data) {
 }
 
 test("cover swiper advances exactly four covers per slide", () => {
-  const c = context({ covers: Array.from({ length: 12 }, (_, index) => ({ id: index + 1, categories: [] })), category: "全部" });
+  const c = context({ covers: Array.from({ length: 12 }, (_, index) => ({ id: index + 1, categories: ["派对"] })), category: "派对" });
   c.filterCovers();
   assert.equal(c.data.galleryPages.length, 3);
   assert.equal(c.data.galleryPages[0].id, "1-3");
@@ -27,7 +27,7 @@ test("cover swiper advances exactly four covers per slide", () => {
 });
 
 test("cover swiper change keeps its visible page state in sync", () => {
-  const c = context({ galleryCurrent: 0 });
+  const c = context({ galleryCurrent: 0, galleryPages: [{}, {}, {}] });
   c.onGalleryChange({ detail: { current: 2 } });
   assert.equal(c.data.galleryCurrent, 2);
 });
@@ -55,15 +55,18 @@ test("category scrollbar is disabled through the Skyline ScrollViewContext", () 
   assert.match(js, /scroller\.showScrollbar = false;/);
   assert.match(js, /scroller\.bounces = false;/);
   assert.match(js, /scroller\.fastDeceleration = true;/);
-  assert.match(js, /if \(targetStep === 1\) this\.configureCategoryScroller\(\);/);
+  assert.match(js, /if \(targetStep === 1\) \{\s*this\.configureCategoryScroller\(\);/);
 });
-test("activity creation keeps the viewport fixed and footer background transparent", () => {
+test("activity creation scrolls overflow above its fixed transparent footer", () => {
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
   const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
   const json = JSON.parse(fs.readFileSync(path.join(pageDir, "activity_create.json"), "utf8"));
-  assert.match(wxml, /<view class="body body--step-\{\{step\}\} body--subitems-\{\{form\.subItemsEnabled \? 'open' : 'closed'\}\} \{\{subItemsClosing \? 'body--subitems-closing' : ''\}\}">/);
+  assert.match(wxml, /<view class="body body--step-\{\{step\}\} body--subitems-\{\{form\.subItemsEnabled \? 'open' : 'closed'\}\} \{\{subItemsClosing \? 'body--subitems-closing' : ''\}\}"/);
   assert.doesNotMatch(wxml, /class="body body--step-\{\{step\}\}"[^>]*scroll-y/);
+  assert.match(wxml, /class="step-scroll" type="list" scroll-y="\{\{true\}\}"[^>]*scroll-into-view="create-step-\{\{step\}\}"/);
+  assert.match(wxml, /id="create-step-\{\{step\}\}" style="padding-bottom:\{\{footerSafeAreaRpx \+ \(step > 1 \? 207\.69 : 130\.77\)\}\}rpx;"/);
+  assert.match(wxss, /\.step-scroll \{[^}]*flex:1;[^}]*height:0;[^}]*min-height:0;/);
   assert.equal(json.disableScroll, true);
   assert.match(wxss, /\.body \{[^}]*flex:1;[^}]*min-height:0;[^}]*overflow:visible;/);
   assert.match(wxss, /\.step-stage \{[^}]*overflow:visible;/);
@@ -93,7 +96,7 @@ test("selected cover keeps the image size and uses an unclipped prototype outlin
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
   const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
-  assert.match(wxml, /<view class="cover-media"><image class="cover-image"/);
+  assert.match(wxml, /<view class="cover-media"><image wx:if="\{\{coverImagePaths\[item\.id\]\}\}" class="cover-image"/);
   assert.match(wxml, /class="cover-outline \{\{form\.activityCoverId === item\.id \? 'cover-outline--selected' : ''\}\}"/);
   assert.match(wxss, /\.cover \{[^}]*width:317\.31rpx;[^}]*height:423\.08rpx;[^}]*overflow:visible;/);
   assert.match(wxss, /\.cover-media \{[^}]*width:100%;[^}]*height:100%;[^}]*overflow:hidden;/);
@@ -107,7 +110,7 @@ test("activity cover uses the homepage-quality source with the same shimmer and 
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
   const js = fs.readFileSync(path.join(pageDir, "activity_create.js"), "utf8");
   const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
-  assert.match(wxml, /<image class="cover-image" src="\{\{item\.imageUrl\}\}" mode="aspectFill" fade-in="\{\{true\}\}" bindload="onCoverImageLoad" binderror="onCoverImageError" data-id="\{\{item\.id\}\}" \/>/);
+  assert.match(wxml, /<image wx:if="\{\{coverImagePaths\[item\.id\]\}\}" class="cover-image" src="\{\{coverImagePaths\[item\.id\]\}\}" mode="aspectFill" fade-in="\{\{true\}\}" bindload="onCoverImageLoad" binderror="onCoverImageError" data-id="\{\{item\.id\}\}" \/>/);
   assert.doesNotMatch(wxml, /<image class="cover-image" src="\{\{item\.thumbnailUrl\}\}"/);
   assert.match(wxml, /class="cover-skeleton \{\{coverImageStates\[item\.id\] === 'loaded' \? 'cover-skeleton--revealed' : ''\}\}"/);
   assert.match(wxml, /wx:if="\{\{coverImageStates\[item\.id\] === 'loading'\}\}" class="cover-skeleton-shimmer/);
@@ -117,15 +120,15 @@ test("activity cover uses the homepage-quality source with the same shimmer and 
   assert.ok(loadingTemplate);
   assert.equal((loadingTemplate[1].match(/<view class="cover"/g) || []).length, 4);
   assert.match(loadingTemplate[1], /class="cover-skeleton-shimmer \{\{shimmerRunning \? 'cover-skeleton-shimmer--running' : ''\}\}"/);
-  assert.match(wxml, /此分类暂无已标注素材，请在“全部”中选择/);
+  assert.match(wxml, /此分类暂无封面，请选择其他分类/);
   assert.match(js, /this\.setData\(\{ loadingCovers: true, coverError: "" \}, \(\) => this\.startCoverSkeletonShimmer\(\)\);/);
   assert.match(js, /const hasPendingCover = this\.data\.loadingCovers \|\|/);
   assert.match(js, /id: item.id, thumbnailUrl: item.thumbnail_url, imageUrl: item.image_url,/);
-  assert.match(js, /coverImageStates: {}, coverSkeletonShimmerRunning: false/);
+  assert.match(js, /coverImageStates: {}, coverImagePaths: {}, coverSkeletonShimmerRunning: false/);
   assert.match(js, /onCoverImageLoad\(e\) \{/);
   assert.match(js, /this\.updateCoverImageState\(e\.currentTarget\.dataset\.id, "loaded"\);/);
   assert.match(js, /onCoverImageError\(e\) \{/);
-  assert.match(js, /this\.updateCoverImageState\(e\.currentTarget\.dataset\.id, "error"\);/);
+  assert.match(js, /this\._coverImageLoader\.invalidateReady\(cover\.imageUrl\)/);
   assert.ok(wxss.includes(".cover-skeleton { position:absolute;") && wxss.includes("transition:opacity 440ms ease-out;"));
   assert.ok(wxss.includes(".cover-skeleton--revealed { opacity:0; }"));
   assert.ok(wxss.includes(".cover-skeleton-shimmer { position:absolute;") && wxss.includes("width:45%;") && wxss.includes("transform:translateX(-100%);"));
@@ -194,9 +197,12 @@ test("wizard stages keep the outgoing view while the next view enters from the r
     return 1;
   };
   try {
+    c.onStepScroll({ detail: { scrollTop: 180 } });
     c.goToStep(2);
     assert.equal(c.data.step, 2);
     assert.equal(c.data.leavingStep, 1);
+    assert.equal(c.data.leavingScrollTop, 180);
+    assert.equal(c._stepScrollTop, 0);
     assert.equal(c.data.stepTransitioning, true);
     assert.equal(scheduled.delay, 320);
     scheduled.callback();
@@ -323,8 +329,6 @@ test("expanded subitems move the page upward with an ease-in-out transition", ()
   assert.match(wxss, /\.body--step-3\.body--subitems-closed \.heading \{ padding-top:246\.15rpx; \}/);
   assert.match(wxss, /\.body--step-3\.body--subitems-open \.heading \{ padding-top:61\.54rpx; \}/);
 });
-
-
 
 
 

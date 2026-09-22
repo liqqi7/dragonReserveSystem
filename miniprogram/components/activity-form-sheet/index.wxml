@@ -17,6 +17,7 @@
   overlay-style="background: rgba(23, 24, 20, 0.4);"
   custom-style="height: {{panelHeightRpx}}rpx; background: transparent; border-radius: 46.15rpx 46.15rpx 0 0; overflow: hidden;"
   bind:clickoverlay="onClose"
+  bind:beforeleave="onContainerBeforeLeave"
   bind:afterleave="onContainerAfterLeave"
   >
     <include src="./surface.wxml" />

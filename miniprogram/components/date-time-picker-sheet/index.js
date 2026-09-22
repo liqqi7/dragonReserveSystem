@@ -64,11 +64,17 @@ Component({
       if (this.properties.visible) {
         this.initializePicker(() => this.mountContainer());
       }
+    },
+    detached() {
+      if (this._leaveTimer) clearTimeout(this._leaveTimer);
+      this._leaveTimer = null;
     }
   },
 
   methods: {
     mountContainer() {
+      this._containerCloseNotified = false;
+      this._containerAfterLeaveHandled = false;
       if (this._leaveTimer) {
         clearTimeout(this._leaveTimer);
         this._leaveTimer = null;
@@ -84,18 +90,26 @@ Component({
       this.setData({ containerVisible: false });
       if (!this.properties.embedded) return;
       if (this._leaveTimer) clearTimeout(this._leaveTimer);
-      this._leaveTimer = setTimeout(() => {
+      const leaveTimer = setTimeout(() => {
+        if (this._leaveTimer !== leaveTimer) return;
         this._leaveTimer = null;
-        if (!this.properties.visible) {
-          this.setData({ containerRendered: false });
-          this.triggerEvent("afterleave");
-        }
+        this.onContainerAfterLeave();
       }, 220);
+      this._leaveTimer = leaveTimer;
+    },
+
+    onContainerBeforeLeave() {
+      // System back closes the native container without changing its bound property.
+      if (this.properties.visible && this.data.containerVisible && !this._containerCloseNotified) {
+        this._containerCloseNotified = true;
+        this.triggerEvent("close");
+      }
     },
 
     onContainerAfterLeave() {
-      if (!this.properties.visible) {
-        this.setData({ containerRendered: false });
+      if (!this.properties.visible && !this._containerAfterLeaveHandled) {
+        this._containerAfterLeaveHandled = true;
+        this.setData({ containerRendered: false, containerVisible: false });
         this.triggerEvent("afterleave");
       }
     },
@@ -129,6 +143,8 @@ Component({
     stopPropagation() {},
 
     onClose() {
+      if (this._containerCloseNotified) return;
+      this._containerCloseNotified = true;
       this.triggerEvent("close");
     },
 

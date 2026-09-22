@@ -135,8 +135,8 @@ test("a newly created activity is inserted immediately and animates without repl
   assert.doesNotMatch(wxml, /transition-delay/);
 });
 
-test("a newly created large card waits for its glass bitmap before entering", () => {
-  assert.match(js, /const waitsForGlass = createdGroup === "joined" &&[\s\S]*?!!createdActivity\.largeCardGlassImageUrl/);
+test("a newly created static large card waits for its glass bitmap before entering", () => {
+  assert.match(js, /const glassUrl = getHomeCardGlassUrl\(createdActivity\);[\s\S]*?const waitsForGlass = createdGroup === "joined" &&[\s\S]*?!!glassUrl/);
   assert.match(js, /this\._createdCardGlassReady = !waitsForGlass/);
   assert.doesNotMatch(js, /CREATED_CARD_GLASS_WAIT_TIMEOUT_MS/);
   assert.match(js, /onCardGlassLoaded\(e\)[\s\S]*?_markCreatedCardGlassReady/);
@@ -199,7 +199,7 @@ test("home sections match the prototype title and module spacing", () => {
   assert.doesNotMatch(wxss, /\.group-create-(?:btn|icon|text)\b/);
   assert.match(js, /hasCreateActivityPermission\(\)\s*\{[\s\S]*?role === "user" \|\| role === "admin"/);
   assert.match(js, /consumePendingCreateActivity\(\)\s*\{[\s\S]*?pendingOpenCreateActivity = false[\s\S]*?showCreateModal\(\)/);
-  assert.match(js, /showCreateModal\(\)\s*\{\s*if \(!this\.hasCreateActivityPermission\(\)\) return;/);
+  assert.match(js, /showCreateModal\(\)[\s\S]*?if \(!this\.hasCreateActivityPermission\(\)\) \{\s*this\._restoreTabBarAfterCreateNavigation\(\);\s*return;/);
   assert.match(js, /_setTabBarHidden\(!!\([\s\S]*?app\.globalData\.pendingOpenCreateActivity[\s\S]*?\)\);/);
   assert.match(wxss, /\.large-cards-swiper\s*\{[^}]*height:\s*688\.46rpx;/s);
   assert.match(wxss, /\.small-cards-swiper\s*\{[^}]*height:\s*450\.00rpx;/s);
@@ -253,7 +253,7 @@ test("home large and small cards both use the original cover image", () => {
   assert.match(wxml, /class="card-image-bg"[\s\S]*?src="\{\{item\._homeCoverSrc\}\}"[\s\S]*?mode="aspectFill"/);
 });
 
-test("large-card glass uses a pre-rendered static image with the black gradient", () => {
+test("static covers retain pre-rendered glass while GIF covers use the native backdrop", () => {
   const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");
   const glassBottomRule = wxss.match(/\.glass-bottom\s*\{([^}]*)\}/);
   const glassSection = wxss.slice(wxss.indexOf("/* ── 大卡片毛玻璃底部 ── */"), wxss.indexOf("/* ── 自定义底部 Tab ── */"));
@@ -263,7 +263,8 @@ test("large-card glass uses a pre-rendered static image with the black gradient"
   assert.match(js, /activity\.largeCardGlassImageUrl = selectedStyle/);
   assert.match(js, /largeCardGlassImageUrl: String\(rawCover\.large_card_glass_image_url \|\| ""\)/);
   assert.match(js, /activity\.largeCardGlassImageUrl = activity\.activityCover\.largeCardGlassImageUrl \|\| ""/);
-  assert.match(wxml, /class="glass-bottom"[\s\S]*class="glass-static-blur-layer"/);
+  assert.match(wxml, /class="glass-bottom \{\{item\._homeNativeGlass \? 'glass-bottom--native' : ''\}\}"/);
+  assert.match(wxml, /wx:if="\{\{!item\._homeNativeGlass\}\}" class="glass-static-blur-layer"/);
   assert.match(wxml, /wx:if="\{\{item\._homeGlassSrc\}\}"/);
   assert.match(wxml, /class="glass-static-blur-image"[\s\S]*src="\{\{item\._homeGlassSrc\}\}"/);
   assert.match(wxml, /class="glass-tint-layer"/);
@@ -274,5 +275,6 @@ test("large-card glass uses a pre-rendered static image with the black gradient"
   assert.match(glassSection, /\.glass-static-blur-stage\s*\{[\s\S]*left: 0;[\s\S]*bottom: 0;[\s\S]*width: 469\.23rpx;[\s\S]*height: 626\.92rpx;/);
   assert.match(glassSection, /background: linear-gradient\(180deg, rgba\(0,0,0,0\.10\) 0%, rgba\(0,0,0,0\.30\) 100%\)/);
   assert.match(glassSection, /\.large-card--boardgame-boardgame-default \.glass-tint-layer\s*\{[\s\S]*rgba\(0,0,0,0\.20\)[\s\S]*rgba\(0,0,0,0\.40\)/);
-  assert.equal((glassSection.match(/(?:^|[;{}\s])(?:-webkit-)?(?:backdrop-)?filter\s*:/gm) || []).length, 0);
+  assert.match(glassSection, /\.glass-bottom--native\s*\{\s*backdrop-filter:\s*blur\(57\.69rpx\);\s*\}/);
+  assert.doesNotMatch(glassBottomRule[1], /backdrop-filter/);
 });

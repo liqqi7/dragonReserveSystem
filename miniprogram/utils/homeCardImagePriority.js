@@ -1,5 +1,13 @@
 /** Rank pending cover work; never cancels active work or changes concurrency. */
 const cardVisibilityKey = (group, id) => JSON.stringify([group, String(id)]);
+// Inspect the source URL, since byte-preserving disk cache paths end in .bin.
+function usesNativeCardGlass(item) {
+  const sourcePath = String(item && item.largeCardBgImageUrl || '').split(/[?#]/)[0];
+  return /\.gif$/i.test(sourcePath);
+}
+function getHomeCardGlassUrl(item) {
+  return usesNativeCardGlass(item) ? '' : (item && item.largeCardGlassImageUrl || '');
+}
 function rankHomeCardImages({ groups, focused = {}, visible = new Set(), visibilityKnown = false }) {
   const names = Object.keys(groups).filter(group => groups[group].length);
   const cards = [];
@@ -14,7 +22,7 @@ function rankHomeCardImages({ groups, focused = {}, visible = new Set(), visibil
       const priority = distance === 0 ? 0 : distance === 1 ? 1 : 2;
       cards.push({ priority, groupOrder, distance: Math.abs(index - focus), index,
         urls: [group === 'joined' ? item.largeCardBgImageUrl : item.smallCardBgImageUrl,
-          group === 'joined' ? item.largeCardGlassImageUrl : ''].filter(Boolean) });
+          group === 'joined' ? getHomeCardGlassUrl(item) : ''].filter(Boolean) });
     });
   });
   cards.sort((a, b) => a.priority - b.priority || a.distance - b.distance || a.groupOrder - b.groupOrder || a.index - b.index);
@@ -24,4 +32,4 @@ function rankHomeCardImages({ groups, focused = {}, visible = new Set(), visibil
   }));
   return result;
 }
-module.exports = { rankHomeCardImages, cardVisibilityKey };
+module.exports = { rankHomeCardImages, cardVisibilityKey, usesNativeCardGlass, getHomeCardGlassUrl };

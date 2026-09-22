@@ -39,5 +39,19 @@ test('all four rows crossfade in place only after both media and entrance are re
   assert.doesNotMatch(rule('card-skeleton'), /transform/);
   assert.match(rule('card-skeleton--revealed'), /opacity: 0; pointer-events: none/);
   assert.match(rule('home-card-entrance--pending'), /pointer-events: none/);
-  assert.equal((wxml.match(/running: skeletonShimmerRunning && !item\._homeMediaError && !\(item\._homeMediaReady && item\._homeSlotEntered\)/g) || []).length, 4);
+  assert.equal((wxml.match(/running: skeletonShimmerRunning && !item\._homeMediaError && !\(item\._homeMediaReady && item\._homeSlotEntered &&/g) || []).length, 4);
+});
+
+test('skeleton stays visible until the newly created card can actually enter', () => {
+  const expressions = [...wxml.matchAll(/revealed: (.*?), running:/g)].map(match => match[1]);
+  assert.equal(expressions.length, 4);
+  for (const expression of expressions) {
+    const revealed = new Function('item', 'createdCardEntranceId', 'createdCardEntranceState', `return ${expression};`);
+    const card = { _id: 'new', _homeMediaReady: true, _homeSlotEntered: true };
+    assert.equal(revealed(card, 'new', 'pending'), false);
+    assert.equal(revealed(card, 'new', 'entered'), true);
+    assert.equal(revealed(card, 'other', 'pending'), true);
+    assert.equal(revealed({ ...card, _homeMediaReady: false }, 'new', 'entered'), false);
+    assert.equal(revealed({ ...card, _homeSlotEntered: false }, 'new', 'entered'), false);
+  }
 });

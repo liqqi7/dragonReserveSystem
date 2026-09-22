@@ -719,7 +719,6 @@ page {
   min-width: 0;
   overflow: hidden;
   transition: height 260ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: height;
 }
 
 .hero-remark {
@@ -1231,6 +1230,31 @@ page {
   text-align: right;
 }
 
+button.back-to-top {
+  position: fixed;
+  right: 30.77rpx;
+  z-index: 90;
+  width: 96.15rpx;
+  min-width: 0;
+  max-width: 96.15rpx;
+  height: 96.15rpx;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border: 1.92rpx solid #e5e7eb;
+  border-radius: 48.08rpx;
+  background: #ffffff;
+  box-shadow: 0 3.85rpx 15.38rpx rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.back-to-top::after { display: none; }
+.back-to-top--pressed { background: #fff4df; }
+.back-to-top-icon { width: 34.62rpx; height: 34.62rpx; }
+.back-to-top-label { color: #6b7280; font-size: 19.23rpx; line-height: 26.92rpx; }
+
 .bottom-bar {
   position: fixed;
   left: 0;
@@ -1517,32 +1541,96 @@ button.bottom-primary {
   max-width: 473.08rpx !important;
 }
 
-.project-tabs { display:flex; align-items:center; height:84.62rpx; gap:38.46rpx; font-size:30.77rpx; color:#111827; }
-.projects-section { margin:30.77rpx 0; }
-.project-heading, .project-sheet-heading { display:flex; align-items:center; justify-content:space-between; height:84.62rpx; }
-.project-title { font-size:34.62rpx; font-weight:600; color:#111827; }
-.project-muted { font-size:25rpx; color:#9CA3AF; }
-.project-card { display:flex; align-items:center; justify-content:space-between; height:100rpx; border-radius:26.92rpx; padding:0 30.77rpx; background:#F5F5F5; margin-top:15.38rpx; box-sizing:border-box; }
-.project-name { flex:1; min-width:0; font-size:26.92rpx; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.project-count { flex-shrink:0; margin-left:15.38rpx; font-size:26.92rpx; }
-.project-sheet { background:#FFFFFF; border-radius:46.15rpx 46.15rpx 0 0; }
-.project-handle-zone { height:23.08rpx; display:flex; justify-content:center; align-items:center; }
-.project-handle { width:69.23rpx; height:7.69rpx; border-radius:3.85rpx; background:#D1D5DB; }
-.project-sheet-heading { margin:0 30.77rpx; }
-.project-options { padding:0 30.77rpx 15.38rpx; }
-.project-option { height:107.69rpx; border-radius:30.77rpx; display:flex; align-items:center; background:#F5F5F5; padding:0 30.77rpx; margin-top:15.38rpx; box-sizing:border-box; border:1.92rpx solid transparent; }
-.project-option--selected { border-color:#FF9800; background:#FFF7ED; }
-.project-option--full { opacity:0.45; }
-.project-check { margin-left:23.08rpx; font-size:26.92rpx; color:#FF9800; }
-.project-confirm-bar { height:153.85rpx; padding:23.08rpx 30.77rpx; box-sizing:border-box; background:#FFFFFF; }
-.project-confirm { height:107.69rpx; line-height:107.69rpx; border-radius:53.85rpx; background:#111827; color:#FFFFFF; font-size:30.77rpx; }
-.project-confirm::after { border:0; }
-.project-confirm--disabled { background:#F5F5F5; color:#9CA3AF; }
-.project-members { max-height:650rpx; min-height:200rpx; padding:0 30.77rpx; box-sizing:border-box; }
-.project-member { height:100rpx; display:flex; align-items:center; font-size:26.92rpx; }
-.project-avatar { width:69.23rpx; height:69.23rpx; border-radius:34.62rpx; margin-right:23.08rpx; }
-.project-empty { color:#9CA3AF; font-size:26.92rpx; }
+/* 多子项目详情：按原型 390px 画布换算为 rpx。 */
+.basic-information { width: 100%; }
+.projects-section { margin-top: 30.77rpx; }
+.project-heading { display: flex; align-items: center; justify-content: space-between; height: 46.15rpx; }
+.project-title { font-size: 34.62rpx; font-weight: 700; color: #111827; line-height: 46.15rpx; }
+.project-muted { font-size: 25rpx; color: #9ca3af; }
+.project-card {
+  display: flex;
+  align-items: center;
+  gap: 15.38rpx;
+  height: 100rpx;
+  margin-top: 23.08rpx;
+  padding: 0 30.77rpx;
+  border: 1.92rpx solid #e5e7eb;
+  border-radius: 26.92rpx;
+  background: #f9fafb;
+  box-sizing: border-box;
+}
+.project-name { flex: 1; min-width: 0; font-size: 26.92rpx; font-weight: 600; color: #111827; }
+.project-participants { display: flex; align-items: center; gap: 11.54rpx; flex-shrink: 0; }
+.project-count { display: flex; align-items: center; gap: 5.77rpx; font-size: 26.92rpx; font-weight: 600; color: #111827; }
+.project-count-separator { color: #9ca3af; font-weight: 500; }
 
-.detail-scroll-content { display:flex; flex-direction:column; height:100%; }
-.detail-scroll-content--projects { height:auto; min-height:100%; }
-.detail-scroll-content--projects .immersive-hero { flex:0 0 750rpx; }
+/* 报名选择抽屉与 FDMKv / UQw8P 共用同一组状态样式。 */
+.signup-project-sheet {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  padding-top: 30.77rpx;
+  border-radius: 46.15rpx 46.15rpx 0 0;
+  background: #ffffff;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.signup-project-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 76.92rpx;
+  padding: 0 30.77rpx;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+.signup-project-title { color: #000000; font-size: 34.62rpx; font-weight: 700; line-height: 50rpx; }
+.signup-project-close { width: 61.54rpx; height: 61.54rpx; display: flex; align-items: center; justify-content: center; }
+.signup-project-close-icon { width: 38.46rpx; height: 38.46rpx; }
+.project-options { flex: 1; min-height: 0; margin-top: 15.38rpx; }
+.project-options-inner { padding: 11.54rpx 46.15rpx 23.08rpx; box-sizing: border-box; }
+.project-option {
+  height: 107.69rpx;
+  display: flex;
+  align-items: center;
+  gap: 15.38rpx;
+  padding: 0 34.62rpx;
+  margin-bottom: 15.38rpx;
+  border: 2.88rpx solid transparent;
+  border-radius: 30.77rpx;
+  background: #f3f4f6;
+  box-sizing: border-box;
+}
+.project-option:last-child { margin-bottom: 0; }
+.project-option-name { flex: 1; min-width: 0; color: #374151; font-size: 26.92rpx; line-height: 38.46rpx; }
+.project-option-state { display: flex; align-items: center; gap: 19.23rpx; flex-shrink: 0; }
+.project-option-count { color: #9ca3af; font-size: 26.92rpx; line-height: 38.46rpx; }
+.project-option--selected { border-color: #ff9800; background: #fff7ed; }
+.project-option--selected .project-option-name { color: #111827; font-weight: 600; }
+.project-option--selected .project-option-count { color: #ea580c; font-weight: 600; }
+.project-option--full { background: #f9fafb; }
+.project-option--full .project-option-name { color: #9ca3af; }
+.project-option--full .project-option-count { font-size: 25rpx; }
+.project-check { display: flex; align-items: center; justify-content: center; width: 42.31rpx; height: 42.31rpx; border-radius: 21.15rpx; background: #ff9800; }
+.project-check-icon { width: 25rpx; height: 25rpx; }
+.project-confirm-bar { flex-shrink: 0; background: #ffffff; border-top: 1.92rpx solid #e5e7eb; box-shadow: 0 -5.77rpx 23.08rpx rgba(0,0,0,0.07); box-sizing: border-box; }
+.project-confirm-inner { height: 107.69rpx; padding: 11.54rpx 38.46rpx; box-sizing: border-box; }
+button.project-confirm { width: 100%; min-width: 0; height: 84.62rpx; margin: 0; padding: 0; border-radius: 23.08rpx; line-height: 84.62rpx; font-size: 26.92rpx; font-weight: 700; background: #ff9800; color: #ffffff; box-sizing: border-box; }
+.project-confirm::after { border: 0; }
+button.project-confirm--disabled { background-color: #e5e7eb !important; color: #9ca3af !important; opacity: 1; }
+
+.project-sheet { background: #ffffff; border-radius: 46.15rpx 46.15rpx 0 0; }
+.project-handle-zone { height: 23.08rpx; display: flex; justify-content: center; align-items: center; }
+.project-handle { width: 69.23rpx; height: 7.69rpx; border-radius: 3.85rpx; background: #d1d5db; }
+.project-sheet-heading { display: flex; align-items: center; justify-content: space-between; height: 84.62rpx; margin: 0 30.77rpx; }
+.project-members { max-height: 650rpx; min-height: 200rpx; padding: 0 30.77rpx; box-sizing: border-box; }
+.project-member { height: 100rpx; display: flex; align-items: center; font-size: 26.92rpx; }
+.project-avatar { width: 69.23rpx; height: 69.23rpx; border-radius: 34.62rpx; margin-right: 23.08rpx; }
+.project-empty { color: #9ca3af; font-size: 26.92rpx; }
+
+.detail-scroll-content { display: flex; flex-direction: column; height: 100%; }
+.detail-scroll-content--projects { height: auto; min-height: 100%; }
+.detail-scroll-content--projects .immersive-hero { flex: 0 0 750rpx; }
+.detail-scroll-content--projects .detail-panel { margin-top: -107.69rpx; padding-bottom: 46.15rpx; }
+.detail-scroll-content--projects .hero-copy { bottom: calc(107.69rpx + 46.15rpx); }
+.detail-scroll-content--projects .facts-row { margin-top: 23.08rpx; }

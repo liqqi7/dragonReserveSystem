@@ -162,6 +162,8 @@ Component({
       });
     },
     mountContainer() {
+      this._containerCloseNotified = false;
+      this._containerAfterLeaveHandled = false;
       if (this.properties.routeEmbedded) {
         this.setData({ containerRendered: false, containerVisible: false });
         return;
@@ -173,9 +175,20 @@ Component({
       });
     },
 
+    onContainerBeforeLeave() {
+      // A system back gesture does not update the parent's visible binding.
+      if (this.properties.visible && this.data.containerVisible && !this._containerCloseNotified) {
+        this._containerCloseNotified = true;
+        this.triggerEvent("close");
+      }
+    },
+
     onContainerAfterLeave() {
-      if (!this.properties.visible) {
-        this.setData({ containerRendered: false }, () => this.triggerEvent("afterleave"));
+      if (!this.properties.visible && !this._containerAfterLeaveHandled) {
+        this._containerAfterLeaveHandled = true;
+        this.setData({ containerRendered: false, containerVisible: false }, () => {
+          if (!this.properties.visible && this._containerAfterLeaveHandled) this.triggerEvent("afterleave");
+        });
       }
     },
 
@@ -224,6 +237,8 @@ Component({
 
     onClose() {
       if (this.properties.submitting || this.data.pickerVisible || this.data.coverPickerVisible) return;
+      if (this._containerCloseNotified) return;
+      this._containerCloseNotified = true;
       this.triggerEvent("close");
     },
 

@@ -103823,20 +103823,6 @@
       ]
     },
     {
-      "type": "rectangle",
-      "id": "VjvNd",
-      "x": -3079,
-      "y": 292,
-      "fill": {
-        "type": "image",
-        "enabled": true,
-        "url": "6252e544133aac67c456dd1be6878014.png",
-        "mode": "fill"
-      },
-      "width": 390,
-      "height": 848
-    },
-    {
       "type": "frame",
       "id": "zDxJM",
       "x": -808,

@@ -64,6 +64,7 @@ const LOCATION_MAP_MARKER_DESIGN_SIZE_PX = 54;
 const LOCATION_MAP_MARKER_ANCHOR_Y = 23 / 54;
 const DETAIL_ENTRANCE_FRAME_MS = 17;
 const DETAIL_ENTRANCE_DURATION_MS = 280;
+const BACK_TO_TOP_THRESHOLD_RPX = 375;
 
 function buildLocationMapMarkers(latitude, longitude, windowWidthPx) {
   const viewportWidth = Number(windowWidthPx) > 0 ? Number(windowWidthPx) : 390;
@@ -85,6 +86,7 @@ Page({
     navBarHeight: 64,
     safeBottomRpx: 0,
     bottomBarHeightRpx: 107.69,
+    showBackToTop: false,
     activityId: "",
     activity: null,
     loading: true,
@@ -101,11 +103,11 @@ Page({
     signupOptions: [],
     signupSelection: [],
     signupSubmitting: false,
+    signupSheetContentHeightRpx: 742.31,
     projectMembersContainerRendered: false,
     showProjectMembers: false,
     projectMembers: [],
     projectMemberTitle: "",
-    detailAnchor: "",
     participantPreview: [],
     heroCardAvatars: [],
     participantDrawerList: [],
@@ -157,19 +159,23 @@ Page({
   _hasShownOnce: false,
   _sharePreviewGen: 0,
   _windowWidthPx: 390,
+  _backToTopThresholdPx: BACK_TO_TOP_THRESHOLD_RPX * 390 / 750,
 
   onLoad(options) {
+    this._detailUnloaded = false;
     const id = (options && options.id) || "";
     try {
       const win = getWindowInfoCompat();
       const statusBarHeight = win.statusBarHeight || 20;
       this._windowWidthPx = Number(win.windowWidth) > 0 ? Number(win.windowWidth) : 390;
       const safeBottomRpx = getBottomSafeAreaRpx();
+      const bottomBarHeightRpx = Math.round((107.69 + safeBottomRpx) * 100) / 100;
+      this._backToTopThresholdPx = BACK_TO_TOP_THRESHOLD_RPX * this._windowWidthPx / 750;
       this.setData({
         statusBarHeight,
         navBarHeight: statusBarHeight + 44,
         safeBottomRpx,
-        bottomBarHeightRpx: Math.round((107.69 + safeBottomRpx) * 100) / 100,
+        bottomBarHeightRpx,
         activityId: id
       });
     } catch (e) {
@@ -202,8 +208,28 @@ Page({
   },
 
   onUnload() {
+    this._detailUnloaded = true;
     this._locationRequestId += 1;
     this.clearDetailEntranceTransition();
+  },
+
+  onDetailScroll(e) {
+    if (this._detailUnloaded) return;
+    const scrollTop = Math.max(0, Number(e.detail && e.detail.scrollTop) || 0);
+    const showBackToTop = scrollTop >= this._backToTopThresholdPx;
+    if (showBackToTop !== this.data.showBackToTop) {
+      this.setData({ showBackToTop });
+    }
+  },
+
+  backToTop() {
+    this.createSelectorQuery().select('.main-scroll').node().exec(result => {
+      if (this._detailUnloaded) return;
+      const scroller = result && result[0] && result[0].node;
+      if (scroller && typeof scroller.scrollTo === 'function') {
+        scroller.scrollTo({ top: 0, animated: true });
+      }
+    });
   },
 
   syncUser() {
@@ -508,6 +534,7 @@ Page({
 
     this.setData({
       activity,
+      loadError: "",
       canManageActivity,
       heroCardAvatars,
       participantPreview: list,
@@ -631,10 +658,18 @@ Page({
   },
 
   loadLocationDistance(activity) {
-    const latitude = Number(activity && activity.locationLatitude);
-    const longitude = Number(activity && activity.locationLongitude);
+    const rawLatitude = activity && activity.locationLatitude;
+    const rawLongitude = activity && activity.locationLongitude;
+    const latitude = Number(rawLatitude);
+    const longitude = Number(rawLongitude);
     const requestId = ++this._locationRequestId;
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || !wx.getLocation) {
+    if (
+      rawLatitude == null || rawLongitude == null ||
+      String(rawLatitude).trim() === "" || String(rawLongitude).trim() === "" ||
+      !Number.isFinite(latitude) || !Number.isFinite(longitude) ||
+      latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180 ||
+      !wx.getLocation
+    ) {
       this.setData({ locationDistanceText: "" });
       return;
     }
@@ -672,9 +707,16 @@ Page({
 
   openLocation() {
     const activity = this.data.activity;
-    const latitude = Number(activity && activity.locationLatitude);
-    const longitude = Number(activity && activity.locationLongitude);
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    const rawLatitude = activity && activity.locationLatitude;
+    const rawLongitude = activity && activity.locationLongitude;
+    const latitude = Number(rawLatitude);
+    const longitude = Number(rawLongitude);
+    if (
+      rawLatitude == null || rawLongitude == null ||
+      String(rawLatitude).trim() === "" || String(rawLongitude).trim() === "" ||
+      !Number.isFinite(latitude) || !Number.isFinite(longitude) ||
+      latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180
+    ) {
       wx.showToast({ title: "该活动暂无可导航地点", icon: "none" });
       return;
     }
@@ -734,15 +776,16 @@ Page({
     }
   },
 
-  selectDetailSection(e) {
-    this.setData({ detailAnchor: e.currentTarget.dataset.anchor });
-  },
   closeSubItemSignup() {
     if (!this.data.signupSubmitting) this.setData({ showSubItemSignup: false });
   },
 
+  onSubItemSignupBeforeLeave() {
+    if (this.data.showSubItemSignup) this.setData({ showSubItemSignup: false });
+  },
+
   onSubItemSignupAfterLeave() {
-    if (!this.data.showSubItemSignup) {
+    if (!this.data.showSubItemSignup && this.data.subItemSignupContainerRendered) {
       this.setData({ subItemSignupContainerRendered: false });
     }
   },
@@ -753,7 +796,9 @@ Page({
     this.setData({ signupOptions: options, signupSelection: options.filter(item => item.selected).map(item => item.id) });
   },
   confirmSubItemSignup() {
-    if (this.data.signupSelection.length) this.directSignup(this.data.activity, this.data.signupSelection);
+    if (this.data.signupSelection.length && !this.data.signupSubmitting) {
+      this.directSignup(this.data.activity, this.data.signupSelection);
+    }
   },
   openProjectMembers(e) {
     const id = Number(e.currentTarget.dataset.id);
@@ -770,8 +815,12 @@ Page({
   },
   closeProjectMembers() { this.setData({ showProjectMembers: false }); },
 
+  onProjectMembersBeforeLeave() {
+    if (this.data.showProjectMembers) this.setData({ showProjectMembers: false });
+  },
+
   onProjectMembersAfterLeave() {
-    if (!this.data.showProjectMembers) {
+    if (!this.data.showProjectMembers && this.data.projectMembersContainerRendered) {
       this.setData({ projectMembersContainerRendered: false });
     }
   },
@@ -809,8 +858,13 @@ Page({
     this.setData({ showActivityForm: false });
   },
 
+  onActivityFormBeforeLeave() {
+    // Native back has already started closing the sheet, including during a pending request.
+    if (this.data.showActivityForm) this.setData({ showActivityForm: false });
+  },
+
   onActivityFormAfterLeave() {
-    if (!this.data.showActivityForm) {
+    if (!this.data.showActivityForm && this.data.activityFormContainerRendered) {
       this.setData({ activityFormContainerRendered: false });
     }
   },
@@ -997,6 +1051,7 @@ Page({
         subItemSignupContainerRendered: true,
         showSubItemSignup: false,
         signupSelection: [],
+        signupSheetContentHeightRpx: Math.round((130 + activity.subItems.length * 64) * 750 / 390 * 100) / 100,
         signupOptions: activity.subItems.map(item => ({ ...item, selected: false, full: item.current_participants >= item.max_participants }))
       }, () => {
         wx.nextTick(() => this.setData({ showSubItemSignup: true }));

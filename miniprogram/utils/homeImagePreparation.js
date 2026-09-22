@@ -1,6 +1,12 @@
 /** Separate download from local image inspection; never substitute a fallback image.
  * Inspection completion is not proof that the compositor has painted the image.
  */
+const { isLocalTestMediaUrl } = require('../services/config');
+// The configured local test origin uses the same byte-preserving cache as HTTPS.
+// wxfile:// and DevTools http://tmp/http://usr paths remain local inspection inputs.
+function isNetworkImage(url) {
+  return /^https:\/\//.test(url) || (/^http:\/\//.test(url) && isLocalTestMediaUrl(url));
+}
 // Numeric categories avoid persisting raw errors that can contain signed URLs.
 // 1=domain configuration, 2=timeout, 3=cancelled, 4=TLS, 5=network, 6=other.
 function imageErrorCode(error) {
@@ -54,7 +60,7 @@ function prepareHomeImageTransfer({ wxApi, url, ready, failed, stage = () => {},
       }, fail: error => { finishInspection(); report('image_info_failed', { errorCode: imageErrorCode(error) }); fail(error); } });
     } catch (error) { finishInspection(); report('image_info_failed', { errorCode: imageErrorCode(error) }); fail(error); }
   };
-  if (typeof wxApi.downloadFile !== 'function' || !/^https:\/\//.test(url)) {
+  if (typeof wxApi.downloadFile !== 'function' || !isNetworkImage(url)) {
     report('combined_preparation'); inspect(url);
   } else {
     downloadPending = true; downloadTasks++;
@@ -118,7 +124,7 @@ const { getHomeImageDiskCache } = require('./homeImageDiskCache');
 function invalidateHomeImageCache(wxApi, url) { return getHomeImageDiskCache(wxApi)?.invalidate(url); }
 function prepareHomeImage(options) {
   const { wxApi, url, ready, stage = () => {} } = options;
-  const cache = /^https:\/\//.test(url) ? getHomeImageDiskCache(wxApi) : null;
+  const cache = isNetworkImage(url) ? getHomeImageDiskCache(wxApi) : null;
   if (!cache) {
     try { stage('disk_cache_bypassed'); } catch (_) {}
     return prepareHomeImageTransfer(options);

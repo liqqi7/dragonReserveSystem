@@ -11,6 +11,7 @@
   overlay-style="background: rgba(0, 0, 0, 0.4);"
   custom-style="height: {{drawerHeightRpx}}rpx; max-height: {{maxHeightRpx}}rpx; background: transparent; border-radius: 46.15rpx 46.15rpx 0 0; overflow: hidden;"
   bind:clickoverlay="onMaskTap"
+  bind:beforeleave="onContainerBeforeLeave"
   bind:afterleave="onContainerAfterLeave"
 >
     <view id="qaParticipantsSurface" class="drawer-sheet" style="{{surfaceSizingStyle}} padding-bottom: {{safeBottomRpx}}rpx;">

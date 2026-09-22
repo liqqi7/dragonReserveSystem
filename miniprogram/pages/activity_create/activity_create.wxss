@@ -15,7 +15,8 @@ page { height:100%; background:#FFFFFF; }
 .back { width:69.23rpx; height:88rpx; display:flex; align-items:center; justify-content:flex-start; }
 .back-icon { width:34.62rpx; height:34.62rpx; }
 
-.body { flex:1; min-height:0; overflow:visible; }
+.step-scroll { flex:1; height:0; min-height:0; }
+.body { flex:1; min-height:0; overflow:visible; box-sizing:border-box; }
 .heading { padding:0 46.15rpx; display:flex; flex-direction:column; align-items:center; gap:23.08rpx; text-align:center; }
 .body--step-1 .heading { padding-top:38.46rpx; }
 .body--step-2 .heading { padding-top:246.15rpx; }
@@ -84,7 +85,6 @@ page { height:100%; background:#FFFFFF; }
 .gallery-indicator { height:30.77rpx; margin:15.38rpx auto 0; display:flex; align-items:center; justify-content:center; gap:15.38rpx; }
 .gallery-indicator-dot { width:11.54rpx; height:7.69rpx; border-radius:3.85rpx; background:#E5E7EB; }
 .gallery-indicator-active { width:34.62rpx; height:7.69rpx; border-radius:3.85rpx; background:#FF9800; }
-
 
 
 

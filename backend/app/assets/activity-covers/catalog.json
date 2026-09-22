@@ -880,9 +880,7 @@
           "thumbnail_path": "patryk-wojciechowicz/thumbs/patryk-wojciechowicz-008.jpg",
           "image_path": "patryk-wojciechowicz/images/patryk-wojciechowicz-008.jpg",
           "glass_path": "patryk-wojciechowicz/glass/patryk-wojciechowicz-008.jpg",
-          "categories": [
-            "外出"
-          ]
+          "deprecated": true
         },
         {
           "id": "patryk-wojciechowicz-009",
@@ -891,9 +889,7 @@
           "thumbnail_path": "patryk-wojciechowicz/thumbs/patryk-wojciechowicz-009.jpg",
           "image_path": "patryk-wojciechowicz/images/patryk-wojciechowicz-009.jpg",
           "glass_path": "patryk-wojciechowicz/glass/patryk-wojciechowicz-009.jpg",
-          "categories": [
-            "外出"
-          ]
+          "deprecated": true
         },
         {
           "id": "patryk-wojciechowicz-010",
@@ -1032,7 +1028,7 @@
           "credit_name": "Miguel Ángel Camprubí",
           "media_type": "animated_gif",
           "categories": [
-            "吃饭"
+            "生日"
           ]
         },
         {
@@ -1115,9 +1111,7 @@
           "image_path": "categories/生日/images/miguel-angel-camprubi-010.gif",
           "credit_name": "Miguel Ángel Camprubí",
           "media_type": "animated_gif",
-          "categories": [
-            "生日"
-          ]
+          "deprecated": true
         },
         {
           "id": "linn-fritz-001",

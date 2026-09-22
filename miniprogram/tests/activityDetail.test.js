@@ -492,7 +492,7 @@ test("basic information header has no right-side status text", () => {
 test("activity detail locks the viewport instead of exposing page overscroll", () => {
   assert.equal(pageJson.disableScroll, true);
   assert.match(wxml, /<scroll-view[^>]*\s+class="main-scroll"[\s\S]*?height: calc\(100vh - \{\{bottomBarHeightRpx\}\}rpx\)/);
-  assert.match(wxml, /scroll-into-view="{{detailAnchor}}"/);
+  assert.doesNotMatch(wxml, /scroll-into-view="{{detailAnchor}}"/);
   assert.doesNotMatch(wxml, /class="scroll-bottom-spacer"/);
   assert.match(wxss, /^page\s*\{[^}]*height:\s*100%;[^}]*overflow:\s*hidden;/s);
   assert.match(wxss, /\.page-wrap\s*\{[^}]*height:\s*100vh;[^}]*overflow:\s*hidden;/s);

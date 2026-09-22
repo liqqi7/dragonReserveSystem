@@ -5,11 +5,13 @@
   "replacements": [
     {
       "source_cover_id": "ardhira-putra-009",
-      "usage_count": 1
+      "usage_count": 1,
+      "replacement_cover_id": "ardhira-putra-001"
     },
     {
       "source_cover_id": "venmen-006",
-      "usage_count": 1
+      "usage_count": 1,
+      "replacement_cover_id": "patryk-wojciechowicz-007"
     }
   ]
 }

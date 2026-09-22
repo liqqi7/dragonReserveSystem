@@ -1,4 +1,4 @@
-const { rankHomeCardImages, cardVisibilityKey } = require("../../utils/homeCardImagePriority");
+const { rankHomeCardImages, cardVisibilityKey, usesNativeCardGlass, getHomeCardGlassUrl } = require("../../utils/homeCardImagePriority");
 const { prepareHomeImage, invalidateHomeImageCache } = require("../../utils/homeImagePreparation");
 const app = getApp();
 const activityService = require("../../services/activity");
@@ -479,6 +479,11 @@ Page({
     });
     this._scheduleColdStartCardEntrance();
     this._startSkeletonShimmer();
+    // 独立创建页在首页隐藏时回传活动，返回时不会触发旧抽屉的 afterleave。
+    // 原生抽屉仍存在时继续等待它关闭，其余场景由 onShow 释放新卡片入场。
+    if (!this.data.createFormContainerRendered && !this.data.showCreateForm) {
+      this._revealCreatedCard();
+    }
   },
 
   hasCreateActivityPermission() {
@@ -494,7 +499,9 @@ Page({
       this._setTabBarHidden(false);
       return;
     }
-    wx.nextTick(() => this.showCreateModal());
+    wx.nextTick(() => {
+      if (this._pageVisible !== false) this.showCreateModal();
+    });
   },
 
   loadActivityListByCachePolicy() {
@@ -623,7 +630,7 @@ Page({
 
   _cardImageUrls(item, group) {
     return [group === "joined" ? item.largeCardBgImageUrl : item.smallCardBgImageUrl,
-      group === "joined" ? item.largeCardGlassImageUrl : ""].filter(Boolean);
+      group === "joined" ? getHomeCardGlassUrl(item) : ""].filter(Boolean);
   },
 
   _cardMediaKey(item, group) {
@@ -642,7 +649,8 @@ Page({
         return { ...view, _homeSlotEntered: this._homeSlotStates?.get(cardVisibilityKey(group, item._id)) ?? !!this._homeSlotEntranceDone, _homeMediaKey: key, _homeMediaReady: this._homeEnteredMediaKeys.has(key),
           _homeMediaError: !this._homeEnteredMediaKeys.has(key) && this._cardImageUrls(item, group).some(url => this._homeExhaustedImages?.has(url)),
           _homeCoverSrc: this._homeReadyImages.get(cover) || "",
-          _homeGlassSrc: this._homeReadyImages.get(item.largeCardGlassImageUrl) || "" };
+          _homeNativeGlass: group === "joined" && usesNativeCardGlass(item),
+          _homeGlassSrc: group === "joined" ? (this._homeReadyImages.get(getHomeCardGlassUrl(item)) || "") : "" };
       });
     });
     return {
@@ -861,7 +869,7 @@ Page({
     const group = data.group || "joined";
     const item = (this.data.groupedActivities[group] || []).find(card => String(card._id) === String(data.activityId));
     if (!item) return false;
-    const url = role === "glass" ? item.largeCardGlassImageUrl
+    const url = role === "glass" ? getHomeCardGlassUrl(item)
       : group === "joined" ? item.largeCardBgImageUrl : item.smallCardBgImageUrl;
     const src = role === "glass" ? item._homeGlassSrc : item._homeCoverSrc;
     return url === data.url && src === data.mediaSrc;
@@ -874,7 +882,7 @@ Page({
       cards.forEach((item, index) => {
         const cover = group === "joined" ? item.largeCardBgImageUrl : item.smallCardBgImageUrl;
         const badCover = this._homeInvalidImageUrls.has(cover);
-        const badGlass = group === "joined" && this._homeInvalidImageUrls.has(item.largeCardGlassImageUrl);
+        const badGlass = group === "joined" && this._homeInvalidImageUrls.has(getHomeCardGlassUrl(item));
         if (!badCover && !badGlass) return;
         const prefix = `groupedActivities.${group}[${index}]`;
         if (badCover) patch[`${prefix}._homeCoverSrc`] = "";
@@ -929,7 +937,7 @@ Page({
     for (const ref of this._homeMediaUrlIndex.get(url) || []) {
       this._homeMediaPendingCards.add(ref);
       if (String(ref.item._id) === String(this.data.createdCardEntranceId) &&
-          ref.item.largeCardGlassImageUrl === url) this._markCreatedCardGlassReady(ref.item._id);
+          getHomeCardGlassUrl(ref.item) === url) this._markCreatedCardGlassReady(ref.item._id);
     }
     this._scheduleReadyHomeCards();
   },
@@ -984,7 +992,7 @@ Page({
         const prefix = `groupedActivities.${group}[${index}]`;
         const cover = group === "joined" ? item.largeCardBgImageUrl : item.smallCardBgImageUrl;
         const coverPath = this._homeReadyImages.get(cover);
-        const glassPath = group === "joined" && this._homeReadyImages.get(item.largeCardGlassImageUrl);
+        const glassPath = group === "joined" && this._homeReadyImages.get(getHomeCardGlassUrl(item));
         if (coverPath && item._homeCoverSrc !== coverPath) patch[`${prefix}._homeCoverSrc`] = coverPath;
         if (glassPath && item._homeGlassSrc !== glassPath) patch[`${prefix}._homeGlassSrc`] = glassPath;
         const urls = this._cardImageUrls(item, group);
@@ -1680,16 +1688,40 @@ Page({
 
   // 普通用户和管理员均可创建；未登录、游客保持静默。
   showCreateModal() {
-    if (!this.hasCreateActivityPermission()) return;
+    if (this._pageVisible === false || this._createNavigationPending) return;
+    if (!this.hasCreateActivityPermission()) {
+      this._restoreTabBarAfterCreateNavigation();
+      return;
+    }
+    this._createNavigationPending = true;
     wx.navigateTo({
       url: "/pages/activity_create/activity_create",
-      events: { activityCreated: (activity) => this.insertCreatedActivity(activity) }
+      events: { activityCreated: (activity) => this.insertCreatedActivity(activity) },
+      fail: () => {
+        this._restoreTabBarAfterCreateNavigation();
+        if (this._pageVisible !== false) wx.showToast({ title: "打开失败，请重试", icon: "none" });
+      },
+      complete: () => { this._createNavigationPending = false; }
     });
+  },
+
+  _restoreTabBarAfterCreateNavigation() {
+    if (this._pageVisible === false) return;
+    this._setTabBarHidden(!!(
+      this.data.createFormContainerRendered || this.data.showCreateForm || this._coldStartTabEntrancePending
+    ));
   },
 
   closeCreateForm() {
     if (this.data.createFormSubmitting) return;
     this.setData({ showCreateForm: false }, () => this._scheduleCreateFormCloseCompletion());
+  },
+
+  onCreateFormBeforeLeave() {
+    // Native back dismisses the container without updating the bound page data.
+    if (this.data.showCreateForm) {
+      this.setData({ showCreateForm: false }, () => this._scheduleCreateFormCloseCompletion());
+    }
   },
 
   _scheduleCreateFormCloseCompletion() {
@@ -1747,9 +1779,9 @@ Page({
         (item) => String(item._id) === String(createdActivity._id)
       );
     }
+    const glassUrl = getHomeCardGlassUrl(createdActivity);
     const waitsForGlass = createdGroup === "joined" &&
-      !!createdActivity.largeCardGlassImageUrl &&
-      !this._loadedCardGlassUrls.has(createdActivity.largeCardGlassImageUrl);
+      !!glassUrl && !this._loadedCardGlassUrls.has(glassUrl);
     this._createdCardDrawerDismissed = false;
     this._createdCardGlassReady = !waitsForGlass;
     this._createdCardRevealStarted = false;

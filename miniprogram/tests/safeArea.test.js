@@ -14,6 +14,67 @@ function withWx(wxValue, callback) {
   }
 }
 
+test("runtime info falls back independently when newer APIs fail or return no object", () => {
+  const legacyInfo = {
+    windowWidth: 375,
+    windowHeight: 812,
+    safeAreaInsets: { bottom: 34 },
+    platform: "android",
+    model: "Legacy Android"
+  };
+  const unavailableMethods = [
+    undefined,
+    () => { throw new Error("runtime info unavailable"); },
+    () => null,
+    () => undefined,
+    () => "unavailable",
+    () => []
+  ];
+  for (const method of unavailableMethods) {
+    withWx({
+      getWindowInfo: method,
+      getDeviceInfo: method,
+      getSystemInfoSync: () => legacyInfo
+    }, () => {
+      assert.equal(safeArea.getWindowInfoCompat(), legacyInfo);
+      assert.equal(safeArea.getDeviceInfoCompat(), legacyInfo);
+      assert.equal(safeArea.getBottomSafeAreaRpx(), 68);
+      assert.equal(safeArea.buildSafeAreaDiagnostic().model, "Legacy Android");
+    });
+  }
+});
+
+test("valid newer runtime info avoids the legacy API", () => {
+  const windowInfo = { windowWidth: 390, windowHeight: 844, safeAreaInsets: { bottom: 34 } };
+  const deviceInfo = { platform: "android" };
+  let legacyCalls = 0;
+  withWx({
+    getWindowInfo: () => windowInfo,
+    getDeviceInfo: () => deviceInfo,
+    getSystemInfoSync() { legacyCalls += 1; return {}; }
+  }, () => {
+    assert.equal(safeArea.getWindowInfoCompat(), windowInfo);
+    assert.equal(safeArea.getDeviceInfoCompat(), deviceInfo);
+    assert.equal(legacyCalls, 0);
+  });
+});
+
+test("missing or failing runtime APIs leave safe-area diagnostics usable", () => {
+  const fail = () => { throw new Error("runtime unavailable"); };
+  for (const wxValue of [undefined, null, {}, {
+    getWindowInfo: fail, getDeviceInfo: fail, getSystemInfoSync: fail
+  }, {
+    getWindowInfo: () => null, getDeviceInfo: () => null, getSystemInfoSync: () => null
+  }]) {
+    withWx(wxValue, () => {
+      assert.deepEqual(safeArea.getWindowInfoCompat(), {});
+      assert.deepEqual(safeArea.getDeviceInfoCompat(), {});
+      assert.equal(safeArea.getBottomSafeAreaRpx(), 0);
+      assert.equal(safeArea.buildSafeAreaDiagnostic().resolvedBottomRpx, 0);
+    });
+  }
+});
+
 test("safe area prefers safeAreaInsets.bottom and converts px to rpx", () => {
   withWx({
     getWindowInfo() {

@@ -29,14 +29,16 @@ Page({
     mapLongitude: 0,
     scale: 15,
     markers: [],
-    circles: []
+    circles: [],
+    submitting: false
   },
 
   onLoad() {
+    this._unloaded = false;
     const eventChannel = this.getOpenerEventChannel && this.getOpenerEventChannel();
     if (eventChannel) {
       eventChannel.on("initCheckin", (data) => {
-        if (!data || !data.activity) return;
+        if (this._unloaded || !data || !data.activity) return;
         const { activity, nickname } = data;
         const activityLatitude = activity.locationLatitude;
         const activityLongitude = activity.locationLongitude;
@@ -66,11 +68,41 @@ Page({
     }
   },
 
+  onShow() {
+    this._pageVisible = true;
+    this.finishSubmission();
+    if (this.data.submitting && !this._submissionResult && !this._unloaded && !this._submissionLoadingVisible) {
+      const pages = typeof getCurrentPages === "function" ? getCurrentPages() : [];
+      if (pages[pages.length - 1] !== this) return;
+      this._submissionLoadingVisible = true;
+      wx.showLoading({ title: "签到中..." });
+    }
+  },
+
+  onHide() {
+    this._pageVisible = false;
+    this.hideSubmissionLoading();
+  },
+
+  onUnload() {
+    this._unloaded = true;
+    this._pageVisible = false;
+    this._submissionResult = null;
+    this.hideSubmissionLoading();
+  },
+
+  hideSubmissionLoading() {
+    if (!this._submissionLoadingVisible) return;
+    this._submissionLoadingVisible = false;
+    wx.hideLoading();
+  },
+
   // 使用精确定位获取当前位置
   fetchUserLocation() {
     wx.getLocation({
       type: "gcj02",
       success: (res) => {
+        if (this._unloaded) return;
         const { latitude, longitude } = res;
         if (typeof latitude !== "number" || typeof longitude !== "number") {
           this.setData({ distanceText: "定位信息异常，无法计算距离（1km 内可签到）" });
@@ -79,6 +111,7 @@ Page({
         this.updateMapAndDistance(latitude, longitude);
       },
       fail: () => {
+        if (this._unloaded) return;
         this.setData({
           distanceText: "未获取到当前位置，无法计算距离（1km 内可签到）"
         });
@@ -130,6 +163,7 @@ Page({
   },
 
   confirmCheckin() {
+    if (this._unloaded || this._submissionSucceeded || this.data.submitting) return;
     const {
       activityId,
       activityLatitude,
@@ -158,22 +192,42 @@ Page({
       return;
     }
 
+    this.setData({ submitting: true });
+    this._submissionLoadingVisible = true;
     wx.showLoading({ title: "签到中..." });
-    activityService.checkinActivity(activityId, {
+    return activityService.checkinActivity(activityId, {
       lat: userLatitude,
       lng: userLongitude
     })
       .then(() => {
-        wx.hideLoading();
-        wx.showToast({ title: "签到成功", icon: "success" });
-        wx.navigateBack();
+        if (this._unloaded) return;
+        this._submissionSucceeded = true;
+        this._submissionResult = { success: true };
+        this.finishSubmission();
+      }, (err) => {
+        if (this._unloaded) return;
+        this._submissionResult = { success: false, error: err };
+        this.finishSubmission();
       })
       .catch((err) => {
-        console.error("checkinActivity 调用失败:", err);
-        wx.hideLoading();
-        const msg = err.message || "签到失败";
-        wx.showToast({ title: msg, icon: "none", duration: 2500 });
+        console.error("签到结果处理失败:", err);
       });
+  },
+
+  finishSubmission() {
+    if (!this._submissionResult || this._unloaded || this._pageVisible === false) return;
+    const pages = typeof getCurrentPages === "function" ? getCurrentPages() : [];
+    if (pages[pages.length - 1] !== this) return;
+    const result = this._submissionResult;
+    this._submissionResult = null;
+    this.hideSubmissionLoading();
+    this.setData({ submitting: false });
+    if (!result.success) {
+      wx.showToast({ title: (result.error && result.error.message) || "签到失败", icon: "none", duration: 2500 });
+      return;
+    }
+    wx.showToast({ title: "签到成功", icon: "success" });
+    wx.navigateBack();
   },
 
   cancel() {

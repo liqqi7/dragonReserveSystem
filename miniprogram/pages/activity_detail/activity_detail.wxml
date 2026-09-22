@@ -90,7 +90,7 @@
   </view>
 
   <view wx:if="{{activity || loadError}}" class="detail-content-layer {{activity && !detailContentVisible ? 'detail-content-layer--hidden' : 'detail-content-layer--visible'}}">
-  <scroll-view type="list" scroll-y scroll-into-view="{{detailAnchor}}" scroll-with-animation
+  <scroll-view type="list" scroll-y enhanced="{{true}}" bindscroll="onDetailScroll"
     class="main-scroll"
     style="height: calc(100vh - {{bottomBarHeightRpx}}rpx)"
   >
@@ -187,8 +187,7 @@
       </view>
 
       <view id="qaActivityDetailContent" class="detail-panel">
-        <view wx:if="{{activity.subItems.length}}" class="project-tabs"><text data-anchor="basicInformation" bindtap="selectDetailSection">基本信息</text><text data-anchor="optionalProjects" bindtap="selectDetailSection">可选子项目</text></view>
-        <view id="basicInformation"></view>
+        <view id="basicInformation" class="basic-information">
         <view class="section-title-row">
           <text class="section-title">基本信息</text>
         </view>
@@ -212,11 +211,6 @@
               <image class="fact-chevron" src="/images/activity-detail-chevron-right.svg" mode="aspectFit" />
             </view>
           </view>
-        </view>
-
-        <view wx:if="{{activity.subItems.length}}" id="optionalProjects" class="projects-section">
-          <view class="project-heading"><text class="project-title">子项目</text><text class="project-muted">共 {{activity.subItems.length}} 项</text></view>
-          <view wx:for="{{activity.subItems}}" wx:key="id" class="project-card" data-id="{{item.id}}" bindtap="openProjectMembers"><text class="project-name">{{item.name}}</text><text class="project-count">{{item.current_participants}} / {{item.max_participants}} 人 ›</text></view>
         </view>
 
         <view id="qaActivityLocationCard" class="location-card">
@@ -292,10 +286,25 @@
           </view>
           <view wx:if="{{weather.available}}" class="weather-attribution"><text class="weather-attribution-text">{{weather.attribution}}</text></view>
         </view>
+        </view>
+        <view wx:if="{{activity.subItems.length}}" id="optionalProjects" class="projects-section">
+          <view class="project-heading"><text class="project-title">子项目</text><text class="project-muted">共 {{activity.subItems.length}} 项</text></view>
+          <view wx:for="{{activity.subItems}}" wx:key="id" class="project-card" data-id="{{item.id}}" bindtap="openProjectMembers">
+            <text class="project-name" overflow="ellipsis" max-lines="1">{{item.name}}</text>
+            <view class="project-participants"><view class="project-count"><text>{{item.current_participants}}</text><text class="project-count-separator">/</text><text>{{item.max_participants}} 人</text></view><image class="fact-chevron" src="/images/activity-detail-chevron-right.svg" mode="aspectFit" /></view>
+          </view>
+        </view>
       </view>
     </block>
     </view>
   </scroll-view>
+
+  <button wx:if="{{activity && detailContentVisible && showBackToTop}}" class="back-to-top"
+    style="bottom: calc({{bottomBarHeightRpx}}rpx + 23.08rpx);"
+    bindtap="backToTop" hover-class="back-to-top--pressed" aria-label="返回顶部">
+    <image class="back-to-top-icon" src="/images/icon-back-to-top.svg" mode="aspectFit" />
+    <text class="back-to-top-label">顶部</text>
+  </button>
 
   <view wx:if="{{activity}}" id="qaActivityDetailBottomBar" class="bottom-bar" style="padding-bottom: {{safeBottomRpx}}rpx">
     <view class="bottom-inner">
@@ -337,7 +346,7 @@
     overlay-style="background: rgba(23, 24, 20, 0.4);"
     custom-style="height: 100%; background: transparent; border-radius: 0; overflow: hidden;"
     bind:clickoverlay="closeActivityForm"
-    bind:afterleave="onActivityFormAfterLeave"
+    bind:beforeleave="onActivityFormBeforeLeave" bind:afterleave="onActivityFormAfterLeave"
   >
     <activity-form-sheet
       id="qaActivityFormSheet"
@@ -404,15 +413,21 @@
 
 <create-access-dialog id="signup-login-dialog" bind:confirm="onSignupLoginConfirm" />
 
-<page-container wx:if="{{subItemSignupContainerRendered}}" show="{{showSubItemSignup}}" position="bottom" round="{{false}}" close-on-slide-down="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="background:#FFFFFF;border-radius:46.15rpx 46.15rpx 0 0;" bind:clickoverlay="closeSubItemSignup" bind:afterleave="onSubItemSignupAfterLeave">
-  <view class="project-sheet" style="padding-bottom:{{safeBottomRpx}}rpx;">
-    <view class="project-handle-zone"><view class="project-handle"></view></view>
-    <view class="project-sheet-heading"><text class="project-title">选择子项目</text><text class="project-muted">已选 {{signupSelection.length}} 项</text></view>
-    <view class="project-options"><view wx:for="{{signupOptions}}" wx:key="id" class="project-option {{item.selected ? 'project-option--selected' : ''}} {{item.full ? 'project-option--full' : ''}}" data-id="{{item.id}}" bindtap="toggleSignupOption"><text class="project-name">{{item.name}}</text><text class="project-count">{{item.current_participants}} / {{item.max_participants}} 人</text><text class="project-check">{{item.full ? '已满' : item.selected ? '✓' : '○'}}</text></view></view>
-    <view class="project-confirm-bar"><button class="project-confirm {{!signupSelection.length || signupSubmitting ? 'project-confirm--disabled' : ''}}" disabled="{{!signupSelection.length || signupSubmitting}}" loading="{{signupSubmitting}}" bindtap="confirmSubItemSignup"><text>确认报名</text></button></view>
+<page-container wx:if="{{subItemSignupContainerRendered}}" show="{{showSubItemSignup}}" position="bottom" round="{{false}}" close-on-slide-down="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="background:#FFFFFF;border-radius:46.15rpx 46.15rpx 0 0;" bind:clickoverlay="closeSubItemSignup" bind:beforeleave="onSubItemSignupBeforeLeave" bind:afterleave="onSubItemSignupAfterLeave">
+  <view class="signup-project-sheet" style="height:calc({{signupSheetContentHeightRpx}}rpx + {{safeBottomRpx}}rpx);">
+    <view class="signup-project-heading"><text class="signup-project-title">选择报名子项目</text><view class="signup-project-close" bindtap="closeSubItemSignup" aria-role="button" aria-label="关闭"><image class="signup-project-close-icon" src="/images/icon-close.svg" mode="aspectFit" /></view></view>
+    <scroll-view type="list" scroll-y="{{true}}" class="project-options" show-scrollbar="{{false}}">
+      <view class="project-options-inner">
+        <view wx:for="{{signupOptions}}" wx:key="id" class="project-option {{item.selected ? 'project-option--selected' : ''}} {{item.full ? 'project-option--full' : ''}}" data-id="{{item.id}}" bindtap="toggleSignupOption" aria-role="checkbox" aria-checked="{{item.selected}}" aria-disabled="{{item.full || signupSubmitting}}">
+          <text class="project-option-name" overflow="ellipsis" max-lines="1">{{item.name}}</text>
+          <view class="project-option-state"><text class="project-option-count">{{item.current_participants}} / {{item.max_participants}} 人</text><view wx:if="{{item.selected}}" class="project-check"><image class="project-check-icon" src="/images/activity-create-check.svg" mode="aspectFit" /></view></view>
+        </view>
+      </view>
+    </scroll-view>
+    <view class="project-confirm-bar" style="padding-bottom:{{safeBottomRpx}}rpx;"><view class="project-confirm-inner"><button class="project-confirm {{!signupSelection.length || signupSubmitting ? 'project-confirm--disabled' : ''}}" disabled="{{!signupSelection.length || signupSubmitting}}" loading="{{signupSubmitting}}" bindtap="confirmSubItemSignup"><text>{{signupSelection.length ? '确定报名' : '请选择报名的子项目'}}</text></button></view></view>
   </view>
 </page-container>
-<page-container wx:if="{{projectMembersContainerRendered}}" show="{{showProjectMembers}}" position="bottom" round="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="background:#FFFFFF;border-radius:46.15rpx 46.15rpx 0 0;" bind:clickoverlay="closeProjectMembers" bind:afterleave="onProjectMembersAfterLeave">
+<page-container wx:if="{{projectMembersContainerRendered}}" show="{{showProjectMembers}}" position="bottom" round="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="background:#FFFFFF;border-radius:46.15rpx 46.15rpx 0 0;" bind:clickoverlay="closeProjectMembers" bind:beforeleave="onProjectMembersBeforeLeave" bind:afterleave="onProjectMembersAfterLeave">
   <view class="project-sheet" style="padding-bottom:{{safeBottomRpx}}rpx;">
     <view class="project-handle-zone"><view class="project-handle"></view></view>
     <view class="project-sheet-heading"><text class="project-title">{{projectMemberTitle}}</text><text class="project-muted">{{projectMembers.length}} 人</text></view>

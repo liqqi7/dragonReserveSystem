@@ -6,19 +6,24 @@
  */
 const ANDROID_BOTTOM_SAFE_AREA_FALLBACK_RPX = 46.15385;
 
-function getWindowInfoCompat() {
-  try {
-    if (typeof wx.getWindowInfo === "function") return wx.getWindowInfo();
-    if (typeof wx.getSystemInfoSync === "function") return wx.getSystemInfoSync();
-  } catch (error) {}
+function readRuntimeInfo(primaryMethod) {
+  if (typeof wx === "undefined" || !wx) return {};
+  for (const method of [primaryMethod, "getSystemInfoSync"]) {
+    try {
+      if (typeof wx[method] !== "function") continue;
+      const info = wx[method]();
+      if (info && typeof info === "object" && !Array.isArray(info)) return info;
+    } catch (error) {}
+  }
   return {};
 }
 
+function getWindowInfoCompat() {
+  return readRuntimeInfo("getWindowInfo");
+}
+
 function getDeviceInfoCompat() {
-  try {
-    if (typeof wx.getDeviceInfo === "function") return wx.getDeviceInfo();
-  } catch (error) {}
-  return {};
+  return readRuntimeInfo("getDeviceInfo");
 }
 
 function finiteNumber(value) {

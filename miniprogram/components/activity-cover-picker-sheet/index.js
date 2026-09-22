@@ -83,6 +83,7 @@ Component({
     },
     detached() {
       if (this._leaveTimer) clearTimeout(this._leaveTimer);
+      this._leaveTimer = null;
       this._stopCoverImageObservation();
       if (this._coverImageLoader) this._coverImageLoader.dispose();
       this._coverImageLoader = null;
@@ -137,7 +138,10 @@ Component({
     },
 
     mountContainer(afterMount) {
+      this._containerCloseNotified = false;
+      this._containerAfterLeaveHandled = false;
       if (this._leaveTimer) clearTimeout(this._leaveTimer);
+      this._leaveTimer = null;
       this.setData({ containerRendered: true, containerVisible: false }, () => {
         wx.nextTick(() => {
           if (this.properties.visible) {
@@ -155,14 +159,26 @@ Component({
       this.setData({ containerVisible: false });
       if (!this.properties.embedded) return;
       if (this._leaveTimer) clearTimeout(this._leaveTimer);
-      this._leaveTimer = setTimeout(() => {
+      const leaveTimer = setTimeout(() => {
+        if (this._leaveTimer !== leaveTimer) return;
         this._leaveTimer = null;
-        if (!this.properties.visible) this.setData({ containerRendered: false });
+        this.onContainerAfterLeave();
       }, 240);
+      this._leaveTimer = leaveTimer;
+    },
+
+    onContainerBeforeLeave() {
+      if (this.properties.visible && this.data.containerVisible && !this._containerCloseNotified) {
+        this._containerCloseNotified = true;
+        this.triggerEvent("close");
+      }
     },
 
     onContainerAfterLeave() {
-      if (!this.properties.visible) this.setData({ containerRendered: false });
+      if (!this.properties.visible && !this._containerAfterLeaveHandled) {
+        this._containerAfterLeaveHandled = true;
+        this.setData({ containerRendered: false, containerVisible: false });
+      }
     },
 
     _ensureCoverImageLoader() {
@@ -315,6 +331,8 @@ Component({
     stopPropagation() {},
 
     onClose() {
+      if (this._containerCloseNotified) return;
+      this._containerCloseNotified = true;
       this.triggerEvent("close");
     },
 
