@@ -1219,9 +1219,9 @@ button.create-btn-fixed.create-btn-hover {
   border-bottom-right-radius: 46.15rpx;
 }
 
-/* 沿用大卡旧版 30px / 390px 的原生模糊，实时采样同一个 GIF 的当前帧。 */
+/* GIF 仍实时采样当前帧，但模糊半径对齐静态玻璃图的 Pillow 6.5px。 */
 .glass-bottom--native {
-  backdrop-filter: blur(57.69rpx);
+  backdrop-filter: blur(12.5rpx);
 }
 
 /* 静态封面的模糊视口，只显示卡片底部信息区。 */
@@ -1278,10 +1278,6 @@ button.create-btn-fixed.create-btn-hover {
 
 /* 原型中的黄色桌游大卡使用更深一档的 20% → 40% 信息栏遮罩。 */
 .large-card--boardgame-boardgame-default .glass-tint-layer {
-  background: linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.40) 100%);
-}
-
-.glass-bottom--native .glass-tint-layer {
   background: linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.40) 100%);
 }
 

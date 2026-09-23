@@ -1,0 +1,1189 @@
+INFO:     Will watch for changes in these directories: ['D:\\VibeCoding Project\\dragonReserveSystem\\backend']
+INFO:     Loading environment from 'D:\VibeCoding Project\dragonReserveSystem\backend\.env.test'
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [36724] using WatchFiles
+INFO:     Started server process [9272]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+2026-09-21 22:24:42,182 INFO [dragon.reserve] request_completed method=GET path=/api/v1/users/me status=200 duration_ms=4915.73 trace_id=req-1790000675717-700b8faf
+2026-09-21 22:24:42,918 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T14:24:42.918215+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790000677830-faad0cf2","session_id":"sess-1790000678124-2fcbe4f2","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790000677830-faad0cf2","reason":"all_ready_state_committed","duration":292,"listStage":"request_pending","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":3,"tabHidden":true,"tabPending":true,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[],"imageCache":{"checked":1,"hits":1,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":true,"status":"checked","hitRate":1},"listCacheUsed":true,"totals":{"succeeded":1,"failed":0,"cacheHits":1,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":72,"request_pending":93},"diagnosticEventId":"diag-1790000678127-b2e853d7","occurredAt":1790000678127,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 22:24:42,920 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=3582.79 trace_id=ce1846baec50480bbcd5f11a6243845f
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\cursors.py", line 153, in execute
+    result = self._query(query)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\cursors.py", line 322, in _query
+    conn.query(q)
+    ~~~~~~~~~~^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 575, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 826, in _read_query_result
+    result.read()
+    ~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 1203, in read
+    first_packet = self.connection._read_packet()
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 782, in _read_packet
+    packet.raise_for_error()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+pymysql.err.ProgrammingError: (1146, "Table 'dragon_reserve_test.activity_sub_items' doesn't exist")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\diagnostic_guard.py", line 14, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\image_transfer_diagnostics.py", line 16, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "D:\Python\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_utils.py", line 87, in collapse_excgroups
+    raise exc
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\middleware.py", line 21, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\routing.py", line 674, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\routing.py", line 330, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2518, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\api\v2\activities.py", line 129, in get_activities_v2
+    return [_response(activity, request, _) for activity in list_activities(db)]
+                                                            ~~~~~~~~~~~~~~~^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\services\activity_service.py", line 93, in list_activities
+    activities = list(db.scalars(stmt).unique().all())
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\result.py", line 1786, in all
+    return self._allrows()
+           ~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\result.py", line 560, in _allrows
+    rows = self._fetchall_impl()
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\result.py", line 1693, in _fetchall_impl
+    return self._real_result._fetchall_impl()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\result.py", line 2287, in _fetchall_impl
+    return list(self.iterator)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 247, in chunks
+    post_load.invoke(context, path)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 1564, in invoke
+    loader(
+    ~~~~~~^
+        effective_context, path, states, self.load_keys, *arg, **kw
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\strategies.py", line 3338, in _load_for_path
+    self._load_via_parent(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        our_states, query_info, q, context, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\strategies.py", line 3414, in _load_via_parent
+    context.session.execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        q,
+        ^^
+        params={"primary_keys": primary_keys},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        execution_options=execution_options,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ).unique(),
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\cursors.py", line 153, in execute
+    result = self._query(query)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\cursors.py", line 322, in _query
+    conn.query(q)
+    ~~~~~~~~~~^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 575, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 826, in _read_query_result
+    result.read()
+    ~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 1203, in read
+    first_packet = self.connection._read_packet()
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 782, in _read_packet
+    packet.raise_for_error()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+sqlalchemy.exc.ProgrammingError: (pymysql.err.ProgrammingError) (1146, "Table 'dragon_reserve_test.activity_sub_items' doesn't exist")
+[SQL: SELECT activity_sub_items.activity_id AS activity_sub_items_activity_id, activity_sub_items.id AS activity_sub_items_id, activity_sub_items.name AS activity_sub_items_name, activity_sub_items.max_participants AS activity_sub_items_max_participants, activity_sub_items.sort_order AS activity_sub_items_sort_order, activity_sub_items.created_at AS activity_sub_items_created_at 
+FROM activity_sub_items 
+WHERE activity_sub_items.activity_id IN (%(primary_keys_1)s, %(primary_keys_2)s, %(primary_keys_3)s, %(primary_keys_4)s, %(primary_keys_5)s, %(primary_keys_6)s, %(primary_keys_7)s, %(primary_keys_8)s, %(primary_keys_9)s, %(primary_keys_10)s, %(primary_keys_11)s, %(primary_keys_12)s, %(primary_keys_13)s, %(primary_keys_14)s, %(primary_keys_15)s, %(primary_keys_16)s, %(primary_keys_17)s, %(primary_keys_18)s, %(primary_keys_19)s, %(primary_keys_20)s, %(primary_keys_21)s, %(primary_keys_22)s, %(primary_keys_23)s, %(primary_keys_24)s, %(primary_keys_25)s, %(primary_keys_26)s, %(primary_keys_27)s, %(primary_keys_28)s, %(primary_keys_29)s, %(primary_keys_30)s, %(primary_keys_31)s, %(primary_keys_32)s) ORDER BY activity_sub_items.sort_order, activity_sub_items.id]
+[parameters: {'primary_keys_1': 32, 'primary_keys_2': 31, 'primary_keys_3': 30, 'primary_keys_4': 29, 'primary_keys_5': 28, 'primary_keys_6': 27, 'primary_keys_7': 26, 'primary_keys_8': 25, 'primary_keys_9': 24, 'primary_keys_10': 23, 'primary_keys_11': 22, 'primary_keys_12': 20, 'primary_keys_13': 15, 'primary_keys_14': 14, 'primary_keys_15': 13, 'primary_keys_16': 12, 'primary_keys_17': 11, 'primary_keys_18': 10, 'primary_keys_19': 19, 'primary_keys_20': 21, 'primary_keys_21': 16, 'primary_keys_22': 17, 'primary_keys_23': 18, 'primary_keys_24': 9, 'primary_keys_25': 2, 'primary_keys_26': 1, 'primary_keys_27': 4, 'primary_keys_28': 3, 'primary_keys_29': 8, 'primary_keys_30': 5, 'primary_keys_31': 7, 'primary_keys_32': 6}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-09-21 22:24:44,909 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T14:24:44.909055+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790000675717-700b8faf","session_id":"sess-1790000678124-2fcbe4f2","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/users/me","method":"GET","traceId":"req-1790000675717-700b8faf","requestId":"req-1790000675717-700b8faf","duration":6478,"statusCode":200,"responseBytes":263,"diagnosticEventId":"diag-1790000682199-c64d8ab6","occurredAt":1790000682200,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 22:24:44,910 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=774.11 trace_id=220ca13fdb0d463bb5daa611a4f1bf0e
+2026-09-21 22:24:46,866 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T14:24:46.866038+00:00","user_id":2,"user_role":"admin","event":"request_fail","trace_id":"req-1790000677923-76cbc158","session_id":"sess-1790000678124-2fcbe4f2","page":"pages/activity_list/activity_list","level":"error","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities","method":"GET","traceId":"req-1790000677923-76cbc158","requestId":"req-1790000677923-76cbc158","duration":6640,"statusCode":500,"summary":"«Î«Û ß∞‹ status:500","diagnosticEventId":"diag-1790000684568-ff493b17","occurredAt":1790000684569,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":2}}}
+2026-09-21 22:24:46,869 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T14:24:46.869200+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790000677830-faad0cf2","session_id":"sess-1790000678124-2fcbe4f2","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790000677830-faad0cf2","reason":"list_error","duration":6744,"listStage":"list_failed","cacheUsed":true,"listError":"«Î«Û ß∞‹ status:500","listLoading":false,"total":5,"pending":0,"nativePending":0,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[{"group":"ended","activityId":"32","focused":true,"exposed":true,"ready":true,"coverPhases":{"priority_updated":212,"priority":0,"queued":0,"attempt":1,"retries":0,"logicalActive":0,"outstandingPreparations":0,"worker_started":213,"startPriority":0,"disk_cache_hit":254,"attempt_succeeded":254},"glassPhases":{},"cover":"prepared;native=loaded@324ms;preload=loaded@254ms","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-sm.jpg","glassUrl":""},{"group":"ended","activityId":"31","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":212,"priority":0,"queued":0,"attempt":1,"retries":0,"logicalActive":0,"outstandingPreparations":0,"worker_started":213,"startPriority":0,"disk_cache_hit":254,"attempt_succeeded":254},"glassPhases":{},"cover":"prepared;native=loaded@344ms;preload=loaded@254ms","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-sm.jpg","glassUrl":""},{"group":"ended","activityId":"27","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":212,"priority":0,"queued":0,"attempt":1,"retries":0,"logicalActive":0,"outstandingPreparations":0,"worker_started":213,"startPriority":0,"disk_cache_hit":254,"attempt_succeeded":254},"glassPhases":{},"cover":"prepared;native=loaded@362ms;preload=loaded@254ms","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-sm.jpg","glassUrl":""},{"group":"ended","activityId":"26","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":212,"priority":0,"queued":0,"attempt":1,"retries":0,"logicalActive":0,"outstandingPreparations":0,"worker_started":213,"startPriority":0,"disk_cache_hit":254,"attempt_succeeded":254},"glassPhases":{},"cover":"prepared;native=loaded@390ms;preload=loaded@254ms","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-sm.jpg","glassUrl":""},{"group":"ended","activityId":"25","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":212,"priority":0,"queued":0,"attempt":1,"retries":0,"logicalActive":0,"outstandingPreparations":0,"worker_started":213,"startPriority":0,"disk_cache_hit":254,"attempt_succeeded":254},"glassPhases":{},"cover":"prepared;native=loaded@428ms;preload=loaded@254ms","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-sm.jpg","glassUrl":""}],"imageCache":{"checked":1,"hits":1,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":true,"status":"checked","hitRate":1},"listCacheUsed":true,"totals":{"succeeded":1,"failed":0,"cacheHits":1,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":72,"request_pending":93,"list_failed":6744},"diagnosticEventId":"diag-1790000684578-0bc52665","occurredAt":1790000684579,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":2}}}
+2026-09-21 22:24:46,870 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=740.6 trace_id=2f5226e4f31140499bde27bbf7b1ce9d
+2026-09-21 22:25:14,772 INFO [dragon.reserve] request_completed method=GET path=/api/v1/users/me status=200 duration_ms=732.45 trace_id=req-1790000714031-cab3dd6f
+2026-09-21 22:25:17,488 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T14:25:17.488030+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790000715430-a276a560","session_id":"sess-1790000715639-f493d9cd","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790000715430-a276a560","reason":"all_ready_state_committed","duration":207,"listStage":"request_pending","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":3,"tabHidden":true,"tabPending":true,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[],"imageCache":{"checked":1,"hits":1,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":true,"status":"checked","hitRate":1},"listCacheUsed":true,"totals":{"succeeded":1,"failed":0,"cacheHits":1,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":53,"request_pending":68},"diagnosticEventId":"diag-1790000715640-9d1cd9f7","occurredAt":1790000715640,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 22:25:17,489 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=640.25 trace_id=5d06eee1f88041e8beca61fd4f67832f
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\cursors.py", line 153, in execute
+    result = self._query(query)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\cursors.py", line 322, in _query
+    conn.query(q)
+    ~~~~~~~~~~^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 575, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 826, in _read_query_result
+    result.read()
+    ~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 1203, in read
+    first_packet = self.connection._read_packet()
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 782, in _read_packet
+    packet.raise_for_error()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+pymysql.err.ProgrammingError: (1146, "Table 'dragon_reserve_test.activity_sub_items' doesn't exist")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\diagnostic_guard.py", line 14, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\image_transfer_diagnostics.py", line 16, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "D:\Python\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_utils.py", line 87, in collapse_excgroups
+    raise exc
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\middleware.py", line 21, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\routing.py", line 674, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\routing.py", line 330, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2518, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\api\v2\activities.py", line 129, in get_activities_v2
+    return [_response(activity, request, _) for activity in list_activities(db)]
+                                                            ~~~~~~~~~~~~~~~^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\services\activity_service.py", line 93, in list_activities
+    activities = list(db.scalars(stmt).unique().all())
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\result.py", line 1786, in all
+    return self._allrows()
+           ~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\result.py", line 560, in _allrows
+    rows = self._fetchall_impl()
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\result.py", line 1693, in _fetchall_impl
+    return self._real_result._fetchall_impl()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\result.py", line 2287, in _fetchall_impl
+    return list(self.iterator)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 247, in chunks
+    post_load.invoke(context, path)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 1564, in invoke
+    loader(
+    ~~~~~~^
+        effective_context, path, states, self.load_keys, *arg, **kw
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\strategies.py", line 3338, in _load_for_path
+    self._load_via_parent(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        our_states, query_info, q, context, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\strategies.py", line 3414, in _load_via_parent
+    context.session.execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        q,
+        ^^
+        params={"primary_keys": primary_keys},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        execution_options=execution_options,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ).unique(),
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\cursors.py", line 153, in execute
+    result = self._query(query)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\cursors.py", line 322, in _query
+    conn.query(q)
+    ~~~~~~~~~~^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 575, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 826, in _read_query_result
+    result.read()
+    ~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 1203, in read
+    first_packet = self.connection._read_packet()
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 782, in _read_packet
+    packet.raise_for_error()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+sqlalchemy.exc.ProgrammingError: (pymysql.err.ProgrammingError) (1146, "Table 'dragon_reserve_test.activity_sub_items' doesn't exist")
+[SQL: SELECT activity_sub_items.activity_id AS activity_sub_items_activity_id, activity_sub_items.id AS activity_sub_items_id, activity_sub_items.name AS activity_sub_items_name, activity_sub_items.max_participants AS activity_sub_items_max_participants, activity_sub_items.sort_order AS activity_sub_items_sort_order, activity_sub_items.created_at AS activity_sub_items_created_at 
+FROM activity_sub_items 
+WHERE activity_sub_items.activity_id IN (%(primary_keys_1)s, %(primary_keys_2)s, %(primary_keys_3)s, %(primary_keys_4)s, %(primary_keys_5)s, %(primary_keys_6)s, %(primary_keys_7)s, %(primary_keys_8)s, %(primary_keys_9)s, %(primary_keys_10)s, %(primary_keys_11)s, %(primary_keys_12)s, %(primary_keys_13)s, %(primary_keys_14)s, %(primary_keys_15)s, %(primary_keys_16)s, %(primary_keys_17)s, %(primary_keys_18)s, %(primary_keys_19)s, %(primary_keys_20)s, %(primary_keys_21)s, %(primary_keys_22)s, %(primary_keys_23)s, %(primary_keys_24)s, %(primary_keys_25)s, %(primary_keys_26)s, %(primary_keys_27)s, %(primary_keys_28)s, %(primary_keys_29)s, %(primary_keys_30)s, %(primary_keys_31)s, %(primary_keys_32)s) ORDER BY activity_sub_items.sort_order, activity_sub_items.id]
+[parameters: {'primary_keys_1': 32, 'primary_keys_2': 31, 'primary_keys_3': 30, 'primary_keys_4': 29, 'primary_keys_5': 28, 'primary_keys_6': 27, 'primary_keys_7': 26, 'primary_keys_8': 25, 'primary_keys_9': 24, 'primary_keys_10': 23, 'primary_keys_11': 22, 'primary_keys_12': 20, 'primary_keys_13': 15, 'primary_keys_14': 14, 'primary_keys_15': 13, 'primary_keys_16': 12, 'primary_keys_17': 11, 'primary_keys_18': 10, 'primary_keys_19': 19, 'primary_keys_20': 21, 'primary_keys_21': 16, 'primary_keys_22': 17, 'primary_keys_23': 18, 'primary_keys_24': 9, 'primary_keys_25': 2, 'primary_keys_26': 1, 'primary_keys_27': 4, 'primary_keys_28': 3, 'primary_keys_29': 8, 'primary_keys_30': 5, 'primary_keys_31': 7, 'primary_keys_32': 6}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-09-21 22:25:19,959 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T14:25:19.959746+00:00","user_id":2,"user_role":"admin","event":"request_fail","trace_id":"req-1790000715498-920e1b60","session_id":"sess-1790000715639-f493d9cd","page":"pages/activity_list/activity_list","level":"error","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities","method":"GET","traceId":"req-1790000715498-920e1b60","requestId":"req-1790000715498-920e1b60","duration":2491,"statusCode":500,"summary":"«Î«Û ß∞‹ status:500","diagnosticEventId":"diag-1790000717992-fc71f32b","occurredAt":1790000717992,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":2}}}
+2026-09-21 22:25:19,961 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T14:25:19.960839+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790000715430-a276a560","session_id":"sess-1790000715639-f493d9cd","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790000715430-a276a560","reason":"list_error","duration":2566,"listStage":"list_failed","cacheUsed":true,"listError":"«Î«Û ß∞‹ status:500","listLoading":false,"total":5,"pending":0,"nativePending":0,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[{"group":"ended","activityId":"32","focused":true,"exposed":true,"ready":true,"coverPhases":{"priority_updated":144,"priority":0,"queued":0,"attempt":1,"retries":0,"logicalActive":0,"outstandingPreparations":0,"worker_started":144,"startPriority":0,"disk_cache_hit":171,"attempt_succeeded":171},"glassPhases":{},"cover":"prepared;native=loaded@231ms;preload=loaded@171ms","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-sm.jpg","glassUrl":""},{"group":"ended","activityId":"31","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":144,"priority":0,"queued":0,"attempt":1,"retries":0,"logicalActive":0,"outstandingPreparations":0,"worker_started":144,"startPriority":0,"disk_cache_hit":171,"attempt_succeeded":171},"glassPhases":{},"cover":"prepared;native=loaded@232ms;preload=loaded@171ms","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-sm.jpg","glassUrl":""},{"group":"ended","activityId":"27","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":144,"priority":0,"queued":0,"attempt":1,"retries":0,"logicalActive":0,"outstandingPreparations":0,"worker_started":144,"startPriority":0,"disk_cache_hit":171,"attempt_succeeded":171},"glassPhases":{},"cover":"prepared;native=loaded@268ms;preload=loaded@171ms","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-sm.jpg","glassUrl":""},{"group":"ended","activityId":"26","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":144,"priority":0,"queued":0,"attempt":1,"retries":0,"logicalActive":0,"outstandingPreparations":0,"worker_started":144,"startPriority":0,"disk_cache_hit":171,"attempt_succeeded":171},"glassPhases":{},"cover":"prepared;native=loaded@268ms;preload=loaded@171ms","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-sm.jpg","glassUrl":""},{"group":"ended","activityId":"25","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":144,"priority":0,"queued":0,"attempt":1,"retries":0,"logicalActive":0,"outstandingPreparations":0,"worker_started":144,"startPriority":0,"disk_cache_hit":171,"attempt_succeeded":171},"glassPhases":{},"cover":"prepared;native=loaded@279ms;preload=loaded@171ms","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-sm.jpg","glassUrl":""}],"imageCache":{"checked":1,"hits":1,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":true,"status":"checked","hitRate":1},"listCacheUsed":true,"totals":{"succeeded":1,"failed":0,"cacheHits":1,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":53,"request_pending":68,"list_failed":2566},"diagnosticEventId":"diag-1790000718000-3884deb3","occurredAt":1790000718000,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":2}}}
+2026-09-21 22:25:19,962 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=760.18 trace_id=c31519d42df84cf7b770c74fe19ab8a2
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\cursors.py", line 153, in execute
+    result = self._query(query)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\cursors.py", line 322, in _query
+    conn.query(q)
+    ~~~~~~~~~~^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 575, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 826, in _read_query_result
+    result.read()
+    ~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 1203, in read
+    first_packet = self.connection._read_packet()
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 782, in _read_packet
+    packet.raise_for_error()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+pymysql.err.ProgrammingError: (1146, "Table 'dragon_reserve_test.activity_sub_items' doesn't exist")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\diagnostic_guard.py", line 14, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\image_transfer_diagnostics.py", line 16, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "D:\Python\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_utils.py", line 87, in collapse_excgroups
+    raise exc
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\middleware.py", line 21, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\routing.py", line 674, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\fastapi\routing.py", line 330, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2518, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\api\v1\activities.py", line 64, in get_activities
+    activities = list_activities(db)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\app\services\activity_service.py", line 93, in list_activities
+    activities = list(db.scalars(stmt).unique().all())
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\result.py", line 1786, in all
+    return self._allrows()
+           ~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\result.py", line 560, in _allrows
+    rows = self._fetchall_impl()
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\result.py", line 1693, in _fetchall_impl
+    return self._real_result._fetchall_impl()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\result.py", line 2287, in _fetchall_impl
+    return list(self.iterator)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 247, in chunks
+    post_load.invoke(context, path)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\loading.py", line 1564, in invoke
+    loader(
+    ~~~~~~^
+        effective_context, path, states, self.load_keys, *arg, **kw
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\strategies.py", line 3338, in _load_for_path
+    self._load_via_parent(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        our_states, query_info, q, context, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\strategies.py", line 3414, in _load_via_parent
+    context.session.execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        q,
+        ^^
+        params={"primary_keys": primary_keys},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        execution_options=execution_options,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ).unique(),
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\cursors.py", line 153, in execute
+    result = self._query(query)
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\cursors.py", line 322, in _query
+    conn.query(q)
+    ~~~~~~~~~~^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 575, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 826, in _read_query_result
+    result.read()
+    ~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 1203, in read
+    first_packet = self.connection._read_packet()
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\connections.py", line 782, in _read_packet
+    packet.raise_for_error()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "D:\VibeCoding Project\dragonReserveSystem\backend\.venv\Lib\site-packages\pymysql\err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+sqlalchemy.exc.ProgrammingError: (pymysql.err.ProgrammingError) (1146, "Table 'dragon_reserve_test.activity_sub_items' doesn't exist")
+[SQL: SELECT activity_sub_items.activity_id AS activity_sub_items_activity_id, activity_sub_items.id AS activity_sub_items_id, activity_sub_items.name AS activity_sub_items_name, activity_sub_items.max_participants AS activity_sub_items_max_participants, activity_sub_items.sort_order AS activity_sub_items_sort_order, activity_sub_items.created_at AS activity_sub_items_created_at 
+FROM activity_sub_items 
+WHERE activity_sub_items.activity_id IN (%(primary_keys_1)s, %(primary_keys_2)s, %(primary_keys_3)s, %(primary_keys_4)s, %(primary_keys_5)s, %(primary_keys_6)s, %(primary_keys_7)s, %(primary_keys_8)s, %(primary_keys_9)s, %(primary_keys_10)s, %(primary_keys_11)s, %(primary_keys_12)s, %(primary_keys_13)s, %(primary_keys_14)s, %(primary_keys_15)s, %(primary_keys_16)s, %(primary_keys_17)s, %(primary_keys_18)s, %(primary_keys_19)s, %(primary_keys_20)s, %(primary_keys_21)s, %(primary_keys_22)s, %(primary_keys_23)s, %(primary_keys_24)s, %(primary_keys_25)s, %(primary_keys_26)s, %(primary_keys_27)s, %(primary_keys_28)s, %(primary_keys_29)s, %(primary_keys_30)s, %(primary_keys_31)s, %(primary_keys_32)s) ORDER BY activity_sub_items.sort_order, activity_sub_items.id]
+[parameters: {'primary_keys_1': 32, 'primary_keys_2': 31, 'primary_keys_3': 30, 'primary_keys_4': 29, 'primary_keys_5': 28, 'primary_keys_6': 27, 'primary_keys_7': 26, 'primary_keys_8': 25, 'primary_keys_9': 24, 'primary_keys_10': 23, 'primary_keys_11': 22, 'primary_keys_12': 20, 'primary_keys_13': 15, 'primary_keys_14': 14, 'primary_keys_15': 13, 'primary_keys_16': 12, 'primary_keys_17': 11, 'primary_keys_18': 10, 'primary_keys_19': 19, 'primary_keys_20': 21, 'primary_keys_21': 16, 'primary_keys_22': 17, 'primary_keys_23': 18, 'primary_keys_24': 9, 'primary_keys_25': 2, 'primary_keys_26': 1, 'primary_keys_27': 4, 'primary_keys_28': 3, 'primary_keys_29': 8, 'primary_keys_30': 5, 'primary_keys_31': 7, 'primary_keys_32': 6}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+WARNING:  WatchFiles detected changes in 'alembic\versions\20260921_0021_merge_activity_subitems_and_boardgame_heads.py', 'alembic\versions\20260913_0019_boardgame_extended.py', 'alembic\versions\20260913_0018_boardgame_library.py', 'alembic\versions\20260913_0020_boardgame_edition_snapshot.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [9272]
+INFO:     Started server process [16748]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'alembic\versions\20260921_0021_merge_activity_subitems_and_boardgame_heads.py', 'alembic\versions\20260913_0019_boardgame_extended.py', 'alembic\versions\20260913_0018_boardgame_library.py', 'alembic\versions\20260913_0020_boardgame_edition_snapshot.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+2026-09-21 22:35:43,528 INFO [dragon.reserve] request_completed method=GET path=/api/v1/activities status=200 duration_ms=6836.32 trace_id=e101c68ac63a483e9f5b07e99866cb01
+INFO:     Waiting for background tasks to complete. (CTRL+C to force quit)
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [16748]
+INFO:     Started server process [36352]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+2026-09-21 22:36:41,408 INFO [dragon.reserve] request_completed method=GET path=/api/v1/users/me status=200 duration_ms=5283.52 trace_id=req-1790001396102-ca71622f
+2026-09-21 22:36:41,908 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T14:36:41.907097+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790001398106-ead34aae","session_id":"sess-1790001398375-274d67af","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790001398106-ead34aae","reason":"all_ready_state_committed","duration":266,"listStage":"request_pending","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":3,"tabHidden":true,"tabPending":true,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[],"imageCache":{"checked":1,"hits":1,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":true,"status":"checked","hitRate":1},"listCacheUsed":true,"totals":{"succeeded":1,"failed":0,"cacheHits":1,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":60,"request_pending":80},"diagnosticEventId":"diag-1790001398377-0d1724e8","occurredAt":1790001398377,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 22:36:41,909 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=2310.35 trace_id=7d503d37d3bd4a43abad39207fc03acb
+2026-09-21 22:36:43,293 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities status=200 duration_ms=5093.83 trace_id=req-1790001398186-5e0b6834
+2026-09-21 22:36:44,032 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T14:36:44.032386+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790001396102-ca71622f","session_id":"sess-1790001398375-274d67af","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/users/me","method":"GET","traceId":"req-1790001396102-ca71622f","requestId":"req-1790001396102-ca71622f","duration":5319,"statusCode":200,"responseBytes":263,"diagnosticEventId":"diag-1790001401424-fe64fda8","occurredAt":1790001401425,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 22:36:44,034 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=708.44 trace_id=c906cd1fb3da43f1b44e6e5ee49fc7cc
+2026-09-21 22:36:44,082 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activity-covers status=200 duration_ms=771.17 trace_id=req-1790001403301-9407b2ce
+2026-09-21 22:36:44,351 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/yoneyama-mai/images/yoneyama-mai-003.jpg status=200 duration_ms=131.85 trace_id=23a7645fad47464fa158890335d2ff5a
+2026-09-21 22:36:44,361 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/yoneyama-mai/images/yoneyama-mai-006.jpg status=200 duration_ms=7.81 trace_id=cff1f054562e4b43895adaa0962ab10e
+2026-09-21 22:36:44,362 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/yoneyama-mai/images/yoneyama-mai-004.jpg status=200 duration_ms=8.77 trace_id=413ae03cd95f485c808da7f8c80127b8
+2026-09-21 22:36:44,364 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/yoneyama-mai/images/yoneyama-mai-010.jpg status=200 duration_ms=8.45 trace_id=05085f2222ff4cf0b4338120ea8975be
+2026-09-21 22:36:44,365 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/yoneyama-mai/images/yoneyama-mai-008.jpg status=200 duration_ms=9.87 trace_id=05200e84a4914d2eb95db46cd83d3743
+2026-09-21 22:36:44,367 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/yoneyama-mai/images/yoneyama-mai-007.jpg status=200 duration_ms=11.2 trace_id=ad1a1e6ea13240139a711510eaed85ff
+2026-09-21 22:36:44,392 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/yoneyama-mai/images/yoneyama-mai-011.jpg status=200 duration_ms=5.01 trace_id=328ad53347e04584a3fca44da52189be
+2026-09-21 22:36:44,409 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/yoneyama-mai/images/yoneyama-mai-012.jpg status=200 duration_ms=4.61 trace_id=952d954af37746cea64c151338b1ee21
+2026-09-21 22:36:46,075 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T14:36:46.075716+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790001398186-5e0b6834","session_id":"sess-1790001398375-274d67af","page":"pages/activity_create/activity_create","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities","method":"GET","traceId":"req-1790001398186-5e0b6834","requestId":"req-1790001398186-5e0b6834","duration":5149,"statusCode":200,"responseBytes":70818,"diagnosticEventId":"diag-1790001403337-de44a968","occurredAt":1790001403337,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 22:36:46,077 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=809.74 trace_id=5258cbd53c9146df98505bb6ac48c6c1
+2026-09-21 22:42:01,539 INFO [dragon.reserve] request_completed method=GET path=/api/v1/users/me status=200 duration_ms=778.01 trace_id=req-1790001720749-cd6013b5
+2026-09-21 22:42:05,705 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T14:42:05.705607+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790001723415-7a9eeebd","session_id":"sess-1790001723693-288fabd4","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790001723415-7a9eeebd","reason":"all_ready_state_committed","duration":275,"listStage":"request_pending","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":3,"tabHidden":true,"tabPending":true,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[],"imageCache":{"checked":1,"hits":1,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":true,"status":"checked","hitRate":1},"listCacheUsed":true,"totals":{"succeeded":1,"failed":0,"cacheHits":1,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":68,"request_pending":91},"diagnosticEventId":"diag-1790001723695-97bab306","occurredAt":1790001723696,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 22:42:05,706 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=801.01 trace_id=7f4167ee5c1f4dd0b918046448b9d9b2
+2026-09-21 22:42:06,140 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities status=200 duration_ms=2624.26 trace_id=req-1790001723506-3c37bd70
+2026-09-21 22:42:06,231 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/venmen/images/venmen-006.jpg status=200 duration_ms=2.63 trace_id=9c70a254961a4e2da52549a3334bd308
+2026-09-21 22:42:06,256 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg status=200 duration_ms=2.02 trace_id=3275b037db944550a76b2820ee216298
+2026-09-21 22:42:08,088 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg status=200 duration_ms=1.42 trace_id=1eab98025b004a5d9d7eab51a75af622
+2026-09-21 22:42:08,100 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/magoyama/images/magoyama-001.jpg status=200 duration_ms=1.17 trace_id=5d7a3c077a6a4eeba4f1eb2ce8eed3d1
+2026-09-21 22:42:08,357 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T14:42:08.357107+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790001723506-3c37bd70","session_id":"sess-1790001723693-288fabd4","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities","method":"GET","traceId":"req-1790001723506-3c37bd70","requestId":"req-1790001723506-3c37bd70","duration":2640,"statusCode":200,"responseBytes":70818,"diagnosticEventId":"diag-1790001726149-d5c70ad5","occurredAt":1790001726149,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 22:42:08,358 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=997.32 trace_id=dc8b74f03dbd42b1a97ac31b957abeb8
+2026-09-21 22:42:10,992 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities/me/signed-up status=200 duration_ms=2501.23 trace_id=req-1790001728480-57404a5c
+2026-09-21 22:42:13,044 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T14:42:13.044010+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790001728480-57404a5c","session_id":"sess-1790001723693-288fabd4","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities/me/signed-up","method":"GET","traceId":"req-1790001728480-57404a5c","requestId":"req-1790001728480-57404a5c","duration":2528,"statusCode":200,"responseBytes":66053,"diagnosticEventId":"diag-1790001731010-5aaca61d","occurredAt":1790001731011,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 22:42:13,045 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=825.91 trace_id=ed98322c09054e4b82a8e36b8dc3035e
+2026-09-21 23:52:16,637 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activity-covers status=200 duration_ms=812.03 trace_id=req-1790005935748-7407cef3
+2026-09-21 23:52:21,999 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T15:52:21.998524+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790005940083-d98179ee","session_id":"sess-1790001723693-288fabd4","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790005940083-d98179ee","reason":"all_ready_state_committed","duration":41,"listStage":"request_pending","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":1,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[],"imageCache":{"checked":0,"hits":0,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":false,"status":"not_observed","hitRate":null},"listCacheUsed":true,"totals":{"succeeded":0,"failed":0,"cacheHits":0,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":26,"request_pending":30},"diagnosticEventId":"diag-1790005940127-c9c65ff8","occurredAt":1790005940127,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 23:52:22,000 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=665.57 trace_id=c1c1496233e847fbab47803254123d7f
+2026-09-21 23:52:22,366 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities status=200 duration_ms=2244.98 trace_id=req-1790005940113-edcfedd8
+2026-09-21 23:52:24,309 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T15:52:24.309520+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790005940113-edcfedd8","session_id":"sess-1790001723693-288fabd4","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities","method":"GET","traceId":"req-1790005940113-edcfedd8","requestId":"req-1790005940113-edcfedd8","duration":2261,"statusCode":200,"responseBytes":70818,"diagnosticEventId":"diag-1790005942376-0b30125e","occurredAt":1790005942376,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 23:52:24,310 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=724.56 trace_id=61970af99d7c46a7a7d16f098d2bf5d8
+2026-09-21 23:52:24,980 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities/me/signed-up status=200 duration_ms=2241.67 trace_id=req-1790005942732-502c5525
+2026-09-21 23:52:26,922 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T15:52:26.922684+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790005942732-502c5525","session_id":"sess-1790001723693-288fabd4","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities/me/signed-up","method":"GET","traceId":"req-1790005942732-502c5525","requestId":"req-1790005942732-502c5525","duration":2254,"statusCode":200,"responseBytes":66053,"diagnosticEventId":"diag-1790005944988-9fc69389","occurredAt":1790005944988,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 23:52:26,923 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=729.12 trace_id=1ba0b9c246e144e0929365407ccb1581
+2026-09-21 23:52:30,106 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T15:52:30.105976+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790005940083-d98179ee","session_id":"sess-1790001723693-288fabd4","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790005940083-d98179ee","reason":"checkpoint_8000","duration":8001,"listStage":"list_processed","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":3,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[{"group":"ended","activityId":"32","focused":true,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-lg.jpg","glassUrl":""},{"group":"ended","activityId":"31","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/venmen/images/venmen-006.jpg","glassUrl":""},{"group":"ended","activityId":"27","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg","glassUrl":""},{"group":"ended","activityId":"26","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":1},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg","glassUrl":""},{"group":"ended","activityId":"25","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":2},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/magoyama/images/magoyama-001.jpg","glassUrl":""}],"imageCache":{"checked":0,"hits":0,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":false,"status":"not_observed","hitRate":null},"listCacheUsed":true,"totals":{"succeeded":0,"failed":0,"cacheHits":0,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":26,"request_pending":30,"response_received":2297,"list_processed":2298},"diagnosticEventId":"diag-1790005948089-d569ec35","occurredAt":1790005948089,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 23:52:30,107 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=809.9 trace_id=08c3a7eda9764ccbb9361c9c6c7b1c1e
+2026-09-21 23:52:36,936 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T15:52:36.936650+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790005940083-d98179ee","session_id":"sess-1790001723693-288fabd4","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790005940083-d98179ee","reason":"checkpoint_15000","duration":15001,"listStage":"list_processed","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":3,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[{"group":"ended","activityId":"32","focused":true,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-lg.jpg","glassUrl":""},{"group":"ended","activityId":"31","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/venmen/images/venmen-006.jpg","glassUrl":""},{"group":"ended","activityId":"27","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg","glassUrl":""},{"group":"ended","activityId":"26","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":1},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg","glassUrl":""},{"group":"ended","activityId":"25","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":2},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/magoyama/images/magoyama-001.jpg","glassUrl":""}],"imageCache":{"checked":0,"hits":0,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":false,"status":"not_observed","hitRate":null},"listCacheUsed":true,"totals":{"succeeded":0,"failed":0,"cacheHits":0,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":26,"request_pending":30,"response_received":2297,"list_processed":2298},"diagnosticEventId":"diag-1790005955089-3fa7e4ea","occurredAt":1790005955090,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":2}}}
+2026-09-21 23:52:36,938 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T15:52:36.937714+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790005940083-d98179ee","session_id":"sess-1790001723693-288fabd4","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790005940083-d98179ee","reason":"checkpoint_layout","duration":15025,"listStage":"list_processed","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":3,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":{"contentNodes":5,"skeletonNodes":5,"bounds":["176.5x223.3000030517578@22.132701873779297,160.10000610351562","176.5x223.3000030517578@211.77560424804688,160.10000610351562","176.5x223.3000030517578@401.41851806640625,160.10000610351562","176.5x223.3000030517578@591.0614013671875,160.10000610351562","176.5x223.3000030517578@780.704345703125,160.10000610351562"]},"cards":[{"group":"ended","activityId":"32","focused":true,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-lg.jpg","glassUrl":""},{"group":"ended","activityId":"31","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/venmen/images/venmen-006.jpg","glassUrl":""},{"group":"ended","activityId":"27","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg","glassUrl":""},{"group":"ended","activityId":"26","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":1},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg","glassUrl":""},{"group":"ended","activityId":"25","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":2},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/magoyama/images/magoyama-001.jpg","glassUrl":""}],"imageCache":{"checked":0,"hits":0,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":false,"status":"not_observed","hitRate":null},"listCacheUsed":true,"totals":{"succeeded":0,"failed":0,"cacheHits":0,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":26,"request_pending":30,"response_received":2297,"list_processed":2298},"diagnosticEventId":"diag-1790005955109-386e5fa5","occurredAt":1790005955110,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":2}}}
+2026-09-21 23:52:36,938 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=637.73 trace_id=25c1efa888c84a16a2e2e913e4ed9048
+2026-09-21 23:53:22,047 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T15:53:22.047284+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790005940083-d98179ee","session_id":"sess-1790001723693-288fabd4","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790005940083-d98179ee","reason":"checkpoint_60000","duration":60001,"listStage":"list_processed","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":3,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":{"contentNodes":5,"skeletonNodes":5,"bounds":["176.5x223.3000030517578@22.132701873779297,160.10000610351562","176.5x223.3000030517578@211.77560424804688,160.10000610351562","176.5x223.3000030517578@401.41851806640625,160.10000610351562","176.5x223.3000030517578@591.0614013671875,160.10000610351562","176.5x223.3000030517578@780.704345703125,160.10000610351562"]},"cards":[{"group":"ended","activityId":"32","focused":true,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-lg.jpg","glassUrl":""},{"group":"ended","activityId":"31","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/venmen/images/venmen-006.jpg","glassUrl":""},{"group":"ended","activityId":"27","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg","glassUrl":""},{"group":"ended","activityId":"26","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":1},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg","glassUrl":""},{"group":"ended","activityId":"25","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":2},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/magoyama/images/magoyama-001.jpg","glassUrl":""}],"imageCache":{"checked":0,"hits":0,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":false,"status":"not_observed","hitRate":null},"listCacheUsed":true,"totals":{"succeeded":0,"failed":0,"cacheHits":0,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":26,"request_pending":30,"response_received":2297,"list_processed":2298},"diagnosticEventId":"diag-1790006000089-0ee38612","occurredAt":1790006000090,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 23:53:22,048 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=746.17 trace_id=0ab78f8340134a00af3a8d5a2ee3c429
+2026-09-21 23:54:22,033 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T15:54:22.033261+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790005940083-d98179ee","session_id":"sess-1790001723693-288fabd4","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790005940083-d98179ee","reason":"pending_heartbeat","duration":120003,"listStage":"list_processed","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":3,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":{"contentNodes":5,"skeletonNodes":5,"bounds":["176.5x223.3000030517578@22.132701873779297,160.10000610351562","176.5x223.3000030517578@211.77560424804688,160.10000610351562","176.5x223.3000030517578@401.41851806640625,160.10000610351562","176.5x223.3000030517578@591.0614013671875,160.10000610351562","176.5x223.3000030517578@780.704345703125,160.10000610351562"]},"cards":[{"group":"ended","activityId":"32","focused":true,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-lg.jpg","glassUrl":""},{"group":"ended","activityId":"31","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/venmen/images/venmen-006.jpg","glassUrl":""},{"group":"ended","activityId":"27","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg","glassUrl":""},{"group":"ended","activityId":"26","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":1},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg","glassUrl":""},{"group":"ended","activityId":"25","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":2},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/magoyama/images/magoyama-001.jpg","glassUrl":""}],"imageCache":{"checked":0,"hits":0,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":false,"status":"not_observed","hitRate":null},"listCacheUsed":true,"totals":{"succeeded":0,"failed":0,"cacheHits":0,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":26,"request_pending":30,"response_received":2297,"list_processed":2298},"diagnosticEventId":"diag-1790006060092-359b5206","occurredAt":1790006060092,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 23:54:22,034 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=727.74 trace_id=b9e681366c1748e39e224befcbb90f20
+2026-09-21 23:55:22,074 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T15:55:22.073748+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790005940083-d98179ee","session_id":"sess-1790001723693-288fabd4","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790005940083-d98179ee","reason":"pending_heartbeat","duration":180014,"listStage":"list_processed","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":3,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":{"contentNodes":5,"skeletonNodes":5,"bounds":["176.5x223.3000030517578@22.132701873779297,160.10000610351562","176.5x223.3000030517578@211.77560424804688,160.10000610351562","176.5x223.3000030517578@401.41851806640625,160.10000610351562","176.5x223.3000030517578@591.0614013671875,160.10000610351562","176.5x223.3000030517578@780.704345703125,160.10000610351562"]},"cards":[{"group":"ended","activityId":"32","focused":true,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-lg.jpg","glassUrl":""},{"group":"ended","activityId":"31","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/venmen/images/venmen-006.jpg","glassUrl":""},{"group":"ended","activityId":"27","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg","glassUrl":""},{"group":"ended","activityId":"26","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":1},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg","glassUrl":""},{"group":"ended","activityId":"25","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":2},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/magoyama/images/magoyama-001.jpg","glassUrl":""}],"imageCache":{"checked":0,"hits":0,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":false,"status":"not_observed","hitRate":null},"listCacheUsed":true,"totals":{"succeeded":0,"failed":0,"cacheHits":0,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":26,"request_pending":30,"response_received":2297,"list_processed":2298},"diagnosticEventId":"diag-1790006120105-471de4f8","occurredAt":1790006120105,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 23:55:22,075 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=752.55 trace_id=c55251ba7c82450a8aae57e6a403b7f1
+2026-09-21 23:56:22,065 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T15:56:22.065066+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790005940083-d98179ee","session_id":"sess-1790001723693-288fabd4","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790005940083-d98179ee","reason":"pending_heartbeat","duration":240028,"listStage":"list_processed","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":3,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":{"contentNodes":5,"skeletonNodes":5,"bounds":["176.5x223.3000030517578@22.132701873779297,160.10000610351562","176.5x223.3000030517578@211.77560424804688,160.10000610351562","176.5x223.3000030517578@401.41851806640625,160.10000610351562","176.5x223.3000030517578@591.0614013671875,160.10000610351562","176.5x223.3000030517578@780.704345703125,160.10000610351562"]},"cards":[{"group":"ended","activityId":"32","focused":true,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-lg.jpg","glassUrl":""},{"group":"ended","activityId":"31","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/venmen/images/venmen-006.jpg","glassUrl":""},{"group":"ended","activityId":"27","focused":false,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg","glassUrl":""},{"group":"ended","activityId":"26","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":1},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg","glassUrl":""},{"group":"ended","activityId":"25","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":2},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/magoyama/images/magoyama-001.jpg","glassUrl":""}],"imageCache":{"checked":0,"hits":0,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":false,"status":"not_observed","hitRate":null},"listCacheUsed":true,"totals":{"succeeded":0,"failed":0,"cacheHits":0,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":26,"request_pending":30,"response_received":2297,"list_processed":2298},"diagnosticEventId":"diag-1790006180118-b32ba583","occurredAt":1790006180119,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-21 23:56:22,066 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=730.61 trace_id=ce0a3aaf751240969895c79c8e19f99b
+WARNING:  WatchFiles detected changes in 'app\schemas\activity_v2.py', 'app\services\activity_cover_service.py'. Reloading...
+2026-09-22 00:04:26,651 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activity-covers status=200 duration_ms=742.11 trace_id=req-1790006665894-6dd9ebca
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+2026-09-22 00:04:27,745 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:04:27.745320+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790005940083-d98179ee","session_id":"sess-1790001723693-288fabd4","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790005940083-d98179ee","reason":"page_hide","duration":725729,"listStage":"list_processed","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":1,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":{"contentNodes":5,"skeletonNodes":5,"bounds":["176.5x223.3000030517578@22.132701873779297,160.10000610351562","176.5x223.3000030517578@211.77560424804688,160.10000610351562","176.5x223.3000030517578@401.41851806640625,160.10000610351562","176.5x223.3000030517578@591.0614013671875,160.10000610351562","176.5x223.3000030517578@780.704345703125,160.10000610351562"]},"cards":[{"group":"ended","activityId":"32","focused":true,"exposed":true,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-lg.jpg","glassUrl":""},{"group":"ended","activityId":"31","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/venmen/images/venmen-006.jpg","glassUrl":""},{"group":"ended","activityId":"27","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":0},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg","glassUrl":""},{"group":"ended","activityId":"26","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":1},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg","glassUrl":""},{"group":"ended","activityId":"25","focused":false,"exposed":false,"ready":true,"coverPhases":{"priority_updated":80,"priority":2},"glassPhases":{},"cover":"prepared;native=no_callback;preload=no_callback","glass":"absent","video":"absent","coverUrl":"http://127.0.0.1:8001/activity-cover-assets/magoyama/images/magoyama-001.jpg","glassUrl":""}],"imageCache":{"checked":0,"hits":0,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":0,"used":false,"status":"not_observed","hitRate":null},"listCacheUsed":true,"totals":{"succeeded":0,"failed":0,"cacheHits":0,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":26,"request_pending":30,"response_received":2297,"list_processed":2298},"diagnosticEventId":"diag-1790006665815-3b8e5b9f","occurredAt":1790006665816,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:04:27,746 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=709.79 trace_id=6a7eff146d8944409137546173fb71af
+INFO:     Waiting for background tasks to complete. (CTRL+C to force quit)
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [36352]
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Started server process [1468]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1468]
+INFO:     Started server process [40372]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+2026-09-22 00:10:23,071 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/venmen/images/venmen-006.jpg status=200 duration_ms=106.56 trace_id=2320bd1596614088849c0050e6aab1d9
+2026-09-22 00:10:23,076 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg status=200 duration_ms=2.86 trace_id=f03164b338b84931900a21c21ab6ae17
+2026-09-22 00:10:23,293 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg status=200 duration_ms=1.25 trace_id=6efb8d6f20744da985c09307ff1aaa3d
+2026-09-22 00:10:23,307 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/magoyama/images/magoyama-001.jpg status=200 duration_ms=1.65 trace_id=46cb2ea2109c40b0bb3fef03168cc709
+2026-09-22 00:10:24,913 INFO [dragon.reserve] request_completed method=GET path=/api/v1/users/me status=200 duration_ms=5736.76 trace_id=req-1790007019158-a5572201
+2026-09-22 00:10:27,105 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:10:27.104796+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790007022687-61396f78","session_id":"sess-1790007023507-5e30439b","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790007022687-61396f78","reason":"all_ready_state_committed","duration":817,"listStage":"request_pending","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":1,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[],"imageCache":{"checked":1,"hits":1,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":4,"used":true,"status":"checked","hitRate":1},"listCacheUsed":true,"totals":{"succeeded":5,"failed":0,"cacheHits":1,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":52,"request_pending":143},"diagnosticEventId":"diag-1790007023509-a60caf0e","occurredAt":1790007023510,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:10:27,108 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=2391.7 trace_id=4b4a9dbfa088492cb90493add825ee8a
+2026-09-22 00:10:27,443 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities status=200 duration_ms=4603.85 trace_id=req-1790007022830-dfe1aebc
+2026-09-22 00:10:29,061 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:10:29.061320+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790007019158-a5572201","session_id":"sess-1790007023507-5e30439b","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/users/me","method":"GET","traceId":"req-1790007019158-a5572201","requestId":"req-1790007019158-a5572201","duration":5762,"statusCode":200,"responseBytes":263,"diagnosticEventId":"diag-1790007024923-58411f40","occurredAt":1790007024923,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":2}}}
+2026-09-22 00:10:29,062 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:10:29.062261+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790007022830-dfe1aebc","session_id":"sess-1790007023507-5e30439b","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities","method":"GET","traceId":"req-1790007022830-dfe1aebc","requestId":"req-1790007022830-dfe1aebc","duration":4620,"statusCode":200,"responseBytes":71410,"diagnosticEventId":"diag-1790007027453-25d823b7","occurredAt":1790007027453,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":2}}}
+2026-09-22 00:10:29,063 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=742.65 trace_id=2bccf470bff4472fbeed426110ac30d5
+2026-09-22 00:10:30,254 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities/me/signed-up status=200 duration_ms=2430.83 trace_id=req-1790007027817-8ef629e6
+2026-09-22 00:10:32,244 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:10:32.244583+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790007027817-8ef629e6","session_id":"sess-1790007023507-5e30439b","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities/me/signed-up","method":"GET","traceId":"req-1790007027817-8ef629e6","requestId":"req-1790007027817-8ef629e6","duration":2446,"statusCode":200,"responseBytes":66565,"diagnosticEventId":"diag-1790007030265-e5f6649d","occurredAt":1790007030265,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:10:32,246 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=769.67 trace_id=637b4704b893421fba7e3c376b58ec0e
+2026-09-22 00:11:04,082 INFO [dragon.reserve] request_completed method=GET path=/api/v1/users/me status=200 duration_ms=758.55 trace_id=req-1790007063310-095c0769
+2026-09-22 00:11:05,749 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/venmen/images/venmen-006.jpg status=200 duration_ms=2.07 trace_id=5bd4caed9b5844ce97e4b50be1685cbf
+2026-09-22 00:11:05,771 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg status=200 duration_ms=1.86 trace_id=cf3428f666c545daae98a070698ee66e
+2026-09-22 00:11:05,989 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg status=200 duration_ms=1.44 trace_id=485dc7def0754f86a80f7b57aa77d3fe
+2026-09-22 00:11:06,010 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/magoyama/images/magoyama-001.jpg status=200 duration_ms=1.96 trace_id=8bf72d5dedc64598ab534190b5cf521d
+2026-09-22 00:11:07,728 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities status=200 duration_ms=2098.59 trace_id=req-1790007065620-1df77310
+2026-09-22 00:11:08,165 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:11:08.165101+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790007065488-7f7b9123","session_id":"sess-1790007066212-802ca147","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790007065488-7f7b9123","reason":"all_ready_state_committed","duration":720,"listStage":"request_pending","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":1,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[],"imageCache":{"checked":1,"hits":1,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":4,"used":true,"status":"checked","hitRate":1},"listCacheUsed":true,"totals":{"succeeded":5,"failed":0,"cacheHits":1,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":94,"request_pending":131},"diagnosticEventId":"diag-1790007066214-3546498c","occurredAt":1790007066216,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:11:08,166 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=741.2 trace_id=26d2088bff2f410dafcca6ee6d54366d
+2026-09-22 00:11:10,140 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:11:10.140388+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790007065620-1df77310","session_id":"sess-1790007066212-802ca147","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities","method":"GET","traceId":"req-1790007065620-1df77310","requestId":"req-1790007065620-1df77310","duration":2118,"statusCode":200,"responseBytes":71410,"diagnosticEventId":"diag-1790007067742-a55e0020","occurredAt":1790007067742,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:11:10,141 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=756.8 trace_id=c12a810959ff444f8a9648ff65578172
+2026-09-22 00:11:23,009 INFO [dragon.reserve] request_completed method=GET path=/api/v1/users/me status=200 duration_ms=748.9 trace_id=req-1790007082248-84497113
+2026-09-22 00:11:24,131 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/venmen/images/venmen-006.jpg status=200 duration_ms=2.12 trace_id=e5c4e1c2c66c485d91a066960dbc3dde
+2026-09-22 00:11:24,152 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg status=200 duration_ms=1.75 trace_id=efd69bb289b84f95897ea8afa9e13bac
+2026-09-22 00:11:24,335 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg status=200 duration_ms=1.92 trace_id=a8f650ac76d74faab080ca267792c642
+2026-09-22 00:11:24,370 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/magoyama/images/magoyama-001.jpg status=200 duration_ms=1.59 trace_id=92bed0e1526f4e9a9e40a0cd41fc8e50
+2026-09-22 00:11:26,077 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities status=200 duration_ms=2057.7 trace_id=req-1790007084012-44dc15ee
+2026-09-22 00:11:26,952 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:11:26.952733+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790007083930-e87098dd","session_id":"sess-1790007084565-54e63f03","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790007083930-e87098dd","reason":"all_ready_state_committed","duration":634,"listStage":"request_pending","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":0,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[],"imageCache":{"checked":1,"hits":1,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":4,"used":true,"status":"checked","hitRate":1},"listCacheUsed":true,"totals":{"succeeded":5,"failed":0,"cacheHits":1,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":63,"request_pending":82},"diagnosticEventId":"diag-1790007084567-90665b81","occurredAt":1790007084568,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:11:26,953 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=1177.1 trace_id=47be622272924ed2b2f19a8006d4434a
+2026-09-22 00:11:28,580 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities/me/signed-up status=200 duration_ms=2119.88 trace_id=req-1790007086452-0681e98e
+2026-09-22 00:11:28,777 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:11:28.777031+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790007084012-44dc15ee","session_id":"sess-1790007084565-54e63f03","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities","method":"GET","traceId":"req-1790007084012-44dc15ee","requestId":"req-1790007084012-44dc15ee","duration":2072,"statusCode":200,"responseBytes":71410,"diagnosticEventId":"diag-1790007086086-51e2e52a","occurredAt":1790007086086,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:11:28,778 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=607.12 trace_id=e4d3229fe82043889dcd9ed7bcd64691
+2026-09-22 00:11:30,688 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:11:30.688180+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790007086452-0681e98e","session_id":"sess-1790007084565-54e63f03","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities/me/signed-up","method":"GET","traceId":"req-1790007086452-0681e98e","requestId":"req-1790007086452-0681e98e","duration":2134,"statusCode":200,"responseBytes":66565,"diagnosticEventId":"diag-1790007088589-c5bacb25","occurredAt":1790007088589,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:11:30,689 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=697.87 trace_id=847e593408d24461a55ae779f0040765
+2026-09-22 00:12:25,722 INFO [dragon.reserve] request_completed method=GET path=/api/v1/users/me status=200 duration_ms=749.15 trace_id=req-1790007144960-3eb43dd4
+2026-09-22 00:12:27,634 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/venmen/images/venmen-006.jpg status=200 duration_ms=3.25 trace_id=99a27b4903e44dbca6abd49b4ac0230e
+2026-09-22 00:12:27,661 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg status=200 duration_ms=1.93 trace_id=2998840d494b4ebc82f8d3cca5dc5981
+2026-09-22 00:12:27,909 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg status=200 duration_ms=1.82 trace_id=69b6e2f7f466427e98a1608507804a7c
+2026-09-22 00:12:27,923 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/magoyama/images/magoyama-001.jpg status=200 duration_ms=2.15 trace_id=aae532912d724671bbe5504a8271a2b9
+2026-09-22 00:12:29,543 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities status=200 duration_ms=2055.68 trace_id=req-1790007147478-76103e60
+2026-09-22 00:12:30,029 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:12:30.029556+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790007147337-e6bc3df3","session_id":"sess-1790007148195-d19c742a","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790007147337-e6bc3df3","reason":"all_ready_state_committed","duration":855,"listStage":"request_pending","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":0,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[],"imageCache":{"checked":1,"hits":1,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":4,"used":true,"status":"checked","hitRate":1},"listCacheUsed":true,"totals":{"succeeded":5,"failed":0,"cacheHits":1,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":77,"request_pending":141},"diagnosticEventId":"diag-1790007148198-95883d86","occurredAt":1790007148200,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:12:30,031 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=622.62 trace_id=de1ea765e7c446ea94344f5774cedadd
+2026-09-22 00:12:31,849 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:12:31.849673+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790007147478-76103e60","session_id":"sess-1790007148195-d19c742a","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities","method":"GET","traceId":"req-1790007147478-76103e60","requestId":"req-1790007147478-76103e60","duration":2095,"statusCode":200,"responseBytes":71410,"diagnosticEventId":"diag-1790007149576-bdd29df3","occurredAt":1790007149576,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:12:31,851 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=599.35 trace_id=0c7424d34e4c4868a07d31ae7070df21
+2026-09-22 00:12:31,961 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities/me/signed-up status=200 duration_ms=2002.04 trace_id=req-1790007149949-2b25ec06
+2026-09-22 00:12:33,937 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:12:33.937449+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790007149949-2b25ec06","session_id":"sess-1790007148195-d19c742a","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities/me/signed-up","method":"GET","traceId":"req-1790007149949-2b25ec06","requestId":"req-1790007149949-2b25ec06","duration":2023,"statusCode":200,"responseBytes":66565,"diagnosticEventId":"diag-1790007151975-9089c80c","occurredAt":1790007151975,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:12:33,939 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=749.65 trace_id=ac0617f3e55940cc975e65dee648c8ee
+2026-09-22 00:13:00,691 INFO [dragon.reserve] request_completed method=GET path=/api/v1/users/me status=200 duration_ms=757.08 trace_id=req-1790007179919-e5ccf8ad
+2026-09-22 00:13:02,291 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/venmen/images/venmen-006.jpg status=200 duration_ms=1.53 trace_id=8c329237612f44ff8fa85c613bf5dc18
+2026-09-22 00:13:02,318 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg status=200 duration_ms=1.8 trace_id=3360306d9a69449bb08705f1a7119a70
+2026-09-22 00:13:02,542 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg status=200 duration_ms=1.98 trace_id=77dcabf006de4fba8ff91e42a2442811
+2026-09-22 00:13:02,596 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/magoyama/images/magoyama-001.jpg status=200 duration_ms=1.89 trace_id=4568599ddd6440aba60ee212ea850902
+2026-09-22 00:13:04,360 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities status=200 duration_ms=2189.3 trace_id=req-1790007182161-52e49fe8
+2026-09-22 00:13:04,405 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:13:04.405405+00:00","user_id":2,"user_role":"admin","event":"home_media_attempt","trace_id":"home-view-1790007182060-b45565dd","session_id":"sess-1790007182498-2c644eb9","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790007182060-b45565dd","schemaVersion":2,"sequence":1,"url":"http://127.0.0.1:8001/activity-cover-assets/venmen/images/venmen-006.jpg","stage":"attempt_succeeded","duration":435,"normalSampleRate":0.1,"normalSampled":true,"slowAttempt":false,"networkType":"wifi","evidence":{"worker_started":216,"attempt":1,"retries":0,"logicalActive":2,"outstandingPreparations":2,"queued":2,"startPriority":0,"disk_cache_bypassed":217,"combined_preparation":217,"requestId":"hm-mubg25dx-1-oul0trt4wv","downloadTasksAwaitingCallback":0,"inspectionTasksAwaitingCallback":1,"image_info_started":217,"inspectionSource":"remote_network_unobservable","image_info_complete":435,"width":1440,"height":2482,"attempt_succeeded":435},"diagnosticEventId":"diag-1790007182500-8748ced6","occurredAt":1790007182501,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":6}}}
+2026-09-22 00:13:04,406 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:13:04.406701+00:00","user_id":2,"user_role":"admin","event":"home_media_attempt","trace_id":"home-view-1790007182060-b45565dd","session_id":"sess-1790007182498-2c644eb9","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790007182060-b45565dd","schemaVersion":2,"sequence":2,"url":"http://127.0.0.1:8001/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg","stage":"attempt_succeeded","duration":444,"normalSampleRate":0.1,"normalSampled":true,"slowAttempt":false,"networkType":"wifi","evidence":{"worker_started":231,"attempt":1,"retries":0,"logicalActive":1,"outstandingPreparations":1,"queued":2,"startPriority":0,"disk_cache_bypassed":231,"combined_preparation":231,"requestId":"hm-mubg25eb-2-r1qjrl4b0f","downloadTasksAwaitingCallback":0,"inspectionTasksAwaitingCallback":0,"image_info_started":231,"inspectionSource":"remote_network_unobservable","image_info_complete":444,"width":1440,"height":1080,"attempt_succeeded":444},"diagnosticEventId":"diag-1790007182507-1048c176","occurredAt":1790007182507,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":6}}}
+2026-09-22 00:13:04,407 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:13:04.407552+00:00","user_id":2,"user_role":"admin","event":"home_media_attempt","trace_id":"home-view-1790007182060-b45565dd","session_id":"sess-1790007182498-2c644eb9","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790007182060-b45565dd","schemaVersion":2,"sequence":3,"url":"https://dragon.liqqihome.top/media/images/card-bg-other-v2-lg.jpg","stage":"attempt_succeeded","duration":460,"normalSampleRate":0.1,"normalSampled":true,"slowAttempt":false,"networkType":"wifi","evidence":{"worker_started":213,"attempt":1,"retries":0,"logicalActive":0,"outstandingPreparations":0,"queued":2,"startPriority":0,"disk_cache_hit":460,"cacheBudgetBytes":100000000,"attempt_succeeded":460},"diagnosticEventId":"diag-1790007182523-586beb9e","occurredAt":1790007182523,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":6}}}
+2026-09-22 00:13:04,408 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:13:04.408284+00:00","user_id":2,"user_role":"admin","event":"home_media_attempt","trace_id":"home-view-1790007182060-b45565dd","session_id":"sess-1790007182498-2c644eb9","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790007182060-b45565dd","schemaVersion":2,"sequence":4,"url":"http://127.0.0.1:8001/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg","stage":"attempt_succeeded","duration":725,"normalSampleRate":0.1,"normalSampled":true,"slowAttempt":false,"networkType":"wifi","evidence":{"worker_started":463,"attempt":1,"retries":0,"logicalActive":1,"outstandingPreparations":1,"queued":0,"startPriority":1,"disk_cache_bypassed":464,"combined_preparation":464,"requestId":"hm-mubg25ks-3-zi5a8soxgx","downloadTasksAwaitingCallback":0,"inspectionTasksAwaitingCallback":1,"image_info_started":464,"inspectionSource":"remote_network_unobservable","image_info_complete":725,"width":1211,"height":1671,"attempt_succeeded":725},"diagnosticEventId":"diag-1790007182788-00ca3c2f","occurredAt":1790007182788,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":6}}}
+2026-09-22 00:13:04,409 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:13:04.409136+00:00","user_id":2,"user_role":"admin","event":"home_media_attempt","trace_id":"home-view-1790007182060-b45565dd","session_id":"sess-1790007182498-2c644eb9","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790007182060-b45565dd","schemaVersion":2,"sequence":5,"url":"http://127.0.0.1:8001/activity-cover-assets/magoyama/images/magoyama-001.jpg","stage":"attempt_succeeded","duration":729,"normalSampleRate":0.1,"normalSampled":true,"slowAttempt":false,"networkType":"wifi","evidence":{"worker_started":483,"attempt":1,"retries":0,"logicalActive":0,"outstandingPreparations":0,"queued":0,"startPriority":2,"disk_cache_bypassed":483,"combined_preparation":483,"requestId":"hm-mubg25lb-4-x3ynsd3ltk","downloadTasksAwaitingCallback":0,"inspectionTasksAwaitingCallback":0,"image_info_started":483,"inspectionSource":"remote_network_unobservable","image_info_complete":729,"width":693,"height":711,"attempt_succeeded":729},"diagnosticEventId":"diag-1790007182792-398915a4","occurredAt":1790007182792,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":6}}}
+2026-09-22 00:13:04,410 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:13:04.410005+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790007182060-b45565dd","session_id":"sess-1790007182498-2c644eb9","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790007182060-b45565dd","reason":"all_ready_state_committed","duration":758,"listStage":"request_pending","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":0,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[],"imageCache":{"checked":1,"hits":1,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":4,"used":true,"status":"checked","hitRate":1},"listCacheUsed":true,"totals":{"succeeded":5,"failed":0,"cacheHits":1,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":true,"stages":{"cache":76,"request_pending":100},"diagnosticEventId":"diag-1790007182820-25c4c639","occurredAt":1790007182820,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":6}}}
+2026-09-22 00:13:04,411 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=700.34 trace_id=cb89c208c4934d23a845ab316548691c
+2026-09-22 00:13:06,459 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:13:06.459675+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790007182161-52e49fe8","session_id":"sess-1790007182498-2c644eb9","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities","method":"GET","traceId":"req-1790007182161-52e49fe8","requestId":"req-1790007182161-52e49fe8","duration":2209,"statusCode":200,"responseBytes":71410,"diagnosticEventId":"diag-1790007184374-12e2881d","occurredAt":1790007184374,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:13:06,461 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=797.47 trace_id=51be43ad7a98431da29edb55249259b6
+2026-09-22 00:13:38,590 INFO [dragon.reserve] request_completed method=GET path=/api/v1/users/me status=200 duration_ms=736.86 trace_id=req-1790007217838-5b64334c
+2026-09-22 00:13:40,161 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/venmen/images/venmen-006.jpg status=200 duration_ms=2.82 trace_id=a420748a0f8c4c4292114bf5c86c98d6
+2026-09-22 00:13:40,193 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg status=200 duration_ms=1.91 trace_id=36dd584aca10419583f6a87c7467bf0c
+2026-09-22 00:13:40,423 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg status=200 duration_ms=1.55 trace_id=2acc19b2c33e4acf95f822dab66a8607
+2026-09-22 00:13:40,453 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/magoyama/images/magoyama-001.jpg status=200 duration_ms=4.13 trace_id=aa0af052b32e42788e081895d2b95fc0
+2026-09-22 00:13:42,437 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities status=200 duration_ms=2406.91 trace_id=req-1790007220020-212ecd1f
+2026-09-22 00:13:42,537 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:13:42.537405+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790007219925-c34412e8","session_id":"sess-1790007220665-98e99b3c","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790007219925-c34412e8","reason":"all_ready_state_committed","duration":737,"listStage":"request_pending","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":0,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[],"imageCache":{"checked":1,"hits":1,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":4,"used":true,"status":"checked","hitRate":1},"listCacheUsed":true,"totals":{"succeeded":5,"failed":0,"cacheHits":1,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":71,"request_pending":95},"diagnosticEventId":"diag-1790007220667-42846aa9","occurredAt":1790007220668,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:13:42,539 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=662.71 trace_id=6ef38a1ff2164f0dbe71951255b0e8bb
+2026-09-22 00:13:44,527 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:13:44.527681+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790007220020-212ecd1f","session_id":"sess-1790007220665-98e99b3c","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities","method":"GET","traceId":"req-1790007220020-212ecd1f","requestId":"req-1790007220020-212ecd1f","duration":2430,"statusCode":200,"responseBytes":71410,"diagnosticEventId":"diag-1790007222454-3bd3e5c3","occurredAt":1790007222454,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:13:44,529 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=774.56 trace_id=fce6089684234e6ab069eedd8915823b
+2026-09-22 00:13:45,163 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities/me/signed-up status=200 duration_ms=2330.83 trace_id=req-1790007222824-63a15a35
+2026-09-22 00:13:47,095 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:13:47.095533+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790007222824-63a15a35","session_id":"sess-1790007220665-98e99b3c","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities/me/signed-up","method":"GET","traceId":"req-1790007222824-63a15a35","requestId":"req-1790007222824-63a15a35","duration":2348,"statusCode":200,"responseBytes":66565,"diagnosticEventId":"diag-1790007225175-b385ddd7","occurredAt":1790007225175,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:13:47,096 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=712.85 trace_id=ec62693d83ad43fc9858c55a53dc0cbc
+2026-09-22 00:18:01,500 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activity-covers status=200 duration_ms=752.22 trace_id=req-1790007480733-8cbd44b9
+2026-09-22 00:18:01,553 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/ardhira-putra/images/ardhira-putra-001.jpg status=200 duration_ms=1.71 trace_id=992e435c647d45818f8b7f5d98742e50
+2026-09-22 00:18:01,560 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/ardhira-putra/images/ardhira-putra-002.jpg status=200 duration_ms=1.98 trace_id=6445fc95a8b94ab990510b1cbf1c5b55
+2026-09-22 00:18:02,988 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-010.jpg status=200 duration_ms=0.96 trace_id=8e17ee861002475fbf2661cb589faa82
+2026-09-22 00:18:03,779 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-002.jpg status=200 duration_ms=3.79 trace_id=695f6fbb83bd44b9913fe4bfb6ac388a
+2026-09-22 00:18:03,780 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-004.jpg status=200 duration_ms=4.63 trace_id=ef5606dba5474bd2aad5ddb6fe8a3f14
+2026-09-22 00:18:03,782 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-005.jpg status=200 duration_ms=4.63 trace_id=8fe252192fd04fb9ab1b5cf8ed5905c9
+2026-09-22 00:18:03,784 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-007.jpg status=200 duration_ms=5.76 trace_id=3240796acd7d4d38a91f2ce51cacadd5
+2026-09-22 00:18:03,786 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg status=200 duration_ms=7.5 trace_id=8ed4a69cce5d40d69e3f64ad89ddd0f9
+2026-09-22 00:18:03,787 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-008.jpg status=200 duration_ms=8.43 trace_id=165078a013f844f5a521896e40a139df
+2026-09-22 00:18:03,798 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-009.jpg status=200 duration_ms=5.08 trace_id=c6333b47b48b460095c30f5b7e57b7f3
+2026-09-22 00:18:03,801 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/ardhira-putra/images/ardhira-putra-004.jpg status=200 duration_ms=5.89 trace_id=419263bcc5a745d090b730d163c1fcdf
+2026-09-22 00:18:04,556 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/ardhira-putra/images/ardhira-putra-003.jpg status=200 duration_ms=2.54 trace_id=903ff003c95a459dbb66caacdff8445a
+2026-09-22 00:18:04,557 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/ardhira-putra/images/ardhira-putra-008.jpg status=200 duration_ms=3.07 trace_id=500b33844e5543c3853b36a27eee6525
+2026-09-22 00:18:05,234 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-001.jpg status=200 duration_ms=7.93 trace_id=2000465da3724a049997698a3a7827d1
+2026-09-22 00:18:05,235 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-004.jpg status=200 duration_ms=8.52 trace_id=9b0ce22ecf6044048b40ff5808a56bb5
+2026-09-22 00:18:05,236 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-002.jpg status=200 duration_ms=9.89 trace_id=8bc70e1c0cfb418f89665f9fb01c2823
+2026-09-22 00:18:05,237 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg status=200 duration_ms=10.93 trace_id=b91faa7831ab4ce69f9eb59cae7fd698
+2026-09-22 00:18:05,238 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-005.jpg status=200 duration_ms=10.74 trace_id=86ecce76450e4479bc0737c03805c844
+2026-09-22 00:18:05,241 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-006.jpg status=200 duration_ms=11.81 trace_id=431ba041c0ec4774b2469409427ca92c
+2026-09-22 00:18:05,268 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-009.jpg status=200 duration_ms=3.81 trace_id=14be808a86954275afc7291c44e372b1
+2026-09-22 00:18:05,275 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-010.jpg status=200 duration_ms=4.57 trace_id=c819ab014a294042add21d53c18e8ed6
+2026-09-22 00:18:05,976 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/ardhira-putra/images/ardhira-putra-012.jpg status=200 duration_ms=2.82 trace_id=4a5a746a60094ea7bc0fa2fb9c4ea85d
+2026-09-22 00:18:05,978 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/yoneyama-mai/images/yoneyama-mai-016.jpg status=200 duration_ms=5.23 trace_id=3c0f0186e42147908a4bf051acfd5153
+2026-09-22 00:18:05,979 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/lam/images/lam-001.jpg status=200 duration_ms=5.31 trace_id=05c46f33fdde43b9938de039ca2184e5
+2026-09-22 00:18:05,982 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/lam/images/lam-002.jpg status=200 duration_ms=5.89 trace_id=c6fc9e4e61c04064a37d245bc049647b
+2026-09-22 00:18:05,984 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/lam/images/lam-003.jpg status=200 duration_ms=6.28 trace_id=e91e0ce2d19945d8b2b2282514cc6bfd
+2026-09-22 00:18:05,986 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/lam/images/lam-004.jpg status=200 duration_ms=7.79 trace_id=9fb067f5a2ab42dd8fcc9c6964b73c4d
+2026-09-22 00:18:06,003 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/lam/images/lam-005.jpg status=200 duration_ms=4.4 trace_id=42455e2f220246b3a714c6495a98d73b
+2026-09-22 00:18:06,009 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/lam/images/lam-006.jpg status=200 duration_ms=7.42 trace_id=830494667f4241429fee54feca1eb674
+2026-09-22 00:18:07,179 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/lam/images/lam-007.jpg status=200 duration_ms=2.07 trace_id=c6ae3af691f84556ae911d5a80d87779
+2026-09-22 00:18:07,182 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/lam/images/lam-008.jpg status=200 duration_ms=2.54 trace_id=50b8e23329f24f71977ab5293cd79300
+2026-09-22 00:18:07,184 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/lam/images/lam-009.jpg status=200 duration_ms=3.42 trace_id=38e0efdb6fa84b0ab074b19f08af13ce
+2026-09-22 00:18:07,185 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/lam/images/lam-010.jpg status=200 duration_ms=4.82 trace_id=423cc695e2b74f3297d3a2b04a95fbb3
+2026-09-22 00:18:07,791 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/lam/images/lam-011.jpg status=200 duration_ms=2.92 trace_id=67e36e602b7640cbb4a8d6133b767f6f
+2026-09-22 00:18:07,792 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/magoyama/images/magoyama-002.jpg status=200 duration_ms=3.42 trace_id=dde177ebe9d546df954ec43aa6f5675e
+2026-09-22 00:18:07,793 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/lam/images/lam-012.jpg status=200 duration_ms=4.97 trace_id=c6b3f65be8be4a40953c89fc6fe02884
+2026-09-22 00:18:07,794 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/magoyama/images/magoyama-001.jpg status=200 duration_ms=5.75 trace_id=8ba8dc01418a43eb875c03537d9bce19
+2026-09-22 00:18:12,339 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/magoyama/images/magoyama-003.jpg status=200 duration_ms=1.58 trace_id=f950d36fb9c5451081dc8fcf7f9715fa
+2026-09-22 00:18:12,341 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/magoyama/images/magoyama-004.jpg status=200 duration_ms=2.97 trace_id=792dac4745ae44a990e172c623dcf584
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+2026-09-22 00:27:07,300 INFO [dragon.reserve] request_completed method=GET path=/api/v1/users/me status=200 duration_ms=730.39 trace_id=req-1790008026556-4175c7b4
+2026-09-22 00:27:08,320 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/venmen/images/venmen-006.jpg status=200 duration_ms=3.67 trace_id=2eefb36864294de8945827fa2467a45b
+2026-09-22 00:27:08,340 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/patryk-wojciechowicz/images/patryk-wojciechowicz-006.jpg status=200 duration_ms=1.02 trace_id=f00d1a24a114415fbc171661fa5d90b0
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+2026-09-22 00:27:10,286 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities status=200 duration_ms=2060.13 trace_id=req-1790008028218-e95b1a0d
+INFO:     Waiting for background tasks to complete. (CTRL+C to force quit)
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40372]
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Started server process [31128]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [31128]
+INFO:     Started server process [38744]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+2026-09-22 00:27:13,964 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/aleksey-rico/images/aleksey-rico-003.jpg status=200 duration_ms=82.33 trace_id=f097c3a04bc748f58511c9acf6607c8d
+2026-09-22 00:27:13,965 INFO [dragon.reserve] request_completed method=GET path=/activity-cover-assets/magoyama/images/magoyama-001.jpg status=200 duration_ms=83.2 trace_id=ff4cb4f80fba4cb784dea2debd3708c5
+2026-09-22 00:27:19,202 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:27:19.202586+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790008028218-e95b1a0d","session_id":"sess-1790008030296-3916f870","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities","method":"GET","traceId":"req-1790008028218-e95b1a0d","requestId":"req-1790008028218-e95b1a0d","duration":2075,"statusCode":200,"responseBytes":71410,"diagnosticEventId":"diag-1790008030297-d10bcfba","occurredAt":1790008030298,"delivery":{"dropped":72,"uploadFailures":14,"storageFailures":0,"queued":1}}}
+2026-09-22 00:27:19,203 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=5321.51 trace_id=d660a61303164ebdb4f5e745c70aaadb
+2026-09-22 00:27:20,168 INFO [dragon.reserve] request_completed method=GET path=/api/v2/activities/me/signed-up status=200 duration_ms=6286.74 trace_id=req-1790008030670-79ea0f23
+2026-09-22 00:27:22,260 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:27:22.260335+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790008028218-e95b1a0d","session_id":"sess-1790008030296-3916f870","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities","method":"GET","traceId":"req-1790008028218-e95b1a0d","requestId":"req-1790008028218-e95b1a0d","duration":2075,"statusCode":200,"responseBytes":71410,"diagnosticEventId":"diag-1790008030297-d10bcfba","occurredAt":1790008030298,"delivery":{"dropped":72,"uploadFailures":15,"storageFailures":0,"queued":3}}}
+2026-09-22 00:27:22,261 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:27:22.260972+00:00","user_id":2,"user_role":"admin","event":"home_presentation_snapshot","trace_id":"home-view-1790008028143-ac5196a8","session_id":"sess-1790008030296-3916f870","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","traceId":"home-view-1790008028143-ac5196a8","reason":"all_ready_state_committed","duration":5966,"listStage":"list_processed","cacheUsed":true,"listError":"","listLoading":false,"total":5,"pending":0,"nativePending":0,"tabHidden":false,"tabPending":false,"networkType":"wifi","device":{"model":"iPhone 15 Pro Max","system":"iOS 10.0.1","platform":"devtools","miniVersion":"","envVersion":"develop"},"swipeCount":0,"layout":"not_measured","cards":[],"imageCache":{"checked":1,"hits":1,"misses":0,"invalid":0,"timeout":0,"errors":0,"bypassed":4,"used":true,"status":"checked","hitRate":1},"listCacheUsed":true,"totals":{"succeeded":5,"failed":0,"cacheHits":1,"cacheMisses":0,"cacheInvalid":0},"normalSampleRate":0.1,"normalSampled":false,"stages":{"cache":58,"request_pending":74,"response_received":2162,"list_processed":2167},"diagnosticEventId":"diag-1790008034113-31575533","occurredAt":1790008034113,"delivery":{"dropped":72,"uploadFailures":15,"storageFailures":0,"queued":3}}}
+2026-09-22 00:27:22,261 INFO [dragon.reserve] client_diagnostic {"received_at":"2026-09-21T16:27:22.261536+00:00","user_id":2,"user_role":"admin","event":"request_slow","trace_id":"req-1790008030670-79ea0f23","session_id":"sess-1790008030296-3916f870","page":"pages/activity_list/activity_list","level":"info","client_version":"8.0.5","base_lib_version":"3.17.3","system_type":"devtools","payload":{"environment":"test","url":"/activities/me/signed-up","method":"GET","traceId":"req-1790008030670-79ea0f23","requestId":"req-1790008030670-79ea0f23","duration":9508,"statusCode":200,"responseBytes":66565,"diagnosticEventId":"diag-1790008040182-fc5c8969","occurredAt":1790008040182,"delivery":{"dropped":72,"uploadFailures":15,"storageFailures":0,"queued":3}}}
+2026-09-22 00:27:22,262 INFO [dragon.reserve] request_completed method=POST path=/api/v1/diagnostics/client-logs/batch status=200 duration_ms=741.03 trace_id=7419369f0ecc44a09dd49c300f4cb7db
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [38744]
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Started server process [39072]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [39072]
+INFO:     Started server process [38128]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [38128]
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Started server process [25860]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [25860]
+INFO:     Started server process [27564]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [27564]
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Started server process [25004]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [25004]
+INFO:     Started server process [37736]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [37736]
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Started server process [42524]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [42524]
+INFO:     Started server process [40284]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40284]
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Started server process [31916]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [31916]
+INFO:     Started server process [39172]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [39172]
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Started server process [23504]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [23504]
+INFO:     Started server process [37656]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [37656]
+INFO:     Started server process [34300]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [34300]
+INFO:     Started server process [42832]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [42832]
+INFO:     Started server process [41944]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'tests\test_activity_covers_v2.py'. Reloading...

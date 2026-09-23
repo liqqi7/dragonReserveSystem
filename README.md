@@ -40,3 +40,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start_backend_test.ps1
 脚本会建立 SSH 隧道、启动本地 8001 端口，并在运行期间将小程序本机配置指向该端口；退出时恢复生产地址模板。
 
 详细说明见 [后端说明](backend/README.md)，其中包含测试库联调、服务器连接和生产部署说明。
+
+## 编辑活动流程实现约束
+
+编辑活动流程以 `prototype/龙城小程序.pen` 中的 `l8JPT0`、`WTdTo`、`VG9sB`、`F2KEFX`、`mzb3Z`、`i0BOQg`、`UHfn0`、`YKzDp` 为验收基准。原型中呈现为圆形的图标、按钮和状态标记必须使用圆形 SVG，不得用 CSS、文字、emoji、字体图标或位图替代；实现必须逐项对齐原型的尺寸、间距、颜色、层级、抽屉、时间选择器和封面预览流程。
+
+详细实施计划见 [编辑活动流程实施计划](docs/编辑活动流程-实施计划-20260924.md)。
