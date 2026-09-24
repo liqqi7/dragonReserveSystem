@@ -81,7 +81,7 @@
       </view>
     </view>
 
-    <view class="detail-skeleton-bottom-bar" style="height: calc(107.69rpx + {{safeBottomRpx}}rpx); padding-bottom: {{safeBottomRpx}}rpx">
+    <view class="detail-skeleton-bottom-bar" style="height: calc(107.69rpx + {{bottomBarSafeAreaRpx}}rpx); padding-bottom: {{bottomBarSafeAreaRpx}}rpx">
       <view class="detail-skeleton-bottom-inner">
         <view class="detail-skeleton-block detail-skeleton-share-button"><view class="detail-skeleton-shimmer"></view></view>
         <view class="detail-skeleton-block detail-skeleton-primary-button"><view class="detail-skeleton-shimmer"></view></view>
@@ -306,7 +306,7 @@
     <text class="back-to-top-label">顶部</text>
   </button>
 
-  <view wx:if="{{activity}}" id="qaActivityDetailBottomBar" class="bottom-bar" style="padding-bottom: {{safeBottomRpx}}rpx">
+  <view wx:if="{{activity}}" id="qaActivityDetailBottomBar" class="bottom-bar" style="padding-bottom: {{bottomBarSafeAreaRpx}}rpx">
     <view class="bottom-inner">
       <button
         class="bottom-icon-button bottom-icon-button-share {{(!canManageActivity || (!isAdmin && activity.status === '已结束')) ? 'bottom-icon-button-wide' : ''}} {{sharePreviewLoading ? 'bottom-icon-button-disabled' : ''}}"

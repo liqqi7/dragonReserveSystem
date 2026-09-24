@@ -47,7 +47,7 @@ test("activity detail loading state matches the prototype skeleton and reuses th
 });
 
 test("activity detail skeleton keeps its bottom actions visible and crossfades into content", () => {
-  assert.match(wxml, /class="detail-skeleton-bottom-bar" style="height: calc\(107\.69rpx \+ \{\{safeBottomRpx\}\}rpx\); padding-bottom: \{\{safeBottomRpx\}\}rpx"/);
+  assert.match(wxml, /class="detail-skeleton-bottom-bar" style="height: calc\(107\.69rpx \+ \{\{bottomBarSafeAreaRpx\}\}rpx\); padding-bottom: \{\{bottomBarSafeAreaRpx\}\}rpx"/);
   assert.match(wxml, /class="detail-skeleton-block detail-skeleton-share-button"/);
   assert.match(wxml, /class="detail-skeleton-block detail-skeleton-primary-button"/);
   assert.match(wxss, /\.detail-skeleton-bottom-bar\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*left:\s*0;[^}]*z-index:\s*4;/s);
@@ -348,12 +348,13 @@ test("detail exposes checkin only after the activity enters the ongoing state", 
   assert.match(js, /if \(activity\.status !== "进行中"\)[\s\S]*?仅进行中的活动可以签到/);
 });
 
-test("editing opens the same three-step wizard used by activity creation", () => {
+test("editing opens the dedicated edit page", () => {
   assert.equal(pageJson.usingComponents["date-time-picker-sheet"], undefined);
-  assert.match(js, /wx\.navigateTo\(\{[\s\S]*url: `\/pages\/activity_create\/activity_create\?mode=edit&id=\$\{activityId\}`/);
+  assert.match(js, /wx\.navigateTo\(\{[\s\S]*url: `\/pages\/activity_edit\/activity_edit\?id=\$\{activityId\}`/);
   assert.match(js, /activityUpdated:\s*\(\) => this\.refreshDetail\(\{ silent: true \}\)/);
   assert.match(wxml, /<activity-form-sheet[\s\S]*mode="edit"/);
-  assert.match(fs.readFileSync(path.join(__dirname, "../pages/activity_create/activity_create.js"), "utf8"), /buildEditForm[\s\S]*activityService\.updateActivity/);
+  const editPageSource = fs.readFileSync(path.join(__dirname, "../pages/activity_edit/activity_edit.js"), "utf8");
+  assert.match(editPageSource, /buildEditForm[\s\S]*activityService\.updateActivity/);
 });
 
 test("mini-program never exposes physical deletion and non-admins cannot edit ended activities while admins can edit", () => {
@@ -570,7 +571,17 @@ test("weather card matches the prototype structure and unavailable state", () =>
 
 test("activity detail uses the shared rpx safe-area resolver", () => {
   assert.match(js, /getBottomSafeAreaRpx/);
-  assert.match(wxml, /padding-bottom: \{\{safeBottomRpx\}\}rpx/);
+  assert.match(wxml, /class="bottom-bar" style="padding-bottom: \{\{bottomBarSafeAreaRpx\}\}rpx"/);
+  assert.match(js, /bottomBarSafeAreaRpx = Math\.max\(0, Math\.round\(\(safeBottomRpx - 21\.15\) \* 100\) \/ 100\)/);
+  assert.match(js, /bottomBarHeightRpx = Math\.round\(\(107\.69 \+ bottomBarSafeAreaRpx\) \* 100\) \/ 100/);
+  // 原型：两个按钮栏顶部均为 6px、按钮高 44px；详情栏底部另有 6px，需从安全区扣除。
+  const editJs = fs.readFileSync(path.join(__dirname, "../pages/activity_edit/activity_edit.js"), "utf8");
+  const editWxss = fs.readFileSync(path.join(__dirname, "../pages/activity_edit/activity_edit.wxss"), "utf8");
+  assert.match(editJs, /footerSafeAreaRpx: Math\.max\(0, getBottomSafeAreaRpx\(\) - 9\.62\)/);
+  assert.match(wxss, /\.bottom-inner\s*\{[^}]*height:\s*107\.69rpx;/s);
+  assert.match(wxss, /\.bottom-icon-button\s*\{[^}]*top:\s*11\.54rpx;/s);
+  assert.match(editWxss, /\.footer\s*\{[^}]*padding:\s*11\.54rpx 38\.46rpx 0;/s);
+  assert.equal(Math.round((107.69 - 11.54 - 84.62 + 9.62) * 100) / 100, 21.15);
   assert.match(wxml, /bottomBarHeightRpx\}\}rpx/);
   assert.doesNotMatch(wxml, /safeBottom\}\}px/);
 });

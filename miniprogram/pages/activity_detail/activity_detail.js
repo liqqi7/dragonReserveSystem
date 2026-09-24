@@ -96,6 +96,7 @@ Page({
     statusBarHeight: 20,
     navBarHeight: 64,
     safeBottomRpx: 0,
+    bottomBarSafeAreaRpx: 0,
     bottomBarHeightRpx: 107.69,
     showBackToTop: false,
     activityId: "",
@@ -182,18 +183,22 @@ Page({
       const statusBarHeight = win.statusBarHeight || 20;
       this._windowWidthPx = Number(win.windowWidth) > 0 ? Number(win.windowWidth) : 390;
       const safeBottomRpx = getBottomSafeAreaRpx();
-      const bottomBarHeightRpx = Math.round((107.69 + safeBottomRpx) * 100) / 100;
+      // 与编辑活动页一致：按钮底缘相对系统 Home Indicator 保留原型的 15px。
+      // 详情按钮栏自身在按钮下方已有 11.53rpx，故比编辑页的安全区修正再减去这段空间。
+      const bottomBarSafeAreaRpx = Math.max(0, Math.round((safeBottomRpx - 21.15) * 100) / 100);
+      const bottomBarHeightRpx = Math.round((107.69 + bottomBarSafeAreaRpx) * 100) / 100;
       this._backToTopThresholdPx = BACK_TO_TOP_THRESHOLD_RPX * this._windowWidthPx / 750;
       this.setData({
         statusBarHeight,
         navBarHeight: statusBarHeight + 44,
         safeBottomRpx,
+        bottomBarSafeAreaRpx,
         bottomBarHeightRpx,
         activityId: id
       });
     } catch (e) {
       this._windowWidthPx = 390;
-      this.setData({ activityId: id, bottomBarHeightRpx: 107.69, safeBottomRpx: 0 });
+      this.setData({ activityId: id, bottomBarHeightRpx: 107.69, safeBottomRpx: 0, bottomBarSafeAreaRpx: 0 });
     }
 
     if (!id) {
@@ -871,7 +876,7 @@ Page({
     if (typeof wx.navigateTo === "function") {
       const activityId = encodeURIComponent(String(activity._id));
       wx.navigateTo({
-        url: `/pages/activity_create/activity_create?mode=edit&id=${activityId}`,
+        url: `/pages/activity_edit/activity_edit?id=${activityId}`,
         events: {
           activityUpdated: () => this.refreshDetail({ silent: true })
         },

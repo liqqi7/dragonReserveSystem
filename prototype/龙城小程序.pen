@@ -87945,7 +87945,12 @@
               "ref": "AHpS7",
               "name": "顶部活动封面 · 已选中实例",
               "width": "fill_container",
-              "height": 300
+              "height": 300,
+              "descendants": {
+                "DCsbz": {
+                  "enabled": false
+                }
+              }
             },
             {
               "id": "MfiZ8",
@@ -89627,7 +89632,12 @@
               "ref": "AHpS7",
               "name": "顶部活动封面 · 已选中实例",
               "width": "fill_container",
-              "height": 300
+              "height": 300,
+              "descendants": {
+                "DCsbz": {
+                  "enabled": false
+                }
+              }
             },
             {
               "id": "jvAFJ",
@@ -89792,7 +89802,12 @@
               "ref": "AHpS7",
               "name": "顶部活动封面 · 已选中实例",
               "width": "fill_container",
-              "height": 300
+              "height": 300,
+              "descendants": {
+                "DCsbz": {
+                  "enabled": false
+                }
+              }
             },
             {
               "id": "h9W9oK",
@@ -90124,7 +90139,7 @@
           "height": 720,
           "descendants": {
             "Mkv63": {
-              "y": -852
+              "y": 12
             }
           }
         }
@@ -90282,7 +90297,7 @@
           "height": 720,
           "descendants": {
             "Mkv63": {
-              "y": -852
+              "y": 12
             },
             "x5UxR": {
               "stroke": "#E5E7EB",
@@ -90919,8 +90934,56 @@
                 },
                 {
                   "type": "frame",
+                  "id": "j1y7Lc",
+                  "name": "分类Tab · 生日",
+                  "width": 51,
+                  "height": 32,
+                  "fill": "#F3F4F6",
+                  "cornerRadius": 16,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ZsU7u",
+                      "name": "文字",
+                      "fill": "#6B7280",
+                      "content": "生日",
+                      "lineHeight": 1,
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "t7vmjF",
+                  "name": "分类Tab · 吃饭",
+                  "width": 51,
+                  "height": 32,
+                  "fill": "#F3F4F6",
+                  "cornerRadius": 16,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "C2o81o",
+                      "name": "文字",
+                      "fill": "#6B7280",
+                      "content": "吃饭",
+                      "lineHeight": 1,
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
                   "id": "xwK9h",
-                  "name": "分类Tab · 杂项 · 露出暗示",
+                  "name": "分类Tab · 杂项",
                   "width": 51,
                   "height": 32,
                   "fill": "#F3F4F6",
@@ -91509,8 +91572,56 @@
                 },
                 {
                   "type": "frame",
+                  "id": "zati2",
+                  "name": "分类Tab · 生日",
+                  "width": 51,
+                  "height": 32,
+                  "fill": "#F3F4F6",
+                  "cornerRadius": 16,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "jNYbf",
+                      "name": "文字",
+                      "fill": "#6B7280",
+                      "content": "生日",
+                      "lineHeight": 1,
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "eY2Rc",
+                  "name": "分类Tab · 吃饭",
+                  "width": 51,
+                  "height": 32,
+                  "fill": "#F3F4F6",
+                  "cornerRadius": 16,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "kAoxm",
+                      "name": "文字",
+                      "fill": "#6B7280",
+                      "content": "吃饭",
+                      "lineHeight": 1,
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
                   "id": "l6eiM",
-                  "name": "分类Tab · 杂项 · 露出暗示",
+                  "name": "分类Tab · 杂项",
                   "width": 51,
                   "height": 32,
                   "fill": "#F3F4F6",

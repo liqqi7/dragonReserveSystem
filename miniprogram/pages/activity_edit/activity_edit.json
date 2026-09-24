@@ -1,0 +1,11 @@
+{
+  "navigationStyle": "custom",
+  "renderer": "skyline",
+  "componentFramework": "glass-easel",
+  "disableScroll": true,
+  "usingComponents": {
+    "activity-cover-picker-sheet": "../../components/activity-cover-picker-sheet/index",
+    "date-time-picker-sheet": "../../components/date-time-picker-sheet/index",
+    "activity-subitems-editor": "../../components/activity-subitems-editor/index"
+  }
+}
