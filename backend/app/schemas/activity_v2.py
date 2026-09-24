@@ -63,6 +63,7 @@ class ActivityV2Response(BaseModel):
     participants: list[ActivityParticipantResponse]
     sub_items: list[ActivitySubItemResponse] = Field(default_factory=list)
     activity_cover_id: str
+    share_preview_image_url: Optional[str] = None
     activity_cover: Optional[ActivityCoverArtworkResponse] = None
 
 

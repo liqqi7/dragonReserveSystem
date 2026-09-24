@@ -36,6 +36,7 @@ class Activity(Base):
         nullable=False,
         server_default="aleksey-rico-001",
     )
+    share_preview_file: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
     location_name: Mapped[str] = mapped_column(String(255), nullable=False, default="")
     location_address: Mapped[str] = mapped_column(String(255), nullable=False, default="")
     location_latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)

@@ -90,12 +90,11 @@ def test_cover_catalog_exposes_only_selectable_categorized_assets(client) -> Non
     assert gif_response.headers["content-type"] == "image/gif"
 
 
-def test_retired_cover_remains_renderable_but_cannot_be_selected(client, admin_headers) -> None:
+def test_removed_cover_is_not_resolvable_or_selectable(client, admin_headers) -> None:
     from app.services.activity_cover_service import get_activity_cover
 
-    historical_cover = get_activity_cover("ardhira-putra-005")
-    assert historical_cover is not None
-    assert historical_cover["categories"] == []
+    assert get_activity_cover("ardhira-putra-005") is None
+    assert client.get("/api/v2/activity-covers/ardhira-putra-005/glass-image?v=2").status_code == 404
 
     payload = _activity_payload("弃用封面")
     payload["activity_cover_id"] = "ardhira-putra-005"

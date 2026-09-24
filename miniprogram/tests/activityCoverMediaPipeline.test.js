@@ -65,7 +65,9 @@ test("picker gives visible artwork precedence and pauses when hidden", () => {
 
 test("preview prioritizes current artwork and avatar, then neighboring works; ready paths are shared", () => {
   const calls = [];
-  const page = instance(preview, { previewArtist: structuredClone(artist), previewArtworkIndex: 1, previewArtwork: structuredClone(artist.artworks[1]) });
+  const previewArtist = structuredClone(artist);
+  previewArtist.artworks.forEach((artwork, index) => { artwork.artistAvatarUrl = url(`avatar-${index}`); artwork.displayAvatarUrl = ""; });
+  const page = instance(preview, { previewArtist, previewArtworkIndex: 1, previewArtwork: structuredClone(previewArtist.artworks[1]) });
   page._ensurePreviewImageLoader = () => {
     page._previewImageLoader = {
       enqueue: (urls, options) => calls.push({ urls, options }),
@@ -74,13 +76,15 @@ test("preview prioritizes current artwork and avatar, then neighboring works; re
     };
   };
   page._preparePreviewImages();
-  assert.deepEqual(calls[0].urls, [url("1"), url("avatar"), url("2"), url("0")]);
-  assert.deepEqual(calls[0].options.foregroundUrls, [url("1"), url("avatar")]);
+  assert.deepEqual(calls[0].urls, [url("1"), url("avatar-1"), url("2"), url("0")]);
+  assert.deepEqual(calls[0].options.foregroundUrls, [url("1"), url("avatar-1")]);
   page._markPreviewImageReady(url("1"), "/cache/current.jpg");
-  page._markPreviewImageReady(url("avatar"), "/cache/avatar.jpg");
+  page._markPreviewImageReady(url("avatar-1"), "/cache/avatar.jpg");
   assert.equal(page.data.previewArtwork.displayUrl, "/cache/current.jpg");
   assert.equal(page.data.previewArtist.artworks[1].displayUrl, "/cache/current.jpg");
-  assert.equal(page.data.previewArtist.displayAvatarUrl, "/cache/avatar.jpg");
+  assert.equal(page.data.previewArtwork.displayAvatarUrl, "/cache/avatar.jpg");
+  assert.equal(page.data.previewArtist.artworks[1].displayAvatarUrl, "/cache/avatar.jpg");
+  assert.equal(page.data.previewArtist.artworks[0].displayAvatarUrl, "");
   preview.onHide.call(page);
   assert.equal(calls.at(-1), "pause");
   preview.onShow.call(page);

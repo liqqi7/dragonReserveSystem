@@ -1,4 +1,7 @@
 {
+  "usingComponents": {
+    "create-access-dialog": "../../components/create-access-dialog/index"
+  },
   "navigationBarTitleText": "活动签到地图"
 }
 

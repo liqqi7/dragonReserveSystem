@@ -9,7 +9,7 @@ const {
 const { buildActivityShareAppMessageOptions } = require("../../utils/shareActivity");
 const { isDefaultNickname, isDefaultAvatar } = require("../../utils/profileUtils");
 const { orderParticipantsForDrawerRecentFirst } = require("../../utils/participantSort");
-const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
+const { resolveLocalMediaUrl, isLocalTestMediaUrl, getApiEnvironment } = require("../../services/config");
 const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
 const { getBottomSafeAreaRpx, getWindowInfoCompat } = require("../../utils/safeArea");
 const { resolveActivityWeather } = require("../../utils/activityWeatherCache");
@@ -155,7 +155,6 @@ Page({
     primaryActionDisabled: true,
     primaryActionType: "none",
     sharePreviewImageUrl: "",
-    sharePreviewLoading: false,
     activityFormContainerRendered: false,
     showActivityForm: false,
     activityFormSubmitting: false,
@@ -171,7 +170,6 @@ Page({
   _activityTypeStyles: [],
   _locationRequestId: 0,
   _hasShownOnce: false,
-  _sharePreviewGen: 0,
   _windowWidthPx: 390,
   _backToTopThresholdPx: BACK_TO_TOP_THRESHOLD_RPX * 390 / 750,
 
@@ -205,8 +203,7 @@ Page({
       this.setData({
         loading: false,
         loadError: "缺少活动 id",
-        sharePreviewImageUrl: "",
-        sharePreviewLoading: false
+        sharePreviewImageUrl: ""
       });
       return;
     }
@@ -227,6 +224,8 @@ Page({
 
   onUnload() {
     this._detailUnloaded = true;
+    this._pendingExitParticipant = null;
+    this._localSharePreviewSource = "";
     this._locationRequestId += 1;
     this.clearDetailEntranceTransition();
   },
@@ -402,8 +401,7 @@ Page({
           detailSkeletonLeaving: false,
           detailContentVisible: true,
           loadError: (err && err.message) || "加载失败",
-          sharePreviewImageUrl: "",
-          sharePreviewLoading: false
+          sharePreviewImageUrl: ""
         });
       });
   },
@@ -550,6 +548,12 @@ Page({
       locationMapLongitude >= -180 &&
       locationMapLongitude <= 180;
 
+    const shareSource = activity.sharePreviewImageUrl || "";
+    const useLocalShareImage = getApiEnvironment() === "test" && isLocalTestMediaUrl(shareSource);
+    if (!useLocalShareImage) this._localSharePreviewSource = "";
+    const localShareImage = useLocalShareImage && this._localSharePreviewSource === shareSource
+      ? this._localSharePreviewPath || "" : "";
+
     this.setData({
       activity,
       loadError: "",
@@ -584,13 +588,31 @@ Page({
       primaryActionDisabled: primaryAction.disabled,
       primaryActionType: primaryAction.action,
       locationDistanceText: "",
+      sharePreviewImageUrl: useLocalShareImage ? localShareImage : shareSource,
       weather: buildWeatherView(resolveActivityWeather(activity))
     }, () => {
       this.updateRemarkOverflow();
       if (typeof onApplied === "function") onApplied();
     });
-    this.refreshSharePreview(activity && activity._id);
+    if (useLocalShareImage) this.preloadLocalTestShareImage(shareSource);
     this.loadLocationDistance(activity);
+  },
+
+  preloadLocalTestShareImage(source) {
+    if (this._localSharePreviewSource === source || typeof wx.downloadFile !== "function") return;
+    this._localSharePreviewSource = source;
+    this._localSharePreviewPath = "";
+    // 真机调试中 HTTP 局域网地址不是有效的分享 imageUrl；进入详情时预取静态 PNG。
+    // 分享按钮不等待下载：尚未就绪时使用微信的默认截图。
+    wx.downloadFile({
+      url: resolveLocalMediaUrl(source),
+      success: (result) => {
+        if (this._detailUnloaded || this._localSharePreviewSource !== source) return;
+        if (result.statusCode !== 200 || !result.tempFilePath) return;
+        this._localSharePreviewPath = result.tempFilePath;
+        this.setData({ sharePreviewImageUrl: result.tempFilePath });
+      }
+    });
   },
 
   updateRemarkOverflow() {
@@ -754,37 +776,6 @@ Page({
     if (this.data.primaryActionType === "checkin") return this.onTapCheckin();
   },
 
-  refreshSharePreview(activityId) {
-    if (!activityId) {
-      this.setData({ sharePreviewImageUrl: "", sharePreviewLoading: false });
-      return;
-    }
-    const gen = (this._sharePreviewGen = (this._sharePreviewGen || 0) + 1);
-    this.setData({ sharePreviewLoading: true });
-    activityService
-      .getActivitySharePreview(activityId)
-      .then((res) => {
-        if (gen !== this._sharePreviewGen) return;
-        const url = res && (res.image_url || res.imageUrl);
-        const ok =
-          res &&
-          res.status === "ready" &&
-          url &&
-          /^https:\/\//i.test(String(url).trim());
-        this.setData({
-          sharePreviewImageUrl: ok ? String(url).trim() : "",
-          sharePreviewLoading: false
-        });
-      })
-      .catch(() => {
-        if (gen !== this._sharePreviewGen) return;
-        this.setData({
-          sharePreviewImageUrl: "",
-          sharePreviewLoading: false
-        });
-      });
-  },
-
   onTapBack() {
     const pages = getCurrentPages();
     if (pages.length > 1) {
@@ -879,6 +870,9 @@ Page({
         url: `/pages/activity_edit/activity_edit?id=${activityId}`,
         events: {
           activityUpdated: () => this.refreshDetail({ silent: true })
+        },
+        success: (res) => {
+          if (res && res.eventChannel) res.eventChannel.emit("initActivityEdit", { activity });
         },
         fail: (error) => {
           console.error(error);
@@ -988,16 +982,32 @@ Page({
       wx.showToast({ title: "未找到你的报名记录", icon: "none" });
       return;
     }
-    wx.showModal({
-      title: "确认取消报名",
-      content: `确定要取消活动「${activity.name}」的报名吗？`,
-      success: (res) => {
-        if (!res.confirm) return;
-        this.doRemoveParticipant(mine.id, mine.name || "我", activity, true);
-      }
+    this.showExitActivityDialog(mine.id, mine.name || "我", activity);
+  },
+
+  showExitActivityDialog(participantId, name, activity) {
+    const dialog = this.selectComponent("#exit-activity-dialog");
+    if (!dialog || typeof dialog.open !== "function") return;
+    this._pendingExitParticipant = { participantId, name, activityId: activity._id };
+    dialog.open({
+      type: "exitActivity",
+      title: "确定退出活动？",
+      message: "退出后将无法继续参与本次活动",
+      cancelText: "取消",
+      confirmText: "确定退出",
+      variant: "danger",
+      prototypeStyle: true,
+      confirmBehavior: "emit"
     });
   },
 
+  confirmExitActivity() {
+    const pending = this._pendingExitParticipant;
+    this._pendingExitParticipant = null;
+    const activity = this.data.activity;
+    if (!pending || !activity || String(activity._id) !== String(pending.activityId)) return;
+    this.doRemoveParticipant(pending.participantId, pending.name, activity, true);
+  },
   showSignupPermissionDenied() {
     wx.showModal({
       title: "暂无报名权限",
@@ -1169,11 +1179,14 @@ Page({
     if (!activity) return;
     if (!isSelf && !this.data.canManageActivity) return;
 
+    if (isSelf) {
+      this.showExitActivityDialog(participantId, name, activity);
+      return;
+    }
+
     wx.showModal({
-      title: isSelf ? "确认取消报名" : "确认删除",
-      content: isSelf
-        ? `确定要取消活动「${activity.name}」的报名吗？`
-        : `确定要删除「${name}」吗？该成员的报名记录将被删除。`,
+      title: "确认删除",
+      content: `确定要删除「${name}」吗？该成员的报名记录将被删除。`,
       success: (res) => {
         if (res.confirm) this.doRemoveParticipant(participantId, name, activity, isSelf);
       }

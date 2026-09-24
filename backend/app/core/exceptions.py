@@ -51,3 +51,10 @@ class IntegrationError(AppError):
 
     def __init__(self, message: str = "Upstream integration failed") -> None:
         super().__init__("INTEGRATION_ERROR", message, 502)
+
+
+class SharePreviewGenerationError(AppError):
+    """Raised when an activity card cannot be prepared before saving."""
+
+    def __init__(self) -> None:
+        super().__init__("SHARE_PREVIEW_GENERATION_FAILED", "分享图片生成失败，请稍后重试", 503)

@@ -29,11 +29,11 @@
   <view class="cover-preview-info">
     <view class="cover-preview-artist">
       <view class="cover-preview-avatar">
-        <image wx:if="{{previewArtist.displayAvatarUrl}}" class="cover-preview-avatar-image" src="{{previewArtist.displayAvatarUrl}}" mode="aspectFill" fade-in="{{true}}" binderror="onPreviewImageError" data-url="{{previewArtist.avatarUrl}}" />
+        <image wx:if="{{previewArtwork.displayAvatarUrl}}" class="cover-preview-avatar-image" src="{{previewArtwork.displayAvatarUrl}}" mode="aspectFill" fade-in="{{true}}" binderror="onPreviewImageError" data-url="{{previewArtwork.artistAvatarUrl}}" />
       </view>
       <view class="cover-preview-artist-copy">
-        <text class="cover-preview-artist-name">{{previewArtist.displayName}}</text>
-        <text class="cover-preview-hint">左右滑动查看同作者作品</text>
+        <text class="cover-preview-artist-name">{{previewArtwork.artistName}}</text>
+        <text class="cover-preview-hint">左右滑动查看其他封面</text>
       </view>
     </view>
     <view class="cover-preview-confirm" bindtap="confirmPreviewCover" aria-role="button" aria-label="设为活动封面">

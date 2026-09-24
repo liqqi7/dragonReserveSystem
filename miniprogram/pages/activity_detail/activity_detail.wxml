@@ -309,9 +309,8 @@
   <view wx:if="{{activity}}" id="qaActivityDetailBottomBar" class="bottom-bar" style="padding-bottom: {{bottomBarSafeAreaRpx}}rpx">
     <view class="bottom-inner">
       <button
-        class="bottom-icon-button bottom-icon-button-share {{(!canManageActivity || (!isAdmin && activity.status === '已结束')) ? 'bottom-icon-button-wide' : ''}} {{sharePreviewLoading ? 'bottom-icon-button-disabled' : ''}}"
-        open-type="{{sharePreviewLoading ? '' : 'share'}}"
-        disabled="{{sharePreviewLoading}}"
+        class="bottom-icon-button bottom-icon-button-share {{(!canManageActivity || (!isAdmin && activity.status === '已结束')) ? 'bottom-icon-button-wide' : ''}}"
+        open-type="share"
         hover-class="bottom-button-hover"
       >
         <image class="bottom-button-icon" src="/images/icon-share.svg" mode="aspectFit" />
@@ -392,8 +391,8 @@
           <view class="signup-profile-label">头像</view>
           <view class="signup-profile-avatar-wrap">
             <button class="signup-profile-avatar-btn" bindtap="onSignupProfileChooseAvatar">
-              <image wx:if="{{signupProfileAvatarUrl}}" class="signup-profile-avatar-img" src="{{signupProfileAvatarUrl}}" mode="scaleToFill" />
-              <view wx:else class="signup-profile-avatar-placeholder"><image src="/images/icon-image-plus.svg" mode="aspectFit" /></view>
+              <image wx:if="{{signupProfileAvatarUrl}}" class="signup-profile-avatar-img" src="{{signupProfileAvatarUrl}}" mode="aspectFill" />
+              <view wx:else class="signup-profile-avatar-placeholder"><image src="/images/icon-avatar-user-round.svg" mode="aspectFit" /></view>
             </button>
           </view>
         </view>
@@ -411,6 +410,7 @@
 </view>
 
 <create-access-dialog id="signup-login-dialog" bind:confirm="onSignupLoginConfirm" />
+<create-access-dialog id="exit-activity-dialog" bind:confirm="confirmExitActivity" />
 
 <page-container wx:if="{{subItemSignupContainerRendered}}" show="{{showSubItemSignup}}" position="bottom" round="{{false}}" close-on-slide-down="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="background:#FFFFFF;border-radius:46.15rpx 46.15rpx 0 0;" bind:clickoverlay="closeSubItemSignup" bind:beforeleave="onSubItemSignupBeforeLeave" bind:afterleave="onSubItemSignupAfterLeave">
   <view class="signup-project-sheet" style="height:calc({{signupSheetContentHeightRpx}}rpx + {{safeBottomRpx}}rpx);">
@@ -439,3 +439,5 @@
     </scroll-view>
   </view>
 </page-container>
+
+<create-access-dialog id="session-expired-dialog" />

@@ -52,7 +52,9 @@ from app.services.activity_service import (
     update_activity,
     replace_sub_items,
 )
-from app.services.activity_share_preview_service import get_or_create_activity_share_preview
+from app.services.activity_share_preview_service import (
+    discard_prepared_preview, prepare_activity_share_preview, read_activity_share_preview,
+)
 from app.services.activity_weather_service import ensure_weather_snapshot, get_activity_weather_snapshot
 
 
@@ -80,6 +82,9 @@ def _response(activity: Activity, request: Request, user: User | None = None) ->
     for item in payload["sub_items"]:
         item["signed_up"] = item["id"] in selected
     payload["activity_cover"] = get_activity_cover(activity.activity_cover_id, _base_url(request))
+    payload["share_preview_image_url"] = _absolute_media_url(
+        request, read_activity_share_preview(activity).image_url
+    )
     return ActivityV2Response(**payload)
 
 
@@ -181,7 +186,16 @@ def post_activity_v2(
             )
         )
     ensure_weather_snapshot(db, activity)
-    db.commit()
+    prepared_name, created = "", False
+    try:
+        prepared_name, created = prepare_activity_share_preview(activity)
+        activity.share_preview_file = prepared_name
+        db.commit()
+    except Exception:
+        db.rollback()
+        if prepared_name:
+            discard_prepared_preview(prepared_name, created)
+        raise
     return _response(get_activity_by_id(db, activity.id), request)
 
 
@@ -253,7 +267,7 @@ def get_activity_share_preview_v2(
 ) -> ActivitySharePreviewResponse:
     activity = get_activity_by_id(db, activity_id)
     try:
-        result = get_or_create_activity_share_preview(activity)
+        result = read_activity_share_preview(activity)
     except Exception as exc:
         logger.exception(
             "activity_share_preview_failed activity_id=%s summary=%s",

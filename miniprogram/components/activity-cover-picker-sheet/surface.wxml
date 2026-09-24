@@ -11,12 +11,7 @@
     <view class="cover-sheet-skeleton-list">
       <view wx:for="{{skeletonGroups}}" wx:key="*this" class="cover-skeleton-group">
         <view class="cover-skeleton-header">
-          <view class="cover-skeleton-block cover-skeleton-avatar">
-            <view class="cover-skeleton-shimmer" aria-hidden="true"></view>
-          </view>
-          <view class="cover-skeleton-block cover-skeleton-name">
-            <view class="cover-skeleton-shimmer" aria-hidden="true"></view>
-          </view>
+          <text class="cover-skeleton-category">{{item}}</text>
         </view>
         <view class="cover-skeleton-track">
           <view wx:for="{{skeletonCards}}" wx:for-item="skeletonCard" wx:key="*this" class="cover-skeleton-block cover-skeleton-card">
@@ -33,10 +28,6 @@
   <scroll-view wx:else type="list" scroll-y="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}" class="cover-sheet-content">
     <view wx:for="{{artists}}" wx:key="slug" list-item class="cover-artist-group">
       <view class="cover-artist-header">
-        <view class="cover-artist-avatar">
-          <image wx:if="{{item.displayAvatarUrl}}" class="cover-artist-avatar-image" src="{{item.displayAvatarUrl}}" mode="aspectFill" fade-in="{{true}}" binderror="onCoverImageError" data-url="{{item.avatarUrl}}" />
-          <view wx:elif="{{!item.avatarLoadFailed}}" class="cover-skeleton-shimmer cover-media-shimmer" aria-hidden="true"></view>
-        </view>
         <text class="cover-artist-name">{{item.displayName}}</text>
       </view>
       <scroll-view type="list" scroll-x="{{true}}" enable-flex="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}" class="cover-artwork-track">
@@ -73,10 +64,10 @@
           </open-container>
           <view class="cover-artwork-border"></view>
           <view wx:if="{{selectedId === artwork.id}}" class="cover-artwork-check">
-            <image class="cover-artwork-check-icon" src="/images/icon-check.svg" mode="aspectFit" />
+            <image class="cover-artwork-check-icon" src="/images/icon-cover-selected.svg" mode="aspectFit" />
           </view>
           <view class="cover-artwork-preview" catchtap="onPreview" data-artist-index="{{index}}" data-artwork-index="{{artworkIndex}}" aria-role="button" aria-label="全屏预览">
-            <image class="cover-artwork-preview-icon" src="/images/icon-expand.svg" mode="aspectFit" />
+            <image class="cover-artwork-preview-icon" src="/images/icon-cover-preview-search.svg" mode="aspectFit" />
           </view>
         </view>
       </scroll-view>

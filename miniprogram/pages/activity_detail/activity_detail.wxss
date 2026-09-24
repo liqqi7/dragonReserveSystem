@@ -1608,10 +1608,11 @@ button.back-to-top {
 .signup-profile-avatar-btn,
 .signup-profile-avatar-wrap,
 .signup-profile-avatar-img,
-.signup-profile-avatar-placeholder { width: 128rpx; height: 128rpx; }
-.signup-profile-avatar-btn { width: 128rpx !important; min-width: 128rpx !important; max-width: 128rpx !important; height: 128rpx !important; min-height: 128rpx !important; max-height: 128rpx !important; display: flex; align-items: center; justify-content: center; line-height: 0; border: 1rpx solid #e5e7eb; border-radius: 24rpx; background: #f9fafb; box-sizing: border-box; }
-.signup-profile-avatar-img { width: 128rpx !important; height: 128rpx !important; display: block; border-radius: 24rpx; }
-.signup-profile-avatar-placeholder image { width: 48rpx; height: 48rpx; display: block; }
+.signup-profile-avatar-placeholder { width: 76.92308rpx; height: 76.92308rpx; }
+.signup-profile-avatar-btn { width: 76.92308rpx !important; min-width: 76.92308rpx !important; max-width: 76.92308rpx !important; height: 76.92308rpx !important; min-height: 76.92308rpx !important; max-height: 76.92308rpx !important; display: flex; align-items: center; justify-content: center; line-height: 0; border: 1.92308rpx solid #e5e7eb; border-radius: 38.46154rpx; overflow: hidden; background: #f9fafb; box-sizing: border-box; }
+.signup-profile-avatar-img { width: 76.92308rpx !important; height: 76.92308rpx !important; display: block; border-radius: 38.46154rpx; }
+.signup-profile-avatar-placeholder { display: flex; align-items: center; justify-content: center; flex: none; line-height: 0; }
+.signup-profile-avatar-placeholder image { width: 30.76923rpx; height: 30.76923rpx; display: block; }
 .signup-profile-input { height: 88rpx; padding: 0 24rpx; border: none; border-radius: 24rpx; background: #f5f5f5; font-size: 28rpx; }
 .signup-profile-modal-footer { width: 100%; padding: 0; border: none; gap: 24rpx; background: transparent; }
 .signup-profile-btn { height: 88rpx; padding: 0; border-radius: 24rpx; font-size: 28rpx; font-weight: 600; }

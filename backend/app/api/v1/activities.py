@@ -26,7 +26,7 @@ from app.services.activity_card_glass_service import (
 )
 from app.services.activity_type_style_service import list_activity_type_styles
 from app.services.activity_weather_service import get_activity_weather_snapshot
-from app.services.activity_share_preview_service import get_or_create_activity_share_preview
+from app.services.activity_share_preview_service import read_activity_share_preview
 from app.services.activity_service import (
     admin_cancel_checkin_participant,
     admin_checkin_participant,
@@ -151,11 +151,11 @@ def get_activity_share_preview(
     db: Session = Depends(get_db),
     _: User | None = Depends(get_optional_current_user),
 ) -> ActivitySharePreviewResponse:
-    """Generate or return the activity share preview image."""
+    """Read the pre-generated share preview image."""
 
     activity = get_activity_by_id(db, activity_id)
     try:
-        result = get_or_create_activity_share_preview(activity)
+        result = read_activity_share_preview(activity)
     except Exception as exc:
         logger.exception("activity_share_preview_failed activity_id=%s summary=%s", activity_id, str(exc) or exc.__class__.__name__)
         result = ActivitySharePreviewResponse(status="failed", image_url=None)

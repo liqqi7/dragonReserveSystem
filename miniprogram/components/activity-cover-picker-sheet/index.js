@@ -7,28 +7,39 @@ const { rankActivityCoverImages } = require("../../utils/activityCoverImagePrior
 let catalogCache = null;
 let catalogPromise = null;
 
+const COVER_CATEGORIES = ["派对", "运动", "外出", "游戏", "电影", "生日", "吃饭", "杂项"];
+
 function normalizeCatalog(value) {
   if (!Array.isArray(value)) return [];
-  return value.map((artist) => ({
-    slug: String(artist.slug || ""),
-    displayName: String(artist.display_name || artist.displayName || ""),
-    avatarUrl: String(artist.avatar_url || artist.avatarUrl || ""),
-    displayAvatarUrl: "",
-    avatarLoadFailed: false,
-    artworks: (Array.isArray(artist.artworks) ? artist.artworks : []).map((artwork, artworkIndex) => ({
-      id: String(artwork.id || ""),
-      artistSlug: String(artwork.artist_slug || artwork.artistSlug || artist.slug || ""),
-      artistName: String(artwork.artist_name || artwork.artistName || artist.display_name || ""),
-      artistAvatarUrl: String(artwork.artist_avatar_url || artwork.artistAvatarUrl || artist.avatar_url || ""),
-      width: Number(artwork.width) || 0,
-      height: Number(artwork.height) || 0,
-      thumbnailUrl: String(artwork.thumbnail_url || artwork.thumbnailUrl || ""),
-      imageUrl: String(artwork.image_url || artwork.imageUrl || ""),
-      displayUrl: "",
-      imageLoadFailed: false,
-      enterDelayMs: artworkIndex * 200
-    })).filter((artwork) => artwork.id && artwork.thumbnailUrl && artwork.imageUrl)
-  })).filter((artist) => artist.slug && artist.artworks.length);
+  const groups = new Map(COVER_CATEGORIES.map((name) => [name, {
+    slug: name, displayName: name, avatarUrl: "", artworks: []
+  }]));
+  value.forEach((artist) => {
+    (Array.isArray(artist.artworks) ? artist.artworks : []).forEach((artwork) => {
+      if (!artwork.id || !(artwork.thumbnail_url || artwork.thumbnailUrl) || !(artwork.image_url || artwork.imageUrl)) return;
+      const categories = Array.isArray(artwork.categories) ? artwork.categories : [];
+      if (artwork.deprecated || categories.includes("弃用")) return;
+      const category = COVER_CATEGORIES.find((name) => categories.includes(name)) || "杂项";
+      const group = groups.get(category);
+      const artworkIndex = group.artworks.length;
+      group.artworks.push({
+        id: String(artwork.id),
+        categories: [category],
+        artistSlug: String(artwork.artist_slug || artwork.artistSlug || artist.slug || ""),
+        artistName: String(artwork.artist_name || artwork.artistName || artist.display_name || ""),
+        artistAvatarUrl: String(artwork.artist_avatar_url || artwork.artistAvatarUrl || artist.avatar_url || ""),
+        width: Number(artwork.width) || 0,
+        height: Number(artwork.height) || 0,
+        thumbnailUrl: String(artwork.thumbnail_url || artwork.thumbnailUrl || ""),
+        imageUrl: String(artwork.image_url || artwork.imageUrl || ""),
+        displayUrl: String(artwork.displayUrl || ""),
+        displayAvatarUrl: String(artwork.displayAvatarUrl || ""),
+        imageLoadFailed: false,
+        enterDelayMs: artworkIndex * 200
+      });
+    });
+  });
+  return Array.from(groups.values()).filter((group) => group.artworks.length);
 }
 
 function loadCatalog() {
@@ -59,7 +70,7 @@ Component({
     containerVisible: false,
     loading: false,
     loadFailed: false,
-    skeletonGroups: [0, 1, 2],
+    skeletonGroups: ["派对", "运动", "外出"],
     skeletonCards: [0, 1, 2],
     previewTransitionDuration: 360,
     artists: [],

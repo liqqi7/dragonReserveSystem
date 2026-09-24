@@ -131,8 +131,8 @@
   <view wx:if="{{showEditModal}}" class="modal-overlay" bindtap="closeEditModal">
     <view class="modal-content" catchtap="stopTap">
       <view class="modal-header">
+        <image class="modal-title-icon" src="/images/icon-message-square-text.svg" mode="aspectFit" />
         <text>修改个人资料</text>
-        <text class="close-btn" bindtap="closeEditModal">×</text>
       </view>
 
       <view class="modal-body">
@@ -142,7 +142,7 @@
           <view class="avatar-edit-wrap">
             <button class="avatar-edit-btn" bindtap="onChooseAvatar">
               <image wx:if="{{editAvatarUrl}}" class="avatar-edit-img" src="{{editAvatarUrl}}" mode="aspectFill" />
-              <view wx:else class="avatar-edit-placeholder"><text>上传头像</text></view>
+              <view wx:else class="avatar-edit-placeholder"><image src="/images/icon-avatar-user-round.svg" mode="aspectFit" /></view>
             </button>
           </view>
         </view>
@@ -152,6 +152,7 @@
             type="text"
             class="input"
             placeholder="请输入昵称"
+            placeholder-style="color:#9CA3AF;"
             value="{{editNickname}}"
             bindinput="onInputNickname"
           />
@@ -167,3 +168,6 @@
 </view>
 
 <create-access-dialog id="create-access-dialog" />
+
+<create-access-dialog id="session-expired-dialog" />
+<create-access-dialog id="logout-dialog" bind:confirm="confirmLogout" />

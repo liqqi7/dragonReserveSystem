@@ -16,6 +16,7 @@ from app.core.exceptions import ConflictError, NotFoundError, ValidationAppError
 from app.models import Activity, ActivityParticipant, User
 from app.models.activity import ActivitySubItem, ActivityParticipantSubItem
 from app.services.activity_weather_service import ensure_weather_snapshot, invalidate_weather_snapshot
+from app.services.activity_share_preview_service import prepare_activity_share_preview, discard_prepared_preview
 from app.schemas.activity import (
     ActivityCheckinRequest,
     ActivityCreateRequest,
@@ -200,7 +201,16 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
     db.add(creator_participant)
     ensure_weather_snapshot(db, activity)
 
-    db.commit()
+    prepared_name, created = "", False
+    try:
+        prepared_name, created = prepare_activity_share_preview(activity)
+        activity.share_preview_file = prepared_name
+        db.commit()
+    except Exception:
+        db.rollback()
+        if prepared_name:
+            discard_prepared_preview(prepared_name, created)
+        raise
     db.refresh(activity)
     return get_activity_by_id(db, activity.id)
 
@@ -268,7 +278,16 @@ def update_activity(
         invalidate_weather_snapshot(db, activity)
 
     db.add(activity)
-    db.commit()
+    prepared_name, created = "", False
+    try:
+        prepared_name, created = prepare_activity_share_preview(activity)
+        activity.share_preview_file = prepared_name
+        db.commit()
+    except Exception:
+        db.rollback()
+        if prepared_name:
+            discard_prepared_preview(prepared_name, created)
+        raise
     db.refresh(activity)
     return get_activity_by_id(db, activity.id)
 

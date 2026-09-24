@@ -273,7 +273,7 @@ class ActivityTypeStyleResponse(BaseModel):
 
 
 class ActivitySharePreviewResponse(BaseModel):
-    """Share preview generation result."""
+    """Read-only share preview result."""
 
     status: str
     image_url: Optional[str] = None

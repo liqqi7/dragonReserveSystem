@@ -296,6 +296,7 @@ function adaptActivity(item) {
     activityType: rawType || "other",
     activityStyleKey: item.activity_style_key || "",
     activityCoverId: item.activity_cover_id || (rawCover && rawCover.id) || "",
+    sharePreviewImageUrl: item.share_preview_image_url || "",
     activityCover: rawCover ? {
       id: String(rawCover.id || ""),
       artistName: String(rawCover.artist_name || ""),

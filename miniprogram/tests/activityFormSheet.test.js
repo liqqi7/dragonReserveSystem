@@ -487,7 +487,7 @@ test("activity cover sheet markup and dimensions match the Pencil component", ()
   assert.match(coverCss, /border-radius:\s*42\.31rpx 42\.31rpx 0 0/);
   assert.match(coverCss, /width:\s*296\.15rpx/);
   assert.match(coverSurfaceWxml, /<view class="cover-artwork-border"><\/view>/);
-  assert.match(coverCss, /\.cover-artwork--selected \.cover-artwork-border\s*{[\s\S]*?border-width:\s*5\.77rpx;/);
+  assert.match(coverCss, /\.cover-artwork--selected \.cover-artwork-border\s*{[\s\S]*?border-width:\s*3\.85rpx;/);
   assert.match(coverCss, /\.cover-sheet-content\s*{[\s\S]*?margin-top:\s*23\.08rpx;[\s\S]*?margin-bottom:\s*23\.08rpx;/);
   assert.doesNotMatch(coverWxml, /cover-sheet-embedded-root--suspended/);
   assert.match(coverWxml, /show="{{containerVisible}}"/);

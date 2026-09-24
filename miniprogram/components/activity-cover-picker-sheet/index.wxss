@@ -16,7 +16,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  background: rgba(21, 21, 31, 0.4);
+  background: #00000066;
   opacity: 0;
   transition: opacity 240ms ease-out;
 }
@@ -305,25 +305,25 @@
 }
 
 .cover-artwork--selected .cover-artwork-border {
-  border-width: 5.77rpx;
+  border-width: 3.85rpx;
   border-color: #ff9800;
 }
 
 .cover-artwork-check {
   position: absolute;
   top: 15.38rpx;
-  right: 15.38rpx;
+  left: 15.38rpx;
   width: 53.85rpx;
   height: 53.85rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #ff9800;
+  background: transparent;
   z-index: 3;
 }
 
-.cover-artwork-check-icon { width: 32.69rpx; height: 32.69rpx; display: block; }
+.cover-artwork-check-icon { width: 53.85rpx; height: 53.85rpx; display: block; }
 
 .cover-artwork-preview {
   position: absolute;
@@ -335,11 +335,11 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(17, 24, 39, 0.85);
+  background: transparent;
   z-index: 3;
 }
 
-.cover-artwork-preview-icon { width: 28.85rpx; height: 28.85rpx; display: block; }
+.cover-artwork-preview-icon { width: 53.85rpx; height: 53.85rpx; display: block; }
 
 .cover-sheet-status {
   flex: 1 1 0;
@@ -370,7 +370,7 @@
   height: 153.85rpx;
   flex: none;
   padding: 11.54rpx 38.46rpx 57.69rpx;
-  border-top: 1.92rpx solid #f5f5f5;
+  border-top: 1.92rpx solid #e5e7eb;
   background: #ffffff;
   box-sizing: border-box;
   display: flex;
@@ -392,6 +392,7 @@
   justify-content: center;
   background: #ff9800;
   color: #ffffff;
+  box-shadow: 0 3.85rpx 15.38rpx rgba(0, 0, 0, 0.05);
   font-size: 26.92rpx;
   line-height: 84.62rpx;
   font-weight: 700;
@@ -407,12 +408,12 @@
 }
 
 .cover-sheet-confirm--disabled {
-  background: #e5e7eb;
-  color: #9ca3af;
+  background: #b8bec8;
+  color: #ffffff;
 }
 
 .cover-sheet-confirm--disabled .cover-sheet-confirm-label {
-  color: #9ca3af;
+  color: #ffffff;
 }
 
 .cover-preview {
@@ -574,3 +575,5 @@
   height: 73.08rpx;
   pointer-events: none;
 }
+
+.cover-skeleton-category { color: #374151; font-size: 26.92rpx; line-height: 53.85rpx; font-weight: 600; }

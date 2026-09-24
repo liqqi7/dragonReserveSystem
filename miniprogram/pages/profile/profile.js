@@ -309,28 +309,31 @@ Page({
   },
 
   logout() {
-    wx.showModal({
+    const dialog = this.selectComponent("#logout-dialog");
+    if (!dialog || typeof dialog.open !== "function") return;
+    dialog.open({
+      type: "logout",
       title: "退出登录",
-      content: "退出后将清除本机的账号信息，下次需要重新登录。",
-      success: (res) => {
-        if (!res.confirm) return;
-
-        app.logout();
-        this.setData({
-          hasUser: false,
-          isGuest: true,
-          user: {
-            nickname: "",
-            userIdShort: "",
-            avatarUrl: ""
-          }
-        });
-
-        wx.showToast({ title: "已退出登录", icon: "success" });
-      }
+      message: "退出后将清除本机的账号信息，下次需要重新登录。",
+      cancelText: "取消",
+      confirmText: "确定",
+      variant: "danger",
+      prototypeStyle: true,
+      strongMask: true,
+      confirmBehavior: "emit"
     });
   },
 
+  confirmLogout() {
+    if (!this.data.hasUser) return;
+    app.logout();
+    this.setData({
+      hasUser: false,
+      isGuest: true,
+      user: { nickname: "", userIdShort: "", avatarUrl: "" }
+    });
+    wx.showToast({ title: "已退出登录", icon: "success" });
+  },
   updateForceProfileValidation() {
     if (!this.data.forceProfileForSignup) {
       this.setData({ forceProfileCanSubmit: true });

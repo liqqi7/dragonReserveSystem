@@ -154,7 +154,8 @@ Page({
     const ranked = rankActivityCoverPreviewImages(artworks, this.data.previewArtworkIndex);
     const pending = ranked.filter((item) => !artworks[item.index].displayUrl).map((item) => item.url);
     const artist = this.data.previewArtist;
-    const avatarUrl = artist.avatarUrl && !artist.displayAvatarUrl ? artist.avatarUrl : "";
+    const current = artworks[this.data.previewArtworkIndex];
+    const avatarUrl = current && current.artistAvatarUrl && !current.displayAvatarUrl ? current.artistAvatarUrl : "";
     if (avatarUrl) pending.splice(Math.min(1, pending.length), 0, avatarUrl);
     this._previewImageLoader.enqueue(pending, {
       prioritize: true,
@@ -165,7 +166,10 @@ Page({
   _markPreviewImageReady(url, path) {
     const artworks = this.data.previewArtist && this.data.previewArtist.artworks || [];
     const patch = {};
-    if (this.data.previewArtist.avatarUrl === url) patch["previewArtist.displayAvatarUrl"] = path || url;
+    artworks.forEach((artwork, index) => {
+      if (artwork.artistAvatarUrl === url) patch[`previewArtist.artworks[${index}].displayAvatarUrl`] = path || url;
+    });
+    if (this.data.previewArtwork && this.data.previewArtwork.artistAvatarUrl === url) patch["previewArtwork.displayAvatarUrl"] = path || url;
     artworks.forEach((artwork, index) => {
       if (artwork.imageUrl === url) patch[`previewArtist.artworks[${index}].displayUrl`] = path || url;
     });
@@ -183,7 +187,10 @@ Page({
     if (!url) return;
     invalidateHomeImageCache(wx, url);
     const patch = {};
-    if (url === this.data.previewArtist.avatarUrl) patch["previewArtist.displayAvatarUrl"] = "";
+    artworks.forEach((item, artworkIndex) => {
+      if (item.artistAvatarUrl === url) patch[`previewArtist.artworks[${artworkIndex}].displayAvatarUrl`] = "";
+    });
+    if (this.data.previewArtwork && this.data.previewArtwork.artistAvatarUrl === url) patch["previewArtwork.displayAvatarUrl"] = "";
     artworks.forEach((item, artworkIndex) => {
       if (item.imageUrl === url) patch[`previewArtist.artworks[${artworkIndex}].displayUrl`] = "";
     });

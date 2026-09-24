@@ -9,13 +9,12 @@
 
   <scroll-view class="edit-scroll" style="margin-bottom:{{footerSafeAreaRpx + 97.16}}rpx;" scroll-y="{{true}}" show-scrollbar="{{false}}">
     <view class="edit-content">
-      <view wx:if="{{loading}}" class="loading-card"><text>活动信息加载中…</text></view>
-      <block wx:else>
+      <block wx:if="{{!loading}}">
         <view class="cover-card" bindtap="openCoverPicker" aria-role="button" aria-label="更换活动封面">
-          <image wx:if="{{selectedCover.imageUrl || selectedCover.thumbnailUrl}}" class="cover-image" src="{{selectedCover.imageUrl || selectedCover.thumbnailUrl}}" mode="aspectFill" fade-in="{{true}}" />
-          <view wx:else class="cover-placeholder"><text>请选择活动封面</text></view>
+          <image wx:if="{{coverImageMounted}}" class="cover-image cover-enter-{{coverFadePhase}}" src="{{coverImageSrc}}" data-cover-src="{{coverImageSrc}}" mode="aspectFill" fade-in="{{true}}" bindload="onCoverImageLoad" binderror="onCoverImageError" />
+          <view wx:elif="{{coverImageState === 'error' || !coverImageSrc}}" class="cover-placeholder"><text>{{coverImageState === 'error' ? '封面加载失败，请重新选择' : '请选择活动封面'}}</text></view>
           <view class="cover-shade"></view>
-          <view class="cover-change"><text>更换封面</text></view>
+          <view class="cover-change cover-enter-{{coverFadePhase}}"><text>更换封面</text></view>
         </view>
 
         <view class="field-block">
@@ -81,8 +80,12 @@
     </view>
   </view>
 
-  <activity-cover-picker-sheet embedded="{{true}}" visible="{{coverPickerVisible}}" value="{{form.activityCoverId}}" bindclose="closeCoverPicker" bindconfirm="confirmCoverPicker" />
+  <view class="edit-cover-picker-host {{coverPickerVisible ? 'edit-cover-picker-host--visible' : ''}}">
+    <activity-cover-picker-sheet embedded="{{true}}" visible="{{coverPickerVisible}}" value="{{form.activityCoverId}}" bindclose="closeCoverPicker" bindconfirm="confirmCoverPicker" />
+  </view>
   <view class="edit-picker-host {{pickerVisible ? 'edit-picker-host--visible' : ''}}">
     <date-time-picker-sheet id="qaEditDateTimePicker" embedded="{{true}}" visible="{{pickerVisible}}" mode="datetime" title="{{pickerTarget === 'start' ? '选择开始时间' : '选择结束时间'}}" value="{{pickerValue}}" minute-step="{{1}}" bindclose="closePicker" bindconfirm="confirmPicker" />
   </view>
 </view>
+
+<create-access-dialog id="session-expired-dialog" />

@@ -1,4 +1,7 @@
 {
+  "usingComponents": {
+    "create-access-dialog": "../../components/create-access-dialog/index"
+  },
   "navigationStyle": "custom",
   "renderer": "skyline",
   "componentFramework": "glass-easel",

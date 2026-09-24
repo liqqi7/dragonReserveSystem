@@ -275,6 +275,6 @@ test("static covers retain pre-rendered glass while GIF covers use the native ba
   assert.match(glassSection, /\.glass-static-blur-stage\s*\{[\s\S]*left: 0;[\s\S]*bottom: 0;[\s\S]*width: 469\.23rpx;[\s\S]*height: 626\.92rpx;/);
   assert.match(glassSection, /background: linear-gradient\(180deg, rgba\(0,0,0,0\.10\) 0%, rgba\(0,0,0,0\.30\) 100%\)/);
   assert.match(glassSection, /\.large-card--boardgame-boardgame-default \.glass-tint-layer\s*\{[\s\S]*rgba\(0,0,0,0\.20\)[\s\S]*rgba\(0,0,0,0\.40\)/);
-  assert.match(glassSection, /\.glass-bottom--native\s*\{\s*backdrop-filter:\s*blur\(57\.69rpx\);\s*\}/);
+  assert.match(glassSection, /\.glass-bottom--native\s*\{\s*backdrop-filter:\s*blur\(12\.5rpx\);\s*\}/);
   assert.doesNotMatch(glassBottomRule[1], /backdrop-filter/);
 });

@@ -20,3 +20,5 @@
     <button class="btn primary" bindtap="confirmCheckin">确认签到</button>
   </view>
 </view>
+
+<create-access-dialog id="session-expired-dialog" />

@@ -28,7 +28,7 @@ cd backend
 .\.venv\Scripts\python.exe -m pytest tests -q
 ```
 
-最近一次完整结果为 `30 passed`。测试使用临时 SQLite 数据库，不连接生产库或服务器测试库。
+测试使用临时 SQLite 数据库，不连接生产库或服务器测试库。发版前应重新执行小程序与后端测试，并记录当次结果。
 
 连接服务器测试库进行小程序联调：
 
@@ -41,8 +41,10 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start_backend_test.ps1
 
 详细说明见 [后端说明](backend/README.md)，其中包含测试库联调、服务器连接和生产部署说明。
 
+正常发版的发布门槛、执行顺序与回滚条件见 [发布前清单](docs/正常发版-发布前清单-20260925.md)。
+
 ## 编辑活动流程实现约束
 
 编辑活动流程以 `prototype/龙城小程序.pen` 中的 `l8JPT0`、`WTdTo`、`VG9sB`、`F2KEFX`、`mzb3Z`、`i0BOQg`、`UHfn0`、`YKzDp` 为验收基准。原型中呈现为圆形的图标、按钮和状态标记必须使用圆形 SVG，不得用 CSS、文字、emoji、字体图标或位图替代；实现必须逐项对齐原型的尺寸、间距、颜色、层级、抽屉、时间选择器和封面预览流程。
 
-详细实施计划见 [编辑活动流程实施计划](docs/编辑活动流程-实施计划-20260924.md)。
+该实施计划文档已移除；以上原型节点和实际小程序实现为当前核对依据。

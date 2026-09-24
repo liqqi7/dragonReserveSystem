@@ -71,3 +71,4 @@
   <date-time-picker-sheet visible="{{pickerVisible}}" mode="datetime" title="{{pickerTarget === 'start' ? '开始时间' : '结束时间'}}" value="{{pickerValue}}" minute-step="{{1}}" bindclose="closePicker" bindconfirm="confirmPicker" />
 </view>
 
+<create-access-dialog id="session-expired-dialog" />

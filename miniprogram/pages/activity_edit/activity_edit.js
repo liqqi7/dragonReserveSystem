@@ -23,6 +23,11 @@ Page({
     saving: false,
     form: {},
     selectedCover: {},
+    coverImageSrc: "",
+    coverImageMounted: false,
+    coverImageState: "empty",
+    coverFadePhase: "a",
+    coverImageFallbackTried: false,
     participantCount: 0,
     minParticipants: 1,
     locationDisabled: false,
@@ -55,6 +60,14 @@ Page({
       statusBarHeight: info.statusBarHeight || 20,
       footerSafeAreaRpx: Math.max(0, getBottomSafeAreaRpx() - 9.62)
     });
+    const channel = this.getOpenerEventChannel && this.getOpenerEventChannel();
+    if (channel && typeof channel.on === "function") {
+      channel.on("initActivityEdit", ({ activity } = {}) => {
+        if (this._unloaded || !activity || String(activity._id) !== activityId) return;
+        this._prefilled = true;
+        this.applyActivity(activity);
+      });
+    }
     this.loadActivity(activityId);
   },
 
@@ -62,42 +75,46 @@ Page({
     this._unloaded = true;
   },
 
-  loadActivity(activityId) {
-    const coversPromise = activityService.listActivityCovers().catch(error => {
-      console.error("加载活动封面失败:", error);
-      return [];
+  applyActivity(activity) {
+    const form = buildEditForm(activity);
+    const participantCount = Array.isArray(activity.participants)
+      ? activity.participants.length
+      : Math.max(0, Number(activity.current_participants) || 0);
+    const minParticipants = Math.max(1, participantCount);
+    if (form.limitEnabled) form.maxParticipants = Math.max(minParticipants, Number(form.maxParticipants) || minParticipants);
+    const cover = activity.activityCover || activity.activity_cover || {};
+    const selectedCover = {
+      id: String(cover.id || form.activityCoverId || ""),
+      imageUrl: cover.imageUrl || cover.image_url || "",
+      thumbnailUrl: cover.thumbnailUrl || cover.thumbnail_url || ""
+    };
+    const coverImageSrc = selectedCover.imageUrl || selectedCover.thumbnailUrl || "";
+    this.setData({
+      form,
+      selectedCover,
+      coverImageSrc,
+      coverImageMounted: Boolean(coverImageSrc),
+      coverImageState: coverImageSrc ? "loading" : "empty",
+      coverFadePhase: this.data.coverFadePhase === "a" ? "b" : "a",
+      coverImageFallbackTried: false,
+      participantCount,
+      minParticipants,
+      locationDisabled: (activity.checkinCount || 0) > 0,
+      loading: false,
+      startLabel: formatDateLabel(form.startDate, form.startTime),
+      endLabel: formatDateLabel(form.endDate, form.endTime)
     });
+  },
+
+  loadActivity(activityId) {
     return activityService.getActivity(activityId)
-      .then(rawActivity => coversPromise.then(artists => {
-        if (this._unloaded) return;
-        const activity = rawActivity && rawActivity._id ? rawActivity : adaptActivity(rawActivity || {});
-        const form = buildEditForm(activity);
-        const participantCount = Array.isArray(activity.participants)
-          ? activity.participants.length
-          : Math.max(0, Number(activity.current_participants) || 0);
-        const minParticipants = Math.max(1, participantCount);
-        if (form.limitEnabled) form.maxParticipants = Math.max(minParticipants, Number(form.maxParticipants) || minParticipants);
-        const covers = (artists || []).flatMap(artist => (artist.artworks || []).map(item => ({
-          id: String(item.id || ""),
-          imageUrl: item.image_url || item.imageUrl || "",
-          thumbnailUrl: item.thumbnail_url || item.thumbnailUrl || ""
-        })));
-        const selectedCover = covers.find(item => item.id === String(form.activityCoverId)) || {};
-        this.setData({
-          form,
-          selectedCover,
-          participantCount,
-          minParticipants,
-          locationDisabled: (activity.checkinCount || 0) > 0,
-          loading: false,
-          startLabel: formatDateLabel(form.startDate, form.startTime),
-          endLabel: formatDateLabel(form.endDate, form.endTime)
-        });
-      }))
+      .then(rawActivity => {
+        if (this._unloaded || this._prefilled) return;
+        this.applyActivity(rawActivity && rawActivity._id ? rawActivity : adaptActivity(rawActivity || {}));
+      })
       .catch(error => {
-        if (this._unloaded) return;
+        if (this._unloaded || this._prefilled) return;
         console.error(error);
-        this.setData({ loading: false });
         wx.showToast({ title: "活动信息加载失败，请返回重试", icon: "none" });
       });
   },
@@ -147,15 +164,46 @@ Page({
     const artwork = e.detail || {};
     const coverId = String(artwork.id || "");
     if (!coverId) return;
+    const selectedCover = {
+      id: coverId,
+      imageUrl: artwork.imageUrl || artwork.image_url || "",
+      thumbnailUrl: artwork.thumbnailUrl || artwork.thumbnail_url || ""
+    };
+    const coverImageSrc = selectedCover.imageUrl || selectedCover.thumbnailUrl || "";
+    const coverImageState = coverImageSrc ? "loading" : "empty";
     this.setData({
       "form.activityCoverId": coverId,
-      selectedCover: {
-        id: coverId,
-        imageUrl: artwork.imageUrl || artwork.image_url || "",
-        thumbnailUrl: artwork.thumbnailUrl || artwork.thumbnail_url || ""
-      },
+      selectedCover,
+      coverImageSrc,
+      coverImageMounted: Boolean(coverImageSrc),
+      coverImageState,
+      coverFadePhase: this.data.coverFadePhase === "a" ? "b" : "a",
+      coverImageFallbackTried: false,
       coverPickerVisible: false
     });
+  },
+
+  onCoverImageLoad(e) {
+    const eventSource = e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.coverSrc;
+    if (eventSource && eventSource !== this.data.coverImageSrc) return;
+    if (this._unloaded || this.data.coverImageState !== "loading") return;
+    this.setData({ coverImageState: "loaded" });
+  },
+
+  onCoverImageError(e) {
+    const eventSource = e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.coverSrc;
+    if (eventSource && eventSource !== this.data.coverImageSrc) return;
+    if (this._unloaded || this.data.coverImageState !== "loading") return;
+    const thumbnailUrl = this.data.selectedCover.thumbnailUrl || "";
+    if (!this.data.coverImageFallbackTried && thumbnailUrl && thumbnailUrl !== this.data.coverImageSrc) {
+      this.setData({
+        coverImageSrc: thumbnailUrl,
+        coverImageMounted: true,
+        coverImageFallbackTried: true
+      });
+      return;
+    }
+    this.setData({ coverImageState: "error", coverImageMounted: false });
   },
 
   openPicker(e) {

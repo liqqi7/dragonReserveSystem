@@ -4,7 +4,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 900;
+  z-index: 1500;
   background: transparent;
   pointer-events: none;
 }
@@ -15,7 +15,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 900;
+  z-index: 1500;
   display: flex;
   box-sizing: border-box;
   align-items: center;
@@ -132,4 +132,16 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+.create-access-dialog-overlay--prototype {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.create-access-dialog-button--danger {
+  background: #ef4444;
+}
+
+.create-access-dialog-overlay--strong {
+  background: rgba(0, 0, 0, 0.6);
 }

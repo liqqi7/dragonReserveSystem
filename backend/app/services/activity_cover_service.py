@@ -161,7 +161,7 @@ def get_activity_cover_source_path(cover_id: str | None) -> Path | None:
         for artwork in artist["artworks"]:
             if artwork["id"] != normalized:
                 continue
-            source = (ASSET_ROOT / artwork["image_path"]).resolve()
+            source = (ASSET_ROOT / artwork["image_path"].replace("\\", "/")).resolve()
             try:
                 source.relative_to(ASSET_ROOT.resolve())
             except ValueError:
@@ -180,7 +180,7 @@ def get_activity_cover_glass_source_path(cover_id: str | None) -> Path | None:
         for artwork in artist["artworks"]:
             if artwork["id"] != normalized or not artwork.get("glass_path"):
                 continue
-            source = (ASSET_ROOT / artwork["glass_path"]).resolve()
+            source = (ASSET_ROOT / artwork["glass_path"].replace("\\", "/")).resolve()
             try:
                 source.relative_to(ASSET_ROOT.resolve())
             except ValueError:

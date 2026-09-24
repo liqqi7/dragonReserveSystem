@@ -29,6 +29,11 @@ function createPage(getActivity = async () => null) {
       if (name === "../../utils/activityEnrich") return activityEnrich;
       if (name === "../../utils/participantSort") return participantSort;
       if (name === "../../utils/activityWeatherCache") return { resolveActivityWeather: () => null };
+      if (name === "../../services/config") return {
+        getApiEnvironment: () => "production",
+        isLocalTestMediaUrl: () => false,
+        resolveLocalMediaUrl: url => url
+      };
       return {};
     },
     wx,

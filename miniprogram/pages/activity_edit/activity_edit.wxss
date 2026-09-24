@@ -105,6 +105,30 @@ page {
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.03) 40%, rgba(0, 0, 0, 0.28) 100%);
 }
 
+.cover-enter-a {
+  animation-name: cover-enter-a;
+  animation-duration: 440ms;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+
+.cover-enter-b {
+  animation-name: cover-enter-b;
+  animation-duration: 440ms;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+
+@keyframes cover-enter-a {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cover-enter-b {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .cover-change {
   position: absolute;
   left: 50%;
@@ -122,6 +146,7 @@ page {
   color: #111827;
   font-size: 26.92rpx;
   line-height: 38.46rpx;
+  font-weight: 600;
 }
 
 .field-block {
@@ -301,17 +326,6 @@ page {
   height: 38.46rpx;
 }
 
-.loading-card {
-  height: 576.92rpx;
-  border-radius: 30.77rpx;
-  background: #F3F4F6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9CA3AF;
-  font-size: 26.92rpx;
-}
-
 .footer {
   position: absolute;
   z-index: 5;
@@ -369,6 +383,20 @@ page {
   background: #CBD5E1;
 }
 
+
+.edit-cover-picker-host {
+  position: absolute;
+  z-index: 21;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.edit-cover-picker-host--visible {
+  pointer-events: auto;
+}
 
 .edit-picker-host {
   position: absolute;

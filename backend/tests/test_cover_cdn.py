@@ -13,8 +13,12 @@ def test_cdn_applies_to_all_catalog_resources(monkeypatch):
     for artist in covers.list_activity_cover_artists("https://origin.example"):
         assert artist["avatar_url"].startswith("https://cdn.example/covers/release-1/")
         for artwork in artist["artworks"]:
-            for key in ("image_url", "thumbnail_url", "large_card_glass_image_url"):
+            for key in ("image_url", "thumbnail_url"):
                 assert artwork[key].startswith("https://cdn.example/covers/release-1/")
+            glass_url = artwork["large_card_glass_image_url"]
+            assert glass_url.startswith("https://cdn.example/covers/release-1/") or glass_url.startswith(
+                "https://origin.example/api/v2/activity-covers/"
+            )
 
 
 @pytest.mark.parametrize("url", ["http://cdn.example", "https://user:secret@cdn.example", "https://cdn.example?x=1"])
