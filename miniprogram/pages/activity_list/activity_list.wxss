@@ -1219,7 +1219,12 @@ button.create-btn-fixed.create-btn-hover {
   border-bottom-right-radius: 46.15rpx;
 }
 
-/* 模糊视口直接挂在 large-card 上：只显示卡片底部信息区，最终由 large-card 裁切。 */
+/* GIF 仍实时采样当前帧，但模糊半径对齐静态玻璃图的 Pillow 6.5px。 */
+.glass-bottom--native {
+  backdrop-filter: blur(12.5rpx);
+}
+
+/* 静态封面的模糊视口，只显示卡片底部信息区。 */
 .glass-static-blur-layer {
   position: absolute;
   top: 0;
@@ -1235,7 +1240,7 @@ button.create-btn-fixed.create-btn-hover {
 }
 
 /*
- * 毛玻璃使用服务端预渲染的单张静态图。stage 只负责按整张卡片坐标对齐，
+ * 静态封面的毛玻璃使用服务端预渲染图。stage 按整张卡片坐标对齐，
  * glass-bottom 负责把它裁切在卡片内部并保留底部圆角。
  */
 .glass-static-blur-stage {
@@ -1353,8 +1358,8 @@ button.create-btn-fixed.create-btn-hover {
 .home-card-slot { position: relative; }
 .home-card-slot--large { width: 469.23rpx; }
 .home-card-slot--small { width: 307.69rpx; }
-.card-skeleton { position: absolute; top: 0; left: 0; z-index: 2; opacity: 1; transition: opacity 440ms ease-out; }
-/* Keep the placeholder mounted for a same-position crossfade; hidden layers cannot intercept taps. */
+.card-skeleton { position: absolute; top: 0; left: 0; z-index: 2; opacity: 1; pointer-events: none; transition: opacity 440ms ease-out; }
+/* The placeholder remains mounted for its crossfade but must never block card navigation. */
 .card-skeleton--revealed { opacity: 0; pointer-events: none; }
 .card-skeleton--large { width: 469.23rpx; }
 .card-skeleton--small { width: 307.69rpx; }

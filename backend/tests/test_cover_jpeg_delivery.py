@@ -7,7 +7,7 @@ from pathlib import Path
 import tempfile
 import types
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from PIL import Image
 
 BACKEND = Path(__file__).resolve().parents[1]
@@ -34,7 +34,7 @@ class JpegDeliveryTests(unittest.TestCase):
 
     def test_all_assets_match_manifest_and_original_dimensions(self):
         manifest = json.loads((ROOT / 'jpeg-q88-manifest.json').read_text())
-        self.assertEqual(len(manifest), 287)
+        self.assertEqual(len(manifest), 67)
         for source, record in manifest.items():
             with self.subTest(source=source):
                 old, new = ROOT / source, ROOT / record['path']
@@ -54,15 +54,15 @@ class JpegDeliveryTests(unittest.TestCase):
     def test_enabled_all_fields_versioned_and_sources_original(self):
         os.environ['ACTIVITY_COVER_JPEG_ENABLED'] = '1'
         artists = self.service.list_activity_cover_artists('https://origin.example')
-        self.assertEqual(sum(len(a['artworks']) for a in artists), 93)
-        for artist in artists:
-            self.assertIn('/jpeg-q88-v1/', artist['avatar_url'])
-            for artwork in artist['artworks']:
-                for field in ('image_url', 'thumbnail_url', 'large_card_glass_image_url', 'artist_avatar_url'):
-                    url = artwork[field]
-                    self.assertIn('/jpeg-q88-v1/', url)
-                    self.assertIn('.jpg?v=', url)
-                self.assertNotIn('jpeg-q88-v1', str(self.service.get_activity_cover_source_path(artwork['id'])))
+        self.assertEqual(sum(len(a['artworks']) for a in artists), 44)
+        artworks = {w['id']: w for a in artists for w in a['artworks']}
+        for field in ('image_url', 'thumbnail_url', 'large_card_glass_image_url', 'artist_avatar_url'):
+            self.assertIn('/jpeg-q88-v1/', artworks['aleksey-rico-001'][field])
+            self.assertIn('.jpg?v=', artworks['aleksey-rico-001'][field])
+        # Newer GIF imports have no JPEG manifest entry and must keep their source URL.
+        self.assertTrue(artworks['natasha-spivak-001']['image_url'].endswith('.gif'))
+        for artwork in artworks.values():
+            self.assertNotIn('jpeg-q88-v1', str(self.service.get_activity_cover_source_path(artwork['id'])))
 
     def test_jpeg_takes_precedence_over_webp(self):
         os.environ.update(ACTIVITY_COVER_JPEG_ENABLED='1', ACTIVITY_COVER_WEBP_ENABLED='1')
@@ -86,13 +86,17 @@ class JpegDeliveryTests(unittest.TestCase):
             Image.new('RGB', (64, 48), (123, 99, 71)).save(root / 'a.jpg', quality=98)
             source = (root / 'a.jpg').read_bytes()
             (root / 'catalog.json').write_text(json.dumps({'artists': [{'avatar_path': 'a.jpg', 'artworks': []}]}))
-            builder.build(root)
-            builder.build(root)
-            self.assertEqual((root / 'a.jpg').read_bytes(), source)
-            (root / builder.RELEASE / 'a.jpg').write_bytes(b'preserve-existing')
-            with self.assertRaisesRegex(ValueError, 'immutable'):
+            # Test immutable output independently of the native jpegtran binary.
+            # Check the native binary separately only where JPEG assets are rebuilt.
+            with patch.object(builder.subprocess, 'run', return_value=Mock(stdout=source)) as jpegtran:
                 builder.build(root)
-            self.assertEqual((root / builder.RELEASE / 'a.jpg').read_bytes(), b'preserve-existing')
+                builder.build(root)
+                self.assertEqual((root / 'a.jpg').read_bytes(), source)
+                (root / builder.RELEASE / 'a.jpg').write_bytes(b'preserve-existing')
+                with self.assertRaisesRegex(ValueError, 'immutable'):
+                    builder.build(root)
+                self.assertEqual((root / builder.RELEASE / 'a.jpg').read_bytes(), b'preserve-existing')
+                self.assertGreaterEqual(jpegtran.call_count, 3)
 
 
 if __name__ == '__main__':

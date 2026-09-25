@@ -9,7 +9,7 @@ const {
 const { buildActivityShareAppMessageOptions } = require("../../utils/shareActivity");
 const { isDefaultNickname, isDefaultAvatar } = require("../../utils/profileUtils");
 const { orderParticipantsForDrawerRecentFirst } = require("../../utils/participantSort");
-const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
+const { resolveLocalMediaUrl, isLocalTestMediaUrl, getApiEnvironment } = require("../../services/config");
 const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
 const { getBottomSafeAreaRpx, getWindowInfoCompat } = require("../../utils/safeArea");
 const { resolveActivityWeather } = require("../../utils/activityWeatherCache");
@@ -64,6 +64,18 @@ const LOCATION_MAP_MARKER_DESIGN_SIZE_PX = 54;
 const LOCATION_MAP_MARKER_ANCHOR_Y = 23 / 54;
 const DETAIL_ENTRANCE_FRAME_MS = 17;
 const DETAIL_ENTRANCE_DURATION_MS = 280;
+const BACK_TO_TOP_THRESHOLD_RPX = 375;
+
+function getProjectMembersDrawerHeightRpx(rowCount, safeBottomRpx) {
+  const count = Math.max(0, Math.floor(Number(rowCount) || 0));
+  const safeBottom = Math.max(0, Number(safeBottomRpx) || 0);
+  // 与报名人数抽屉共用同一套外壳高度节奏；子项目列表不再使用 page-container 默认高度。
+  const fixedChromeRpx = 130.77 + 15.38 + 153.85 + 15.38 + 61.54 + 30.77 + safeBottom;
+  const bodyRpx = count > 0
+    ? count * 123.08 + Math.max(0, count - 1) * 7.69
+    : 576.92;
+  return Math.min(1384.62, fixedChromeRpx + bodyRpx);
+}
 
 function buildLocationMapMarkers(latitude, longitude, windowWidthPx) {
   const viewportWidth = Number(windowWidthPx) > 0 ? Number(windowWidthPx) : 390;
@@ -84,7 +96,9 @@ Page({
     statusBarHeight: 20,
     navBarHeight: 64,
     safeBottomRpx: 0,
+    bottomBarSafeAreaRpx: 0,
     bottomBarHeightRpx: 107.69,
+    showBackToTop: false,
     activityId: "",
     activity: null,
     loading: true,
@@ -101,11 +115,13 @@ Page({
     signupOptions: [],
     signupSelection: [],
     signupSubmitting: false,
+    signupSheetContentHeightRpx: 742.31,
     projectMembersContainerRendered: false,
     showProjectMembers: false,
     projectMembers: [],
+    projectMembersDrawerHeightRpx: 576.92,
+    projectMembersDrawerMaxHeightRpx: 1384.62,
     projectMemberTitle: "",
-    detailAnchor: "",
     participantPreview: [],
     heroCardAvatars: [],
     participantDrawerList: [],
@@ -139,7 +155,6 @@ Page({
     primaryActionDisabled: true,
     primaryActionType: "none",
     sharePreviewImageUrl: "",
-    sharePreviewLoading: false,
     activityFormContainerRendered: false,
     showActivityForm: false,
     activityFormSubmitting: false,
@@ -155,34 +170,40 @@ Page({
   _activityTypeStyles: [],
   _locationRequestId: 0,
   _hasShownOnce: false,
-  _sharePreviewGen: 0,
   _windowWidthPx: 390,
+  _backToTopThresholdPx: BACK_TO_TOP_THRESHOLD_RPX * 390 / 750,
 
   onLoad(options) {
+    this._detailUnloaded = false;
     const id = (options && options.id) || "";
     try {
       const win = getWindowInfoCompat();
       const statusBarHeight = win.statusBarHeight || 20;
       this._windowWidthPx = Number(win.windowWidth) > 0 ? Number(win.windowWidth) : 390;
       const safeBottomRpx = getBottomSafeAreaRpx();
+      // 与编辑活动页一致：按钮底缘相对系统 Home Indicator 保留原型的 15px。
+      // 详情按钮栏自身在按钮下方已有 11.53rpx，故比编辑页的安全区修正再减去这段空间。
+      const bottomBarSafeAreaRpx = Math.max(0, Math.round((safeBottomRpx - 21.15) * 100) / 100);
+      const bottomBarHeightRpx = Math.round((107.69 + bottomBarSafeAreaRpx) * 100) / 100;
+      this._backToTopThresholdPx = BACK_TO_TOP_THRESHOLD_RPX * this._windowWidthPx / 750;
       this.setData({
         statusBarHeight,
         navBarHeight: statusBarHeight + 44,
         safeBottomRpx,
-        bottomBarHeightRpx: Math.round((107.69 + safeBottomRpx) * 100) / 100,
+        bottomBarSafeAreaRpx,
+        bottomBarHeightRpx,
         activityId: id
       });
     } catch (e) {
       this._windowWidthPx = 390;
-      this.setData({ activityId: id, bottomBarHeightRpx: 107.69, safeBottomRpx: 0 });
+      this.setData({ activityId: id, bottomBarHeightRpx: 107.69, safeBottomRpx: 0, bottomBarSafeAreaRpx: 0 });
     }
 
     if (!id) {
       this.setData({
         loading: false,
         loadError: "缺少活动 id",
-        sharePreviewImageUrl: "",
-        sharePreviewLoading: false
+        sharePreviewImageUrl: ""
       });
       return;
     }
@@ -202,8 +223,30 @@ Page({
   },
 
   onUnload() {
+    this._detailUnloaded = true;
+    this._pendingExitParticipant = null;
+    this._localSharePreviewSource = "";
     this._locationRequestId += 1;
     this.clearDetailEntranceTransition();
+  },
+
+  onDetailScroll(e) {
+    if (this._detailUnloaded) return;
+    const scrollTop = Math.max(0, Number(e.detail && e.detail.scrollTop) || 0);
+    const showBackToTop = scrollTop >= this._backToTopThresholdPx;
+    if (showBackToTop !== this.data.showBackToTop) {
+      this.setData({ showBackToTop });
+    }
+  },
+
+  backToTop() {
+    this.createSelectorQuery().select('.main-scroll').node().exec(result => {
+      if (this._detailUnloaded) return;
+      const scroller = result && result[0] && result[0].node;
+      if (scroller && typeof scroller.scrollTo === 'function') {
+        scroller.scrollTo({ top: 0, animated: true });
+      }
+    });
   },
 
   syncUser() {
@@ -358,8 +401,7 @@ Page({
           detailSkeletonLeaving: false,
           detailContentVisible: true,
           loadError: (err && err.message) || "加载失败",
-          sharePreviewImageUrl: "",
-          sharePreviewLoading: false
+          sharePreviewImageUrl: ""
         });
       });
   },
@@ -506,8 +548,15 @@ Page({
       locationMapLongitude >= -180 &&
       locationMapLongitude <= 180;
 
+    const shareSource = activity.sharePreviewImageUrl || "";
+    const useLocalShareImage = getApiEnvironment() === "test" && isLocalTestMediaUrl(shareSource);
+    if (!useLocalShareImage) this._localSharePreviewSource = "";
+    const localShareImage = useLocalShareImage && this._localSharePreviewSource === shareSource
+      ? this._localSharePreviewPath || "" : "";
+
     this.setData({
       activity,
+      loadError: "",
       canManageActivity,
       heroCardAvatars,
       participantPreview: list,
@@ -539,13 +588,31 @@ Page({
       primaryActionDisabled: primaryAction.disabled,
       primaryActionType: primaryAction.action,
       locationDistanceText: "",
+      sharePreviewImageUrl: useLocalShareImage ? localShareImage : shareSource,
       weather: buildWeatherView(resolveActivityWeather(activity))
     }, () => {
       this.updateRemarkOverflow();
       if (typeof onApplied === "function") onApplied();
     });
-    this.refreshSharePreview(activity && activity._id);
+    if (useLocalShareImage) this.preloadLocalTestShareImage(shareSource);
     this.loadLocationDistance(activity);
+  },
+
+  preloadLocalTestShareImage(source) {
+    if (this._localSharePreviewSource === source || typeof wx.downloadFile !== "function") return;
+    this._localSharePreviewSource = source;
+    this._localSharePreviewPath = "";
+    // 真机调试中 HTTP 局域网地址不是有效的分享 imageUrl；进入详情时预取静态 PNG。
+    // 分享按钮不等待下载：尚未就绪时使用微信的默认截图。
+    wx.downloadFile({
+      url: resolveLocalMediaUrl(source),
+      success: (result) => {
+        if (this._detailUnloaded || this._localSharePreviewSource !== source) return;
+        if (result.statusCode !== 200 || !result.tempFilePath) return;
+        this._localSharePreviewPath = result.tempFilePath;
+        this.setData({ sharePreviewImageUrl: result.tempFilePath });
+      }
+    });
   },
 
   updateRemarkOverflow() {
@@ -631,10 +698,18 @@ Page({
   },
 
   loadLocationDistance(activity) {
-    const latitude = Number(activity && activity.locationLatitude);
-    const longitude = Number(activity && activity.locationLongitude);
+    const rawLatitude = activity && activity.locationLatitude;
+    const rawLongitude = activity && activity.locationLongitude;
+    const latitude = Number(rawLatitude);
+    const longitude = Number(rawLongitude);
     const requestId = ++this._locationRequestId;
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || !wx.getLocation) {
+    if (
+      rawLatitude == null || rawLongitude == null ||
+      String(rawLatitude).trim() === "" || String(rawLongitude).trim() === "" ||
+      !Number.isFinite(latitude) || !Number.isFinite(longitude) ||
+      latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180 ||
+      !wx.getLocation
+    ) {
       this.setData({ locationDistanceText: "" });
       return;
     }
@@ -672,9 +747,16 @@ Page({
 
   openLocation() {
     const activity = this.data.activity;
-    const latitude = Number(activity && activity.locationLatitude);
-    const longitude = Number(activity && activity.locationLongitude);
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    const rawLatitude = activity && activity.locationLatitude;
+    const rawLongitude = activity && activity.locationLongitude;
+    const latitude = Number(rawLatitude);
+    const longitude = Number(rawLongitude);
+    if (
+      rawLatitude == null || rawLongitude == null ||
+      String(rawLatitude).trim() === "" || String(rawLongitude).trim() === "" ||
+      !Number.isFinite(latitude) || !Number.isFinite(longitude) ||
+      latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180
+    ) {
       wx.showToast({ title: "该活动暂无可导航地点", icon: "none" });
       return;
     }
@@ -694,37 +776,6 @@ Page({
     if (this.data.primaryActionType === "checkin") return this.onTapCheckin();
   },
 
-  refreshSharePreview(activityId) {
-    if (!activityId) {
-      this.setData({ sharePreviewImageUrl: "", sharePreviewLoading: false });
-      return;
-    }
-    const gen = (this._sharePreviewGen = (this._sharePreviewGen || 0) + 1);
-    this.setData({ sharePreviewLoading: true });
-    activityService
-      .getActivitySharePreview(activityId)
-      .then((res) => {
-        if (gen !== this._sharePreviewGen) return;
-        const url = res && (res.image_url || res.imageUrl);
-        const ok =
-          res &&
-          res.status === "ready" &&
-          url &&
-          /^https:\/\//i.test(String(url).trim());
-        this.setData({
-          sharePreviewImageUrl: ok ? String(url).trim() : "",
-          sharePreviewLoading: false
-        });
-      })
-      .catch(() => {
-        if (gen !== this._sharePreviewGen) return;
-        this.setData({
-          sharePreviewImageUrl: "",
-          sharePreviewLoading: false
-        });
-      });
-  },
-
   onTapBack() {
     const pages = getCurrentPages();
     if (pages.length > 1) {
@@ -734,15 +785,16 @@ Page({
     }
   },
 
-  selectDetailSection(e) {
-    this.setData({ detailAnchor: e.currentTarget.dataset.anchor });
-  },
   closeSubItemSignup() {
     if (!this.data.signupSubmitting) this.setData({ showSubItemSignup: false });
   },
 
+  onSubItemSignupBeforeLeave() {
+    if (this.data.showSubItemSignup) this.setData({ showSubItemSignup: false });
+  },
+
   onSubItemSignupAfterLeave() {
-    if (!this.data.showSubItemSignup) {
+    if (!this.data.showSubItemSignup && this.data.subItemSignupContainerRendered) {
       this.setData({ subItemSignupContainerRendered: false });
     }
   },
@@ -753,25 +805,43 @@ Page({
     this.setData({ signupOptions: options, signupSelection: options.filter(item => item.selected).map(item => item.id) });
   },
   confirmSubItemSignup() {
-    if (this.data.signupSelection.length) this.directSignup(this.data.activity, this.data.signupSelection);
+    if (this.data.signupSelection.length && !this.data.signupSubmitting) {
+      this.directSignup(this.data.activity, this.data.signupSelection);
+    }
   },
   openProjectMembers(e) {
     const id = Number(e.currentTarget.dataset.id);
     const project = (this.data.activity.subItems || []).find(item => item.id === id);
     if (!project) return;
+    const projectMembers = (this.data.activity.participants || [])
+      .filter(person => {
+        const ids = person && (person.subItemIds || person.sub_item_ids || []);
+        return Array.isArray(ids) && ids.some(value => Number(value) === id);
+      })
+      .map((person, index) => ({
+        id: person.id != null ? person.id : `project-member-${index}`,
+        userId: person.userId != null ? person.userId : person.user_id != null ? person.user_id : null,
+        name: person.name || person.nickname || person.displayNickname || person.display_nickname || "未命名",
+        avatarUrl: person.avatarUrl || person.avatar_url || person.displayAvatarUrl || person.display_avatar_url || DEFAULT_AVATAR
+      }));
     this.setData({
       projectMembersContainerRendered: true,
       showProjectMembers: false,
       projectMemberTitle: project.name,
-      projectMembers: (this.data.activity.participants || []).filter(person => (person.subItemIds || []).includes(id))
+      projectMembers,
+      projectMembersDrawerHeightRpx: getProjectMembersDrawerHeightRpx(projectMembers.length, this.data.safeBottomRpx)
     }, () => {
       wx.nextTick(() => this.setData({ showProjectMembers: true }));
     });
   },
   closeProjectMembers() { this.setData({ showProjectMembers: false }); },
 
+  onProjectMembersBeforeLeave() {
+    if (this.data.showProjectMembers) this.setData({ showProjectMembers: false });
+  },
+
   onProjectMembersAfterLeave() {
-    if (!this.data.showProjectMembers) {
+    if (!this.data.showProjectMembers && this.data.projectMembersContainerRendered) {
       this.setData({ projectMembersContainerRendered: false });
     }
   },
@@ -794,6 +864,24 @@ Page({
       this.data.showActivityForm ||
       this.data.activityFormSubmitting
     ) return;
+    if (typeof wx.navigateTo === "function") {
+      const activityId = encodeURIComponent(String(activity._id));
+      wx.navigateTo({
+        url: `/pages/activity_edit/activity_edit?id=${activityId}`,
+        events: {
+          activityUpdated: () => this.refreshDetail({ silent: true })
+        },
+        success: (res) => {
+          if (res && res.eventChannel) res.eventChannel.emit("initActivityEdit", { activity });
+        },
+        fail: (error) => {
+          console.error(error);
+          wx.showToast({ title: "打开编辑页失败，请重试", icon: "none" });
+        }
+      });
+      return;
+    }
+    // Tests and older embedded hosts without navigateTo retain the previous state path.
     this.setData({
       activityFormContainerRendered: true,
       showActivityForm: false,
@@ -809,8 +897,13 @@ Page({
     this.setData({ showActivityForm: false });
   },
 
+  onActivityFormBeforeLeave() {
+    // Native back has already started closing the sheet, including during a pending request.
+    if (this.data.showActivityForm) this.setData({ showActivityForm: false });
+  },
+
   onActivityFormAfterLeave() {
-    if (!this.data.showActivityForm) {
+    if (!this.data.showActivityForm && this.data.activityFormContainerRendered) {
       this.setData({ activityFormContainerRendered: false });
     }
   },
@@ -889,16 +982,32 @@ Page({
       wx.showToast({ title: "未找到你的报名记录", icon: "none" });
       return;
     }
-    wx.showModal({
-      title: "确认取消报名",
-      content: `确定要取消活动「${activity.name}」的报名吗？`,
-      success: (res) => {
-        if (!res.confirm) return;
-        this.doRemoveParticipant(mine.id, mine.name || "我", activity, true);
-      }
+    this.showExitActivityDialog(mine.id, mine.name || "我", activity);
+  },
+
+  showExitActivityDialog(participantId, name, activity) {
+    const dialog = this.selectComponent("#exit-activity-dialog");
+    if (!dialog || typeof dialog.open !== "function") return;
+    this._pendingExitParticipant = { participantId, name, activityId: activity._id };
+    dialog.open({
+      type: "exitActivity",
+      title: "确定退出活动？",
+      message: "退出后将无法继续参与本次活动",
+      cancelText: "取消",
+      confirmText: "确定退出",
+      variant: "danger",
+      prototypeStyle: true,
+      confirmBehavior: "emit"
     });
   },
 
+  confirmExitActivity() {
+    const pending = this._pendingExitParticipant;
+    this._pendingExitParticipant = null;
+    const activity = this.data.activity;
+    if (!pending || !activity || String(activity._id) !== String(pending.activityId)) return;
+    this.doRemoveParticipant(pending.participantId, pending.name, activity, true);
+  },
   showSignupPermissionDenied() {
     wx.showModal({
       title: "暂无报名权限",
@@ -969,15 +1078,7 @@ Page({
     const nickname = app.globalData.userProfile?.nickname?.trim();
     const avatarUrl = (app.globalData.userProfile && app.globalData.userProfile.avatarUrl) || "";
     if (isDefaultNickname(nickname) || isDefaultAvatar(avatarUrl)) {
-      wx.showModal({
-        title: "提示",
-        content: "请修改昵称和头像后再进行报名",
-        showCancel: false,
-        confirmText: "去修改",
-        success: () => {
-          this.openSignupProfileModal();
-        }
-      });
+      this.openSignupProfileModal();
       return;
     }
     const participants = activity.participants || [];
@@ -997,6 +1098,7 @@ Page({
         subItemSignupContainerRendered: true,
         showSubItemSignup: false,
         signupSelection: [],
+        signupSheetContentHeightRpx: Math.round((130 + activity.subItems.length * 64) * 750 / 390 * 100) / 100,
         signupOptions: activity.subItems.map(item => ({ ...item, selected: false, full: item.current_participants >= item.max_participants }))
       }, () => {
         wx.nextTick(() => this.setData({ showSubItemSignup: true }));
@@ -1077,11 +1179,14 @@ Page({
     if (!activity) return;
     if (!isSelf && !this.data.canManageActivity) return;
 
+    if (isSelf) {
+      this.showExitActivityDialog(participantId, name, activity);
+      return;
+    }
+
     wx.showModal({
-      title: isSelf ? "确认取消报名" : "确认删除",
-      content: isSelf
-        ? `确定要取消活动「${activity.name}」的报名吗？`
-        : `确定要删除「${name}」吗？该成员的报名记录将被删除。`,
+      title: "确认删除",
+      content: `确定要删除「${name}」吗？该成员的报名记录将被删除。`,
       success: (res) => {
         if (res.confirm) this.doRemoveParticipant(participantId, name, activity, isSelf);
       }

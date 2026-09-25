@@ -22,18 +22,10 @@
         </view>
       </view>
 
-      <view class="bento-card bento-card--full deadline-card">
-        <text class="bento-label">报名截止</text>
-        <view class="deadline-grid">
-          <view class="date-time-row" hover-class="date-time-row--pressed" bindtap="openDateTimePicker" data-target="signupDeadlineDate">
-            <text class="date-time-row-label">日期</text>
-            <text class="date-time-row-value {{form.signupDeadlineDate ? 'date-time-row-value--filled' : ''}} {{!isEdit && form.signupDeadlineDate ? 'create-completed-text' : ''}}">{{signupDeadlineDateLabel}}</text>
-          </view>
-          <view class="date-time-row" hover-class="date-time-row--pressed" bindtap="openDateTimePicker" data-target="signupDeadlineTime">
-            <text class="date-time-row-label">时间</text>
-            <text class="date-time-row-value {{form.signupDeadlineTime ? 'date-time-row-value--filled' : ''}} {{!isEdit && form.signupDeadlineTime ? 'create-completed-text' : ''}}">{{form.signupDeadlineTime || '请选择'}}</text>
-          </view>
-        </view>
+
+
+      <view class="bento-card bento-card--full">
+        <activity-subitems-editor enabled="{{form.subItemsEnabled}}" items="{{form.subItems}}" max-participants="{{form.maxParticipants}}" locked="{{participantCount > 0}}" bindchange="onSubItemsChange" />
       </view>
 
       <view class="bento-pair-row">

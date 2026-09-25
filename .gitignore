@@ -56,3 +56,7 @@ backend/secrets/
 # Pencil temporary previews
 /prototype/.tmp-*/
 /prototype/.recovery/
+
+# Codex local scratch artifacts
+/.codex-tmp/
+/backend/.codex-tmp/

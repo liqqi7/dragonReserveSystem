@@ -1,1 +1,3 @@
 <include src="../../components/activity-cover-picker-sheet/preview.wxml" />
+
+<create-access-dialog id="session-expired-dialog" />

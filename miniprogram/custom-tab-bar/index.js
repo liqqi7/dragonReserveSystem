@@ -146,7 +146,7 @@ Component({
       const state = syncSelectedFromCurrentRoute(this);
       this.syncBottomSafeArea();
       const shouldHide = shouldKeepTabHidden(state.route);
-      if (this.data.hidden !== shouldHide) {
+      if (this.data.hidden !== shouldHide || this.data.entering) {
         this.setData({ hidden: shouldHide, entering: false });
       }
       if (state.selected >= 0) return;
@@ -184,7 +184,7 @@ Component({
       this.syncBottomSafeArea();
       const { route } = syncSelectedFromCurrentRoute(this);
       const shouldHide = shouldKeepTabHidden(route);
-      if (this.data.hidden !== shouldHide) {
+      if (this.data.hidden !== shouldHide || this.data.entering) {
         this.setData({ hidden: shouldHide, entering: false });
       }
 

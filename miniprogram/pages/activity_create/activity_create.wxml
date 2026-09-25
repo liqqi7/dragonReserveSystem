@@ -1,0 +1,74 @@
+<template name="activity-cover-loading-gallery">
+  <swiper class="gallery" current="0" circular="{{false}}" duration="0" previous-margin="38.46rpx" next-margin="30.77rpx" aria-label="封面加载中">
+    <swiper-item>
+      <view class="gallery-page">
+        <view class="cover-column">
+          <view class="cover" aria-hidden="{{true}}"><view class="cover-media"><view class="cover-skeleton"><view class="cover-skeleton-shimmer {{shimmerRunning ? 'cover-skeleton-shimmer--running' : ''}}"></view></view></view></view>
+          <view class="cover" aria-hidden="{{true}}"><view class="cover-media"><view class="cover-skeleton"><view class="cover-skeleton-shimmer {{shimmerRunning ? 'cover-skeleton-shimmer--running' : ''}}"></view></view></view></view>
+        </view>
+        <view class="cover-column">
+          <view class="cover" aria-hidden="{{true}}"><view class="cover-media"><view class="cover-skeleton"><view class="cover-skeleton-shimmer {{shimmerRunning ? 'cover-skeleton-shimmer--running' : ''}}"></view></view></view></view>
+          <view class="cover" aria-hidden="{{true}}"><view class="cover-media"><view class="cover-skeleton"><view class="cover-skeleton-shimmer {{shimmerRunning ? 'cover-skeleton-shimmer--running' : ''}}"></view></view></view></view>
+        </view>
+      </view>
+    </swiper-item>
+  </swiper>
+</template>
+<view class="wizard" style="padding-top:{{statusBarHeight}}px;">
+  <view class="nav"><view class="back" bindtap="backHome" aria-role="button" aria-label="{{isEdit ? '返回活动详情' : '返回首页'}}"><image class="back-icon" src="/images/activity-create-chevron-left.svg" mode="aspectFit" /></view></view>
+  <view class="step-stage">
+    <view class="step-scene {{stepTransitioning ? 'step-scene--entering' : ''}} step-scene--entering--{{stepTransitionDirection}}">
+      <scroll-view class="step-scroll" type="list" scroll-y="{{true}}" show-scrollbar="{{false}}" scroll-into-view="create-step-{{step}}" bindscroll="onStepScroll">
+      <view class="body body--step-{{step}} body--subitems-{{form.subItemsEnabled ? 'open' : 'closed'}} {{subItemsClosing ? 'body--subitems-closing' : ''}}" id="create-step-{{step}}" style="padding-bottom:{{footerSafeAreaRpx + (step > 1 ? 207.69 : 130.77)}}rpx;">
+        <view class="heading"><text class="title">{{titles[step - 1]}}</text><text class="subtitle">{{subtitles[step - 1]}}</text></view>
+        <block wx:if="{{step === 1}}">
+          <scroll-view id="categoryScroller" type="list" scroll-x="{{true}}" enable-flex="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}" fast-deceleration="{{true}}" bounces="{{false}}" min-drag-distance="8" class="categories"><view list-item class="category-edge-spacer"></view><view wx:for="{{categories}}" wx:key="*this" list-item class="category-slot"><view class="category {{category === item ? 'category--active' : ''}}" data-category="{{item}}" bindtap="categoryTap"><text>{{item}}</text></view></view><view list-item class="category-edge-spacer"></view></scroll-view>
+          <template wx:if="{{loadingCovers}}" is="activity-cover-loading-gallery" data="{{shimmerRunning: coverSkeletonShimmerRunning}}" />
+          <text wx:elif="{{coverError}}" class="empty" bindtap="loadCovers">{{coverError}}</text>
+          <text wx:elif="{{!columns.length}}" class="empty">此分类暂无封面，请选择其他分类</text>
+          <swiper wx:else class="gallery" current="{{galleryCurrent}}" circular="{{false}}" duration="300" easing-function="easeOutCubic" previous-margin="38.46rpx" next-margin="30.77rpx" bindchange="onGalleryChange"><swiper-item wx:for="{{galleryPages}}" wx:key="id" wx:for-item="page"><view class="gallery-page"><view wx:for="{{page.columns}}" wx:key="id" wx:for-item="column" class="cover-column"><view wx:for="{{column.items}}" wx:key="id" class="cover" data-id="{{item.id}}" bindtap="chooseCover"><view class="cover-media"><image wx:if="{{coverImagePaths[item.id]}}" class="cover-image" src="{{coverImagePaths[item.id]}}" mode="aspectFill" fade-in="{{true}}" bindload="onCoverImageLoad" binderror="onCoverImageError" data-id="{{item.id}}" /><view class="cover-skeleton {{coverImageStates[item.id] === 'loaded' ? 'cover-skeleton--revealed' : ''}}" aria-hidden="{{coverImageStates[item.id] === 'loaded' ? true : false}}"><view wx:if="{{coverImageStates[item.id] === 'loading'}}" class="cover-skeleton-shimmer {{coverSkeletonShimmerRunning ? 'cover-skeleton-shimmer--running' : ''}}"></view></view></view><view class="cover-outline {{form.activityCoverId === item.id ? 'cover-outline--selected' : ''}}"></view><view wx:if="{{form.activityCoverId === item.id}}" class="selected"><image class="selected-icon" src="/images/activity-create-check.svg" mode="aspectFit" /></view></view></view></view></swiper-item></swiper><view class="gallery-indicator" aria-hidden="true"><view wx:for="{{galleryPages}}" wx:key="id" wx:for-item="indicatorPage" wx:for-index="indicatorIndex" class="{{galleryCurrent === indicatorIndex ? 'gallery-indicator-active' : 'gallery-indicator-dot'}}"></view></view>
+        </block>
+        <view wx:elif="{{step === 2}}" class="fields">
+          <text class="label">活动名称</text><input class="field" value="{{form.name}}" maxlength="10" placeholder="请输入活动名称" placeholder-style="color:#9CA3AF;font-size:26.92rpx;font-weight:400;line-height:26.92rpx;" data-field="name" bindinput="input" />
+          <text class="label">活动地点</text><view class="field location" bindtap="chooseLocation"><text class="location-value {{form.locationName ? 'location-value--filled' : 'location-value--placeholder'}}">{{form.locationName || '请选择活动地点'}}</text><text class="location-arrow">›</text></view>
+          <text class="label">活动备注</text><view class="remark"><text wx:if="{{!form.remark && !remarkComposing}}" class="remark-placeholder">填写活动指引、游玩要求或相关提醒…</text><textarea class="remark-input" value="{{form.remark}}" maxlength="200" aria-label="填写活动指引、游玩要求或相关提醒" data-field="remark" bind:keyboardcompositionstart="onRemarkCompositionStart" bind:keyboardcompositionupdate="onRemarkCompositionUpdate" bind:keyboardcompositionend="onRemarkCompositionEnd" bindblur="onRemarkBlur" bindinput="input" cursor-spacing="100" show-confirm-bar="{{false}}" disable-default-padding="{{true}}" /><text class="counter">{{form.remark.length || 0}} / 200</text></view>
+        </view>
+        <view wx:else class="fields fields--subitems-{{form.subItemsEnabled ? 'open' : 'closed'}} {{subItemsClosing ? 'fields--subitems-closing' : ''}}">
+          <text class="label">活动时间</text><view class="time-card"><view class="time-row" data-target="start" bindtap="openPicker"><text wx:if="{{form.startDate && form.startTime}}" class="time-value">{{startDateDisplay}} {{form.startTime}}</text><text wx:else class="time-placeholder">开始时间</text></view><text class="time-separator">至</text><view class="time-row" data-target="end" bindtap="openPicker"><text wx:if="{{form.endDate && form.endTime}}" class="time-value">{{endDateDisplay}} {{form.endTime}}</text><text wx:else class="time-placeholder">结束时间</text></view></view>
+          <view class="capacity-field"><text class="label">名额上限</text><view class="capacity-card"><view class="step-button" data-delta="-1" bindtap="stepCapacity" aria-role="button" aria-label="减少名额"><image class="step-icon" src="/images/icon-minus.svg" mode="aspectFit" /></view><text class="capacity-value">{{form.maxParticipants}} 人</text><view class="step-button" data-delta="1" bindtap="stepCapacity" aria-role="button" aria-label="增加名额"><image class="step-icon" src="/images/icon-plus.svg" mode="aspectFit" /></view></view></view>
+          <view class="subitems-section"><activity-subitems-editor enabled="{{form.subItemsEnabled}}" items="{{form.subItems}}" max-participants="{{form.maxParticipants}}" bindchange="onSubItemsChange" /></view>
+        </view>
+      </view>
+      </scroll-view>
+      <view class="footer" style="padding-bottom:{{footerSafeAreaRpx}}rpx;"><view class="primary {{submitting || loadingEditActivity || (step === 1 && !form.activityCoverId) ? 'primary--disabled' : ''}}" bindtap="next" aria-role="button" aria-disabled="{{submitting || loadingEditActivity || (step === 1 && !form.activityCoverId)}}"><text>{{submitting ? (isEdit ? '保存中…' : '发布中…') : (step === 3 ? (isEdit ? '保存修改' : '立即发布') : '下一步')}}</text></view><view wx:if="{{step > 1}}" class="previous" bindtap="previousStep"><text>返回上一步</text></view></view>
+    </view>
+    <view wx:if="{{leavingStep}}" class="step-scene step-scene--leaving step-scene--leaving--{{stepTransitionDirection}}">
+      <scroll-view class="step-scroll" type="list" scroll-y="{{true}}" show-scrollbar="{{false}}" scroll-top="{{leavingScrollTop}}">
+      <view class="body body--step-{{leavingStep}} body--subitems-{{form.subItemsEnabled ? 'open' : 'closed'}}" style="padding-bottom:{{footerSafeAreaRpx + (leavingStep > 1 ? 207.69 : 130.77)}}rpx;">
+        <view class="heading"><text class="title">{{titles[leavingStep - 1]}}</text><text class="subtitle">{{subtitles[leavingStep - 1]}}</text></view>
+        <block wx:if="{{leavingStep === 1}}">
+          <scroll-view id="leavingCategoryScroller" type="list" scroll-x="{{true}}" enable-flex="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}" fast-deceleration="{{true}}" bounces="{{false}}" min-drag-distance="8" class="categories"><view list-item class="category-edge-spacer"></view><view wx:for="{{categories}}" wx:key="*this" list-item class="category-slot"><view class="category {{category === item ? 'category--active' : ''}}"><text>{{item}}</text></view></view><view list-item class="category-edge-spacer"></view></scroll-view>
+          <template wx:if="{{loadingCovers}}" is="activity-cover-loading-gallery" data="{{shimmerRunning: coverSkeletonShimmerRunning}}" />
+          <text wx:elif="{{coverError}}" class="empty">{{coverError}}</text>
+          <text wx:elif="{{!columns.length}}" class="empty">此分类暂无封面，请选择其他分类</text>
+          <swiper wx:else class="gallery" current="{{galleryCurrent}}" circular="{{false}}" duration="300" easing-function="easeOutCubic" previous-margin="38.46rpx" next-margin="30.77rpx"><swiper-item wx:for="{{galleryPages}}" wx:key="id" wx:for-item="page"><view class="gallery-page"><view wx:for="{{page.columns}}" wx:key="id" wx:for-item="column" class="cover-column"><view wx:for="{{column.items}}" wx:key="id" class="cover"><view class="cover-media"><image wx:if="{{coverImagePaths[item.id]}}" class="cover-image" src="{{coverImagePaths[item.id]}}" mode="aspectFill" fade-in="{{true}}" /><view class="cover-skeleton {{coverImageStates[item.id] === 'loaded' ? 'cover-skeleton--revealed' : ''}}" aria-hidden="{{coverImageStates[item.id] === 'loaded' ? true : false}}"><view wx:if="{{coverImageStates[item.id] === 'loading'}}" class="cover-skeleton-shimmer {{coverSkeletonShimmerRunning ? 'cover-skeleton-shimmer--running' : ''}}"></view></view></view><view class="cover-outline {{form.activityCoverId === item.id ? 'cover-outline--selected' : ''}}"></view><view wx:if="{{form.activityCoverId === item.id}}" class="selected"><image class="selected-icon" src="/images/activity-create-check.svg" mode="aspectFit" /></view></view></view></view></swiper-item></swiper><view class="gallery-indicator" aria-hidden="true"><view wx:for="{{galleryPages}}" wx:key="id" wx:for-item="indicatorPage" wx:for-index="indicatorIndex" class="{{galleryCurrent === indicatorIndex ? 'gallery-indicator-active' : 'gallery-indicator-dot'}}"></view></view>
+        </block>
+        <view wx:elif="{{leavingStep === 2}}" class="fields">
+          <text class="label">活动名称</text><input class="field" value="{{form.name}}" maxlength="10" placeholder="请输入活动名称" placeholder-style="color:#9CA3AF;font-size:26.92rpx;font-weight:400;line-height:26.92rpx;" />
+          <text class="label">活动地点</text><view class="field location"><text class="location-value {{form.locationName ? 'location-value--filled' : 'location-value--placeholder'}}">{{form.locationName || '请选择活动地点'}}</text><text class="location-arrow">›</text></view>
+          <text class="label">活动备注</text><view class="remark"><text wx:if="{{!form.remark}}" class="remark-placeholder">填写活动指引、游玩要求或相关提醒…</text><textarea class="remark-input" value="{{form.remark}}" maxlength="200" aria-label="填写活动指引、游玩要求或相关提醒" cursor-spacing="100" show-confirm-bar="{{false}}" disable-default-padding="{{true}}" /><text class="counter">{{form.remark.length || 0}} / 200</text></view>
+        </view>
+        <view wx:else class="fields fields--subitems-{{form.subItemsEnabled ? 'open' : 'closed'}} {{subItemsClosing ? 'fields--subitems-closing' : ''}}">
+          <text class="label">活动时间</text><view class="time-card"><view class="time-row"><text wx:if="{{form.startDate && form.startTime}}" class="time-value">{{startDateDisplay}} {{form.startTime}}</text><text wx:else class="time-placeholder">开始时间</text></view><text class="time-separator">至</text><view class="time-row"><text wx:if="{{form.endDate && form.endTime}}" class="time-value">{{endDateDisplay}} {{form.endTime}}</text><text wx:else class="time-placeholder">结束时间</text></view></view>
+          <view class="capacity-field"><text class="label">名额上限</text><view class="capacity-card"><view class="step-button"><image class="step-icon" src="/images/icon-minus.svg" mode="aspectFit" /></view><text class="capacity-value">{{form.maxParticipants}} 人</text><view class="step-button"><image class="step-icon" src="/images/icon-plus.svg" mode="aspectFit" /></view></view></view>
+          <view class="subitems-section"><activity-subitems-editor enabled="{{form.subItemsEnabled}}" items="{{form.subItems}}" max-participants="{{form.maxParticipants}}" /></view>
+        </view>
+      </view>
+      </scroll-view>
+      <view class="footer" style="padding-bottom:{{footerSafeAreaRpx}}rpx;"><view class="primary {{submitting || (leavingStep === 1 && !form.activityCoverId) ? 'primary--disabled' : ''}}" aria-role="button" aria-disabled="{{true}}"><text>{{submitting ? '发布中…' : (leavingStep === 3 ? '立即发布' : '下一步')}}</text></view><view wx:if="{{leavingStep > 1}}" class="previous"><text>返回上一步</text></view></view>
+    </view>
+  </view>
+  <date-time-picker-sheet visible="{{pickerVisible}}" mode="datetime" title="{{pickerTarget === 'start' ? '开始时间' : '结束时间'}}" value="{{pickerValue}}" minute-step="{{1}}" bindclose="closePicker" bindconfirm="confirmPicker" />
+</view>
+
+<create-access-dialog id="session-expired-dialog" />

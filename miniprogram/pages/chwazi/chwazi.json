@@ -2,5 +2,7 @@
   "disableScroll": true,
   "navigationStyle": "custom",
   "navigationBarTextStyle": "white",
-  "usingComponents": {}
+  "usingComponents": {
+    "create-access-dialog": "../../components/create-access-dialog/index"
+  }
 }

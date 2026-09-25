@@ -2,10 +2,35 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { rankHomeCardImages, cardVisibilityKey } = require('../utils/homeCardImagePriority');
+const { rankHomeCardImages, cardVisibilityKey, usesNativeCardGlass, getHomeCardGlassUrl } = require('../utils/homeCardImagePriority');
 const { createHomeCardMediaLoader } = require('../utils/homeCardMediaLoader');
 const small = id => ({ _id: id, smallCardBgImageUrl: `cover-${id}` });
 const big = id => ({ _id: id, largeCardBgImageUrl: `cover-${id}`, largeCardGlassImageUrl: `glass-${id}` });
+test('native glass follows the GIF cover extension, including versioned and mixed-case URLs', () => {
+  for (const [url, native] of [
+    ['https://assets.example/cover.gif', true],
+    ['https://assets.example/cover.GIF?v=2#frame', true],
+    ['/assets/cover.GiF#frame', true],
+    ['https://assets.example/cover.jpg?source=cover.gif', false],
+    ['https://assets.example/cover.gif.jpg', false],
+    ['', false]
+  ]) {
+    const item = { ...big(1), largeCardBgImageUrl: url };
+    assert.equal(usesNativeCardGlass(item), native, url);
+    assert.equal(getHomeCardGlassUrl(item), native ? '' : 'glass-1', url);
+  }
+});
+test('GIF cards queue only their cover while static cards retain cover and glass priority', () => {
+  const gif = { ...big(1), largeCardBgImageUrl: 'cover-1.GIF?v=1' };
+  const ranked = rankHomeCardImages({ groups: { joined: [gif, big(2)], ended: [small(3)] },
+    visible: new Set([cardVisibilityKey('joined', 1)]), visibilityKnown: true });
+  assert.deepEqual(ranked, [
+    { url: 'cover-1.GIF?v=1', priority: 0 },
+    { url: 'cover-2', priority: 1 },
+    { url: 'glass-2', priority: 1 },
+    { url: 'cover-3', priority: 2 }
+  ]);
+});
 test('visible card cover and glass precede adjacent cards and offscreen sections', () => {
   const ranked = rankHomeCardImages({ groups: { joined: [big(1), big(2), big(3)], ended: [small(4)] },
     visible: new Set([cardVisibilityKey('joined', 2)]), visibilityKnown: true });

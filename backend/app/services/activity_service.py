@@ -9,11 +9,14 @@ from typing import Optional
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm.attributes import set_committed_value
 
 from app.core.config import get_settings
 from app.core.exceptions import ConflictError, NotFoundError, ValidationAppError
 from app.models import Activity, ActivityParticipant, User
+from app.models.activity import ActivitySubItem, ActivityParticipantSubItem
 from app.services.activity_weather_service import ensure_weather_snapshot, invalidate_weather_snapshot
+from app.services.activity_share_preview_service import prepare_activity_share_preview, discard_prepared_preview
 from app.schemas.activity import (
     ActivityCheckinRequest,
     ActivityCreateRequest,
@@ -36,7 +39,10 @@ TERMINAL_ACTIVITY_STATUSES = frozenset({"已结束", "已取消", "已流局"})
 
 
 def _get_activity_query():
-    return select(Activity).options(selectinload(Activity.participants))
+    return select(Activity).options(
+        selectinload(Activity.participants).selectinload(ActivityParticipant.sub_item_associations),
+        selectinload(Activity.sub_items).selectinload(ActivitySubItem.participant_associations),
+    )
 
 
 def _app_now() -> datetime:
@@ -63,8 +69,8 @@ def _sync_activity_status(activity: Activity, now: datetime) -> bool:
         return False
     if activity.end_time <= now:
         new_status = "已结束"
-    elif (activity.signup_deadline or activity.start_time) <= now:
-        # 报名截止时检查人数；未设置报名截止时间时回退到活动开始时间
+    elif activity.start_time <= now:
+        # 仅在活动开始时检查人数，历史独立截止时间不再生效
         participant_count = len(activity.participants)
         if participant_count <= FLOW_CANCEL_MIN_PARTICIPANTS:
             new_status = "已流局"
@@ -87,7 +93,7 @@ def list_activities(db: Session) -> list[Activity]:
     stmt = _get_activity_query().order_by(Activity.start_time.desc())
     activities = list(db.scalars(stmt).unique().all())
     now = _app_now()
-    if any(_sync_activity_status(a, now) for a in activities):
+    if any([_sync_activity_status(a, now) for a in activities]):
         db.commit()
     return activities
 
@@ -102,7 +108,7 @@ def list_my_activities(db: Session, user: User) -> list[Activity]:
     )
     activities = list(db.scalars(stmt).unique().all())
     now = _app_now()
-    if any(_sync_activity_status(a, now) for a in activities):
+    if any([_sync_activity_status(a, now) for a in activities]):
         db.commit()
     return activities
 
@@ -171,7 +177,7 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
         max_participants=payload.max_participants,
         start_time=payload.start_time,
         end_time=payload.end_time,
-        signup_deadline=payload.signup_deadline,
+        signup_deadline=None,
         signup_enabled=payload.signup_enabled,
         activity_type=activity_type,
         activity_style_key=activity_style_key,
@@ -195,7 +201,16 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
     db.add(creator_participant)
     ensure_weather_snapshot(db, activity)
 
-    db.commit()
+    prepared_name, created = "", False
+    try:
+        prepared_name, created = prepare_activity_share_preview(activity)
+        activity.share_preview_file = prepared_name
+        db.commit()
+    except Exception:
+        db.rollback()
+        if prepared_name:
+            discard_prepared_preview(prepared_name, created)
+        raise
     db.refresh(activity)
     return get_activity_by_id(db, activity.id)
 
@@ -212,7 +227,15 @@ def update_activity(
     if activity.status in TERMINAL_ACTIVITY_STATUSES and not is_admin:
         raise ValidationAppError("Terminal activities cannot be edited")
 
+    activity = lock_activity(db, activity)
     data = payload.model_dump(exclude_unset=True)
+    sub_items = data.pop("sub_items", None)
+    data.pop("signup_deadline", None)
+    if sub_items is not None:
+        replace_sub_items(activity, sub_items)
+    capacity = data.get("max_participants")
+    if capacity is not None and capacity < len(activity.participants):
+        raise ValidationAppError("活动名额不能少于已报名人数")
     prev_type = activity.activity_type
     weather_source_changed = any(
         key in data and getattr(activity, key) != value
@@ -248,15 +271,23 @@ def update_activity(
 
     if activity.end_time <= activity.start_time:
         raise ValidationAppError("end_time must be later than start_time")
-    if activity.signup_deadline and activity.signup_deadline > activity.start_time:
-        raise ValidationAppError("signup_deadline must be earlier than or equal to start_time")
+    activity.signup_deadline = None
 
     _sync_activity_status(activity, _app_now())
     if weather_source_changed:
         invalidate_weather_snapshot(db, activity)
 
     db.add(activity)
-    db.commit()
+    prepared_name, created = "", False
+    try:
+        prepared_name, created = prepare_activity_share_preview(activity)
+        activity.share_preview_file = prepared_name
+        db.commit()
+    except Exception:
+        db.rollback()
+        if prepared_name:
+            discard_prepared_preview(prepared_name, created)
+        raise
     db.refresh(activity)
     return get_activity_by_id(db, activity.id)
 
@@ -285,34 +316,88 @@ def delete_activity(db: Session, activity: Activity) -> None:
     db.commit()
 
 
-def signup_activity(db: Session, activity: Activity, user: User) -> ActivityParticipant:
-    """Register the current user for an activity."""
+def lock_activity(db: Session, activity: Activity) -> Activity:
+    """Serialize capacity checks and edits on the activity row (production SQL)."""
+    activity = db.scalar(select(Activity).where(Activity.id == activity.id)
+                         .with_for_update().execution_options(populate_existing=True))
+    # MySQL REPEATABLE READ: ordinary eager loads/counts may retain a snapshot from
+    # the pre-lock detail lookup. Locking reads below explicitly read current rows.
+    participants = list(db.scalars(select(ActivityParticipant).where(
+        ActivityParticipant.activity_id == activity.id).order_by(ActivityParticipant.id)
+        .with_for_update().execution_options(populate_existing=True)))
+    items = list(db.scalars(select(ActivitySubItem).where(ActivitySubItem.activity_id == activity.id)
+                 .order_by(ActivitySubItem.sort_order, ActivitySubItem.id).with_for_update()
+                 .execution_options(populate_existing=True)))
+    links = list(db.scalars(select(ActivityParticipantSubItem).where(
+        ActivityParticipantSubItem.activity_id == activity.id).order_by(ActivityParticipantSubItem.id)
+        .with_for_update().execution_options(populate_existing=True)))
+    set_committed_value(activity, "participants", participants)
+    set_committed_value(activity, "sub_items", items)
+    for participant in participants:
+        set_committed_value(participant, "sub_item_associations", [link for link in links if link.participant_id == participant.id])
+    for item in items:
+        set_committed_value(item, "participant_associations", [link for link in links if link.sub_item_id == item.id])
+    return activity
 
-    if activity.status == "已取消":
+
+def replace_sub_items(activity: Activity, items: list[dict]) -> None:
+    """Validate the entire replacement before modifying any project."""
+    if len(items) > 4:
+        raise ValidationAppError("最多添加4个子项目")
+    existing = {item.id: item for item in activity.sub_items}
+    ids = [item["id"] for item in items if item.get("id") is not None]
+    if len(ids) != len(set(ids)) or any(item_id not in existing for item_id in ids):
+        raise ValidationAppError("子项目不属于当前活动或重复")
+    if not existing and items and activity.participants:
+        raise ValidationAppError("已有报名的单项目活动不能切换为多项目")
+    for item in activity.sub_items:
+        if item.id not in ids and item.current_participants:
+            raise ValidationAppError("已有报名的子项目不能删除")
+    for data in items:
+        previous = existing.get(data.get("id"))
+        if previous and data["max_participants"] < previous.current_participants:
+            raise ValidationAppError("子项目名额不能少于已报名人数")
+    replacement = []
+    for index, data in enumerate(items):
+        item = existing.get(data.get("id")) or ActivitySubItem()
+        item.name = data["name"]
+        item.max_participants = data["max_participants"]
+        item.sort_order = index
+        replacement.append(item)
+    activity.sub_items = replacement
+
+
+def signup_activity(db: Session, activity: Activity, user: User, sub_item_ids: list[int] | None = None) -> ActivityParticipant:
+    """Register once for the entire activity; selected projects are atomic."""
+
+    activity = lock_activity(db, activity)
+    selected = sub_item_ids or []
+    available = {item.id: item for item in activity.sub_items}
+    if len(selected) != len(set(selected)) or any(item_id not in available for item_id in selected):
+        raise ValidationAppError("子项目选择无效")
+    if available and not selected:
+        raise ValidationAppError("请至少选择一个子项目")
+    for item_id in selected:
+        item = available[item_id]
+        if item.current_participants >= item.max_participants:
+            raise ValidationAppError("所选子项目已满员")
+
+    if activity.status in TERMINAL_ACTIVITY_STATUSES:
         raise ValidationAppError("Activity has been cancelled")
 
     if activity.signup_enabled is False:
         raise ValidationAppError("Signup is currently disabled for this activity")
 
-    deadline = activity.signup_deadline or activity.start_time
+    deadline = activity.start_time
     if deadline and _app_now() >= deadline:
         raise ValidationAppError("Signup deadline has passed")
 
-    existing = db.scalar(
-        select(ActivityParticipant).where(
-            ActivityParticipant.activity_id == activity.id,
-            ActivityParticipant.user_id == user.id,
-        )
-    )
+    existing = next((participant for participant in activity.participants if participant.user_id == user.id), None)
     if existing is not None:
         raise ConflictError("You have already signed up for this activity")
 
     if activity.max_participants is not None:
-        participant_count = (
-            db.query(ActivityParticipant)
-            .filter(ActivityParticipant.activity_id == activity.id)
-            .count()
-        )
+        participant_count = len(activity.participants)
         if participant_count >= activity.max_participants:
             raise ValidationAppError("报名失败，活动参与人数已达上限")
 
@@ -323,6 +408,10 @@ def signup_activity(db: Session, activity: Activity, user: User) -> ActivityPart
         display_avatar_url=user.avatar_url,
     )
     db.add(participant)
+    db.flush()
+    for item_id in selected:
+        db.add(ActivityParticipantSubItem(activity_id=activity.id, participant_id=participant.id,
+                                          sub_item_id=item_id, user_id=user.id))
     db.commit()
     db.refresh(participant)
     return participant
@@ -337,6 +426,8 @@ def remove_participant(
     allow_activity_owner: bool = False,
 ) -> None:
     """Remove a participant from an activity."""
+
+    activity = lock_activity(db, activity)
 
     participant = db.scalar(
         select(ActivityParticipant).where(
@@ -353,7 +444,7 @@ def remove_participant(
     if not is_activity_manager and participant.user_id != actor.id:
         raise ValidationAppError("You can only remove your own signup")
 
-    deadline = activity.signup_deadline or activity.start_time
+    deadline = activity.start_time
     if not is_activity_manager and deadline and _app_now() >= deadline:
         raise ValidationAppError("Signup deadline has passed; contact an admin to remove this signup")
 
@@ -496,6 +587,8 @@ def checkin_activity(
 def cancel_signup(db: Session, activity: Activity, user: User) -> None:
     """Remove the current user's signup if still allowed."""
 
+    activity = lock_activity(db, activity)
+
     participant = db.scalar(
         select(ActivityParticipant).where(
             ActivityParticipant.activity_id == activity.id,
@@ -505,7 +598,7 @@ def cancel_signup(db: Session, activity: Activity, user: User) -> None:
     if participant is None:
         raise NotFoundError("Signup record not found")
 
-    deadline = activity.signup_deadline or activity.start_time
+    deadline = activity.start_time
     if user.role != "admin" and deadline and _app_now() >= deadline:
         raise ValidationAppError("Signup deadline has passed; contact an admin to remove this signup")
 

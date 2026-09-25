@@ -1,4 +1,5 @@
 /** Bounded observations only: never changes card readiness or retries media. */
+const { getHomeCardGlassUrl } = require('./homeCardImagePriority');
 function createHomePresentationDiagnostics({ page, wxApi, emit, traceId, now = Date.now,
   setTimer = setTimeout, clearTimer = clearTimeout,
   sampleNormal = Math.random() < 0.1 }) {
@@ -37,7 +38,7 @@ function createHomePresentationDiagnostics({ page, wxApi, emit, traceId, now = D
     Object.keys(page.data.groupedActivities || {}).forEach(group => {
       page.data.groupedActivities[group].forEach((item, index) => {
         const cover = group === 'joined' ? item.largeCardBgImageUrl : item.smallCardBgImageUrl;
-        const glass = group === 'joined' ? item.largeCardGlassImageUrl : '';
+        const glass = group === 'joined' ? getHomeCardGlassUrl(item) : '';
         const state = (url, role) => {
           if (!url) return 'absent';
           const native = nativeMedia.get(nativeKey(url, role, { activityId: item._id, group }));

@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "欢迎",
-  "usingComponents": {}
+  "usingComponents": {
+    "create-access-dialog": "../../components/create-access-dialog/index"
+  }
 }

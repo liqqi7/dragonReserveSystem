@@ -18,7 +18,7 @@ def _activity_payload(name: str = "普通用户创建的活动") -> dict:
     }
 
 
-def test_cover_catalog_exposes_all_prototype_artists_and_assets(client) -> None:
+def test_cover_catalog_exposes_only_selectable_categorized_assets(client) -> None:
     response = client.get("/api/v2/activity-covers")
 
     assert response.status_code == 200
@@ -30,11 +30,51 @@ def test_cover_catalog_exposes_all_prototype_artists_and_assets(client) -> None:
         "Aleksey Rico",
         "LAM",
         "magoyama",
-        "Benjamin Flouw",
         "venmen",
+        "Hiroaki Seto",
+        "Tatsuro Kiuchi",
+        "Gasp art",
+        "Natasha Spivak",
+        "Miguel Ángel Camprubí",
+        "pasoputi",
+        "dongkyu lim",
+        "our own night",
+        "meyoco",
+        " Clémence Thune",
+        "Ilya Shapko",
+        "Coen Pohl",
     ]
-    # Reviewed catalog: seven artists with twelve assets, venmen with nine.
-    assert sum(len(artist["artworks"]) for artist in artists) == 93
+    assert sum(len(artist["artworks"]) for artist in artists) == 44
+    artwork_by_id = {artwork["id"]: artwork for artist in artists for artwork in artist["artworks"]}
+    assert artwork_by_id["ardhira-putra-001"]["categories"] == ["派对"]
+    assert artwork_by_id["aleksey-rico-001"]["categories"] == ["电影"]
+    assert artwork_by_id["hiroaki-seto-001"]["categories"] == ["运动"]
+    assert artwork_by_id["natasha-spivak-001"]["categories"] == ["派对"]
+    assert artwork_by_id["miguel-angel-camprubi-001"]["categories"] == ["外出"]
+    assert artwork_by_id["miguel-angel-camprubi-002"]["categories"] == ["外出"]
+    assert artwork_by_id["miguel-angel-camprubi-004"]["categories"] == ["生日"]
+    assert artwork_by_id["miguel-angel-camprubi-005"]["categories"] == ["吃饭"]
+    assert artwork_by_id["miguel-angel-camprubi-005"]["image_url"].endswith(".gif")
+    assert artwork_by_id["miguel-angel-camprubi-006"]["categories"] == ["吃饭"]
+    assert artwork_by_id["miguel-angel-camprubi-006"]["image_url"].endswith(".gif")
+    assert artwork_by_id["miguel-angel-camprubi-007"]["categories"] == ["运动"]
+    assert artwork_by_id["miguel-angel-camprubi-007"]["image_url"].endswith(".gif")
+    assert artwork_by_id["miguel-angel-camprubi-008"]["categories"] == ["外出"]
+    assert artwork_by_id["miguel-angel-camprubi-008"]["image_url"].endswith(".gif")
+    assert artwork_by_id["miguel-angel-camprubi-009"]["categories"] == ["运动"]
+    assert artwork_by_id["miguel-angel-camprubi-009"]["image_url"].endswith(".gif")
+    assert artwork_by_id["miguel-angel-camprubi-010"]["categories"] == ["生日"]
+    assert artwork_by_id["miguel-angel-camprubi-010"]["image_url"].endswith(".gif")
+    assert artwork_by_id["tatsuro-kiuchi-001"]["categories"] == ["外出"]
+    assert artwork_by_id["tatsuro-kiuchi-001"]["image_url"].endswith(".jpg")
+    assert artwork_by_id["gasp-art-001"]["categories"] == ["运动"]
+    assert artwork_by_id["gasp-art-001"]["image_url"].endswith(".jpg")
+    assert artwork_by_id["pasoputi-001"]["categories"] == ["外出"]
+    assert artwork_by_id["pasoputi-001"]["image_url"].endswith(".jpg")
+    assert artwork_by_id["ardhira-putra-008"]["categories"] == ["游戏"]
+    assert artwork_by_id["coen-pohl-003"]["categories"] == ["游戏"]
+    assert "ardhira-putra-005" not in artwork_by_id
+    assert "magoyama-012" not in artwork_by_id
     first = next(artist for artist in artists if artist["slug"] == "aleksey-rico")["artworks"][0]
     assert first["id"] == "aleksey-rico-001"
     assert first["thumbnail_url"].endswith("/activity-cover-assets/aleksey-rico/thumbs/aleksey-rico-001.jpg")
@@ -45,6 +85,21 @@ def test_cover_catalog_exposes_all_prototype_artists_and_assets(client) -> None:
     asset_response = client.get("/activity-cover-assets/aleksey-rico/thumbs/aleksey-rico-001.jpg")
     assert asset_response.status_code == 200
     assert asset_response.headers["content-type"] == "image/jpeg"
+    gif_response = client.get("/activity-cover-assets/categories/派对/images/natasha-spivak-001.gif")
+    assert gif_response.status_code == 200
+    assert gif_response.headers["content-type"] == "image/gif"
+
+
+def test_removed_cover_is_not_resolvable_or_selectable(client, admin_headers) -> None:
+    from app.services.activity_cover_service import get_activity_cover
+
+    assert get_activity_cover("ardhira-putra-005") is None
+    assert client.get("/api/v2/activity-covers/ardhira-putra-005/glass-image?v=2").status_code == 404
+
+    payload = _activity_payload("弃用封面")
+    payload["activity_cover_id"] = "ardhira-putra-005"
+    response = client.post("/api/v2/activities", headers=admin_headers, json=payload)
+    assert response.status_code == 422
 
 
 def test_cover_glass_route_returns_build_time_pre_rendered_image(client) -> None:
@@ -99,10 +154,10 @@ def test_v2_create_and_update_persist_cover_without_activity_type(client, admin_
     update_response = client.patch(
         f"/api/v2/activities/{activity['id']}",
         headers=admin_headers,
-        json={"activity_cover_id": "lam-001"},
+        json={"activity_cover_id": "lam-002"},
     )
     assert update_response.status_code == 200
-    assert update_response.json()["activity_cover_id"] == "lam-001"
+    assert update_response.json()["activity_cover_id"] == "lam-002"
     assert update_response.json()["activity_cover"]["artist_name"] == "LAM"
 
 

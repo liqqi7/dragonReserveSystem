@@ -11,12 +11,10 @@
   overlay-style="background: rgba(0, 0, 0, 0.4);"
   custom-style="height: {{drawerHeightRpx}}rpx; max-height: {{maxHeightRpx}}rpx; background: transparent; border-radius: 46.15rpx 46.15rpx 0 0; overflow: hidden;"
   bind:clickoverlay="onMaskTap"
+  bind:beforeleave="onContainerBeforeLeave"
   bind:afterleave="onContainerAfterLeave"
 >
     <view id="qaParticipantsSurface" class="drawer-sheet" style="{{surfaceSizingStyle}} padding-bottom: {{safeBottomRpx}}rpx;">
-    <view class="drawer-handle-zone" aria-label="拖拽区">
-      <view class="drawer-handle"></view>
-    </view>
     <view class="drawer-header">
       <text class="drawer-title">参与人员</text>
       <view class="drawer-close" bindtap="onCloseTap" aria-label="关闭">

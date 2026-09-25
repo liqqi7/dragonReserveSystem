@@ -6,13 +6,13 @@
 <template name="home-card-skeleton">
   <view class="card-skeleton card-skeleton--{{size}} {{revealed ? 'card-skeleton--revealed' : ''}}" aria-hidden="{{revealed ? true : false}}" aria-label="{{failed ? '卡片加载失败' : '卡片加载中'}}">
     <template is="home-skeleton-shape" data="{{shape: size === 'large' ? 'skeleton-large' : 'skeleton-small', running: running && !failed}}" />
-    <view wx:if="{{failed}}" class="home-card-retry home-card-retry--{{size}}" role="button" aria-label="重新加载这张卡片" catchtap="onRetryHomeCard" data-group="{{group}}" data-activity-id="{{activityId}}">
-      <text>加载失败，点击重试</text>
-    </view>
     <block wx:if="{{size === 'small'}}">
       <template is="home-skeleton-shape" data="{{shape: 'skeleton-name', running: running && !failed}}" />
       <template is="home-skeleton-shape" data="{{shape: 'skeleton-time', running: running && !failed}}" />
     </block>
+  </view>
+  <view wx:if="{{failed}}" class="home-card-retry home-card-retry--{{size}}" role="button" aria-label="重新加载这张卡片" catchtap="onRetryHomeCard" data-group="{{group}}" data-activity-id="{{activityId}}">
+    <text>加载失败，点击重试</text>
   </view>
 </template>
 <!-- 页面容器 -->
@@ -73,7 +73,7 @@
           id="qaJoinedCardSwiper"
           class="cards-swiper large-cards-swiper"
           current="{{focusedCardIndex.joined}}"
-          duration="300"
+          duration="180"
           easing-function="easeOutCubic"
           previous-margin="38.46rpx"
           next-margin="219.23rpx"
@@ -87,7 +87,7 @@
             class="large-card-slide"
           >
             <view class="home-card-slot home-card-slot--large" data-group="joined" data-activity-id="{{item._id}}">
-              <template is="home-card-skeleton" data="{{size: 'large', revealed: item._homeMediaReady && item._homeSlotEntered, running: skeletonShimmerRunning && !item._homeMediaError && !(item._homeMediaReady && item._homeSlotEntered), failed: item._homeMediaError, group: 'joined', activityId: item._id}}" />
+              <template is="home-card-skeleton" data="{{size: 'large', revealed: item._homeMediaReady && item._homeSlotEntered && (item._id != createdCardEntranceId || createdCardEntranceState === 'entered'), running: skeletonShimmerRunning && !item._homeMediaError && !(item._homeMediaReady && item._homeSlotEntered && (item._id != createdCardEntranceId || createdCardEntranceState === 'entered')), failed: item._homeMediaError, group: 'joined', activityId: item._id}}" />
             <view
               class="large-card-wrap home-card-entrance home-card-entrance--{{!(item._homeMediaReady && item._homeSlotEntered) ? 'pending' : (item._id == createdCardEntranceId ? createdCardEntranceState : 'entered')}}"
             >
@@ -170,10 +170,10 @@
                   </view>
                 </view>
                 <!-- 卡片内部底部毛玻璃：模糊层与信息层共用同一个边界，避免顶部出现接缝 -->
-                <view class="glass-bottom">
-                  <view class="glass-static-blur-layer">
+                <view class="glass-bottom {{item._homeNativeGlass ? 'glass-bottom--native' : ''}}">
+                  <view wx:if="{{!item._homeNativeGlass}}" class="glass-static-blur-layer">
                     <view wx:if="{{item._homeGlassSrc}}" class="glass-static-blur-stage">
-                      <!-- 服务端已完成镜像扩边和单次模糊；真机只展示静态位图，不运行实时滤镜。 -->
+                      <!-- 静态封面复用服务端模糊图；GIF 直接由底栏原生滤镜采样当前帧。 -->
                       <image
                         class="glass-static-blur-image"
                         src="{{item._homeGlassSrc}}"
@@ -225,7 +225,7 @@
           id="qaAcceptingCardSwiper"
           class="cards-swiper small-cards-swiper"
           current="{{focusedCardIndex.accepting}}"
-          duration="300"
+          duration="180"
           easing-function="easeOutCubic"
           previous-margin="26.92rpx"
           next-margin="392.31rpx"
@@ -235,7 +235,7 @@
         >
           <swiper-item wx:for="{{groupedActivities.accepting}}" wx:key="_id" class="small-card-slide">
             <view class="home-card-slot home-card-slot--small" data-group="accepting" data-activity-id="{{item._id}}">
-              <template is="home-card-skeleton" data="{{size: 'small', revealed: item._homeMediaReady && item._homeSlotEntered, running: skeletonShimmerRunning && !item._homeMediaError && !(item._homeMediaReady && item._homeSlotEntered), failed: item._homeMediaError, group: 'accepting', activityId: item._id}}" />
+              <template is="home-card-skeleton" data="{{size: 'small', revealed: item._homeMediaReady && item._homeSlotEntered && (item._id != createdCardEntranceId || createdCardEntranceState === 'entered'), running: skeletonShimmerRunning && !item._homeMediaError && !(item._homeMediaReady && item._homeSlotEntered && (item._id != createdCardEntranceId || createdCardEntranceState === 'entered')), failed: item._homeMediaError, group: 'accepting', activityId: item._id}}" />
             <view
               class="small-card-layout home-card-entrance home-card-entrance--{{!(item._homeMediaReady && item._homeSlotEntered) ? 'pending' : (item._id == createdCardEntranceId ? createdCardEntranceState : 'entered')}}"
             >
@@ -324,7 +324,7 @@
           id="qaNotStartedCardSwiper"
           class="cards-swiper small-cards-swiper"
           current="{{focusedCardIndex.notStarted}}"
-          duration="300"
+          duration="180"
           easing-function="easeOutCubic"
           previous-margin="26.92rpx"
           next-margin="392.31rpx"
@@ -334,7 +334,7 @@
         >
           <swiper-item wx:for="{{groupedActivities.notStarted}}" wx:key="_id" class="small-card-slide">
             <view class="home-card-slot home-card-slot--small" data-group="notStarted" data-activity-id="{{item._id}}">
-              <template is="home-card-skeleton" data="{{size: 'small', revealed: item._homeMediaReady && item._homeSlotEntered, running: skeletonShimmerRunning && !item._homeMediaError && !(item._homeMediaReady && item._homeSlotEntered), failed: item._homeMediaError, group: 'notStarted', activityId: item._id}}" />
+              <template is="home-card-skeleton" data="{{size: 'small', revealed: item._homeMediaReady && item._homeSlotEntered && (item._id != createdCardEntranceId || createdCardEntranceState === 'entered'), running: skeletonShimmerRunning && !item._homeMediaError && !(item._homeMediaReady && item._homeSlotEntered && (item._id != createdCardEntranceId || createdCardEntranceState === 'entered')), failed: item._homeMediaError, group: 'notStarted', activityId: item._id}}" />
             <view
               class="small-card-layout home-card-entrance home-card-entrance--{{!(item._homeMediaReady && item._homeSlotEntered) ? 'pending' : (item._id == createdCardEntranceId ? createdCardEntranceState : 'entered')}}"
             >
@@ -423,7 +423,7 @@
           id="qaEndedCardSwiper"
           class="cards-swiper small-cards-swiper"
           current="{{focusedCardIndex.ended}}"
-          duration="300"
+          duration="180"
           easing-function="easeOutCubic"
           previous-margin="26.92rpx"
           next-margin="392.31rpx"
@@ -433,7 +433,7 @@
         >
           <swiper-item wx:for="{{groupedActivities.ended}}" wx:key="_id" class="small-card-slide">
             <view class="home-card-slot home-card-slot--small" data-group="ended" data-activity-id="{{item._id}}">
-              <template is="home-card-skeleton" data="{{size: 'small', revealed: item._homeMediaReady && item._homeSlotEntered, running: skeletonShimmerRunning && !item._homeMediaError && !(item._homeMediaReady && item._homeSlotEntered), failed: item._homeMediaError, group: 'ended', activityId: item._id}}" />
+              <template is="home-card-skeleton" data="{{size: 'small', revealed: item._homeMediaReady && item._homeSlotEntered && (item._id != createdCardEntranceId || createdCardEntranceState === 'entered'), running: skeletonShimmerRunning && !item._homeMediaError && !(item._homeMediaReady && item._homeSlotEntered && (item._id != createdCardEntranceId || createdCardEntranceState === 'entered')), failed: item._homeMediaError, group: 'ended', activityId: item._id}}" />
             <view
               class="small-card-layout home-card-entrance home-card-entrance--{{!(item._homeMediaReady && item._homeSlotEntered) ? 'pending' : (item._id == createdCardEntranceId ? createdCardEntranceState : 'entered')}}"
             >
@@ -539,6 +539,7 @@
     overlay-style="background: rgba(23, 24, 20, 0.4);"
     custom-style="height: 100%; background: transparent; border-radius: 0; overflow: hidden;"
     bind:clickoverlay="closeCreateForm"
+    bind:beforeleave="onCreateFormBeforeLeave"
     bind:afterleave="onCreateFormAfterLeave"
   >
     <activity-form-sheet
@@ -556,3 +557,5 @@
 </view>
 
 <create-access-dialog id="create-access-dialog" />
+
+<create-access-dialog id="session-expired-dialog" />

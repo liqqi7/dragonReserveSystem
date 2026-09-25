@@ -107,6 +107,8 @@ Component({
     },
 
     mountContainer() {
+      this._containerCloseNotified = false;
+      this._containerAfterLeaveHandled = false;
       this.setData({ containerRendered: true, containerVisible: false }, () => {
         wx.nextTick(() => {
           if (this.properties.visible) this.setData({ containerVisible: true });
@@ -114,9 +116,17 @@ Component({
       });
     },
 
+    onContainerBeforeLeave() {
+      if (this.properties.visible && this.data.containerVisible && !this._containerCloseNotified) {
+        this._containerCloseNotified = true;
+        this.triggerEvent("close");
+      }
+    },
+
     onContainerAfterLeave() {
-      if (!this.properties.visible) {
-        this.setData({ containerRendered: false });
+      if (!this.properties.visible && !this._containerAfterLeaveHandled) {
+        this._containerAfterLeaveHandled = true;
+        this.setData({ containerRendered: false, containerVisible: false });
       }
     },
 
@@ -192,6 +202,8 @@ Component({
     },
 
     onMaskTap() {
+      if (this._containerCloseNotified) return;
+      this._containerCloseNotified = true;
       this.triggerEvent("close");
     },
 
@@ -281,6 +293,8 @@ Component({
     },
 
     onCloseTap() {
+      if (this._containerCloseNotified) return;
+      this._containerCloseNotified = true;
       this.triggerEvent("close");
     },
 

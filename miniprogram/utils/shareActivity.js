@@ -7,16 +7,9 @@ function buildActivityShareAppMessageOptions(activity, sharePreviewImageUrl) {
     : "/pages/activity_list/activity_list";
   const out = { title, path };
   const preview = sharePreviewImageUrl && String(sharePreviewImageUrl).trim();
-  if (preview && /^https:\/\//i.test(preview)) {
+  if (preview && (/^https:\/\//i.test(preview) || /^wxfile:\/\//i.test(preview) || /^https?:\/\/tmp\//i.test(preview))) {
     out.imageUrl = preview;
     return out;
-  }
-  if (activity) {
-    const img = activity.largeCardBgImageUrl || activity.smallCardBgImageUrl;
-    const s = img && String(img).trim();
-    if (s && /^https:\/\//i.test(s)) {
-      out.imageUrl = s;
-    }
   }
   return out;
 }

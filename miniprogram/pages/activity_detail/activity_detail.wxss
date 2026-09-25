@@ -719,7 +719,6 @@ page {
   min-width: 0;
   overflow: hidden;
   transition: height 260ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: height;
 }
 
 .hero-remark {
@@ -1231,6 +1230,31 @@ page {
   text-align: right;
 }
 
+button.back-to-top {
+  position: fixed;
+  right: 30.77rpx;
+  z-index: 90;
+  width: 96.15rpx;
+  min-width: 0;
+  max-width: 96.15rpx;
+  height: 96.15rpx;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border: 1.92rpx solid #e5e7eb;
+  border-radius: 48.08rpx;
+  background: #ffffff;
+  box-shadow: 0 3.85rpx 15.38rpx rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.back-to-top::after { display: none; }
+.back-to-top--pressed { background: #fff4df; }
+.back-to-top-icon { width: 34.62rpx; height: 34.62rpx; }
+.back-to-top-label { color: #6b7280; font-size: 19.23rpx; line-height: 26.92rpx; }
+
 .bottom-bar {
   position: fixed;
   left: 0;
@@ -1350,10 +1374,10 @@ page {
 .signup-profile-modal-sheet {
   position: relative;
   z-index: 1;
-  width: 90%;
+  width: 76.92%;
   max-height: 80vh;
   background-color: #ffffff;
-  border-radius: 16rpx;
+  border-radius: 36.92rpx;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1363,9 +1387,13 @@ page {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24rpx;
-  border-bottom: 1rpx solid #eee;
+  padding: 36.92rpx 36.92rpx 20rpx;
+  border-bottom: none;
+  justify-content: center;
 }
+
+.signup-profile-modal-title-wrap { display: flex; align-items: center; justify-content: center; gap: 18rpx; }
+.signup-profile-modal-title-icon { width: 42rpx; height: 42rpx; }
 
 .signup-profile-modal-title {
   font-size: 32rpx;
@@ -1381,9 +1409,27 @@ page {
 }
 
 .signup-profile-modal-body {
-  padding: 24rpx;
-  flex: 1;
+  padding: 0 36.92rpx 20rpx;
+  /* Skyline 下未指定高度时，作为 flex 子项的 scroll-view 会被压成 0 高度。 */
+  flex: 0 0 auto;
+  height: 560rpx;
+  box-sizing: border-box;
   overflow: hidden;
+}
+
+.signup-profile-modal-handle {
+  height: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.signup-profile-modal-handle view {
+  width: 73.08rpx;
+  height: 7.69rpx;
+  border-radius: 3.85rpx;
+  background: #9ca3af;
 }
 
 .signup-profile-hint {
@@ -1403,10 +1449,20 @@ page {
   justify-content: space-between;
   gap: 24rpx;
   margin-bottom: 24rpx;
+  padding: 23.08rpx 26.92rpx;
+  min-height: 150rpx;
+  box-sizing: border-box;
+  background: #ffffff;
+  border-radius: 24.62rpx;
+  box-shadow: 0 3.08rpx 15.38rpx rgba(0, 0, 0, 0.08);
 }
 
 .signup-profile-form-item {
   margin-bottom: 24rpx;
+  padding: 23.08rpx 26.92rpx;
+  background: #ffffff;
+  border-radius: 24.62rpx;
+  box-shadow: 0 3.08rpx 15.38rpx rgba(0, 0, 0, 0.08);
 }
 
 .signup-profile-label {
@@ -1469,8 +1525,9 @@ page {
 
 .signup-profile-modal-footer {
   display: flex;
-  padding: 24rpx;
-  border-top: 1rpx solid #eee;
+  padding: 24rpx 36.92rpx 36.92rpx;
+  border-top: 1rpx solid #f0f0f0;
+  background: #ffffff;
   gap: 16rpx;
 }
 
@@ -1489,13 +1546,78 @@ page {
 }
 
 .signup-profile-btn-primary {
-  background-color: #1989fa;
+  background-color: #ff9800;
   color: #ffffff;
 }
 
 .signup-profile-btn-disabled {
   opacity: 0.45;
 }
+
+/* zRtfm / U9Ou4F：居中弹窗输入框双按钮实例 */
+.signup-profile-modal-sheet {
+  width: 76.92%;
+  padding: 40rpx;
+  box-sizing: border-box;
+  border-radius: 24.62rpx;
+  box-shadow: 0 15.38rpx 43.08rpx rgba(0, 0, 0, 0.15);
+  gap: 32rpx;
+}
+.signup-profile-modal-header {
+  height: auto;
+  padding: 0;
+}
+.signup-profile-modal-title-wrap { gap: 12.31rpx; }
+.signup-profile-modal-title-icon { width: 36rpx; height: 36rpx; flex: none; }
+.signup-profile-modal-title { font-size: 32rpx; font-weight: 700; color: #111827; }
+.signup-profile-modal-body {
+  width: 100%;
+  height: auto;
+  padding: 0;
+  overflow: visible;
+}
+.signup-profile-hint {
+  margin: 0 0 24rpx;
+  padding: 0;
+  background: transparent;
+  color: #4b5563;
+  font-size: 28rpx;
+  line-height: 1.5;
+  text-align: center;
+}
+.signup-profile-form-row {
+  width: 100%;
+  height: 128rpx;
+  min-height: 0;
+  margin: 0 0 24rpx;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.signup-profile-form-item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.signup-profile-label { font-size: 28rpx; color: #4b5563; }
+.signup-profile-avatar-btn,
+.signup-profile-avatar-wrap,
+.signup-profile-avatar-img,
+.signup-profile-avatar-placeholder { width: 76.92308rpx; height: 76.92308rpx; }
+.signup-profile-avatar-btn { width: 76.92308rpx !important; min-width: 76.92308rpx !important; max-width: 76.92308rpx !important; height: 76.92308rpx !important; min-height: 76.92308rpx !important; max-height: 76.92308rpx !important; display: flex; align-items: center; justify-content: center; line-height: 0; border: 1.92308rpx solid #e5e7eb; border-radius: 38.46154rpx; overflow: hidden; background: #f9fafb; box-sizing: border-box; }
+.signup-profile-avatar-img { width: 76.92308rpx !important; height: 76.92308rpx !important; display: block; border-radius: 38.46154rpx; }
+.signup-profile-avatar-placeholder { display: flex; align-items: center; justify-content: center; flex: none; line-height: 0; }
+.signup-profile-avatar-placeholder image { width: 30.76923rpx; height: 30.76923rpx; display: block; }
+.signup-profile-input { height: 88rpx; padding: 0 24rpx; border: none; border-radius: 24rpx; background: #f5f5f5; font-size: 28rpx; }
+.signup-profile-modal-footer { width: 100%; padding: 0; border: none; gap: 24rpx; background: transparent; }
+.signup-profile-btn { height: 88rpx; padding: 0; border-radius: 24rpx; font-size: 28rpx; font-weight: 600; }
+.signup-profile-btn-default { background: #f5f5f5; color: #4b5563; }
+.signup-profile-btn-primary { background: #ff9800; color: #fff; }
 
 
 /* 微信原生 button 会注入默认几何；用带标签的页面级规则锁定原型尺寸。 */
@@ -1517,32 +1639,101 @@ button.bottom-primary {
   max-width: 473.08rpx !important;
 }
 
-.project-tabs { display:flex; align-items:center; height:84.62rpx; gap:38.46rpx; font-size:30.77rpx; color:#111827; }
-.projects-section { margin:30.77rpx 0; }
-.project-heading, .project-sheet-heading { display:flex; align-items:center; justify-content:space-between; height:84.62rpx; }
-.project-title { font-size:34.62rpx; font-weight:600; color:#111827; }
-.project-muted { font-size:25rpx; color:#9CA3AF; }
-.project-card { display:flex; align-items:center; justify-content:space-between; height:100rpx; border-radius:26.92rpx; padding:0 30.77rpx; background:#F5F5F5; margin-top:15.38rpx; box-sizing:border-box; }
-.project-name { flex:1; min-width:0; font-size:26.92rpx; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.project-count { flex-shrink:0; margin-left:15.38rpx; font-size:26.92rpx; }
-.project-sheet { background:#FFFFFF; border-radius:46.15rpx 46.15rpx 0 0; }
-.project-handle-zone { height:23.08rpx; display:flex; justify-content:center; align-items:center; }
-.project-handle { width:69.23rpx; height:7.69rpx; border-radius:3.85rpx; background:#D1D5DB; }
-.project-sheet-heading { margin:0 30.77rpx; }
-.project-options { padding:0 30.77rpx 15.38rpx; }
-.project-option { height:107.69rpx; border-radius:30.77rpx; display:flex; align-items:center; background:#F5F5F5; padding:0 30.77rpx; margin-top:15.38rpx; box-sizing:border-box; border:1.92rpx solid transparent; }
-.project-option--selected { border-color:#FF9800; background:#FFF7ED; }
-.project-option--full { opacity:0.45; }
-.project-check { margin-left:23.08rpx; font-size:26.92rpx; color:#FF9800; }
-.project-confirm-bar { height:153.85rpx; padding:23.08rpx 30.77rpx; box-sizing:border-box; background:#FFFFFF; }
-.project-confirm { height:107.69rpx; line-height:107.69rpx; border-radius:53.85rpx; background:#111827; color:#FFFFFF; font-size:30.77rpx; }
-.project-confirm::after { border:0; }
-.project-confirm--disabled { background:#F5F5F5; color:#9CA3AF; }
-.project-members { max-height:650rpx; min-height:200rpx; padding:0 30.77rpx; box-sizing:border-box; }
-.project-member { height:100rpx; display:flex; align-items:center; font-size:26.92rpx; }
-.project-avatar { width:69.23rpx; height:69.23rpx; border-radius:34.62rpx; margin-right:23.08rpx; }
-.project-empty { color:#9CA3AF; font-size:26.92rpx; }
+/* 多子项目详情：按原型 390px 画布换算为 rpx。 */
+.basic-information { width: 100%; }
+.projects-section { margin-top: 30.77rpx; }
+.project-heading { display: flex; align-items: center; justify-content: space-between; height: 46.15rpx; }
+.project-title { font-size: 34.62rpx; font-weight: 700; color: #111827; line-height: 46.15rpx; }
+.project-muted { font-size: 25rpx; color: #9ca3af; }
+.project-card {
+  display: flex;
+  align-items: center;
+  gap: 15.38rpx;
+  height: 100rpx;
+  margin-top: 23.08rpx;
+  padding: 0 30.77rpx;
+  border: 1.92rpx solid #e5e7eb;
+  border-radius: 26.92rpx;
+  background: #f9fafb;
+  box-sizing: border-box;
+}
+.project-name { flex: 1; min-width: 0; font-size: 26.92rpx; font-weight: 600; color: #111827; }
+.project-participants { display: flex; align-items: center; gap: 11.54rpx; flex-shrink: 0; }
+.project-count { display: flex; align-items: center; gap: 5.77rpx; font-size: 26.92rpx; font-weight: 600; color: #111827; }
+.project-count-separator { color: #9ca3af; font-weight: 500; }
 
-.detail-scroll-content { display:flex; flex-direction:column; height:100%; }
-.detail-scroll-content--projects { height:auto; min-height:100%; }
-.detail-scroll-content--projects .immersive-hero { flex:0 0 750rpx; }
+/* 报名选择抽屉与 FDMKv / UQw8P 共用同一组状态样式。 */
+.signup-project-sheet {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  padding-top: 30.77rpx;
+  border-radius: 46.15rpx 46.15rpx 0 0;
+  background: #ffffff;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.signup-project-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 76.92rpx;
+  padding: 0 30.77rpx;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+.signup-project-title { color: #000000; font-size: 34.62rpx; font-weight: 700; line-height: 50rpx; }
+.signup-project-close { width: 61.54rpx; height: 61.54rpx; display: flex; align-items: center; justify-content: center; }
+.signup-project-close-icon { width: 38.46rpx; height: 38.46rpx; }
+.project-options { flex: 1; min-height: 0; margin-top: 15.38rpx; }
+.project-options-inner { padding: 11.54rpx 46.15rpx 23.08rpx; box-sizing: border-box; }
+.project-option {
+  height: 107.69rpx;
+  display: flex;
+  align-items: center;
+  gap: 15.38rpx;
+  padding: 0 34.62rpx;
+  margin-bottom: 15.38rpx;
+  border: 2.88rpx solid transparent;
+  border-radius: 30.77rpx;
+  background: #f3f4f6;
+  box-sizing: border-box;
+}
+.project-option:last-child { margin-bottom: 0; }
+.project-option-name { flex: 1; min-width: 0; color: #374151; font-size: 26.92rpx; line-height: 38.46rpx; }
+.project-option-state { display: flex; align-items: center; gap: 19.23rpx; flex-shrink: 0; }
+.project-option-count { color: #9ca3af; font-size: 26.92rpx; line-height: 38.46rpx; }
+.project-option--selected { border-color: #ff9800; background: #fff7ed; }
+.project-option--selected .project-option-name { color: #111827; font-weight: 600; }
+.project-option--selected .project-option-count { color: #ea580c; font-weight: 600; }
+.project-option--full { background: #f9fafb; }
+.project-option--full .project-option-name { color: #9ca3af; }
+.project-option--full .project-option-count { font-size: 25rpx; }
+.project-check { display: flex; align-items: center; justify-content: center; width: 42.31rpx; height: 42.31rpx; border-radius: 21.15rpx; background: #ff9800; }
+.project-check-icon { width: 25rpx; height: 25rpx; }
+.project-confirm-bar { flex-shrink: 0; background: #ffffff; border-top: 1.92rpx solid #e5e7eb; box-shadow: 0 -5.77rpx 23.08rpx rgba(0,0,0,0.07); box-sizing: border-box; }
+.project-confirm-inner { height: 107.69rpx; padding: 11.54rpx 38.46rpx; box-sizing: border-box; }
+button.project-confirm { width: 100%; min-width: 0; height: 84.62rpx; margin: 0; padding: 0; border-radius: 23.08rpx; line-height: 84.62rpx; font-size: 26.92rpx; font-weight: 700; background: #ff9800; color: #ffffff; box-sizing: border-box; }
+.project-confirm::after { border: 0; }
+button.project-confirm--disabled { background-color: #e5e7eb !important; color: #9ca3af !important; opacity: 1; }
+
+.project-sheet { position: relative; width: 100%; height: 100%; min-height: 0; padding-top: 32rpx; background: #f5f5f5; border-radius: 46.15rpx 46.15rpx 0 0; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box; }
+.project-sheet-heading { display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto; height: 76.92rpx; padding: 0 30.77rpx; box-sizing: border-box; }
+.project-sheet .project-title { font-size: 38.46rpx; line-height: 76.92rpx; font-weight: 700; color: #000000; }
+.project-sheet-close { width: 61.54rpx; height: 61.54rpx; display: flex; align-items: center; justify-content: center; }
+.project-sheet-close image { width: 38.46rpx; height: 38.46rpx; }
+.project-members { width: 100%; height: 500rpx; max-height: 650rpx; min-height: 200rpx; padding: 16rpx 32rpx 0; box-sizing: border-box; display: block; }
+.project-member-row-wrap { position: relative; width: 100%; height: 123.08rpx; overflow: hidden; border-radius: 23.08rpx; margin-bottom: 0; }
+.project-member-row-wrap--spaced { margin-bottom: 7.69rpx; }
+.project-member-row { position: relative; width: 100%; height: 123.08rpx; background: #ffffff; border-radius: 23.08rpx; display: flex; align-items: center; box-sizing: border-box; }
+.project-member-cell { height: 123.08rpx; padding-left: 23.08rpx; display: flex; align-items: center; gap: 15.38rpx; min-width: 0; }
+.project-member-avatar { flex: 0 0 76.92rpx; width: 76.92rpx; height: 76.92rpx; border-radius: 50%; background: #e5e7eb; }
+.project-member-name { width: 140.38rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 23.08rpx; line-height: 36.23rpx; font-weight: 500; color: #111827; }
+.project-empty { color: #9ca3af; font-size: 26.92rpx; }
+
+.detail-scroll-content { display: flex; flex-direction: column; height: 100%; }
+.detail-scroll-content--projects { height: auto; min-height: 100%; }
+.detail-scroll-content--projects .immersive-hero { flex: 0 0 750rpx; }
+.detail-scroll-content--projects .detail-panel { margin-top: -107.69rpx; padding-bottom: 46.15rpx; }
+.detail-scroll-content--projects .hero-copy { bottom: calc(107.69rpx + 46.15rpx); }
+.detail-scroll-content--projects .facts-row { margin-top: 23.08rpx; }

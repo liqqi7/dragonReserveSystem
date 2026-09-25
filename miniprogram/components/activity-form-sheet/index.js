@@ -12,10 +12,18 @@ function normalizeMode(value) {
   return value === "edit" ? "edit" : "create";
 }
 
+function normalizeSubItems(items, quota) {
+  const limit = Math.max(1, Math.min(999, Number(quota) || DEFAULT_MAX_PARTICIPANTS));
+  return (Array.isArray(items) ? items : []).map(item => ({
+    ...item,
+    max_participants: Math.min(limit, Math.max(1, Number(item.max_participants) || 1))
+  }));
+}
+
 function formatDateLabel(value) {
   const matched = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!matched) return "请选择";
-  return `${matched[2]}/${matched[3]}`;
+  return `${matched[1]}/${matched[2]}/${matched[3]}`;
 }
 
 function formatDateTimeLabel(dateValue, timeValue) {
@@ -104,7 +112,6 @@ Component({
     pickerTarget: "",
     startDateTimeLabel: "请选择",
     endDateTimeLabel: "请选择",
-    signupDeadlineDateLabel: "请选择",
     nameCount: 0,
     remarkCount: 0,
     remarkLineCount: 1,
@@ -147,7 +154,16 @@ Component({
   },
 
   methods: {
+    onSubItemsChange(e) {
+      const maxParticipants = Number(this.data.form.maxParticipants) || DEFAULT_MAX_PARTICIPANTS;
+      this.setData({
+        "form.subItemsEnabled": e.detail.enabled,
+        "form.subItems": normalizeSubItems(e.detail.items, maxParticipants)
+      });
+    },
     mountContainer() {
+      this._containerCloseNotified = false;
+      this._containerAfterLeaveHandled = false;
       if (this.properties.routeEmbedded) {
         this.setData({ containerRendered: false, containerVisible: false });
         return;
@@ -159,9 +175,20 @@ Component({
       });
     },
 
+    onContainerBeforeLeave() {
+      // A system back gesture does not update the parent's visible binding.
+      if (this.properties.visible && this.data.containerVisible && !this._containerCloseNotified) {
+        this._containerCloseNotified = true;
+        this.triggerEvent("close");
+      }
+    },
+
     onContainerAfterLeave() {
-      if (!this.properties.visible) {
-        this.setData({ containerRendered: false }, () => this.triggerEvent("afterleave"));
+      if (!this.properties.visible && !this._containerAfterLeaveHandled) {
+        this._containerAfterLeaveHandled = true;
+        this.setData({ containerRendered: false, containerVisible: false }, () => {
+          if (!this.properties.visible && this._containerAfterLeaveHandled) this.triggerEvent("afterleave");
+        });
       }
     },
 
@@ -176,6 +203,7 @@ Component({
       if (form.limitEnabled && Number(form.maxParticipants) < minParticipants) {
         form.maxParticipants = minParticipants;
       }
+      form.subItems = normalizeSubItems(form.subItems, form.maxParticipants);
       const remarkLineCount = estimateRemarkLineCount(form.remark);
       const remarkTextareaHeight = form.remark
         ? getRemarkTextareaHeight(remarkLineCount, isEdit)
@@ -194,7 +222,6 @@ Component({
         minParticipants,
         startDateTimeLabel: formatDateTimeLabel(form.startDate, form.startTime),
         endDateTimeLabel: formatDateTimeLabel(form.endDate, form.endTime),
-        signupDeadlineDateLabel: formatDateLabel(form.signupDeadlineDate),
         nameCount: String(form.name || "").length,
         remarkCount: String(form.remark || "").length,
         remarkLineCount,
@@ -210,6 +237,8 @@ Component({
 
     onClose() {
       if (this.properties.submitting || this.data.pickerVisible || this.data.coverPickerVisible) return;
+      if (this._containerCloseNotified) return;
+      this._containerCloseNotified = true;
       this.triggerEvent("close");
     },
 
@@ -317,13 +346,21 @@ Component({
     decrementParticipants() {
       if (!this.data.form.limitEnabled) return;
       const current = Number(this.data.form.maxParticipants) || this.data.minParticipants;
-      this.setData({ "form.maxParticipants": Math.max(this.data.minParticipants, current - 1) });
+      const maxParticipants = Math.max(this.data.minParticipants, current - 1);
+      this.setData({
+        "form.maxParticipants": maxParticipants,
+        "form.subItems": normalizeSubItems(this.data.form.subItems, maxParticipants)
+      });
     },
 
     incrementParticipants() {
       if (!this.data.form.limitEnabled) return;
       const current = Number(this.data.form.maxParticipants) || this.data.minParticipants;
-      this.setData({ "form.maxParticipants": Math.min(999, current + 1) });
+      const maxParticipants = Math.min(999, current + 1);
+      this.setData({
+        "form.maxParticipants": maxParticipants,
+        "form.subItems": normalizeSubItems(this.data.form.subItems, maxParticipants)
+      });
     },
 
     onParticipantInput(e) {
@@ -349,6 +386,7 @@ Component({
         : this.data.minParticipants;
       this.setData({
         "form.maxParticipants": normalized,
+        "form.subItems": normalizeSubItems(this.data.form.subItems, normalized),
         participantInputFocused: false
       });
     },
@@ -387,16 +425,7 @@ Component({
           title: "选择结束时间",
           value: `${this.data.form.endDate} ${this.data.form.endTime}`.trim()
         },
-        signupDeadlineDate: {
-          mode: "date",
-          title: "选择报名截止日期",
-          value: this.data.form.signupDeadlineDate
-        },
-        signupDeadlineTime: {
-          mode: "time",
-          title: "选择报名截止时间",
-          value: this.data.form.signupDeadlineTime
-        }
+
       }[target];
       if (!config) return;
       this.setData({
@@ -429,7 +458,6 @@ Component({
           form,
           startDateTimeLabel: formatDateTimeLabel(form.startDate, form.startTime),
           endDateTimeLabel: formatDateTimeLabel(form.endDate, form.endTime),
-          signupDeadlineDateLabel: formatDateLabel(form.signupDeadlineDate),
           pickerVisible: false,
           pickerTarget: ""
         });
@@ -445,22 +473,7 @@ Component({
         });
         return;
       }
-      if (target === "signupDeadlineDate") {
-        this.setData({
-          "form.signupDeadlineDate": detail.dateValue,
-          signupDeadlineDateLabel: formatDateLabel(detail.dateValue),
-          pickerVisible: false,
-          pickerTarget: ""
-        });
-        return;
-      }
-      if (target === "signupDeadlineTime") {
-        this.setData({
-          "form.signupDeadlineTime": detail.timeValue,
-          pickerVisible: false,
-          pickerTarget: ""
-        });
-      }
+
     },
 
     onCancelActivity() {

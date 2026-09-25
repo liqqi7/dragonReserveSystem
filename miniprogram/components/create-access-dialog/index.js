@@ -16,6 +16,10 @@ Component({
     title: "",
     message: "",
     confirmText: "",
+    cancelText: "取消",
+    variant: "warning",
+    prototypeStyle: false,
+    strongMask: false,
     confirmBehavior: "navigate"
   },
 
@@ -27,7 +31,12 @@ Component({
         title: String(options.title || "暂无创建权限"),
         message: String(options.message || "当前账号没有创建活动的权限。"),
         confirmText: String(options.confirmText || "去我的"),
-        confirmBehavior: options.confirmBehavior === "emit" ? "emit" : "navigate"
+        cancelText: String(options.cancelText || "取消"),
+        variant: options.variant === "danger" ? "danger" : "warning",
+        prototypeStyle: !!options.prototypeStyle,
+        strongMask: !!options.strongMask,
+        confirmBehavior: options.confirmBehavior === "emit" || options.confirmBehavior === "reauthenticate"
+          ? options.confirmBehavior : "navigate"
       });
       syncTabBarModalMask(true);
     },
@@ -46,6 +55,12 @@ Component({
       const confirmBehavior = String(this.data.confirmBehavior || "navigate");
       this.setData({ visible: false });
       syncTabBarModalMask(false);
+
+      if (confirmBehavior === "reauthenticate") {
+        const app = getApp();
+        if (app && typeof app.reauthenticateAfterExpiry === "function") app.reauthenticateAfterExpiry();
+        return;
+      }
 
       if (confirmBehavior === "emit") {
         this.triggerEvent("confirm", { type });

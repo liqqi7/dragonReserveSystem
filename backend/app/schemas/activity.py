@@ -12,7 +12,7 @@ from app.services.activity_type_style_service import get_allowed_activity_types,
 
 ACTIVITY_STATUSES = {"未开始", "进行中", "已结束", "已取消", "已流局"}
 MAX_ACTIVITY_NAME_LENGTH = 10
-MAX_ACTIVITY_REMARK_LENGTH = 120
+MAX_ACTIVITY_REMARK_LENGTH = 200
 
 
 def _validate_activity_status(value: str) -> str:
@@ -45,6 +45,32 @@ def _normalize_activity_type(value: Optional[str]) -> Optional[str]:
     return normalized
 
 
+class ActivitySubItemResponse(BaseModel):
+    """Sub-item payload within an activity."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    max_participants: int
+    current_participants: int = 0
+    signed_up: bool = False
+    sort_order: int = 0
+
+
+class ActivitySubItemInput(BaseModel):
+    """Sub-item creation / update payload."""
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def trim_name(cls, value):
+        return _validate_required_text(value, "name")
+
+    id: Optional[int] = Field(default=None, gt=0)
+    name: str = Field(min_length=1, max_length=64)
+    max_participants: int = Field(ge=1, le=999)
+
+
 class ActivityParticipantResponse(BaseModel):
     """Participant payload."""
 
@@ -61,6 +87,7 @@ class ActivityParticipantResponse(BaseModel):
     checkin_location_name: Optional[str]
     checkin_address: Optional[str]
     created_at: datetime
+    sub_item_ids: list[int] = Field(default_factory=list)
 
 
 class ActivityResponse(BaseModel):
@@ -157,10 +184,7 @@ class ActivityCreateRequest(BaseModel):
     @field_validator("signup_deadline")
     @classmethod
     def validate_signup_deadline(cls, value: Optional[datetime], info) -> Optional[datetime]:
-        start_time = info.data.get("start_time")
-        if value and start_time and value > start_time:
-            raise ValueError("signup_deadline must be earlier than or equal to start_time")
-        return value
+        return None  # Deprecated compatibility input; cutoff is start_time.
 
     @field_validator("activity_type")
     @classmethod
@@ -207,12 +231,19 @@ class ActivityUpdateRequest(BaseModel):
         return _validate_activity_status(value) if value is not None else None
 
 
+class ActivitySignupRequest(BaseModel):
+    """Signup payload from the client."""
+
+    sub_item_ids: list[int] = Field(default_factory=list)
+
+
 class ActivitySignupResponse(BaseModel):
     """Signup and checkin result payload."""
 
     activity_id: int
     participant_id: int
     status: str
+    sub_item_ids: list[int] = Field(default_factory=list)
 
 
 class ActivityCheckinRequest(BaseModel):
@@ -242,7 +273,7 @@ class ActivityTypeStyleResponse(BaseModel):
 
 
 class ActivitySharePreviewResponse(BaseModel):
-    """Share preview generation result."""
+    """Read-only share preview result."""
 
     status: str
     image_url: Optional[str] = None

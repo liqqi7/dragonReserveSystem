@@ -7,6 +7,14 @@
 3. 测试方式根据需求选择，包括但不限于：界面操作验证、接口测试、pytest、脚本检查或其他自动化测试。
 4. 测试完成后，向用户说明测试方式、实际结果，以及尚未覆盖的风险或需要用户在真实设备上确认的部分。
 
+## Skyline 小程序开发（强制）
+
+1. 本项目小程序以 Skyline 为目标渲染环境。凡涉及 `miniprogram/` 下页面、组件、WXML、WXSS、原生组件行为、滚动、轮播、输入框、动画或渲染问题的开发、重构与排障，开始修改前必须先阅读并使用与场景对应的 Skyline Skill；不得只按 WebView 或通用 CSS 经验实现。
+2. 按问题选择 Skill：组件与原生表单/滚动/轮播使用 `skyline-components`，WXSS 属性兼容性使用 `skyline-wxss`，页面与全局 Skyline 配置使用 `skyline-config`，动画使用 `skyline-worklet`，程序化滚动使用 `skyline-scroll-api`，路由与页面转场使用 `skyline-route`。不确定属性或组件语义时，必须先查 Skill，不得猜测。
+3. 禁止把 WebView 专有属性、组件语义或 CSS 兼容性假设直接带入 Skyline。对原生组件的属性应以对应 Skyline Skill 的支持列表为准；例如 `input` 与 `textarea` 的占位符样式使用 Skyline 支持的 `placeholder-style`，不得使用仅 WebView 生效的 `placeholder-class`。
+4. 修改 WXML/WXSS 或原生组件属性后，除关联的自动化测试外，必须执行与改动范围匹配的 Skyline 静态检查；WXSS 至少执行 `skyline-cli wxss check`。静态检查通过只能说明语法与支持性符合检查范围，不能替代开发者工具或真机的实际渲染结论。
+5. 发现开发者工具或真机与预期存在视觉、滚动或交互差异时，先将问题视为 Skyline 兼容性问题排查：核对渲染器配置、Skill 中的组件属性与 WXSS 支持范围，并以最小改动验证单一假设；不得通过遮挡、裁切、叠加补丁或 WebView 回退来掩盖根因。
+6. 原生 `textarea` 的 `placeholder-style` 已按 Skyline 标准写法设置但在开发者工具或真机仍出现确定的视觉差异时，才可采用受控占位文案兜底：保留原生 `textarea` 作为真实输入控件，移除其原生 `placeholder`，仅在绑定值为空时用同容器内的 `<text wx:if="{{!value}}">` 显示文案，并设置 `pointer-events:none` 防止拦截输入。该文本必须在值非空时消失，字号、字重、颜色和内边距应与原型逐项一致；这是经实际差异证实后的兼容性兜底，不是常规默认方案，也不得用于遮挡问题。
 
 ## 任务完成后的自检
 

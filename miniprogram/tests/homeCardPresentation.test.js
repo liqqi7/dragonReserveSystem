@@ -27,7 +27,8 @@ function harness() {
   const c = clock(), requests = [], logs = [], tabCalls = [], prefetchCalls = [];
   let definition;
   const app = { globalData: {} };
-  const wx = { nextTick: fn => fn(), getImageInfo: req => requests.push(req), getStorageSync: () => "" };
+  const navigationCalls = [];
+  const wx = { nextTick: fn => fn(), getImageInfo: req => requests.push(req), getStorageSync: () => "", navigateTo: options => navigationCalls.push(options) };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../pages/activity_list/activity_list.js'), 'utf8'), {
     Page: p => { definition = p; }, getApp: () => app, wx, console,
     Date: class extends Date { static now() { return c.now(); } },
@@ -68,7 +69,7 @@ function harness() {
     assert.ok(req, `preloaded ${url} without swiper callbacks`);
     req.success({ path: `/local/${url}` });
   };
-  return { page, c, requests, logs, tabCalls, prefetchCalls, app, setGroups, ready };
+  return { page, c, requests, logs, tabCalls, prefetchCalls, navigationCalls, app, setGroups, ready };
 }
 const big = (id, cover = `cover-${id}`, glass = `glass-${id}`) => ({ _id: String(id), largeCardBgImageUrl: cover, largeCardGlassImageUrl: glass });
 const small = id => ({ _id: String(id), smallCardBgImageUrl: `small-${id}` });
@@ -80,6 +81,18 @@ test('Tab appears after first frame even when the activity request never returns
   assert.equal(h.page._coldStartTabEntrancePending, false);
   assert.deepEqual(h.tabCalls.map(x => x[0]), [false]);
   assert.equal(h.tabCalls[0][1].animate, true);
+});
+
+test('card navigation does not wait for asynchronous home media readiness', () => {
+  const h = harness();
+  h.page.showDetail({
+    currentTarget: { dataset: { activity: { _id: 'pending-card', _homeMediaReady: false } } }
+  });
+  assert.equal(h.navigationCalls.length, 1);
+  assert.equal(
+    h.navigationCalls[0].url,
+    '/pages/activity_detail/activity_detail?id=pending-card'
+  );
 });
 
 test('a missing glass callback never blocks other cards or the Tab, even after 60 seconds', () => {
@@ -399,6 +412,161 @@ test('hidden completion caches only active images, keeps queue paused, and unloa
 function nativeImageEvent(id, url, mediaSrc, group = 'joined') {
   return { currentTarget: { dataset: { activityId: String(id), group, url, mediaSrc } }, detail: { errMsg: 'local image decode failed' } };
 }
+test('GIF cover readiness reveals the card and releases other work without loading a glass image', () => {
+  const h = harness(); h.page.onReady();
+  h.setGroups({ joined: [big(1, 'dance.GIF?v=1', 'unused-glass'), big(2)] });
+  assert.deepEqual(h.requests.map(r => r.src), ['dance.GIF?v=1']);
+  const animated = h.page.data.groupedActivities.joined[0];
+  assert.equal(animated._homeNativeGlass, true);
+  assert.equal(animated._homeMediaReady, false);
+  h.ready('dance.GIF?v=1'); h.c.advance(17);
+  assert.equal(animated._homeCoverSrc, '/local/dance.GIF?v=1');
+  assert.equal(animated._homeGlassSrc, '');
+  assert.equal(animated._homeMediaReady, true);
+  assert.deepEqual(h.requests.map(r => r.src), ['dance.GIF?v=1', 'cover-2', 'glass-2']);
+  h.ready('cover-2'); h.c.advance(17);
+  assert.equal(h.page.data.groupedActivities.joined[1]._homeNativeGlass, false);
+  assert.equal(h.page.data.groupedActivities.joined[1]._homeMediaReady, false);
+  h.ready('glass-2'); h.c.advance(17);
+  assert.equal(h.page.data.groupedActivities.joined[1]._homeMediaReady, true);
+  h.page.onUnload();
+});
+
+test('cached or late static glass never replaces native glass or invalidates a ready GIF card', () => {
+  const h = harness(); h.page.onReady();
+  h.page._homeReadyImages.set('old-glass', '/local/old-glass');
+  h.page._homeExhaustedImages = new Set(['old-glass']);
+  h.setGroups({ joined: [big(1, 'dance.gif', 'old-glass')] });
+  let card = h.page.data.groupedActivities.joined[0];
+  assert.equal(card._homeGlassSrc, '');
+  assert.equal(card._homeMediaError, false);
+  h.ready('dance.gif'); h.c.advance(17);
+  assert.equal(card._homeGlassSrc, '');
+  h.page.onCardGlassError(nativeImageEvent(1, 'old-glass', '/local/old-glass'));
+  h.page.onCardGlassLoaded(nativeImageEvent(1, 'old-glass', '/local/old-glass'));
+  h.page._markHomeImageReady('old-glass', '/local/late-glass');
+  h.c.advance(17);
+  assert.equal(card._homeGlassSrc, '');
+  assert.equal(card._homeMediaReady, true);
+  h.setGroups({ joined: [big(1, 'dance.gif', 'old-glass')] });
+  card = h.page.data.groupedActivities.joined[0];
+  assert.equal(card._homeMediaReady, true);
+  assert.equal(card._homeNativeGlass, true);
+  assert.equal(card._homeGlassSrc, '');
+  assert.deepEqual(h.requests.map(r => r.src), ['dance.gif']);
+  h.page.onUnload();
+});
+
+test('switching the same card between static and GIF covers resets only the required media', () => {
+  const h = harness(); h.page.onReady(); h.setGroups({ joined: [big(1)] });
+  h.ready('cover-1'); h.ready('glass-1'); h.c.advance(17);
+  h.setGroups({ joined: [big(1, 'dance.gif', 'glass-1')] });
+  let card = h.page.data.groupedActivities.joined[0];
+  assert.equal(card._homeNativeGlass, true);
+  assert.equal(card._homeGlassSrc, '');
+  assert.equal(card._homeMediaReady, false);
+  h.ready('dance.gif'); h.c.advance(17);
+  assert.equal(card._homeMediaReady, true);
+  h.setGroups({ joined: [big(1, 'new-cover.jpg', 'new-glass.jpg')] });
+  card = h.page.data.groupedActivities.joined[0];
+  assert.equal(card._homeNativeGlass, false);
+  assert.equal(card._homeMediaReady, false);
+  h.ready('new-cover.jpg'); h.c.advance(17);
+  assert.equal(card._homeMediaReady, false);
+  h.ready('new-glass.jpg'); h.c.advance(17);
+  assert.equal(card._homeMediaReady, true);
+  assert.equal(card._homeGlassSrc, '/local/new-glass.jpg');
+  assert.equal(h.requests.filter(r => r.src === 'glass-1').length, 1);
+  h.page.onUnload();
+});
+
+test('GIF diagnostics settle after the cover native callback without waiting for absent glass', () => {
+  const h = harness(); h.page.onReady();
+  h.setGroups({ joined: [big(1, 'dance.gif', 'unused-glass')] });
+  h.ready('dance.gif'); h.c.advance(17);
+  h.page.onCardBgLoaded(nativeImageEvent(1, 'dance.gif', '/local/dance.gif'));
+  h.page._homePresentationDiagnostics.snapshot('native_glass_verified');
+  const snapshot = h.logs.find(([event, data]) => event === 'home_presentation_snapshot' && data.reason === 'native_glass_verified')[1];
+  assert.equal(snapshot.pending, 0);
+  assert.equal(snapshot.nativePending, 0);
+  assert.equal(snapshot.cards[0].glassUrl, '');
+  h.c.advance(180000);
+  assert.equal(h.logs.some(([event, data]) => event === 'home_presentation_snapshot' && /^(checkpoint_|pending_heartbeat)/.test(data.reason)), false);
+  h.page.onUnload();
+});
+
+test('new GIF cards enter after drawer dismissal while new static cards still wait for glass', async () => {
+  for (const native of [true, false]) {
+    const h = harness(); h.page.onReady();
+    const cover = native ? 'created.gif' : 'created.jpg';
+    const created = big('created', cover, 'created-glass.jpg');
+    h.page.processActivityList = list => ({ list });
+    h.page.computeGroupedActivities = list => ({ joined: list, accepting: [], notStarted: [], ended: [] });
+    assert.equal(await h.page.insertCreatedActivity(created), true);
+    assert.equal(h.page._createdCardGlassReady, native);
+    assert.equal(h.page.data.createdCardEntranceId, 'created');
+    assert.equal(h.page.data.createdCardEntranceState, 'pending');
+    assert.equal(h.page.data.groupedActivities.joined[0]._homeNativeGlass, native);
+    assert.deepEqual(h.requests.map(r => r.src), native ? [cover] : [cover, 'created-glass.jpg']);
+    h.ready(cover);
+    h.page._revealCreatedCard(); h.c.advance(17);
+    assert.equal(h.page.data.createdCardEntranceState, native ? 'entered' : 'pending');
+    if (!native) {
+      assert.equal(h.page._createdCardGlassReady, false);
+      h.ready('created-glass.jpg'); h.c.advance(17);
+      assert.equal(h.page._createdCardGlassReady, true);
+      assert.equal(h.page.data.createdCardEntranceState, 'entered');
+    }
+    assert.equal(h.page.data.groupedActivities.joined[0]._homeMediaReady, true);
+    h.page.onUnload();
+  }
+});
+test('returning from the create page reveals new accepting cards with cached or delayed covers', async () => {
+  for (const cached of [true, false]) {
+    const h = harness(); h.page.onReady();
+    h.setGroups({ accepting: [small('existing')] });
+    h.ready('small-existing'); h.c.advance(400);
+    h.page.syncGuestState = () => {};
+    h.page.loadActivityListByCachePolicy = () => {};
+    h.page.onHide();
+    const created = small('created');
+    if (cached) h.page._homeReadyImages.set('small-created', '/local/small-created');
+    h.page.processActivityList = list => ({ list });
+    h.page.computeGroupedActivities = list => ({ joined: [], accepting: list, notStarted: [], ended: [] });
+    h.page._activityList = [small('existing')];
+    await h.page.insertCreatedActivity(created);
+    assert.equal(h.page.data.createdCardEntranceState, 'pending');
+    h.page.onShow(); h.c.advance(400);
+    const card = h.page.data.groupedActivities.accepting[0];
+    assert.equal(h.page.data.createdCardEntranceState, 'entered');
+    assert.equal(card._homeSlotEntered, true);
+    assert.equal(card._homeMediaReady, cached);
+    if (!cached) { h.ready('small-created'); h.c.advance(17); }
+    assert.equal(card._homeMediaReady, true);
+    assert.equal(card._homeCoverSrc, '/local/small-created');
+    assert.equal(h.page.data.groupedActivities.accepting[1]._homeMediaReady, true);
+    h.c.advance(1000);
+    assert.equal(h.page.data.createdCardEntranceId, null);
+    h.page.onUnload();
+  }
+});
+
+test('page show does not release a created card while the native create drawer is still closing', async () => {
+  const h = harness(); h.page.onReady();
+  h.page.syncGuestState = () => {};
+  h.page.loadActivityListByCachePolicy = () => {};
+  h.page.processActivityList = list => ({ list });
+  h.page.computeGroupedActivities = list => ({ joined: [], accepting: list, notStarted: [], ended: [] });
+  h.page.data.createFormContainerRendered = true;
+  await h.page.insertCreatedActivity(small('created'));
+  h.ready('small-created');
+  h.page.onShow(); h.c.advance(400);
+  assert.equal(h.page.data.createdCardEntranceState, 'pending');
+  h.page.onCreateFormAfterLeave(); h.c.advance(17);
+  assert.equal(h.page.data.createdCardEntranceState, 'entered');
+  h.page.onUnload();
+});
+
 test('native cover failure retries only the broken resource and keeps the other card and Tab ready', () => {
   const h = harness(); h.page.onReady(); h.setGroups({ joined: [big(1), big(2)] });
   for (const url of ['cover-1', 'glass-1', 'cover-2', 'glass-2']) h.ready(url);
@@ -943,4 +1111,3 @@ test("cancelled activities are excluded from ended and all homepage groups", () 
   assert.equal(groups.accepting.some(a => a.status === "已取消"), false);
   assert.equal(groups.notStarted.some(a => a.status === "已取消"), false);
 });
-

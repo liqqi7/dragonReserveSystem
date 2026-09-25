@@ -13,7 +13,8 @@
     <swiper class="cover-preview-swiper" current="{{previewArtworkIndex}}" duration="260" circular="{{previewArtist.artworks.length > 1}}" cache-extent="1" bindchange="onPreviewChange">
       <swiper-item wx:for="{{previewArtist.artworks}}" wx:key="id">
         <view class="cover-preview-slide">
-          <image class="cover-preview-image" src="{{item.imageUrl}}" mode="aspectFit" fade-in="{{true}}" />
+          <image wx:if="{{item.displayUrl}}" class="cover-preview-image" src="{{item.displayUrl}}" mode="aspectFit" fade-in="{{true}}" binderror="onPreviewImageError" data-index="{{index}}" data-url="{{item.imageUrl}}" />
+          <view wx:else class="cover-preview-image-placeholder"></view>
         </view>
       </swiper-item>
     </swiper>
@@ -27,10 +28,12 @@
 
   <view class="cover-preview-info">
     <view class="cover-preview-artist">
-      <image class="cover-preview-avatar" src="{{previewArtist.avatarUrl}}" mode="aspectFill" />
+      <view class="cover-preview-avatar">
+        <image wx:if="{{previewArtwork.displayAvatarUrl}}" class="cover-preview-avatar-image" src="{{previewArtwork.displayAvatarUrl}}" mode="aspectFill" fade-in="{{true}}" binderror="onPreviewImageError" data-url="{{previewArtwork.artistAvatarUrl}}" />
+      </view>
       <view class="cover-preview-artist-copy">
-        <text class="cover-preview-artist-name">{{previewArtist.displayName}}</text>
-        <text class="cover-preview-hint">左右滑动查看同作者作品</text>
+        <text class="cover-preview-artist-name">{{previewArtwork.artistName}}</text>
+        <text class="cover-preview-hint">左右滑动查看其他封面</text>
       </view>
     </view>
     <view class="cover-preview-confirm" bindtap="confirmPreviewCover" aria-role="button" aria-label="设为活动封面">

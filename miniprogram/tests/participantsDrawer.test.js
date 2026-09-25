@@ -66,12 +66,11 @@ test("participants drawer uses prototype RPX geometry and palette", () => {
   assert.match(js, /function shouldUseExplicitSurfaceHeight\(renderer\)[\s\S]*?=== "webview"/);
   assert.match(js, /surfaceSizingStyle:\s*getSurfaceSizingStyle\(/);
   assert.match(js, /this\._useExplicitSurfaceHeight = shouldUseExplicitSurfaceHeight\(this\.renderer\)/);
-  assert.match(wxss, /\.drawer-body\s*\{[^}]*flex:\s*1 1 0;[^}]*height:\s*0;[^}]*min-height:\s*0;[^}]*padding:\s*15\.38rpx\s+30\.77rpx\s+0;[^}]*display:\s*flex;[^}]*flex-direction:\s*column;/s);
+  assert.match(wxss, /\.drawer-body\s*\{[^}]*flex:\s*1 1 0;[^}]*height:\s*0;[^}]*min-height:\s*0;[^}]*padding:\s*16rpx\s+32rpx\s+0;[^}]*display:\s*flex;[^}]*flex-direction:\s*column;/s);
   assert.doesNotMatch(wxss, /participants-drawer-sheet-enter|participants-drawer-mask-enter|@keyframes/);
   assert.match(wxss, /border-radius:\s*46\.15rpx\s+46\.15rpx\s+0\s+0/);
   assert.match(wxss, /background:\s*#f5f5f5/);
-  assert.match(wxss, /\.drawer-handle-zone\s*\{[^}]*height:\s*53\.85rpx;[^}]*padding-top:\s*32rpx;/s);
-  assert.match(wxss, /\.drawer-handle\s*\{[^}]*width:\s*72rpx;[^}]*height:\s*8rpx;[^}]*border-radius:\s*4rpx;[^}]*background:\s*#d1d5db;/s);
+  assert.doesNotMatch(wxml, /drawer-handle-zone|drawer-handle/);
   assert.match(wxss, /padding:\s*0\s+30\.77rpx/);
   assert.match(wxss, /\.drawer-title\s*\{[^}]*font-size:\s*38\.46rpx;[^}]*font-weight:\s*700;/s);
   assert.match(wxss, /\.checkin-progress-card\s*\{[^}]*height:\s*153\.85rpx;[^}]*padding:\s*23\.08rpx\s+30\.77rpx;[^}]*border-radius:\s*30\.77rpx;/s);

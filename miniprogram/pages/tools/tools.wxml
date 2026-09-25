@@ -37,3 +37,5 @@
 </view>
 
 <create-access-dialog id="create-access-dialog" />
+
+<create-access-dialog id="session-expired-dialog" />

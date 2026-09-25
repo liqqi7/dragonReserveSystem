@@ -314,38 +314,42 @@ App({
 
 
   showSessionExpiredPrompt() {
-
     if (this.globalData._sessionExpiredPromptShown) return;
-
     this.globalData._sessionExpiredPromptShown = true;
 
-    setTimeout(() => {
-
+    let attempts = 0;
+    const openPrompt = () => {
+      const pages = typeof getCurrentPages === "function" ? getCurrentPages() : [];
+      const currentPage = pages.length ? pages[pages.length - 1] : null;
+      const dialog = currentPage && typeof currentPage.selectComponent === "function"
+        ? currentPage.selectComponent("#session-expired-dialog") : null;
+      if (dialog && typeof dialog.open === "function") {
+        dialog.open({
+          type: "sessionExpired",
+          title: "登录后即可使用",
+          message: "登录后才能参加活动和查看个人信息",
+          cancelText: "取消",
+          confirmText: "立即登录",
+          confirmBehavior: "reauthenticate",
+          prototypeStyle: true
+        });
+        return;
+      }
+      if (++attempts < 10) {
+        setTimeout(openPrompt, 100);
+        return;
+      }
+      // 若页面尚未挂载或旧版页面没有组件，仍保留可操作的原生兜底。
       wx.showModal({
-
-        title: "登录状态已过期",
-
-        content: "请重新登录后继续使用功能",
-
+        title: "登录后即可使用",
+        content: "登录后才能参加活动和查看个人信息",
         confirmText: "立即登录",
-
-        cancelText: "稍后",
-
-        success: (res) => {
-
-          if (!res.confirm) return;
-
-          this.reauthenticateAfterExpiry();
-
-        }
-
+        cancelText: "取消",
+        success: (res) => { if (res.confirm) this.reauthenticateAfterExpiry(); }
       });
-
-    }, 300);
-
+    };
+    setTimeout(openPrompt, 300);
   },
-
-
 
   reauthenticateAfterExpiry() {
 
@@ -459,4 +463,3 @@ App({
   }
 
 });
-

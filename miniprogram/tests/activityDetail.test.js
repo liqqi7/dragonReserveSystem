@@ -47,7 +47,7 @@ test("activity detail loading state matches the prototype skeleton and reuses th
 });
 
 test("activity detail skeleton keeps its bottom actions visible and crossfades into content", () => {
-  assert.match(wxml, /class="detail-skeleton-bottom-bar" style="height: calc\(107\.69rpx \+ \{\{safeBottomRpx\}\}rpx\); padding-bottom: \{\{safeBottomRpx\}\}rpx"/);
+  assert.match(wxml, /class="detail-skeleton-bottom-bar" style="height: calc\(107\.69rpx \+ \{\{bottomBarSafeAreaRpx\}\}rpx\); padding-bottom: \{\{bottomBarSafeAreaRpx\}\}rpx"/);
   assert.match(wxml, /class="detail-skeleton-block detail-skeleton-share-button"/);
   assert.match(wxml, /class="detail-skeleton-block detail-skeleton-primary-button"/);
   assert.match(wxss, /\.detail-skeleton-bottom-bar\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*left:\s*0;[^}]*z-index:\s*4;/s);
@@ -330,6 +330,17 @@ test("activity detail mounts only the drawer that is currently opening", () => {
   assert.match(js, /onProjectMembersAfterLeave\(\)[\s\S]*projectMembersContainerRendered:\s*false/);
 });
 
+test("project member drawer reuses the participants drawer shell", () => {
+  assert.match(wxml, /<page-container wx:if="\{\{projectMembersContainerRendered\}\}"[\s\S]*overlay="\{\{true\}\}"[\s\S]*close-on-slide-down="\{\{false\}\}"/);
+  assert.match(wxml, /height:\{\{projectMembersDrawerHeightRpx\}\}rpx;max-height:\{\{projectMembersDrawerMaxHeightRpx\}\}rpx/);
+  assert.match(wxml, /<view class="project-sheet-heading"><text class="project-title">\{\{projectMemberTitle\}\}<\/text><view class="project-sheet-close"/);
+  assert.doesNotMatch(wxml, /project-handle-zone|project-handle/);
+  assert.match(wxss, /\.project-sheet \{[\s\S]*padding-top: 32rpx[\s\S]*background: #f5f5f5/);
+  assert.match(wxss, /\.project-sheet \.project-title \{[\s\S]*font-size: 38\.46rpx/);
+  assert.match(wxss, /\.project-members \{[\s\S]*padding: 16rpx 32rpx 0/);
+  assert.match(js, /projectMembersDrawerHeightRpx:\s*getProjectMembersDrawerHeightRpx\(projectMembers\.length, this\.data\.safeBottomRpx\)/);
+});
+
 test("detail exposes checkin only after the activity enters the ongoing state", () => {
   assert.match(detailSource, /activity\.hasSignedUp && activity\.status === "进行中"/);
   assert.doesNotMatch(detailSource, /isCheckinWindowOpen/);
@@ -337,14 +348,13 @@ test("detail exposes checkin only after the activity enters the ongoing state", 
   assert.match(js, /if \(activity\.status !== "进行中"\)[\s\S]*?仅进行中的活动可以签到/);
 });
 
-test("edit form and its time pickers share one full-height Skyline container", () => {
+test("editing opens the dedicated edit page", () => {
   assert.equal(pageJson.usingComponents["date-time-picker-sheet"], undefined);
-  assert.match(wxml, /<page-container[\s\S]*id="qaActivityEditContainer"[\s\S]*show="{{showActivityForm}}"[\s\S]*bind:afterleave="onActivityFormAfterLeave"/);
-  assert.match(wxml, /<activity-form-sheet[\s\S]*id="qaActivityFormSheet"[\s\S]*route-embedded="{{true}}"[\s\S]*mode="edit"/);
-  assert.doesNotMatch(wxml, /external-date-time-picker|qaEditDateTimePickerSheet|bindopendatetimepicker/);
-  assert.match(js, /openAdminEdit\(\)\s*\{[\s\S]*activityFormContainerRendered:\s*true[\s\S]*showActivityForm:\s*false[\s\S]*wx\.nextTick\(\(\) => this\.setData\(\{ showActivityForm: true \}\)\)/);
-  assert.match(js, /onActivityFormAfterLeave\(\)\s*\{[\s\S]*activityFormContainerRendered:\s*false/);
-  assert.doesNotMatch(js, /openEditDateTimePicker|confirmEditDateTimePicker|editDateTimePickerVisible/);
+  assert.match(js, /wx\.navigateTo\(\{[\s\S]*url: `\/pages\/activity_edit\/activity_edit\?id=\$\{activityId\}`/);
+  assert.match(js, /activityUpdated:\s*\(\) => this\.refreshDetail\(\{ silent: true \}\)/);
+  assert.match(wxml, /<activity-form-sheet[\s\S]*mode="edit"/);
+  const editPageSource = fs.readFileSync(path.join(__dirname, "../pages/activity_edit/activity_edit.js"), "utf8");
+  assert.match(editPageSource, /buildEditForm[\s\S]*activityService\.updateActivity/);
 });
 
 test("mini-program never exposes physical deletion and non-admins cannot edit ended activities while admins can edit", () => {
@@ -492,7 +502,7 @@ test("basic information header has no right-side status text", () => {
 test("activity detail locks the viewport instead of exposing page overscroll", () => {
   assert.equal(pageJson.disableScroll, true);
   assert.match(wxml, /<scroll-view[^>]*\s+class="main-scroll"[\s\S]*?height: calc\(100vh - \{\{bottomBarHeightRpx\}\}rpx\)/);
-  assert.match(wxml, /scroll-into-view="{{detailAnchor}}"/);
+  assert.doesNotMatch(wxml, /scroll-into-view="{{detailAnchor}}"/);
   assert.doesNotMatch(wxml, /class="scroll-bottom-spacer"/);
   assert.match(wxss, /^page\s*\{[^}]*height:\s*100%;[^}]*overflow:\s*hidden;/s);
   assert.match(wxss, /\.page-wrap\s*\{[^}]*height:\s*100vh;[^}]*overflow:\s*hidden;/s);
@@ -561,7 +571,17 @@ test("weather card matches the prototype structure and unavailable state", () =>
 
 test("activity detail uses the shared rpx safe-area resolver", () => {
   assert.match(js, /getBottomSafeAreaRpx/);
-  assert.match(wxml, /padding-bottom: \{\{safeBottomRpx\}\}rpx/);
+  assert.match(wxml, /class="bottom-bar" style="padding-bottom: \{\{bottomBarSafeAreaRpx\}\}rpx"/);
+  assert.match(js, /bottomBarSafeAreaRpx = Math\.max\(0, Math\.round\(\(safeBottomRpx - 21\.15\) \* 100\) \/ 100\)/);
+  assert.match(js, /bottomBarHeightRpx = Math\.round\(\(107\.69 \+ bottomBarSafeAreaRpx\) \* 100\) \/ 100/);
+  // 原型：两个按钮栏顶部均为 6px、按钮高 44px；详情栏底部另有 6px，需从安全区扣除。
+  const editJs = fs.readFileSync(path.join(__dirname, "../pages/activity_edit/activity_edit.js"), "utf8");
+  const editWxss = fs.readFileSync(path.join(__dirname, "../pages/activity_edit/activity_edit.wxss"), "utf8");
+  assert.match(editJs, /footerSafeAreaRpx: Math\.max\(0, getBottomSafeAreaRpx\(\) - 9\.62\)/);
+  assert.match(wxss, /\.bottom-inner\s*\{[^}]*height:\s*107\.69rpx;/s);
+  assert.match(wxss, /\.bottom-icon-button\s*\{[^}]*top:\s*11\.54rpx;/s);
+  assert.match(editWxss, /\.footer\s*\{[^}]*padding:\s*11\.54rpx 38\.46rpx 0;/s);
+  assert.equal(Math.round((107.69 - 11.54 - 84.62 + 9.62) * 100) / 100, 21.15);
   assert.match(wxml, /bottomBarHeightRpx\}\}rpx/);
   assert.doesNotMatch(wxml, /safeBottom\}\}px/);
 });

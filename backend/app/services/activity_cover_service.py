@@ -79,53 +79,77 @@ def _delivery_url(path: str, base_url: str = "") -> str:
     return _public_url(path, base_url)
 
 
+def _public_artwork(artist: dict[str, Any], artwork: dict[str, Any], base_url: str = "") -> dict[str, Any]:
+    """Build one API payload from a trusted catalog entry, including retired entries."""
+
+    glass_path = artwork.get("glass_path")
+    return {
+        "id": artwork["id"],
+        "artist_slug": artist["slug"],
+        "artist_name": artist["display_name"],
+        "artist_avatar_url": _delivery_url(artist["avatar_path"], base_url),
+        "width": artwork["width"],
+        "height": artwork["height"],
+        "thumbnail_url": _delivery_url(artwork["thumbnail_path"], base_url),
+        "image_url": _delivery_url(artwork["image_path"], base_url),
+        "large_card_glass_image_url": (
+            _delivery_url(glass_path, base_url)
+            if glass_path in _jpeg_manifest() or glass_path in _webp_manifest()
+            else (
+                _public_url(glass_path, base_url)
+                if get_settings().activity_cover_cdn_base_url.strip() and glass_path
+                else (
+                    f"{base_url.rstrip('/')}/api/v2/activity-covers/{artwork['id']}/glass-image?v=2"
+                    if base_url
+                    else f"/api/v2/activity-covers/{artwork['id']}/glass-image?v=2"
+                )
+            )
+        ),
+        "categories": list(artwork.get("categories", [])),
+    }
+
+
 def list_activity_cover_artists(base_url: str = "") -> list[dict[str, Any]]:
+    """Return only covers that are selectable for a new or edited activity."""
+
     artists: list[dict[str, Any]] = []
     for artist in _ordered_catalog_artists():
-        artists.append(
-            {
-                "slug": artist["slug"],
-                "display_name": artist["display_name"],
-                "avatar_url": _delivery_url(artist["avatar_path"], base_url),
-                "artworks": [
-                    {
-                        "id": artwork["id"],
-                        "artist_slug": artist["slug"],
-                        "artist_name": artist["display_name"],
-                        "artist_avatar_url": _delivery_url(artist["avatar_path"], base_url),
-                        "width": artwork["width"],
-                        "height": artwork["height"],
-                        "thumbnail_url": _delivery_url(artwork["thumbnail_path"], base_url),
-                        "image_url": _delivery_url(artwork["image_path"], base_url),
-                        "large_card_glass_image_url": (
-                            _delivery_url(artwork["glass_path"], base_url)
-                            if artwork.get("glass_path") in _jpeg_manifest() or artwork.get("glass_path") in _webp_manifest()
-                            else (
-                            _public_url(artwork["glass_path"], base_url)
-                            if get_settings().activity_cover_cdn_base_url.strip() and artwork.get("glass_path")
-                            else (f"{base_url.rstrip('/')}/api/v2/activity-covers/"
-                            f"{artwork['id']}/glass-image?v=2"
-                            if base_url
-                            else f"/api/v2/activity-covers/{artwork['id']}/glass-image?v=2")
-                        )),
-                    }
-                    for artwork in artist["artworks"]
-                ],
-            }
-        )
+        selectable = [
+            _public_artwork(artist, artwork, base_url)
+            for artwork in artist["artworks"]
+            if not artwork.get("deprecated", False)
+        ]
+        if selectable:
+            artists.append(
+                {
+                    "slug": artist["slug"],
+                    "display_name": artist["display_name"],
+                    "avatar_url": _delivery_url(artist["avatar_path"], base_url),
+                    "artworks": selectable,
+                }
+            )
     return artists
 
 
 def get_activity_cover(cover_id: str | None, base_url: str = "") -> dict[str, Any] | None:
+    """Resolve any catalog cover for activity rendering, including retired covers."""
+
     normalized = str(cover_id or "").strip()
     if not normalized:
         return None
-    for artist in list_activity_cover_artists(base_url):
+    for artist in _ordered_catalog_artists():
         for artwork in artist["artworks"]:
             if artwork["id"] == normalized:
-                return artwork
+                return _public_artwork(artist, artwork, base_url)
     return None
 
+
+def _is_selectable_activity_cover(cover_id: str) -> bool:
+    for artist in _catalog()["artists"]:
+        for artwork in artist["artworks"]:
+            if artwork["id"] == cover_id:
+                return not artwork.get("deprecated", False)
+    return False
 
 def get_activity_cover_source_path(cover_id: str | None) -> Path | None:
     """Resolve one trusted catalog artwork to its local full-size asset."""
@@ -137,7 +161,7 @@ def get_activity_cover_source_path(cover_id: str | None) -> Path | None:
         for artwork in artist["artworks"]:
             if artwork["id"] != normalized:
                 continue
-            source = (ASSET_ROOT / artwork["image_path"]).resolve()
+            source = (ASSET_ROOT / artwork["image_path"].replace("\\", "/")).resolve()
             try:
                 source.relative_to(ASSET_ROOT.resolve())
             except ValueError:
@@ -156,7 +180,7 @@ def get_activity_cover_glass_source_path(cover_id: str | None) -> Path | None:
         for artwork in artist["artworks"]:
             if artwork["id"] != normalized or not artwork.get("glass_path"):
                 continue
-            source = (ASSET_ROOT / artwork["glass_path"]).resolve()
+            source = (ASSET_ROOT / artwork["glass_path"].replace("\\", "/")).resolve()
             try:
                 source.relative_to(ASSET_ROOT.resolve())
             except ValueError:
@@ -167,6 +191,6 @@ def get_activity_cover_glass_source_path(cover_id: str | None) -> Path | None:
 
 def require_activity_cover_id(cover_id: str | None) -> str:
     normalized = str(cover_id or "").strip()
-    if not normalized or get_activity_cover(normalized) is None:
+    if not normalized or not _is_selectable_activity_cover(normalized):
         raise ValueError("activity_cover_id is invalid")
     return normalized

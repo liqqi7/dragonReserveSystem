@@ -78,10 +78,11 @@ function updateActivity(activityId, payload) {
   });
 }
 
-function signupActivity(activityId) {
+function signupActivity(activityId, subItemIds = []) {
   return request({
     url: `/activities/${activityId}/signup`,
-    method: "POST"
+    method: "POST",
+    data: { sub_item_ids: subItemIds }
   }).then((result) => {
     invalidateActivityCaches({ clearMyActivities: true });
     return result;
