@@ -389,7 +389,6 @@ page {
   background: #ffffff;
   border-radius: 30.76923rpx;
   box-shadow: 0 19.23077rpx 53.84615rpx rgba(0, 0, 0, 0.15);
-  transform: translateY(-142.30769rpx);
   display: flex;
   flex-direction: column;
   gap: 30.76923rpx;
