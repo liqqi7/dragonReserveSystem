@@ -1,0 +1,54 @@
+<xr-scene id="xr-scene" bind:ready="handleReady" bind:tick="handleTick" bind:log="handleLog">
+  <xr-assets>
+    <xr-asset-material asset-id="dice-mat" effect="standard" />
+    <xr-asset-material asset-id="ground-mat" effect="standard" />
+  </xr-assets>
+  <xr-physics gravity="{{gravityVector}}" />
+  <xr-node id="ground" position="0 -2.2 0" cube-shape="size: 14 0.2 14" shape-interact="{{groundInteract}}">
+    <xr-mesh id="ground-visual" geometry="cube" scale="14 0.2 14" material="ground-mat" uniforms="u_baseColorFactor:0.16 0.22 0.23 1" receive-shadow />
+  </xr-node>
+  <xr-node position="-7.1 1 0" cube-shape="size: 0.2 8 14.2" shape-interact="{{wallInteract}}" />
+  <xr-node position="7.1 1 0" cube-shape="size: 0.2 8 14.2" shape-interact="{{wallInteract}}" />
+  <xr-node position="0 1 -7.1" cube-shape="size: 14.2 8 0.2" shape-interact="{{wallInteract}}" />
+  <xr-node position="0 1 7.1" cube-shape="size: 14.2 8 0.2" shape-interact="{{wallInteract}}" />
+  <xr-node id="dice-mesh-0" node-id="dice-mesh-0" position="0 -20 0" rigidbody="{{rigidbodyConfig}}" cube-shape="size: 1.6 1.6 1.6" shape-interact="{{diceInteract}}" bind:touch-shape="handleTouchShape" bind:drag-shape="handleDragShape" bind:untouch-shape="handleUntouchShape">
+    <xr-mesh id="dice-visual-0" geometry="cube" scale="1.6 1.6 1.6" material="dice-mat" uniforms="u_baseColorFactor:0.45 0.24 0.82 1" cast-shadow receive-shadow />
+    <xr-text value="1" position="0 0 0.81" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="6" position="0 0 -0.81" rotation="0 180 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="3" position="0.81 0 0" rotation="0 90 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="4" position="-0.81 0 0" rotation="0 -90 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="5" position="0 0.81 0" rotation="-90 0 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="2" position="0 -0.81 0" rotation="90 0 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+  </xr-node>
+  <xr-node id="dice-mesh-1" node-id="dice-mesh-1" position="0 -20 0" rigidbody="{{rigidbodyConfig}}" cube-shape="size: 1.6 1.6 1.6" shape-interact="{{diceInteract}}" bind:touch-shape="handleTouchShape" bind:drag-shape="handleDragShape" bind:untouch-shape="handleUntouchShape">
+    <xr-mesh id="dice-visual-1" geometry="cube" scale="1.6 1.6 1.6" material="dice-mat" uniforms="u_baseColorFactor:0.45 0.24 0.82 1" cast-shadow receive-shadow />
+    <xr-text value="1" position="0 0 0.81" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="6" position="0 0 -0.81" rotation="0 180 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="3" position="0.81 0 0" rotation="0 90 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="4" position="-0.81 0 0" rotation="0 -90 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="5" position="0 0.81 0" rotation="-90 0 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="2" position="0 -0.81 0" rotation="90 0 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+  </xr-node>
+  <xr-node id="dice-mesh-2" node-id="dice-mesh-2" position="0 -20 0" rigidbody="{{rigidbodyConfig}}" cube-shape="size: 1.6 1.6 1.6" shape-interact="{{diceInteract}}" bind:touch-shape="handleTouchShape" bind:drag-shape="handleDragShape" bind:untouch-shape="handleUntouchShape">
+    <xr-mesh id="dice-visual-2" geometry="cube" scale="1.6 1.6 1.6" material="dice-mat" uniforms="u_baseColorFactor:0.45 0.24 0.82 1" cast-shadow receive-shadow />
+    <xr-text value="1" position="0 0 0.81" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="6" position="0 0 -0.81" rotation="0 180 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="3" position="0.81 0 0" rotation="0 90 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="4" position="-0.81 0 0" rotation="0 -90 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="5" position="0 0.81 0" rotation="-90 0 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="2" position="0 -0.81 0" rotation="90 0 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+  </xr-node>
+  <xr-node id="dice-mesh-3" node-id="dice-mesh-3" position="0 -20 0" rigidbody="{{rigidbodyConfig}}" cube-shape="size: 1.6 1.6 1.6" shape-interact="{{diceInteract}}" bind:touch-shape="handleTouchShape" bind:drag-shape="handleDragShape" bind:untouch-shape="handleUntouchShape">
+    <xr-mesh id="dice-visual-3" geometry="cube" scale="1.6 1.6 1.6" material="dice-mat" uniforms="u_baseColorFactor:0.45 0.24 0.82 1" cast-shadow receive-shadow />
+    <xr-text value="1" position="0 0 0.81" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="6" position="0 0 -0.81" rotation="0 180 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="3" position="0.81 0 0" rotation="0 90 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="4" position="-0.81 0 0" rotation="0 -90 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="5" position="0 0.81 0" rotation="-90 0 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+    <xr-text value="2" position="0 -0.81 0" rotation="90 0 0" size="0.65" anchor="0.5 0.5" color="1 1 1 1" />
+  </xr-node>
+  <xr-node node-id="camera-target" position="0 -1 0" />
+  <xr-camera id="camera" node-id="camera" position="0 12 17" target="camera-target" camera-orbit-control="rotateSpeed: 0.8; isLockMove: true; isLockZoom: true" clear-color="0.92 0.93 0.97 1" />
+  <xr-light type="ambient" color="1 1 1" intensity="1.4" />
+  <xr-light type="directional" rotation="35 25 0" color="1 1 1" intensity="3" cast-shadow shadow-distance="30" />
+</xr-scene>

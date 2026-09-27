@@ -135,3 +135,7 @@ page {
 .tools-bottom-spacer {
   width: 100%;
 }
+
+.tool-card-icon--dice {
+  background: #efe8ff;
+}

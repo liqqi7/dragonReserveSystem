@@ -29,6 +29,10 @@ Page({
     });
   },
 
+  onDiceDemoTap() {
+    wx.navigateTo({ url: "/pages/dice_demo/dice_demo" });
+  },
+
   onChwaziTap() {
     wx.navigateTo({ url: "/pages/chwazi/chwazi" });
   }

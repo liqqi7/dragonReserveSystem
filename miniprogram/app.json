@@ -10,6 +10,7 @@
     "pages/profile/profile",
     "pages/checkin_map/checkin_map",
     "pages/chwazi/chwazi",
+    "pages/dice_demo/dice_demo",
     "pages/activity_create/activity_create",
     "pages/activity_edit/activity_edit"
   ],

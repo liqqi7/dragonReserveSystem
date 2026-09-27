@@ -1,0 +1,10 @@
+{
+  "renderer": "skyline",
+  "componentFramework": "glass-easel",
+  "navigationStyle": "custom",
+  "disableScroll": true,
+  "usingComponents": {
+    "xr-dice-scene": "../../components/xr-dice-scene/index",
+    "create-access-dialog": "../../components/create-access-dialog/index"
+  }
+}

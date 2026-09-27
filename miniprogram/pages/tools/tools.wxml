@@ -20,6 +20,17 @@
         <image class="tool-card-arrow" src="/images/icon-arrow-up-right.svg" mode="aspectFit" />
       </view>
 
+      <view id="qa-tool-dice" class="tool-card" bindtap="onDiceDemoTap">
+        <view class="tool-card-icon tool-card-icon--dice">
+          <image class="tool-icon" src="/images/icon-dice-5.svg" mode="aspectFit" />
+        </view>
+        <view class="tool-card-copy">
+          <text class="tool-card-title">骰子实验室</text>
+          <text class="tool-card-description">XR-Frame 3D 骰子物理实验</text>
+        </view>
+        <image class="tool-card-arrow" src="/images/icon-arrow-up-right.svg" mode="aspectFit" />
+      </view>
+
       <view id="qa-tool-chwazi" class="tool-card" bindtap="onChwaziTap">
         <view class="tool-card-icon tool-card-icon--chwazi">
           <image class="tool-icon" src="/images/icon-hand.svg" mode="aspectFit" />

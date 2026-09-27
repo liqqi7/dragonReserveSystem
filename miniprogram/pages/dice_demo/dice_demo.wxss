@@ -1,0 +1,349 @@
+page {
+  background: #f7f8fc;
+}
+
+.dice-page {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100vh;
+  overflow: hidden;
+  background: #f7f8fc;
+}
+
+.dice-navbar {
+  flex: none;
+  padding-left: 24rpx;
+  padding-right: 24rpx;
+  background: #f7f8fc;
+}
+
+.dice-navbar-inner {
+  display: flex;
+  height: 88rpx;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dice-back,
+.dice-navbar-placeholder {
+  display: flex;
+  width: 64rpx;
+  height: 64rpx;
+  align-items: center;
+  justify-content: center;
+}
+
+.dice-back image {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.dice-title {
+  color: #171a24;
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.dice-scroll {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.dice-content {
+  box-sizing: border-box;
+  padding: 26rpx 28rpx 0;
+}
+
+.dice-intro,
+.dice-section-head,
+.dice-stage-head,
+.dice-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dice-intro {
+  align-items: flex-start;
+  padding: 8rpx 4rpx 24rpx;
+}
+
+.dice-eyebrow {
+  display: block;
+  color: #8b5cf6;
+  font-size: 20rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+
+.dice-heading {
+  display: block;
+  margin-top: 8rpx;
+  color: #141827;
+  font-size: 48rpx;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.dice-caption {
+  display: block;
+  max-width: 570rpx;
+  margin-top: 10rpx;
+  color: #697386;
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
+.dice-status-pill {
+  display: flex;
+  margin-top: 10rpx;
+  padding: 12rpx 16rpx;
+  align-items: center;
+  gap: 10rpx;
+  border-radius: 999rpx;
+  color: #6b7280;
+  background: #eceff5;
+  font-size: 20rpx;
+}
+
+.dice-status-pill.rolling,
+.dice-status-pill.dragging {
+  color: #6d28d9;
+  background: #f0e9ff;
+}
+
+.dice-status-pill.settled {
+  color: #15803d;
+  background: #eaf8ef;
+}
+
+.dice-status-pill.unavailable {
+  color: #b42318;
+  background: #ffefed;
+}
+
+.dice-status-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: #aeb7c6;
+}
+
+.dice-status-pill.rolling .dice-status-dot,
+.dice-status-pill.dragging .dice-status-dot {
+  background: #8b5cf6;
+}
+
+.dice-status-pill.settled .dice-status-dot {
+  background: #22c55e;
+}
+
+.dice-config-card,
+.dice-stage-card,
+.dice-note {
+  box-sizing: border-box;
+  border: 1rpx solid #e7e9ef;
+  border-radius: 28rpx;
+  background: #ffffff;
+}
+
+.dice-config-card {
+  padding: 26rpx 28rpx 28rpx;
+}
+
+.dice-section-title,
+.dice-stage-title {
+  color: #1c2333;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.dice-section-meta,
+.dice-stage-hint {
+  color: #8a93a3;
+  font-size: 23rpx;
+}
+
+.dice-sides-row {
+  display: flex;
+  margin-top: 24rpx;
+  gap: 14rpx;
+}
+
+.dice-side-chip {
+  display: flex;
+  width: 94rpx;
+  height: 64rpx;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid #e2e6ee;
+  border-radius: 16rpx;
+  color: #536074;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.dice-side-chip.active {
+  border-color: #8b5cf6;
+  color: #ffffff;
+  background: #8b5cf6;
+}
+
+.dice-side-chip.disabled {
+  color: #b5bdca;
+  background: #f8f9fb;
+}
+
+.dice-count-row {
+  display: flex;
+  margin-top: 28rpx;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dice-count-label {
+  color: #596477;
+  font-size: 25rpx;
+}
+
+.dice-stepper {
+  display: flex;
+  height: 64rpx;
+  align-items: center;
+  border: 1rpx solid #e3e7ee;
+  border-radius: 16rpx;
+}
+
+.dice-stepper-button {
+  display: flex;
+  width: 68rpx;
+  height: 64rpx;
+  align-items: center;
+  justify-content: center;
+  color: #5e6b80;
+  font-size: 34rpx;
+}
+
+.dice-count-value {
+  display: flex;
+  width: 64rpx;
+  align-items: center;
+  justify-content: center;
+  color: #1d2637;
+  font-size: 27rpx;
+  font-weight: 700;
+}
+
+.dice-stage-card {
+  margin-top: 20rpx;
+  padding: 26rpx 20rpx 20rpx;
+}
+
+.dice-stage-head {
+  padding: 0 8rpx;
+  align-items: flex-start;
+}
+
+.dice-stage-hint {
+  display: block;
+  margin-top: 8rpx;
+}
+
+.dice-stage {
+  position: relative;
+  height: 680rpx;
+  margin-top: 22rpx;
+  overflow: hidden;
+  border-radius: 24rpx;
+  background: #edf0f6;
+}
+
+.dice-stage xr-dice-scene {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.dice-retry-button {
+  position: absolute;
+  left: 50%;
+  bottom: 28rpx;
+  transform: translateX(-50%);
+  color: #ffffff;
+  background: #19152d;
+  font-size: 24rpx;
+  border-radius: 16rpx;
+}
+
+.dice-roll-button {
+  display: flex;
+  width: 166rpx;
+  height: 70rpx;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18rpx;
+  color: #ffffff;
+  background: #19152d;
+  font-size: 25rpx;
+  line-height: 70rpx;
+}
+
+.dice-roll-button::after {
+  border: 0;
+}
+
+.dice-result-row {
+  padding: 24rpx 8rpx 0;
+  align-items: flex-end;
+}
+
+.dice-result-label {
+  display: block;
+  color: #8b93a4;
+  font-size: 22rpx;
+}
+
+.dice-result-value {
+  display: block;
+  margin-top: 4rpx;
+  color: #1b2232;
+  font-size: 34rpx;
+  font-weight: 800;
+}
+
+.dice-result-total {
+  color: #6d28d9;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.dice-note {
+  margin-top: 20rpx;
+  padding: 22rpx 26rpx;
+  color: #788397;
+  font-size: 23rpx;
+  line-height: 1.55;
+}
+
+.dice-bottom-spacer {
+  width: 100%;
+}
+
+
+.dice-tuner-card { margin-top: 20rpx; }
+.dice-tuner-body { margin-top: 22rpx; }
+.dice-tuner-help, .dice-tuner-hint { display: block; color: #788397; font-size: 22rpx; line-height: 1.5; }
+.dice-tuner-group { margin-top: 28rpx; }
+.dice-tuner-group-title { display: block; padding-bottom: 10rpx; color: #6d28d9; font-size: 26rpx; font-weight: 700; }
+.dice-tuner-field { padding: 14rpx 0; border-bottom: 1rpx solid #eceef3; }
+.dice-tuner-labels { display: flex; align-items: center; justify-content: space-between; }
+.dice-tuner-label { color: #1c2333; font-size: 24rpx; }
+.dice-tuner-range { color: #8993a5; font-size: 20rpx; }
+.dice-tuner-input { box-sizing: border-box; width: 100%; height: 72rpx; margin: 10rpx 0 6rpx; padding: 0 20rpx; border: 1rpx solid #e3e7ee; border-radius: 14rpx; background: #f7f8fb; color: #1c2333; font-size: 28rpx; }
+.dice-tuner-actions { margin-top: 26rpx; }
+.dice-tuner-action { margin-top: 12rpx; color: #374151; background: #f2f1f7; font-size: 25rpx; }
+.dice-tuner-action.primary { color: #ffffff; background: #6d28d9; }

@@ -1,0 +1,121 @@
+<view class="dice-page">
+  <view class="dice-navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="dice-navbar-inner">
+      <view class="dice-back" bindtap="onBackTap">
+        <image src="/images/icon-chevron-left.svg" mode="aspectFit" />
+      </view>
+      <text class="dice-title">骰子实验室</text>
+      <view class="dice-navbar-placeholder"></view>
+    </view>
+  </view>
+
+  <scroll-view class="dice-scroll" type="custom" scroll-y="{{status !== 'dragging'}}" show-scrollbar="{{false}}" scroll-into-view="{{scrollIntoView}}" scroll-with-animation="{{true}}">
+    <view class="dice-content">
+      <view class="dice-intro">
+        <view>
+          <text class="dice-eyebrow">XR-FRAME DICE DEMO</text>
+          <text class="dice-heading">扔出你的骰子</text>
+          <text class="dice-caption">真实 XR-Frame 场景：重力、桌面碰撞、摩擦、弹跳与姿态读数。</text>
+        </view>
+        <view class="dice-status-pill {{status}}">
+          <view class="dice-status-dot"></view>
+          <text>{{statusText}}</text>
+        </view>
+      </view>
+
+      <view class="dice-config-card">
+        <view class="dice-section-head">
+          <text class="dice-section-title">骰子设置</text>
+          <text class="dice-section-meta">{{totalCount}} 个</text>
+        </view>
+        <view class="dice-sides-row">
+          <view class="dice-side-chip {{selectedSides === 6 ? 'active' : ''}}" data-sides="6" bindtap="onSidesTap"><text>D6</text></view>
+          <view class="dice-side-chip disabled" data-sides="8" bindtap="onSidesTap"><text>D8</text></view>
+          <view class="dice-side-chip disabled" data-sides="10" bindtap="onSidesTap"><text>D10</text></view>
+          <view class="dice-side-chip disabled" data-sides="12" bindtap="onSidesTap"><text>D12</text></view>
+          <view class="dice-side-chip disabled" data-sides="20" bindtap="onSidesTap"><text>D20</text></view>
+        </view>
+        <view class="dice-count-row">
+          <text class="dice-count-label">D6 数量（当前阶段）</text>
+          <view class="dice-stepper">
+            <view class="dice-stepper-button" bindtap="onCountMinus"><text>−</text></view>
+            <text class="dice-count-value">{{totalCount}}</text>
+            <view class="dice-stepper-button" bindtap="onCountPlus"><text>＋</text></view>
+          </view>
+        </view>
+      </view>
+
+      <view class="dice-config-card dice-tuner-card">
+        <view class="dice-section-head" bindtap="onTunerToggle">
+          <text class="dice-section-title">物理调参 {{tunerDirty ? '· 未应用' : ''}}</text>
+          <text class="dice-section-meta">{{tunerOpen ? '收起 ▲' : '展开 ▼'}}</text>
+        </view>
+        <view wx:if="{{tunerOpen}}" class="dice-tuner-body">
+          <text class="dice-tuner-help">输入范围内数值，点击应用后重建场景并自动试投。参数仅保存在本机。</text>
+          <view wx:for="{{physicsGroups}}" wx:for-item="group" wx:key="title" class="dice-tuner-group">
+            <text class="dice-tuner-group-title">{{group.title}}</text>
+            <view wx:for="{{group.fields}}" wx:for-item="field" wx:key="key" class="dice-tuner-field">
+              <view class="dice-tuner-labels"><text class="dice-tuner-label">{{field.label}}</text><text class="dice-tuner-range">{{field.range}}</text></view>
+              <input class="dice-tuner-input" type="digit" value="{{field.value}}" data-key="{{field.key}}" bindinput="onPhysicsInput" />
+              <text class="dice-tuner-hint">{{field.hint}}</text>
+            </view>
+          </view>
+          <view class="dice-tuner-actions">
+            <button class="dice-tuner-action primary" bindtap="onPhysicsApply">应用并试投</button>
+            <button class="dice-tuner-action" bindtap="onPhysicsReset">恢复默认</button>
+            <button class="dice-tuner-action" bindtap="onPhysicsCopy">复制参数 JSON</button>
+          </view>
+        </view>
+      </view>
+
+      <view id="dice-stage-anchor" class="dice-stage-card">
+        <view class="dice-stage-head">
+          <view>
+            <text class="dice-stage-title">XR-Frame 投掷台</text>
+            <text class="dice-stage-hint">拖拽骰子松手投掷；在空白区域滑动可旋转视角。</text>
+          </view>
+          <button class="dice-roll-button" bindtap="onRollTap" loading="{{status === 'rolling'}}" disabled="{{status !== 'ready' && status !== 'settled'}}">
+            <text>{{status === 'rolling' ? '投掷中' : '投掷'}}</text>
+          </button>
+        </view>
+        <view class="dice-stage">
+          <xr-dice-scene
+            wx:if="{{sceneMounted}}"
+            id="xr-dice-scene"
+            disable-scroll
+            width="{{sceneBufferWidth}}"
+            height="{{sceneBufferHeight}}"
+            style="width: {{sceneWidth}}px; height: {{sceneHeight}}px;"
+            dice-count="{{totalCount}}"
+            roll-token="{{rollToken}}"
+            tuning="{{physicsConfig}}"
+            scene-epoch="{{sceneEpoch}}"
+            gravity-vector="{{sceneProps.gravityVector}}"
+            rigidbody-config="{{sceneProps.rigidbodyConfig}}"
+            dice-interact="{{sceneProps.diceInteract}}"
+            ground-interact="{{sceneProps.groundInteract}}"
+            wall-interact="{{sceneProps.wallInteract}}"
+            bind:statuschange="onSceneStatusChange"
+            bind:result="onSceneResult"
+          />
+          <button wx:if="{{status === 'unavailable'}}" class="dice-retry-button" bindtap="onSceneRetry">重新初始化</button>
+        </view>
+        <view class="dice-result-row">
+          <view>
+            <text class="dice-result-label">最近结果</text>
+            <text class="dice-result-value">{{resultText}}</text>
+          </view>
+          <text class="dice-result-total">总和 {{resultTotal}}</text>
+        </view>
+      </view>
+
+      <view class="dice-note">
+        <text>当前交付是 XR-Frame 阶段 0/1 验证：使用 XR-Frame 内置立方体完成 D6 物理闭环。正式 D6 GLB 模型接入前，不把当前结果用于业务结算。</text>
+      </view>
+      <view class="dice-bottom-spacer" style="height: calc(100rpx + {{bottomSafeAreaRpx}}rpx + 24rpx);"></view>
+    </view>
+  </scroll-view>
+</view>
+
+
+<create-access-dialog id="session-expired-dialog" />
