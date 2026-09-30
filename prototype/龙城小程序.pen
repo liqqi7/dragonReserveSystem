@@ -193,6 +193,312 @@
         },
         {
           "type": "frame",
+          "id": "ltOwn",
+          "name": "二级分类 · 品牌IP规范",
+          "width": 2352,
+          "height": 790,
+          "fill": "#FFFFFF",
+          "layout": "none",
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "r9wqX6",
+              "x": 350,
+              "y": 116,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "image-28.png",
+                "mode": "fill"
+              },
+              "width": 270,
+              "height": 270
+            },
+            {
+              "type": "frame",
+              "id": "mNTCU",
+              "x": 1400,
+              "y": 500,
+              "name": "品牌色 · 龙焰金",
+              "clip": true,
+              "width": 150,
+              "height": 86,
+              "fill": "#fcc749ff",
+              "layout": "none"
+            },
+            {
+              "type": "frame",
+              "id": "NEEJ4",
+              "x": 1562,
+              "y": 500,
+              "name": "品牌色 · 活力橙",
+              "clip": true,
+              "width": 150,
+              "height": 86,
+              "fill": "#fc673aff",
+              "layout": "none"
+            },
+            {
+              "type": "rectangle",
+              "id": "mrcsq",
+              "x": 650,
+              "y": 116,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "image-29.png",
+                "mode": "fill"
+              },
+              "width": 270,
+              "height": 270
+            },
+            {
+              "type": "frame",
+              "id": "R1a1t",
+              "x": 1724,
+              "y": 500,
+              "name": "品牌色 · 墨黑",
+              "clip": true,
+              "width": 150,
+              "height": 86,
+              "fill": "#000000",
+              "layout": "none"
+            },
+            {
+              "type": "frame",
+              "id": "B3EM8L",
+              "x": 1886,
+              "y": 500,
+              "name": "品牌色 · 珊瑚红",
+              "clip": true,
+              "width": 150,
+              "height": 86,
+              "fill": "#fa7566ff",
+              "layout": "none"
+            },
+            {
+              "type": "text",
+              "id": "y7T3c",
+              "x": 46,
+              "y": 26,
+              "name": "品牌IP标题",
+              "fill": "#1F2937",
+              "content": "品牌 IP · 呆龙",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "L5XDy",
+              "x": 46,
+              "y": 66,
+              "name": "品牌IP导语",
+              "fill": "#6B7280",
+              "content": "以现有官方角色素材与色彩样本为基准，统一呈现角色气质、视觉特征与应用原则。",
+              "fontFamily": "Inter",
+              "fontSize": 15,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "SZNYJ",
+              "x": 46,
+              "y": 435,
+              "name": "资产区标题",
+              "fill": "#1F2937",
+              "content": "官方 IP 形象资产",
+              "fontFamily": "Inter",
+              "fontSize": 18,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "SGlAj",
+              "x": 46,
+              "y": 465,
+              "name": "资产区说明",
+              "fill": "#6B7280",
+              "content": "三款现有角色插画｜保持原始造型与透明边缘，不重绘、不拉伸",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "Mbb2Y",
+              "x": 1400,
+              "y": 115,
+              "name": "品牌性格标题",
+              "fill": "#1F2937",
+              "content": "角色风格",
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "qVG18",
+              "x": 1400,
+              "y": 155,
+              "name": "品牌性格说明",
+              "fill": "#4B5563",
+              "textGrowth": "fixed-width",
+              "width": 880,
+              "content": "以龙为核心的 Q 版形象；黑色主体搭配橙金色龙角、火焰与暖色细节，整体活泼、亲和，带有节庆与陪伴感。",
+              "lineHeight": 1.55,
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "j1Qfmz",
+              "x": 1400,
+              "y": 255,
+              "name": "人设标题",
+              "fill": "#1F2937",
+              "content": "人设",
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "X8skAv",
+              "x": 1400,
+              "y": 295,
+              "name": "人设说明",
+              "fill": "#4B5563",
+              "textGrowth": "fixed-width",
+              "width": 880,
+              "content": "运气也不是很好，脸黑，脑子不是很好使，打桌游常被套圈，喜欢囤积桌游、模型、谷子等泛二次元或文体产物",
+              "lineHeight": 1.55,
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "fDDvr",
+              "x": 1400,
+              "y": 400,
+              "name": "品牌色标题",
+              "fill": "#1F2937",
+              "content": "品牌色卡 · 取自现有素材",
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "RGH4C",
+              "x": 1400,
+              "y": 598,
+              "name": "色值 #FCC749",
+              "fill": "#374151",
+              "content": "#FCC749",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "pZvfI",
+              "x": 1562,
+              "y": 598,
+              "name": "色值 #FC673A",
+              "fill": "#374151",
+              "content": "#FC673A",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "BWoaF",
+              "x": 1724,
+              "y": 598,
+              "name": "色值 #000000",
+              "fill": "#374151",
+              "content": "#000000",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "M9Sgbn",
+              "x": 1886,
+              "y": 598,
+              "name": "色值 #FA7566",
+              "fill": "#374151",
+              "content": "#FA7566",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "QV9hY",
+              "x": 1400,
+              "y": 638,
+              "name": "色卡注释",
+              "fill": "#6B7280",
+              "textGrowth": "fixed-width",
+              "width": 900,
+              "content": "屏幕主色参考：龙焰金、活力橙、墨黑、珊瑚红。印刷场景需再做色彩校样。",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "rectangle",
+              "id": "Gt4in",
+              "x": 950,
+              "y": 116,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "image-33.png",
+                "mode": "fill"
+              },
+              "width": 270,
+              "height": 270
+            },
+            {
+              "type": "rectangle",
+              "id": "kny0S",
+              "x": 54,
+              "y": 116,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "image-36.png",
+                "mode": "fill"
+              },
+              "width": 270,
+              "height": 270
+            },
+            {
+              "type": "rectangle",
+              "id": "m8VcIQ",
+              "x": 46,
+              "y": 519,
+              "name": "装饰图 · 右上角龙 Logo",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "图片素材/image.png",
+                "mode": "fill"
+              },
+              "width": 323,
+              "height": 211
+            }
+          ]
+        },
+        {
+          "type": "frame",
           "id": "aogjX",
           "name": "一级分类 · 基础规范",
           "width": "fill_container",
@@ -9799,7 +10105,6 @@
                       "reusable": true,
                       "clip": true,
                       "width": 390,
-                      "height": 720,
                       "fill": "#FFFFFF",
                       "cornerRadius": [
                         22,
@@ -12684,7 +12989,6 @@
           "id": "cDpKr",
           "name": "一级分类 · 业务组件",
           "width": "fill_container",
-          "height": 6225,
           "fill": "#FFFFFFFF",
           "cornerRadius": 16,
           "stroke": "#E5E7EB",
@@ -30788,6 +31092,188 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "m9URt",
+              "name": "二级分类 · 工具入口卡片",
+              "width": 650,
+              "fill": "#F3F4F6",
+              "cornerRadius": 14,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ZbWQT",
+                  "name": "工具入口标题",
+                  "fill": "#1F2937",
+                  "content": "工具入口卡片",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 18,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "gvSBK",
+                  "name": "工具入口说明",
+                  "fill": "#6B7280",
+                  "content": "工具 Tab 中可扩展的入口卡片样式，保留图文层级与插画素材。",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "SUsjV",
+                  "name": "工具列表 · 可扩展",
+                  "reusable": true,
+                  "width": 572,
+                  "height": 140,
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ktXnZ",
+                      "name": "工具卡片 · 车袜子",
+                      "clip": true,
+                      "width": 280,
+                      "fill": "#faf7f5ff",
+                      "cornerRadius": 24,
+                      "gap": 8,
+                      "padding": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "kdhx9",
+                          "layoutPosition": "absolute",
+                          "x": 180,
+                          "y": -8,
+                          "fill": "#77d9f73d",
+                          "width": 125,
+                          "height": 125
+                        },
+                        {
+                          "type": "frame",
+                          "id": "wur9N",
+                          "name": "信息 · 车袜子",
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "kBilw",
+                              "name": "名称 · 车袜子",
+                              "fill": "#1A1A1A",
+                              "content": "Chwazi",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 16,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "y9GwU",
+                              "name": "说明 · 车袜子",
+                              "fill": "#6B7280",
+                              "content": "多人同时触摸屏幕\n快速选择一人",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "ObHLw",
+                          "layoutPosition": "absolute",
+                          "x": 148,
+                          "y": 0,
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "image-36.png",
+                            "mode": "fill"
+                          },
+                          "width": 132,
+                          "height": 132
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bGwks",
+                      "name": "工具卡片 · 车袜子",
+                      "clip": true,
+                      "width": 280,
+                      "fill": "#faf7f5ff",
+                      "cornerRadius": 24,
+                      "gap": 8,
+                      "padding": 16,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "NYrRv",
+                          "layoutPosition": "absolute",
+                          "x": 180,
+                          "y": -8,
+                          "fill": "#fccc5b3d",
+                          "width": 125,
+                          "height": 125
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Ml0NF",
+                          "name": "信息 · 车袜子",
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "RaN57",
+                              "name": "名称 · 车袜子",
+                              "fill": "#1A1A1A",
+                              "content": "桌游库",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 16,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "FOAsJ",
+                              "name": "说明 · 车袜子",
+                              "fill": "#6B7280",
+                              "content": "管理个人藏品目录\n记录桌游战绩",
+                              "fontFamily": "Noto Sans SC",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "V7bV4W",
+                          "layoutPosition": "absolute",
+                          "x": 148,
+                          "y": 0,
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "image-29.png",
+                            "mode": "fill"
+                          },
+                          "width": 132,
+                          "height": 132
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -30846,7 +31332,7 @@
       "width": 390,
       "height": 844,
       "fill": "#ffffffff",
-      "layout": "none",
+      "layout": "vertical",
       "children": [
         {
           "type": "rectangle",
@@ -30877,8 +31363,6 @@
         {
           "type": "frame",
           "id": "N7v7yv",
-          "x": 0,
-          "y": 88,
           "name": "结构容器 · 管理员首页 · 1",
           "clip": true,
           "width": 390,
@@ -31024,6 +31508,46 @@
                       "name": "活动小卡/聚餐图片"
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "HIlYa",
+              "name": "模块 · 小工具",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "y2tJ6R",
+                  "name": "分区标题/接受报名",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF00",
+                  "gap": 302,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "XHgUp",
+                      "name": "分区标题文字",
+                      "fill": "#0A0A0A",
+                      "content": "小工具",
+                      "lineHeight": 1.4,
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "id": "z7aso",
+                  "type": "ref",
+                  "ref": "SUsjV",
+                  "x": 0,
+                  "y": 40
                 }
               ]
             },
@@ -31320,7 +31844,8 @@
           "x": 0,
           "y": 754,
           "width": 390,
-          "height": 52
+          "height": 52,
+          "layoutPosition": "absolute"
         }
       ]
     },
@@ -34255,450 +34780,6 @@
         },
         {
           "id": "a2m8D",
-          "type": "ref",
-          "ref": "Hae5C",
-          "name": "底部安全区/Touch Bar",
-          "x": 0,
-          "y": 806,
-          "width": 390,
-          "height": 38,
-          "layoutPosition": "absolute"
-        }
-      ]
-    },
-    {
-      "type": "frame",
-      "id": "P40vRT",
-      "x": -2513,
-      "y": 8856,
-      "name": "页面 · 我的",
-      "clip": true,
-      "width": 390,
-      "height": 844,
-      "fill": "#FFFFFF",
-      "layout": "none",
-      "children": [
-        {
-          "id": "s0RTYd",
-          "type": "ref",
-          "ref": "ihvbF",
-          "name": "顶部导航/我的",
-          "width": 390,
-          "height": 88,
-          "x": 0,
-          "y": 0
-        },
-        {
-          "type": "frame",
-          "id": "ENxce",
-          "x": 0,
-          "y": 88,
-          "name": "我的页面内容区",
-          "width": 390,
-          "height": 666,
-          "layout": "vertical",
-          "gap": 32,
-          "padding": 20,
-          "children": [
-            {
-              "type": "frame",
-              "id": "QJ0RV",
-              "name": "个人资料 Hero",
-              "width": "fill_container",
-              "height": 176,
-              "fill": "#FFF8F0",
-              "cornerRadius": 18,
-              "stroke": "#F3E8D8",
-              "strokeWidth": 1,
-              "effect": {
-                "type": "shadow",
-                "shadowType": "outer",
-                "color": "#00000014",
-                "offset": {
-                  "x": 0,
-                  "y": 5
-                },
-                "blur": 16
-              },
-              "layout": "none",
-              "children": [
-                {
-                  "type": "rectangle",
-                  "cornerRadius": [
-                    18,
-                    18,
-                    22,
-                    22
-                  ],
-                  "id": "r8JKtK",
-                  "x": 0,
-                  "y": 0,
-                  "name": "成员卡片 · 暖色顶部色带",
-                  "fill": "#FFE7C2",
-                  "width": 350,
-                  "height": 76
-                },
-                {
-                  "type": "ellipse",
-                  "id": "CjwlF",
-                  "x": 272,
-                  "y": 0,
-                  "name": "成员卡片 · 右上装饰圆",
-                  "fill": "#F59E0B24",
-                  "width": 78,
-                  "height": 78
-                },
-                {
-                  "type": "frame",
-                  "id": "qWtuK",
-                  "layoutPosition": "absolute",
-                  "x": 16,
-                  "y": 22,
-                  "name": "用户主信息",
-                  "width": 318,
-                  "height": 66,
-                  "fill": "#FFFFFF",
-                  "cornerRadius": 16,
-                  "gap": 12,
-                  "padding": [
-                    4,
-                    10
-                  ],
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "rectangle",
-                      "cornerRadius": 29,
-                      "id": "D5eLd",
-                      "name": "用户头像",
-                      "fill": {
-                        "type": "image",
-                        "enabled": true,
-                        "url": "图片素材/image-11.png",
-                        "mode": "fill"
-                      },
-                      "width": 58,
-                      "height": 58,
-                      "stroke": "#FFF8F0",
-                      "strokeWidth": 3
-                    },
-                    {
-                      "type": "frame",
-                      "id": "cYtQ3",
-                      "name": "姓名和身份",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 4,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "fGwgq",
-                          "name": "用户昵称",
-                          "fill": "#000000",
-                          "content": "Novusluna",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 20,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "qxwvp",
-                          "name": "成员身份",
-                          "fill": "#FFF4E8",
-                          "cornerRadius": 10,
-                          "padding": [
-                            3,
-                            8
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "ws2gT",
-                              "name": "身份文字",
-                              "fill": "#C2410C",
-                              "content": "俱乐部成员",
-                              "fontFamily": "Noto Sans SC",
-                              "fontSize": 12,
-                              "fontWeight": "600"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "hNsjY",
-                      "name": "编辑资料入口",
-                      "width": 32,
-                      "height": 32,
-                      "fill": "#FFF4E8",
-                      "cornerRadius": 10,
-                      "justifyContent": "center",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "dL26T",
-                          "name": "编辑图标",
-                          "width": 17,
-                          "height": 17,
-                          "icon": "pencil",
-                          "library": "lucide",
-                          "fill": "#EA580C"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "WYdwW",
-                  "layoutPosition": "absolute",
-                  "x": 16,
-                  "y": 106,
-                  "name": "账户摘要",
-                  "width": 318,
-                  "height": 52,
-                  "gap": 8,
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "e8UXs",
-                      "name": "公会 ID",
-                      "width": "fill_container",
-                      "height": 52,
-                      "fill": "#FFFFFF",
-                      "cornerRadius": 12,
-                      "stroke": "#F3E8D8",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "gap": 3,
-                      "padding": [
-                        4,
-                        10
-                      ],
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "P401V",
-                          "name": "公会 ID 标签",
-                          "fill": "#6B7280",
-                          "content": "公会 ID",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "fs6Tf",
-                          "name": "公会 ID 值",
-                          "fill": "#111827",
-                          "content": "2",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 14,
-                          "fontWeight": "700"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "Zzbsx",
-                      "name": "已参与活动数",
-                      "width": "fill_container",
-                      "height": 52,
-                      "fill": "#FFFFFF",
-                      "cornerRadius": 12,
-                      "stroke": "#F3E8D8",
-                      "strokeWidth": 1,
-                      "layout": "vertical",
-                      "gap": 3,
-                      "padding": [
-                        4,
-                        10
-                      ],
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "C1iN0M",
-                          "name": "已参与活动数标签",
-                          "fill": "#6B7280",
-                          "content": "已参与活动数",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "JdiW8",
-                          "name": "已参与活动数值",
-                          "fill": "#111827",
-                          "content": "12 场",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 14,
-                          "fontWeight": "700"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
-                  "id": "c0xH0m",
-                  "x": 220,
-                  "y": 18,
-                  "name": "成员卡片 · 顶部标签",
-                  "fill": "#9A3412",
-                  "content": "龙城成员",
-                  "fontFamily": "Noto Sans SC",
-                  "fontSize": 12,
-                  "fontWeight": "700"
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "YLaqU",
-              "name": "账户设置",
-              "width": "fill_container",
-              "height": 124,
-              "fill": "#FFFFFF",
-              "cornerRadius": 16,
-              "effect": {
-                "type": "shadow",
-                "shadowType": "outer",
-                "color": "#00000014",
-                "offset": {
-                  "x": 0,
-                  "y": 2
-                },
-                "blur": 10
-              },
-              "layout": "vertical",
-              "padding": [
-                6,
-                16
-              ],
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "Jdf29",
-                  "name": "访问权限设置项",
-                  "width": "fill_container",
-                  "height": 56,
-                  "gap": 10,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "j4L0hV",
-                      "name": "访问权限图标",
-                      "width": 18,
-                      "height": 18,
-                      "icon": "shield-check",
-                      "library": "lucide",
-                      "fill": "#FF9800"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "eJFAM",
-                      "name": "访问权限说明",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 3,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "r6YlvW",
-                          "name": "访问权限",
-                          "fill": "#000000",
-                          "content": "访问权限",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 16,
-                          "fontWeight": "600"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "icon",
-                      "id": "FNdn9",
-                      "name": "访问权限箭头",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#9CA3AF"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "x9sBd",
-                  "name": "退出登录设置项",
-                  "width": "fill_container",
-                  "height": 56,
-                  "gap": 10,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "g5Cb95",
-                      "name": "退出登录图标",
-                      "width": 18,
-                      "height": 18,
-                      "icon": "log-out",
-                      "library": "lucide",
-                      "fill": "#FF9800"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "UCoxz",
-                      "name": "退出登录说明",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 3,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "Yo6Lj",
-                          "name": "退出登录",
-                          "fill": "#000000",
-                          "content": "退出登录",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 16,
-                          "fontWeight": "600"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "icon",
-                      "id": "eZfjR",
-                      "name": "退出登录箭头",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#9CA3AF"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "id": "Zn8Ck",
-          "type": "ref",
-          "ref": "EoArr",
-          "name": "底部导航/我的选中",
-          "layoutPosition": "absolute",
-          "x": 0,
-          "y": 754,
-          "width": 390,
-          "height": 52
-        },
-        {
-          "id": "z8xhfa",
           "type": "ref",
           "ref": "Hae5C",
           "name": "底部安全区/Touch Bar",
@@ -83284,7 +83365,7 @@
       "width": 390,
       "height": 844,
       "fill": "#ffffffff",
-      "layout": "none",
+      "layout": "vertical",
       "children": [
         {
           "type": "rectangle",
@@ -83315,8 +83396,6 @@
         {
           "type": "frame",
           "id": "zNpKF",
-          "x": 0,
-          "y": 88,
           "name": "首页骨架内容区",
           "clip": true,
           "width": 390,
@@ -83613,6 +83692,65 @@
             },
             {
               "type": "frame",
+              "id": "y3G4N",
+              "name": "模块 · 小工具",
+              "width": "fill_container",
+              "height": 172,
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "qX73S",
+                  "name": "小工具 · 标题骨架容器",
+                  "width": "fill_container",
+                  "height": 28,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 6,
+                      "id": "Z4pVUM",
+                      "name": "小工具 · 标题骨架",
+                      "fill": "#EAECEF",
+                      "width": 80,
+                      "height": 20
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "KUugt",
+                  "name": "小工具卡片骨架横向列表",
+                  "clip": true,
+                  "width": 572,
+                  "height": 140,
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 20,
+                      "id": "S0z8tS",
+                      "name": "小工具卡片骨架 · 1",
+                      "fill": "#EAECEF",
+                      "width": 280,
+                      "height": 140
+                    },
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 20,
+                      "id": "C2K2Q",
+                      "name": "小工具卡片骨架 · 2",
+                      "fill": "#EAECEF",
+                      "width": 280,
+                      "height": 140
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
               "id": "z5ElT",
               "name": "未开始 · 骨架分区",
               "width": "fill_container",
@@ -83806,7 +83944,8 @@
           "x": 0,
           "y": 754,
           "width": 390,
-          "height": 52
+          "height": 52,
+          "layoutPosition": "absolute"
         },
         {
           "id": "n7NNp",
@@ -83817,6 +83956,7 @@
           "y": 806,
           "width": 390,
           "height": 38,
+          "layoutPosition": "absolute",
           "descendants": {
             "xfatr": {
               "fill": []
@@ -91484,7 +91624,7 @@
       "width": 390,
       "height": 844,
       "fill": "#ffffffff",
-      "layout": "none",
+      "layout": "vertical",
       "children": [
         {
           "type": "rectangle",
@@ -91515,8 +91655,6 @@
         {
           "type": "frame",
           "id": "kWqhb",
-          "x": 0,
-          "y": 88,
           "name": "结构容器 · 管理员首页 · 1",
           "clip": true,
           "width": 390,
@@ -91662,6 +91800,46 @@
                       "name": "活动小卡/聚餐图片"
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "RwrvY",
+              "name": "模块 · 小工具",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "zmb19",
+                  "name": "分区标题/接受报名",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF00",
+                  "gap": 302,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "j4yJ0G",
+                      "name": "分区标题文字",
+                      "fill": "#0A0A0A",
+                      "content": "小工具",
+                      "lineHeight": 1.4,
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 20,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "id": "w2WLto",
+                  "type": "ref",
+                  "ref": "SUsjV",
+                  "x": 0,
+                  "y": 40
                 }
               ]
             },
@@ -91958,11 +92136,13 @@
           "x": 0,
           "y": 754,
           "width": 390,
-          "height": 52
+          "height": 52,
+          "layoutPosition": "absolute"
         },
         {
           "type": "rectangle",
           "id": "Drq0S",
+          "layoutPosition": "absolute",
           "x": 0,
           "y": 0,
           "name": "首页弹窗遮罩",
@@ -91977,6 +92157,9 @@
           "name": "首页登录提示弹窗 · 参考样式",
           "x": 45,
           "y": 325,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "layoutPosition": "absolute",
           "descendants": {
             "xvYMf": {
               "content": "登录后即可使用"
@@ -92849,8 +93032,8 @@
     {
       "type": "frame",
       "id": "P37gp",
-      "x": -550,
-      "y": 8847,
+      "x": -1223,
+      "y": 8856,
       "name": "状态 · 我的 · 退出登录弹窗",
       "clip": true,
       "width": 390,
@@ -92859,235 +93042,156 @@
       "layout": "none",
       "children": [
         {
-          "id": "lDwo6",
-          "type": "ref",
-          "ref": "ihvbF",
-          "name": "顶部导航/我的",
-          "width": 390,
-          "height": 88,
-          "x": 0,
-          "y": 0
-        },
-        {
           "type": "frame",
-          "id": "hLFG1",
+          "id": "fzkFa",
           "x": 0,
-          "y": 88,
-          "name": "我的页面内容区",
+          "y": 0,
+          "name": "彩虹会员融合 · 内容区",
+          "clip": true,
           "width": 390,
-          "height": 666,
-          "layout": "vertical",
-          "gap": 32,
-          "padding": 20,
+          "height": 754,
+          "layout": "none",
           "children": [
             {
-              "type": "frame",
-              "id": "Hs2xG",
-              "name": "个人资料 Hero",
-              "width": "fill_container",
-              "height": 176,
-              "fill": {
-                "type": "gradient",
-                "gradientType": "linear",
-                "enabled": true,
-                "rotation": 120,
-                "size": {
-                  "height": 1
-                },
-                "colors": [
-                  {
-                    "color": "#FFF3E0",
-                    "position": 0
-                  },
-                  {
-                    "color": "#FFFFFF",
-                    "position": 1
-                  }
-                ]
-              },
-              "cornerRadius": 16,
-              "stroke": "#FFCC80",
-              "strokeWidth": 1,
-              "effect": {
-                "type": "shadow",
-                "shadowType": "outer",
-                "color": "#0000001A",
-                "offset": {
-                  "x": 0,
-                  "y": 6
-                },
-                "blur": 20
-              },
-              "layout": "vertical",
-              "gap": 14,
-              "padding": 16,
+              "type": "group",
+              "id": "F2plG",
+              "x": 0,
+              "y": 0,
+              "name": "顶部彩虹",
               "children": [
                 {
-                  "type": "frame",
-                  "id": "Qx7we",
-                  "name": "用户主信息",
-                  "width": "fill_container",
-                  "gap": 14,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "rectangle",
-                      "cornerRadius": 33,
-                      "id": "Ui1FI",
-                      "name": "用户头像",
-                      "fill": {
-                        "type": "image",
-                        "enabled": true,
-                        "url": "图片素材/image-11.png",
-                        "mode": "fill"
-                      },
-                      "width": 66,
-                      "height": 66,
-                      "stroke": "#FFFFFF",
-                      "strokeWidth": 3
-                    },
-                    {
-                      "type": "frame",
-                      "id": "EBViY",
-                      "name": "姓名和身份",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 6,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "DzJq8",
-                          "name": "用户昵称",
-                          "fill": "#000000",
-                          "content": "Novusluna",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 20,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "g3PLHU",
-                          "name": "成员身份",
-                          "fill": "#FFFFFF00",
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "cchEc",
-                              "name": "身份文字",
-                              "fill": "#4B5563",
-                              "content": "龙城成员",
-                              "fontFamily": "Noto Sans SC",
-                              "fontSize": 12,
-                              "fontWeight": "500"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "A8GFl",
-                      "name": "编辑资料入口",
-                      "width": 32,
-                      "height": 32,
-                      "fill": "#FFFFFF00",
-                      "justifyContent": "center",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "d8qSTJ",
-                          "name": "编辑图标",
-                          "width": 17,
-                          "height": 17,
-                          "icon": "pencil",
-                          "library": "lucide",
-                          "fill": "#FF9800"
-                        }
-                      ]
-                    }
-                  ]
+                  "type": "path",
+                  "id": "F4ZT2",
+                  "x": 0,
+                  "y": 0,
+                  "name": "彩虹带 · 红橙",
+                  "geometry": "M0 0h390v40c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#F15A3A",
+                  "width": 390,
+                  "height": 146
+                },
+                {
+                  "type": "path",
+                  "id": "xnsND",
+                  "x": 0,
+                  "y": 0,
+                  "name": "彩虹带 · 橙",
+                  "geometry": "M0 40c90-40 300-40 390 0v35c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#F47B2E",
+                  "width": 390,
+                  "height": 146
+                },
+                {
+                  "type": "path",
+                  "id": "RVebh",
+                  "x": 0,
+                  "y": 0,
+                  "name": "彩虹带 · 金橙",
+                  "geometry": "M0 75c90-40 300-40 390 0v35c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#F69A45",
+                  "width": 390,
+                  "height": 146
+                },
+                {
+                  "type": "path",
+                  "id": "YurQo",
+                  "x": 0,
+                  "y": 0,
+                  "name": "彩虹带 · 浅黄",
+                  "geometry": "M0 110c90-40 300-40 390 0v36c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#FDB358",
+                  "width": 390,
+                  "height": 146
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Cl0sP",
+              "x": 0,
+              "y": 88,
+              "name": "Frame 1142815192",
+              "width": 390,
+              "layout": "vertical",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 100,
+                  "id": "xfEqf",
+                  "name": "彩虹资料头像",
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "图片素材/image-11.png",
+                    "mode": "fill"
+                  },
+                  "width": 80,
+                  "height": 80,
+                  "stroke": "#FFFFFF",
+                  "strokeWidth": 1,
+                  "strokeAlignment": "inner"
                 },
                 {
                   "type": "frame",
-                  "id": "GjdVo",
-                  "name": "账户摘要",
+                  "id": "Zx6Wp",
+                  "name": "Frame 1142815193",
                   "width": "fill_container",
-                  "height": 56,
-                  "gap": 10,
+                  "layout": "vertical",
+                  "gap": 12,
                   "children": [
                     {
-                      "type": "frame",
-                      "id": "UHe8g",
-                      "name": "公会 ID",
+                      "type": "text",
+                      "id": "Q7XjyA",
+                      "name": "彩虹资料昵称",
+                      "fill": "#1A1A1A",
+                      "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "fill": "#FFFFFFA8",
-                      "cornerRadius": 12,
-                      "layout": "vertical",
-                      "gap": 3,
-                      "padding": [
-                        8,
-                        10
-                      ],
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "PdgPv",
-                          "name": "公会 ID 标签",
-                          "fill": "#4B5563",
-                          "content": "公会 ID",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "C1QyPx",
-                          "name": "公会 ID 值",
-                          "fill": "#4B5563",
-                          "content": "2",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 14,
-                          "fontWeight": "700"
-                        }
-                      ]
+                      "content": "Novusluna",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 32,
+                      "fontWeight": "700"
                     },
                     {
-                      "type": "frame",
-                      "id": "g7SNM",
-                      "name": "已参与活动数",
+                      "type": "text",
+                      "id": "w8yOgS",
+                      "name": "彩虹资料副标题",
+                      "fill": "#6B7280",
+                      "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "fill": "#FFFFFFA8",
-                      "cornerRadius": 12,
-                      "layout": "vertical",
-                      "gap": 3,
-                      "padding": [
-                        8,
-                        10
-                      ],
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "ft8LV",
-                          "name": "已参与活动数标签",
-                          "fill": "#4B5563",
-                          "content": "已参与活动数",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "XJ4fe",
-                          "name": "已参与活动数值",
-                          "fill": "#4B5563",
-                          "content": "12 场",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 14,
-                          "fontWeight": "700"
-                        }
-                      ]
+                      "content": "俱乐部成员  /Joined in 2026",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -93095,127 +93199,177 @@
             },
             {
               "type": "frame",
-              "id": "IuZpm",
-              "name": "账户设置",
-              "width": "fill_container",
-              "height": 124,
-              "fill": "#FFFFFF",
-              "cornerRadius": 16,
-              "effect": {
-                "type": "shadow",
-                "shadowType": "outer",
-                "color": "#00000014",
-                "offset": {
-                  "x": 0,
-                  "y": 2
-                },
-                "blur": 10
-              },
+              "id": "r4XPj",
+              "x": 0,
+              "y": 272,
+              "name": "页面内容 · Auto Layout",
+              "width": 390,
+              "height": 445,
               "layout": "vertical",
+              "gap": 20,
               "padding": [
-                6,
-                16
+                0,
+                20
               ],
               "children": [
                 {
                   "type": "frame",
-                  "id": "m7BWJ",
-                  "name": "访问权限设置项",
+                  "id": "Mi795",
+                  "name": "参考右图 · 设置菜单",
                   "width": "fill_container",
-                  "height": 56,
-                  "gap": 10,
-                  "alignItems": "center",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 16,
+                  "layout": "vertical",
+                  "padding": [
+                    0,
+                    16
+                  ],
                   "children": [
                     {
-                      "type": "icon",
-                      "id": "kCEht",
-                      "name": "访问权限图标",
-                      "width": 18,
-                      "height": 18,
-                      "icon": "shield-check",
-                      "library": "lucide",
-                      "fill": "#FF9800"
-                    },
-                    {
                       "type": "frame",
-                      "id": "o4Q6tN",
-                      "name": "访问权限说明",
+                      "id": "A4BkxD",
+                      "name": "设置项 · 修改资料",
                       "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 3,
+                      "gap": 10,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "alignItems": "center",
                       "children": [
                         {
+                          "type": "icon",
+                          "id": "sM5U0",
+                          "name": "图标 · 修改资料",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "pencil",
+                          "library": "lucide",
+                          "fill": "#111827"
+                        },
+                        {
                           "type": "text",
-                          "id": "GJF47",
-                          "name": "访问权限",
-                          "fill": "#000000",
-                          "content": "访问权限",
+                          "id": "x2Qaq",
+                          "name": "文字 · 修改资料",
+                          "fill": "#111827",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "修改资料",
+                          "lineHeight": 1,
                           "fontFamily": "Noto Sans SC",
                           "fontSize": 16,
-                          "fontWeight": "600"
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "IDg6e",
+                          "name": "箭头 · 修改资料",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "chevron-right",
+                          "library": "lucide",
+                          "fill": "#B0B0B0"
                         }
                       ]
                     },
                     {
-                      "type": "icon",
-                      "id": "s4FFO",
-                      "name": "访问权限箭头",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#9CA3AF"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "vq0sP",
-                  "name": "退出登录设置项",
-                  "width": "fill_container",
-                  "height": 56,
-                  "gap": 10,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "cYexh",
-                      "name": "退出登录图标",
-                      "width": 18,
-                      "height": 18,
-                      "icon": "log-out",
-                      "library": "lucide",
-                      "fill": "#FF9800"
+                      "type": "frame",
+                      "id": "l4eyC9",
+                      "name": "设置项 · 修改密码",
+                      "width": "fill_container",
+                      "gap": 10,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "QHcDy",
+                          "name": "图标 · 修改密码",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "lock-keyhole",
+                          "library": "lucide",
+                          "fill": "#111827"
+                        },
+                        {
+                          "type": "text",
+                          "id": "nXnFb",
+                          "name": "文字 · 修改密码",
+                          "fill": "#111827",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "获取权限",
+                          "lineHeight": 1,
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 16,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "A8ARM9",
+                          "name": "箭头 · 修改密码",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "chevron-right",
+                          "library": "lucide",
+                          "fill": "#B0B0B0"
+                        }
+                      ]
                     },
                     {
                       "type": "frame",
-                      "id": "sqAyr",
-                      "name": "退出登录说明",
+                      "id": "Emfb7",
+                      "name": "设置项 · 退出登录",
                       "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 3,
+                      "height": 55,
+                      "stroke": "#ECECEC",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "gap": 10,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "alignItems": "center",
                       "children": [
                         {
+                          "type": "icon",
+                          "id": "uNeSK",
+                          "name": "图标 · 退出登录",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "log-out",
+                          "library": "lucide",
+                          "fill": "#E5484D"
+                        },
+                        {
                           "type": "text",
-                          "id": "G0OJ5i",
-                          "name": "退出登录",
-                          "fill": "#000000",
+                          "id": "PhH47",
+                          "name": "文字 · 退出登录",
+                          "fill": "#E5484D",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
                           "content": "退出登录",
+                          "lineHeight": 1,
                           "fontFamily": "Noto Sans SC",
                           "fontSize": 16,
-                          "fontWeight": "600"
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "RziRB",
+                          "name": "箭头 · 退出登录",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "chevron-right",
+                          "library": "lucide",
+                          "fill": "#B0B0B0"
                         }
                       ]
-                    },
-                    {
-                      "type": "icon",
-                      "id": "uZAKq",
-                      "name": "退出登录箭头",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#9CA3AF"
                     }
                   ]
                 }
@@ -93224,7 +93378,24 @@
           ]
         },
         {
-          "id": "QS9ys",
+          "id": "jm1b2",
+          "type": "ref",
+          "ref": "ihvbF",
+          "name": "顶部导航/我的",
+          "width": 390,
+          "height": 88,
+          "x": 0,
+          "y": 0,
+          "descendants": {
+            "vvex7": {
+              "enabled": false,
+              "width": 390,
+              "height": 44
+            }
+          }
+        },
+        {
+          "id": "H2G6h",
           "type": "ref",
           "ref": "EoArr",
           "name": "底部导航/我的选中",
@@ -93235,7 +93406,7 @@
           "height": 52
         },
         {
-          "id": "zg79m",
+          "id": "LXFaW",
           "type": "ref",
           "ref": "Hae5C",
           "name": "底部安全区/Touch Bar",
@@ -93282,8 +93453,8 @@
     {
       "type": "frame",
       "id": "yl4tW",
-      "x": -80,
-      "y": 8847,
+      "x": -793,
+      "y": 8856,
       "name": "状态 · 我的 · 修改个人资料弹窗 · 无提示文案",
       "clip": true,
       "width": 390,
@@ -93292,235 +93463,156 @@
       "layout": "none",
       "children": [
         {
-          "id": "Y8wmX",
-          "type": "ref",
-          "ref": "ihvbF",
-          "name": "顶部导航/我的",
-          "width": 390,
-          "height": 88,
-          "x": 0,
-          "y": 0
-        },
-        {
           "type": "frame",
-          "id": "Ixc23",
+          "id": "msgWw",
           "x": 0,
-          "y": 88,
-          "name": "我的页面内容区",
+          "y": 0,
+          "name": "彩虹会员融合 · 内容区",
+          "clip": true,
           "width": 390,
-          "height": 666,
-          "layout": "vertical",
-          "gap": 32,
-          "padding": 20,
+          "height": 754,
+          "layout": "none",
           "children": [
             {
-              "type": "frame",
-              "id": "ob2o5",
-              "name": "个人资料 Hero",
-              "width": "fill_container",
-              "height": 176,
-              "fill": {
-                "type": "gradient",
-                "gradientType": "linear",
-                "enabled": true,
-                "rotation": 120,
-                "size": {
-                  "height": 1
-                },
-                "colors": [
-                  {
-                    "color": "#FFF3E0",
-                    "position": 0
-                  },
-                  {
-                    "color": "#FFFFFF",
-                    "position": 1
-                  }
-                ]
-              },
-              "cornerRadius": 16,
-              "stroke": "#FFCC80",
-              "strokeWidth": 1,
-              "effect": {
-                "type": "shadow",
-                "shadowType": "outer",
-                "color": "#0000001A",
-                "offset": {
-                  "x": 0,
-                  "y": 6
-                },
-                "blur": 20
-              },
-              "layout": "vertical",
-              "gap": 14,
-              "padding": 16,
+              "type": "group",
+              "id": "S762SZ",
+              "x": 0,
+              "y": 0,
+              "name": "顶部彩虹",
               "children": [
                 {
-                  "type": "frame",
-                  "id": "Y6htG",
-                  "name": "用户主信息",
-                  "width": "fill_container",
-                  "gap": 14,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "rectangle",
-                      "cornerRadius": 33,
-                      "id": "R7bOa",
-                      "name": "用户头像",
-                      "fill": {
-                        "type": "image",
-                        "enabled": true,
-                        "url": "图片素材/image-11.png",
-                        "mode": "fill"
-                      },
-                      "width": 66,
-                      "height": 66,
-                      "stroke": "#FFFFFF",
-                      "strokeWidth": 3
-                    },
-                    {
-                      "type": "frame",
-                      "id": "twJP3",
-                      "name": "姓名和身份",
-                      "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 6,
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "L3mOoO",
-                          "name": "用户昵称",
-                          "fill": "#000000",
-                          "content": "Novusluna",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 20,
-                          "fontWeight": "700"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "GdOpH",
-                          "name": "成员身份",
-                          "fill": "#FFFFFF00",
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "P1vUc",
-                              "name": "身份文字",
-                              "fill": "#4B5563",
-                              "content": "龙城成员",
-                              "fontFamily": "Noto Sans SC",
-                              "fontSize": 12,
-                              "fontWeight": "500"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "MzGfV",
-                      "name": "编辑资料入口",
-                      "width": 32,
-                      "height": 32,
-                      "fill": "#FFFFFF00",
-                      "justifyContent": "center",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "JQguv",
-                          "name": "编辑图标",
-                          "width": 17,
-                          "height": 17,
-                          "icon": "pencil",
-                          "library": "lucide",
-                          "fill": "#FF9800"
-                        }
-                      ]
-                    }
-                  ]
+                  "type": "path",
+                  "id": "C8DZn",
+                  "x": 0,
+                  "y": 0,
+                  "name": "彩虹带 · 红橙",
+                  "geometry": "M0 0h390v40c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#F15A3A",
+                  "width": 390,
+                  "height": 146
+                },
+                {
+                  "type": "path",
+                  "id": "vhQrx",
+                  "x": 0,
+                  "y": 0,
+                  "name": "彩虹带 · 橙",
+                  "geometry": "M0 40c90-40 300-40 390 0v35c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#F47B2E",
+                  "width": 390,
+                  "height": 146
+                },
+                {
+                  "type": "path",
+                  "id": "M93Vt6",
+                  "x": 0,
+                  "y": 0,
+                  "name": "彩虹带 · 金橙",
+                  "geometry": "M0 75c90-40 300-40 390 0v35c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#F69A45",
+                  "width": 390,
+                  "height": 146
+                },
+                {
+                  "type": "path",
+                  "id": "VVOW7",
+                  "x": 0,
+                  "y": 0,
+                  "name": "彩虹带 · 浅黄",
+                  "geometry": "M0 110c90-40 300-40 390 0v36c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#FDB358",
+                  "width": 390,
+                  "height": 146
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "yEGMy",
+              "x": 0,
+              "y": 88,
+              "name": "Frame 1142815192",
+              "width": 390,
+              "layout": "vertical",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 100,
+                  "id": "H1RbCu",
+                  "name": "彩虹资料头像",
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "图片素材/image-11.png",
+                    "mode": "fill"
+                  },
+                  "width": 80,
+                  "height": 80,
+                  "stroke": "#FFFFFF",
+                  "strokeWidth": 1,
+                  "strokeAlignment": "inner"
                 },
                 {
                   "type": "frame",
-                  "id": "wJ7em",
-                  "name": "账户摘要",
+                  "id": "IepIF",
+                  "name": "Frame 1142815193",
                   "width": "fill_container",
-                  "height": 56,
-                  "gap": 10,
+                  "layout": "vertical",
+                  "gap": 12,
                   "children": [
                     {
-                      "type": "frame",
-                      "id": "ZMAGL",
-                      "name": "公会 ID",
+                      "type": "text",
+                      "id": "N6D2x",
+                      "name": "彩虹资料昵称",
+                      "fill": "#1A1A1A",
+                      "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "fill": "#FFFFFFA8",
-                      "cornerRadius": 12,
-                      "layout": "vertical",
-                      "gap": 3,
-                      "padding": [
-                        8,
-                        10
-                      ],
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "TJh5V",
-                          "name": "公会 ID 标签",
-                          "fill": "#4B5563",
-                          "content": "公会 ID",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "C99H0",
-                          "name": "公会 ID 值",
-                          "fill": "#4B5563",
-                          "content": "2",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 14,
-                          "fontWeight": "700"
-                        }
-                      ]
+                      "content": "Novusluna",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 32,
+                      "fontWeight": "700"
                     },
                     {
-                      "type": "frame",
-                      "id": "CEgw6",
-                      "name": "已参与活动数",
+                      "type": "text",
+                      "id": "XkRzS",
+                      "name": "彩虹资料副标题",
+                      "fill": "#6B7280",
+                      "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "fill": "#FFFFFFA8",
-                      "cornerRadius": 12,
-                      "layout": "vertical",
-                      "gap": 3,
-                      "padding": [
-                        8,
-                        10
-                      ],
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "Td5rO",
-                          "name": "已参与活动数标签",
-                          "fill": "#4B5563",
-                          "content": "已参与活动数",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 12,
-                          "fontWeight": "normal"
-                        },
-                        {
-                          "type": "text",
-                          "id": "A3wVLN",
-                          "name": "已参与活动数值",
-                          "fill": "#4B5563",
-                          "content": "12 场",
-                          "fontFamily": "Noto Sans SC",
-                          "fontSize": 14,
-                          "fontWeight": "700"
-                        }
-                      ]
+                      "content": "俱乐部成员  /Joined in 2026",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -93528,127 +93620,177 @@
             },
             {
               "type": "frame",
-              "id": "L17Zp2",
-              "name": "账户设置",
-              "width": "fill_container",
-              "height": 124,
-              "fill": "#FFFFFF",
-              "cornerRadius": 16,
-              "effect": {
-                "type": "shadow",
-                "shadowType": "outer",
-                "color": "#00000014",
-                "offset": {
-                  "x": 0,
-                  "y": 2
-                },
-                "blur": 10
-              },
+              "id": "YxYdn",
+              "x": 0,
+              "y": 272,
+              "name": "页面内容 · Auto Layout",
+              "width": 390,
+              "height": 445,
               "layout": "vertical",
+              "gap": 20,
               "padding": [
-                6,
-                16
+                0,
+                20
               ],
               "children": [
                 {
                   "type": "frame",
-                  "id": "ldaH6",
-                  "name": "访问权限设置项",
+                  "id": "xoYLQ",
+                  "name": "参考右图 · 设置菜单",
                   "width": "fill_container",
-                  "height": 56,
-                  "gap": 10,
-                  "alignItems": "center",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 16,
+                  "layout": "vertical",
+                  "padding": [
+                    0,
+                    16
+                  ],
                   "children": [
                     {
-                      "type": "icon",
-                      "id": "q8WJn",
-                      "name": "访问权限图标",
-                      "width": 18,
-                      "height": 18,
-                      "icon": "shield-check",
-                      "library": "lucide",
-                      "fill": "#FF9800"
-                    },
-                    {
                       "type": "frame",
-                      "id": "Oorlg",
-                      "name": "访问权限说明",
+                      "id": "sIw5V",
+                      "name": "设置项 · 修改资料",
                       "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 3,
+                      "gap": 10,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "alignItems": "center",
                       "children": [
                         {
+                          "type": "icon",
+                          "id": "NrqEQ",
+                          "name": "图标 · 修改资料",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "pencil",
+                          "library": "lucide",
+                          "fill": "#111827"
+                        },
+                        {
                           "type": "text",
-                          "id": "o6X8mV",
-                          "name": "访问权限",
-                          "fill": "#000000",
-                          "content": "访问权限",
+                          "id": "GOqnk",
+                          "name": "文字 · 修改资料",
+                          "fill": "#111827",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "修改资料",
+                          "lineHeight": 1,
                           "fontFamily": "Noto Sans SC",
                           "fontSize": 16,
-                          "fontWeight": "600"
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "mf3KJ",
+                          "name": "箭头 · 修改资料",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "chevron-right",
+                          "library": "lucide",
+                          "fill": "#B0B0B0"
                         }
                       ]
                     },
                     {
-                      "type": "icon",
-                      "id": "E5J1G",
-                      "name": "访问权限箭头",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#9CA3AF"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "bMP11",
-                  "name": "退出登录设置项",
-                  "width": "fill_container",
-                  "height": 56,
-                  "gap": 10,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "I1svL",
-                      "name": "退出登录图标",
-                      "width": 18,
-                      "height": 18,
-                      "icon": "log-out",
-                      "library": "lucide",
-                      "fill": "#FF9800"
+                      "type": "frame",
+                      "id": "W0bZSz",
+                      "name": "设置项 · 修改密码",
+                      "width": "fill_container",
+                      "gap": 10,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "NYBvm",
+                          "name": "图标 · 修改密码",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "lock-keyhole",
+                          "library": "lucide",
+                          "fill": "#111827"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Ox5h0",
+                          "name": "文字 · 修改密码",
+                          "fill": "#111827",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "获取权限",
+                          "lineHeight": 1,
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 16,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "iCVoz",
+                          "name": "箭头 · 修改密码",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "chevron-right",
+                          "library": "lucide",
+                          "fill": "#B0B0B0"
+                        }
+                      ]
                     },
                     {
                       "type": "frame",
-                      "id": "FOmzy",
-                      "name": "退出登录说明",
+                      "id": "dRNUO",
+                      "name": "设置项 · 退出登录",
                       "width": "fill_container",
-                      "layout": "vertical",
-                      "gap": 3,
+                      "height": 55,
+                      "stroke": "#ECECEC",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "gap": 10,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "alignItems": "center",
                       "children": [
                         {
+                          "type": "icon",
+                          "id": "zTIKd",
+                          "name": "图标 · 退出登录",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "log-out",
+                          "library": "lucide",
+                          "fill": "#E5484D"
+                        },
+                        {
                           "type": "text",
-                          "id": "FOiOG",
-                          "name": "退出登录",
-                          "fill": "#000000",
+                          "id": "uCgaJ",
+                          "name": "文字 · 退出登录",
+                          "fill": "#E5484D",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
                           "content": "退出登录",
+                          "lineHeight": 1,
                           "fontFamily": "Noto Sans SC",
                           "fontSize": 16,
-                          "fontWeight": "600"
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "oXFGJ",
+                          "name": "箭头 · 退出登录",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "chevron-right",
+                          "library": "lucide",
+                          "fill": "#B0B0B0"
                         }
                       ]
-                    },
-                    {
-                      "type": "icon",
-                      "id": "tc9WL",
-                      "name": "退出登录箭头",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#9CA3AF"
                     }
                   ]
                 }
@@ -93657,7 +93799,24 @@
           ]
         },
         {
-          "id": "MD9mk",
+          "id": "R6bzx1",
+          "type": "ref",
+          "ref": "ihvbF",
+          "name": "顶部导航/我的",
+          "width": 390,
+          "height": 88,
+          "x": 0,
+          "y": 0,
+          "descendants": {
+            "vvex7": {
+              "enabled": false,
+              "width": 390,
+              "height": 44
+            }
+          }
+        },
+        {
+          "id": "Rb9dZ",
           "type": "ref",
           "ref": "EoArr",
           "name": "底部导航/我的选中",
@@ -93668,7 +93827,7 @@
           "height": 52
         },
         {
-          "id": "ejog6",
+          "id": "UnODf",
           "type": "ref",
           "ref": "Hae5C",
           "name": "底部安全区/Touch Bar",
@@ -93821,8 +93980,8 @@
     {
       "type": "rectangle",
       "id": "kClGf",
-      "x": -4600,
-      "y": 9243,
+      "x": -5030,
+      "y": 9277,
       "fill": {
         "type": "image",
         "enabled": true,
@@ -93835,22 +93994,22 @@
     {
       "type": "rectangle",
       "id": "Pc1kz",
-      "x": -4185,
-      "y": 9461,
+      "x": -4600,
+      "y": 9277,
       "fill": {
         "type": "image",
         "enabled": true,
         "url": "image-1.png",
         "mode": "fill"
       },
-      "width": 276,
-      "height": 596
+      "width": 390,
+      "height": 842
     },
     {
       "type": "frame",
       "id": "mkGDF",
-      "x": -5030,
-      "y": 9243,
+      "x": -2513,
+      "y": 8856,
       "name": "页面 · 我的 · 彩虹会员融合",
       "clip": true,
       "width": 390,
@@ -93950,7 +94109,7 @@
               "type": "frame",
               "id": "NnUzc",
               "x": 0,
-              "y": 90,
+              "y": 88,
               "name": "Frame 1142815192",
               "width": 390,
               "layout": "vertical",
@@ -93959,7 +94118,7 @@
               "children": [
                 {
                   "type": "rectangle",
-                  "cornerRadius": 36,
+                  "cornerRadius": 100,
                   "id": "O7pHDp",
                   "name": "彩虹资料头像",
                   "fill": {
@@ -93968,8 +94127,8 @@
                     "url": "图片素材/image-11.png",
                     "mode": "fill"
                   },
-                  "width": 72,
-                  "height": 72,
+                  "width": 80,
+                  "height": 80,
                   "stroke": "#FFFFFF",
                   "strokeWidth": 1,
                   "strokeAlignment": "inner"
@@ -94003,7 +94162,7 @@
                       "fill": "#6B7280",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "游客  /Joined in 2026",
+                      "content": "俱乐部成员  /Joined in 2026",
                       "lineHeight": 1,
                       "textAlign": "center",
                       "fontFamily": "Noto Sans SC",
@@ -94018,477 +94177,177 @@
               "type": "frame",
               "id": "Iw64i",
               "x": 0,
-              "y": 250,
+              "y": 272,
               "name": "页面内容 · Auto Layout",
               "width": 390,
+              "height": 445,
               "layout": "vertical",
               "gap": 20,
+              "padding": [
+                0,
+                20
+              ],
               "children": [
                 {
                   "type": "frame",
-                  "id": "q4OKy",
-                  "name": "模块 · 小工具",
+                  "id": "bQudq",
+                  "name": "参考右图 · 设置菜单",
                   "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 16,
                   "layout": "vertical",
-                  "gap": 12,
                   "padding": [
                     0,
-                    0,
-                    0,
-                    20
+                    16
                   ],
                   "children": [
                     {
-                      "type": "text",
-                      "id": "Ub3PI",
-                      "name": "副标题 · 小工具",
-                      "fill": "#1A1A1A",
-                      "textGrowth": "fixed-width",
-                      "width": 350,
-                      "content": "小工具",
-                      "lineHeight": 1,
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 16,
-                      "fontWeight": "700"
-                    },
-                    {
                       "type": "frame",
-                      "id": "Pjnjx",
-                      "name": "工具列表 · 可扩展",
+                      "id": "dp2iL",
+                      "name": "设置项 · 修改资料",
                       "width": "fill_container",
-                      "height": 108,
                       "gap": 12,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "alignItems": "center",
                       "children": [
                         {
-                          "type": "frame",
-                          "id": "xeZvH",
-                          "name": "工具卡片 · 车袜子",
-                          "width": 320,
-                          "height": "fill_container",
-                          "fill": "#FFFFFF",
-                          "cornerRadius": 20,
-                          "gap": 8,
-                          "padding": 16,
-                          "justifyContent": "space_between",
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "g6lGNM",
-                              "name": "信息 · 车袜子",
-                              "width": 230,
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "hEOfy",
-                                  "name": "名称 · 车袜子",
-                                  "fill": "#1A1A1A",
-                                  "content": "Chwazi",
-                                  "fontFamily": "Noto Sans SC",
-                                  "fontSize": 16,
-                                  "fontWeight": "700"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "HzHqD",
-                                  "name": "说明 · 车袜子",
-                                  "fill": "#6B7280",
-                                  "content": "多人触摸手机屏幕\n快速选择一人",
-                                  "fontFamily": "Noto Sans SC",
-                                  "fontSize": 14,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "eE3rr",
-                              "name": "图标 · 桌游库",
-                              "width": 18,
-                              "height": 18,
-                              "icon": "sparkles",
-                              "library": "lucide",
-                              "fill": "#F47B2E"
-                            }
-                          ]
+                          "type": "icon",
+                          "id": "Le30z",
+                          "name": "图标 · 修改资料",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "pencil-simple",
+                          "library": "phosphor",
+                          "weight": 300,
+                          "fill": "#111827"
                         },
                         {
-                          "type": "frame",
-                          "id": "DDscZ",
-                          "name": "工具卡片 · 桌游库",
-                          "width": 320,
-                          "height": "fill_container",
-                          "fill": "#FFFFFF",
-                          "cornerRadius": 20,
-                          "gap": 8,
-                          "padding": 16,
-                          "justifyContent": "space_between",
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "ZR1ri",
-                              "name": "信息 · 桌游库",
-                              "width": 230,
-                              "layout": "vertical",
-                              "gap": 4,
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "w2smDL",
-                                  "name": "名称 · 桌游库",
-                                  "fill": "#1A1A1A",
-                                  "content": "桌游库",
-                                  "fontFamily": "Noto Sans SC",
-                                  "fontSize": 14,
-                                  "fontWeight": "700"
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "qzEmq",
-                                  "name": "说明 · 桌游库",
-                                  "fill": "#6B7280",
-                                  "content": "收藏与查找",
-                                  "fontFamily": "Noto Sans SC",
-                                  "fontSize": 12,
-                                  "fontWeight": "normal"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "icon",
-                              "id": "Q8E9fO",
-                              "name": "图标 · 吃袜子",
-                              "width": 18,
-                              "height": 18,
-                              "icon": "dice-5",
-                              "library": "lucide",
-                              "fill": "#F15A3A"
-                            }
-                          ]
+                          "type": "text",
+                          "id": "d1QOl",
+                          "name": "文字 · 修改资料",
+                          "fill": "#111827",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "修改资料",
+                          "lineHeight": 1,
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 16
+                        },
+                        {
+                          "type": "icon",
+                          "id": "eoJ4k",
+                          "name": "箭头 · 修改资料",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "caret-right",
+                          "library": "phosphor",
+                          "weight": 300,
+                          "fill": "#B0B0B0"
                         }
                       ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "ci1KD",
-                  "name": "模块 · 我的设置",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 12,
-                  "padding": [
-                    0,
-                    20
-                  ],
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "Nspg8",
-                      "name": "副标题 · 我的设置",
-                      "fill": "#1A1A1A",
-                      "textGrowth": "fixed-width",
-                      "width": 350,
-                      "content": "我的设置",
-                      "lineHeight": 1,
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 16,
-                      "fontWeight": "700"
                     },
                     {
                       "type": "frame",
-                      "id": "bQudq",
-                      "name": "参考右图 · 设置菜单",
+                      "id": "c67q7K",
+                      "name": "设置项 · 删除权限",
                       "width": "fill_container",
-                      "fill": "#FFFFFF",
-                      "cornerRadius": 24,
-                      "layout": "vertical",
+                      "stroke": "#ECECEC",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "strokeAlignment": "inner",
+                      "gap": 12,
                       "padding": [
-                        0,
-                        16
+                        20,
+                        0
                       ],
+                      "alignItems": "center",
                       "children": [
                         {
-                          "type": "frame",
-                          "id": "dp2iL",
-                          "name": "设置项 · 修改资料",
-                          "width": "fill_container",
-                          "height": 44,
-                          "stroke": "#ECECEC",
-                          "strokeWidth": {
-                            "bottom": 1
-                          },
-                          "gap": 12,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "Le30z",
-                              "name": "图标 · 修改资料",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "pencil",
-                              "library": "lucide",
-                              "fill": "#6B7280"
-                            },
-                            {
-                              "type": "text",
-                              "id": "d1QOl",
-                              "name": "文字 · 修改资料",
-                              "fill": "#1A1A1A",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "修改资料",
-                              "fontFamily": "Noto Sans SC",
-                              "fontSize": 14,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "icon",
-                              "id": "eoJ4k",
-                              "name": "箭头 · 修改资料",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "#B0B0B0"
-                            }
-                          ]
+                          "type": "icon",
+                          "id": "cQPuI",
+                          "name": "图标 · 删除权限",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "lock-key-open",
+                          "library": "phosphor",
+                          "weight": 300,
+                          "fill": "#E5484D"
                         },
                         {
-                          "type": "frame",
-                          "id": "VMmsz",
-                          "name": "设置项 · 修改密码",
+                          "type": "text",
+                          "id": "FXEEu",
+                          "name": "文字 · 删除权限",
+                          "fill": "#E5484D",
+                          "textGrowth": "fixed-width",
                           "width": "fill_container",
-                          "height": 44,
-                          "stroke": "#ECECEC",
-                          "strokeWidth": {
-                            "bottom": 1
-                          },
-                          "gap": 12,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "Kp0sY",
-                              "name": "图标 · 修改密码",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "lock-keyhole",
-                              "library": "lucide",
-                              "fill": "#6B7280"
-                            },
-                            {
-                              "type": "text",
-                              "id": "gaoM0",
-                              "name": "文字 · 修改密码",
-                              "fill": "#1A1A1A",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "修改密码",
-                              "fontFamily": "Noto Sans SC",
-                              "fontSize": 14,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "icon",
-                              "id": "qko9q",
-                              "name": "箭头 · 修改密码",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "#B0B0B0"
-                            }
-                          ]
+                          "content": "删除权限",
+                          "lineHeight": 1,
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 16
                         },
                         {
-                          "type": "frame",
-                          "id": "CowCS",
-                          "name": "设置项 · 立即登录",
-                          "width": "fill_container",
-                          "height": 44,
-                          "stroke": "#ECECEC",
-                          "strokeWidth": {
-                            "bottom": 1
-                          },
-                          "gap": 12,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "P1ife8",
-                              "name": "图标 · 立即登录",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "log-in",
-                              "library": "lucide",
-                              "fill": "#6B7280"
-                            },
-                            {
-                              "type": "text",
-                              "id": "otPgK",
-                              "name": "文字 · 立即登录",
-                              "fill": "#1A1A1A",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "立即登录",
-                              "fontFamily": "Noto Sans SC",
-                              "fontSize": 14,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "icon",
-                              "id": "TGRqZ",
-                              "name": "箭头 · 立即登录",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "#B0B0B0"
-                            }
-                          ]
+                          "type": "icon",
+                          "id": "u8CnpD",
+                          "name": "箭头 · 删除权限",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "caret-right",
+                          "library": "phosphor",
+                          "weight": 300,
+                          "fill": "#B0B0B0"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "gObsW",
+                      "name": "设置项 · 退出登录",
+                      "width": "fill_container",
+                      "height": 55,
+                      "gap": 12,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "bYsb6",
+                          "name": "图标 · 退出登录",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "sign-out",
+                          "library": "phosphor",
+                          "weight": 300,
+                          "fill": "#E5484D"
                         },
                         {
-                          "type": "frame",
-                          "id": "vOUlB",
-                          "name": "设置项 · 设置面板",
+                          "type": "text",
+                          "id": "tQVGl",
+                          "name": "文字 · 退出登录",
+                          "fill": "#E5484D",
+                          "textGrowth": "fixed-width",
                           "width": "fill_container",
-                          "height": 44,
-                          "stroke": "#ECECEC",
-                          "strokeWidth": {
-                            "bottom": 1
-                          },
-                          "gap": 12,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "PQvKW",
-                              "name": "图标 · 设置面板",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "sliders-horizontal",
-                              "library": "lucide",
-                              "fill": "#6B7280"
-                            },
-                            {
-                              "type": "text",
-                              "id": "pF2Z3",
-                              "name": "文字 · 设置面板",
-                              "fill": "#1A1A1A",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "设置面板",
-                              "fontFamily": "Noto Sans SC",
-                              "fontSize": 14,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "icon",
-                              "id": "prnTw",
-                              "name": "箭头 · 设置面板",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "#B0B0B0"
-                            }
-                          ]
+                          "content": "退出登录",
+                          "lineHeight": 1,
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 16
                         },
                         {
-                          "type": "frame",
-                          "id": "OfAnu",
-                          "name": "设置项 · 使用帮助",
-                          "width": "fill_container",
-                          "height": 44,
-                          "stroke": "#ECECEC",
-                          "strokeWidth": {
-                            "bottom": 1
-                          },
-                          "gap": 12,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "CsLqh",
-                              "name": "图标 · 使用帮助",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "info",
-                              "library": "lucide",
-                              "fill": "#6B7280"
-                            },
-                            {
-                              "type": "text",
-                              "id": "ho56J",
-                              "name": "文字 · 使用帮助",
-                              "fill": "#1A1A1A",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "使用帮助",
-                              "fontFamily": "Noto Sans SC",
-                              "fontSize": 14,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "icon",
-                              "id": "S4LTyZ",
-                              "name": "箭头 · 使用帮助",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "#B0B0B0"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "o3zle",
-                          "name": "设置项 · 隐私条款",
-                          "width": "fill_container",
-                          "height": 44,
-                          "gap": 12,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "wj17M",
-                              "name": "图标 · 隐私条款",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "shield-check",
-                              "library": "lucide",
-                              "fill": "#6B7280"
-                            },
-                            {
-                              "type": "text",
-                              "id": "n4iY9B",
-                              "name": "文字 · 隐私条款",
-                              "fill": "#1A1A1A",
-                              "textGrowth": "fixed-width",
-                              "width": "fill_container",
-                              "content": "隐私条款",
-                              "fontFamily": "Noto Sans SC",
-                              "fontSize": 14,
-                              "fontWeight": "normal"
-                            },
-                            {
-                              "type": "icon",
-                              "id": "I7yTi",
-                              "name": "箭头 · 隐私条款",
-                              "width": 16,
-                              "height": 16,
-                              "icon": "chevron-right",
-                              "library": "lucide",
-                              "fill": "#B0B0B0"
-                            }
-                          ]
+                          "type": "icon",
+                          "id": "c6gsj",
+                          "name": "箭头 · 退出登录",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "caret-right",
+                          "library": "phosphor",
+                          "weight": 300,
+                          "fill": "#B0B0B0"
                         }
                       ]
                     }
@@ -94540,562 +94399,62 @@
       ]
     },
     {
-      "type": "frame",
-      "id": "yeAG9",
-      "x": 406,
-      "y": 8856,
-      "name": "页面 · 我的 · 彩虹会员融合 · Frame 02",
-      "clip": true,
-      "width": 390,
-      "height": 844,
-      "fill": "#FFFFFF",
-      "layout": "none",
-      "children": [
-        {
-          "id": "WuzEx",
-          "type": "ref",
-          "ref": "ihvbF",
-          "name": "顶部导航/我的",
-          "width": 390,
-          "height": 88,
-          "x": 0,
-          "y": 0
-        },
-        {
-          "id": "F00TDm",
-          "type": "ref",
-          "ref": "EoArr",
-          "name": "底部导航/我的选中",
-          "layoutPosition": "absolute",
-          "x": 0,
-          "y": 754,
-          "width": 390,
-          "height": 52
-        },
-        {
-          "id": "duSOa",
-          "type": "ref",
-          "ref": "Hae5C",
-          "name": "底部安全区/Touch Bar",
-          "x": 0,
-          "y": 806,
-          "width": 390,
-          "height": 38,
-          "layoutPosition": "absolute"
-        },
-        {
-          "type": "frame",
-          "id": "RXfLd",
-          "x": 0,
-          "y": 88,
-          "name": "彩虹会员融合 · 内容区",
-          "clip": true,
-          "width": 390,
-          "height": 666,
-          "layout": "none",
-          "children": [
-            {
-              "type": "frame",
-              "id": "x81FH5",
-              "x": 0,
-              "y": 0,
-              "name": "彩虹资料头部",
-              "clip": true,
-              "width": 390,
-              "height": 252,
-              "fill": "#FFFDFB",
-              "layout": "none",
-              "children": [
-                {
-                  "type": "ellipse",
-                  "id": "yZ3jI",
-                  "x": -78,
-                  "y": -112,
-                  "name": "彩虹弧线 · 橙",
-                  "fill": "#00000000",
-                  "width": 546,
-                  "height": 188,
-                  "stroke": "#F47C48",
-                  "strokeWidth": 12
-                },
-                {
-                  "type": "ellipse",
-                  "id": "pWs7W",
-                  "x": -76,
-                  "y": -96,
-                  "name": "彩虹弧线 · 粉",
-                  "fill": "#00000000",
-                  "width": 542,
-                  "height": 176,
-                  "stroke": "#F6B6A5",
-                  "strokeWidth": 12
-                },
-                {
-                  "type": "ellipse",
-                  "id": "dKJG8",
-                  "x": -72,
-                  "y": -80,
-                  "name": "彩虹弧线 · 黄",
-                  "fill": "#00000000",
-                  "width": 534,
-                  "height": 164,
-                  "stroke": "#FFD85A",
-                  "strokeWidth": 12
-                },
-                {
-                  "type": "rectangle",
-                  "cornerRadius": 36,
-                  "id": "AKnWR",
-                  "x": 150,
-                  "y": 34,
-                  "name": "彩虹资料头像",
-                  "fill": {
-                    "type": "image",
-                    "enabled": true,
-                    "url": "图片素材/image-11.png",
-                    "mode": "fill"
-                  },
-                  "width": 72,
-                  "height": 72,
-                  "stroke": "#FFFFFF",
-                  "strokeWidth": 3
-                },
-                {
-                  "type": "text",
-                  "id": "U30az6",
-                  "x": 0,
-                  "y": 112,
-                  "name": "彩虹资料昵称",
-                  "fill": "#1A1A1A",
-                  "textGrowth": "fixed-width",
-                  "width": 390,
-                  "content": "Novusluna",
-                  "textAlign": "center",
-                  "fontFamily": "Inter",
-                  "fontSize": 20,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "LQI9g",
-                  "x": 0,
-                  "y": 138,
-                  "name": "彩虹资料副标题",
-                  "fill": "#6B7280",
-                  "textGrowth": "fixed-width",
-                  "width": 390,
-                  "content": "JOURNEY  /  2026",
-                  "textAlign": "center",
-                  "fontFamily": "IBM Plex Mono",
-                  "fontSize": 10,
-                  "fontWeight": "normal",
-                  "letterSpacing": 1.1
-                },
-                {
-                  "type": "frame",
-                  "id": "P8AFL",
-                  "x": 20,
-                  "y": 164,
-                  "name": "彩虹会员通行证",
-                  "clip": true,
-                  "width": 350,
-                  "height": 104,
-                  "fill": "#FFD84D",
-                  "cornerRadius": 14,
-                  "layout": "none",
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "x93w1",
-                      "x": 16,
-                      "y": 14,
-                      "name": "通行证眉题",
-                      "fill": "#3F3A20",
-                      "content": "DRAGON CITY MEMBER PASS",
-                      "fontFamily": "IBM Plex Mono",
-                      "fontSize": 9,
-                      "fontWeight": "normal",
-                      "letterSpacing": 0.8
-                    },
-                    {
-                      "type": "text",
-                      "id": "sngrF",
-                      "x": 16,
-                      "y": 34,
-                      "name": "通行证标题",
-                      "fill": "#1A1A1A",
-                      "content": "30-Day Guest Pass",
-                      "fontFamily": "Inter",
-                      "fontSize": 16,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "m0S7vW",
-                      "x": 16,
-                      "y": 58,
-                      "name": "通行证说明",
-                      "fill": "#4A4324",
-                      "textGrowth": "fixed-width",
-                      "width": 180,
-                      "content": "带朋友来一起玩，解锁龙城的下一场活动。",
-                      "lineHeight": 1.35,
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 11,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "ellipse",
-                      "id": "jlBWZ",
-                      "x": -28,
-                      "y": 72,
-                      "name": "通行证波形 · 蓝",
-                      "fill": "#55A8F5",
-                      "width": 170,
-                      "height": 94
-                    },
-                    {
-                      "type": "ellipse",
-                      "id": "R2E35",
-                      "x": 156,
-                      "y": 68,
-                      "name": "通行证波形 · 橙",
-                      "fill": "#F47C48",
-                      "width": 176,
-                      "height": 102
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "CSLps",
-              "x": 20,
-              "y": 272,
-              "name": "参考右图 · 设置菜单",
-              "width": 350,
-              "height": 328,
-              "fill": "#FFFFFF",
-              "layout": "vertical",
-              "padding": [
-                0,
-                12
-              ],
-              "children": [
-                {
-                  "type": "text",
-                  "id": "DPUiV",
-                  "name": "设置菜单标题",
-                  "fill": "#1A1A1A",
-                  "content": "我的设置",
-                  "fontFamily": "Noto Sans SC",
-                  "fontSize": 18,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "frame",
-                  "id": "k497yY",
-                  "name": "设置项 · 修改资料",
-                  "width": "fill_container",
-                  "height": 44,
-                  "stroke": "#ECECEC",
-                  "strokeWidth": {
-                    "bottom": 1
-                  },
-                  "gap": 12,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "P6U5N",
-                      "name": "图标 · 修改资料",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "pencil",
-                      "library": "lucide",
-                      "fill": "#6B7280"
-                    },
-                    {
-                      "type": "text",
-                      "id": "WfLwG",
-                      "name": "文字 · 修改资料",
-                      "fill": "#1A1A1A",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "修改资料",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "HR3ML",
-                      "name": "箭头 · 修改资料",
-                      "width": 15,
-                      "height": 15,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#B0B0B0"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "w3qAZW",
-                  "name": "设置项 · 修改密码",
-                  "width": "fill_container",
-                  "height": 44,
-                  "stroke": "#ECECEC",
-                  "strokeWidth": {
-                    "bottom": 1
-                  },
-                  "gap": 12,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "uvOr1",
-                      "name": "图标 · 修改密码",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "lock-keyhole",
-                      "library": "lucide",
-                      "fill": "#6B7280"
-                    },
-                    {
-                      "type": "text",
-                      "id": "m3MN2",
-                      "name": "文字 · 修改密码",
-                      "fill": "#1A1A1A",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "修改密码",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "T8Cmb",
-                      "name": "箭头 · 修改密码",
-                      "width": 15,
-                      "height": 15,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#B0B0B0"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "yBT49",
-                  "name": "设置项 · 立即登录",
-                  "width": "fill_container",
-                  "height": 44,
-                  "stroke": "#ECECEC",
-                  "strokeWidth": {
-                    "bottom": 1
-                  },
-                  "gap": 12,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "j6AK6y",
-                      "name": "图标 · 立即登录",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "log-in",
-                      "library": "lucide",
-                      "fill": "#6B7280"
-                    },
-                    {
-                      "type": "text",
-                      "id": "yfIXf",
-                      "name": "文字 · 立即登录",
-                      "fill": "#1A1A1A",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "立即登录",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "HLxxt",
-                      "name": "箭头 · 立即登录",
-                      "width": 15,
-                      "height": 15,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#B0B0B0"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "Kv8GX",
-                  "name": "设置项 · 设置面板",
-                  "width": "fill_container",
-                  "height": 44,
-                  "stroke": "#ECECEC",
-                  "strokeWidth": {
-                    "bottom": 1
-                  },
-                  "gap": 12,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "EPODz",
-                      "name": "图标 · 设置面板",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "sliders-horizontal",
-                      "library": "lucide",
-                      "fill": "#6B7280"
-                    },
-                    {
-                      "type": "text",
-                      "id": "F6uYG",
-                      "name": "文字 · 设置面板",
-                      "fill": "#1A1A1A",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "设置面板",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "jVwrA",
-                      "name": "箭头 · 设置面板",
-                      "width": 15,
-                      "height": 15,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#B0B0B0"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "o7ej8i",
-                  "name": "设置项 · 使用帮助",
-                  "width": "fill_container",
-                  "height": 44,
-                  "stroke": "#ECECEC",
-                  "strokeWidth": {
-                    "bottom": 1
-                  },
-                  "gap": 12,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "wDUAg",
-                      "name": "图标 · 使用帮助",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "info",
-                      "library": "lucide",
-                      "fill": "#6B7280"
-                    },
-                    {
-                      "type": "text",
-                      "id": "f8muE",
-                      "name": "文字 · 使用帮助",
-                      "fill": "#1A1A1A",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "使用帮助",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "FZwj4",
-                      "name": "箭头 · 使用帮助",
-                      "width": 15,
-                      "height": 15,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#B0B0B0"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "qFmJb",
-                  "name": "设置项 · 隐私条款",
-                  "width": "fill_container",
-                  "height": 44,
-                  "stroke": "#ECECEC",
-                  "strokeWidth": {
-                    "bottom": 1
-                  },
-                  "gap": 12,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "Ko8E7",
-                      "name": "图标 · 隐私条款",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "shield-check",
-                      "library": "lucide",
-                      "fill": "#6B7280"
-                    },
-                    {
-                      "type": "text",
-                      "id": "GXP6l",
-                      "name": "文字 · 隐私条款",
-                      "fill": "#1A1A1A",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "隐私条款",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "v8Eh3e",
-                      "name": "箭头 · 隐私条款",
-                      "width": 15,
-                      "height": 15,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#B0B0B0"
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "type": "text",
+      "id": "JwTSh",
+      "x": -4985,
+      "y": 9598,
+      "fill": "#000000ff",
+      "textGrowth": "fixed-width-height",
+      "width": 44,
+      "height": 28,
+      "content": "Be",
+      "fontFamily": "Inter",
+      "fontSize": 16,
+      "fontWeight": "normal"
+    },
+    {
+      "type": "rectangle",
+      "id": "NPxFx",
+      "x": 12685,
+      "y": 4989,
+      "fill": {
+        "type": "image",
+        "enabled": true,
+        "url": "image-5.png",
+        "mode": "fill"
+      },
+      "width": 646,
+      "height": 422
+    },
+    {
+      "type": "rectangle",
+      "id": "eXTHv",
+      "x": 13818,
+      "y": 963,
+      "fill": {
+        "type": "image",
+        "enabled": true,
+        "url": "image-17.png",
+        "mode": "fill"
+      },
+      "width": 300,
+      "height": 300
     },
     {
       "type": "frame",
-      "id": "y5EDf",
-      "x": 892,
+      "id": "f2E2I",
+      "x": -1653,
       "y": 8856,
-      "name": "页面 · 我的 · 彩虹会员融合 · 系统字体修正版",
+      "name": "页面 · 我的 · 彩虹会员融合 · 未登录",
       "clip": true,
       "width": 390,
       "height": 844,
-      "fill": "#FFFFFF",
+      "fill": "#f8fafc",
       "layout": "none",
       "children": [
         {
           "type": "frame",
-          "id": "xidqJ",
+          "id": "oT1Z8",
           "x": 0,
           "y": 0,
           "name": "彩虹会员融合 · 内容区",
@@ -95105,219 +94464,162 @@
           "layout": "none",
           "children": [
             {
-              "type": "frame",
-              "id": "n300We",
+              "type": "group",
+              "id": "hVBJ1",
               "x": 0,
               "y": 0,
-              "name": "彩虹资料头部",
-              "clip": true,
-              "width": 390,
-              "height": 470,
-              "fill": "#FFFFFF",
-              "layout": "none",
+              "name": "顶部彩虹",
               "children": [
                 {
-                  "type": "ellipse",
-                  "id": "D1wRJu",
-                  "x": -105,
-                  "y": -150,
-                  "name": "彩虹弧线 · 橙",
-                  "fill": "#00000000",
-                  "width": 600,
-                  "height": 300,
-                  "stroke": "#F15A3A",
-                  "strokeWidth": 40
-                },
-                {
-                  "type": "ellipse",
-                  "id": "tAJTB",
-                  "x": -105,
-                  "y": -112,
-                  "name": "彩虹弧线 · 粉",
-                  "fill": "#00000000",
-                  "width": 600,
-                  "height": 270,
-                  "stroke": "#F47B2E",
-                  "strokeWidth": 40
-                },
-                {
-                  "type": "ellipse",
-                  "id": "S7eHzH",
-                  "x": -105,
-                  "y": -74,
-                  "name": "彩虹弧线 · 黄",
-                  "fill": "#00000000",
-                  "width": 600,
-                  "height": 240,
-                  "stroke": "#F69A45",
-                  "strokeWidth": 40
-                },
-                {
-                  "type": "rectangle",
-                  "cornerRadius": 36,
-                  "id": "YlYbX",
-                  "x": 150,
-                  "y": 162,
-                  "name": "彩虹资料头像",
-                  "fill": {
-                    "type": "image",
-                    "enabled": true,
-                    "url": "图片素材/image-11.png",
-                    "mode": "fill"
-                  },
-                  "width": 72,
-                  "height": 72,
-                  "stroke": "#FFFFFF",
-                  "strokeWidth": 3
-                },
-                {
-                  "type": "text",
-                  "id": "VzvMs",
+                  "type": "path",
+                  "id": "nTJP3",
                   "x": 0,
-                  "y": 246,
-                  "name": "彩虹资料昵称",
-                  "fill": "#1A1A1A",
-                  "textGrowth": "fixed-width",
+                  "y": 0,
+                  "name": "彩虹带 · 红橙",
+                  "geometry": "M0 0h390v40c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#F15A3A",
                   "width": 390,
-                  "content": "mei ye",
-                  "textAlign": "center",
-                  "fontFamily": "Noto Sans SC",
-                  "fontSize": 40,
-                  "fontWeight": "700"
+                  "height": 146
                 },
                 {
-                  "type": "text",
-                  "id": "o6w3H",
+                  "type": "path",
+                  "id": "hOkhx",
                   "x": 0,
-                  "y": 298,
-                  "name": "彩虹资料副标题",
-                  "fill": "#6B7280",
-                  "textGrowth": "fixed-width",
+                  "y": 0,
+                  "name": "彩虹带 · 橙",
+                  "geometry": "M0 40c90-40 300-40 390 0v35c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#F47B2E",
                   "width": 390,
-                  "content": "JOURNEY  /  2022",
-                  "textAlign": "center",
-                  "fontFamily": "Noto Sans SC",
-                  "fontSize": 11,
-                  "fontWeight": "normal"
+                  "height": 146
                 },
+                {
+                  "type": "path",
+                  "id": "m7XRPS",
+                  "x": 0,
+                  "y": 0,
+                  "name": "彩虹带 · 金橙",
+                  "geometry": "M0 75c90-40 300-40 390 0v35c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#F69A45",
+                  "width": 390,
+                  "height": 146
+                },
+                {
+                  "type": "path",
+                  "id": "vNJuC",
+                  "x": 0,
+                  "y": 0,
+                  "name": "彩虹带 · 浅黄",
+                  "geometry": "M0 110c90-40 300-40 390 0v36c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#FDB358",
+                  "width": 390,
+                  "height": 146
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Euzf7",
+              "x": 0,
+              "y": 88,
+              "name": "Frame 1142815192",
+              "width": 390,
+              "layout": "vertical",
+              "gap": 16,
+              "padding": [
+                0,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
                 {
                   "type": "frame",
-                  "id": "lAgp9",
-                  "x": 20,
-                  "y": 350,
-                  "name": "彩虹会员通行证",
+                  "id": "dbulE",
+                  "name": "Frame 1142815198",
                   "clip": true,
-                  "width": 350,
-                  "height": 112,
-                  "fill": "#FFD84D",
-                  "cornerRadius": 14,
+                  "width": 80,
+                  "height": 80,
+                  "fill": "#545454ff",
+                  "cornerRadius": 100,
+                  "stroke": "#ffffffff",
+                  "strokeWidth": 1,
+                  "strokeAlignment": "inner",
                   "layout": "none",
                   "children": [
                     {
-                      "type": "text",
-                      "id": "ISYEi",
-                      "x": 16,
-                      "y": 14,
-                      "name": "通行证眉题",
-                      "fill": "#3F3A20",
-                      "content": "HEADSPACE 30-DAY GUEST PASS",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 9,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "text",
-                      "id": "Tde0C",
-                      "x": 16,
-                      "y": 34,
-                      "name": "通行证标题",
-                      "fill": "#1A1A1A",
-                      "content": "30-Day Guest Pass",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 16,
-                      "fontWeight": "700"
-                    },
-                    {
-                      "type": "text",
-                      "id": "FPbp1",
-                      "x": 16,
-                      "y": 58,
-                      "name": "通行证说明",
-                      "fill": "#4A4324",
-                      "textGrowth": "fixed-width",
-                      "width": 180,
-                      "content": "带朋友来一起玩，解锁龙城的下一场活动。",
-                      "lineHeight": 1.35,
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 11,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "ellipse",
-                      "id": "JI3FA",
-                      "x": -28,
-                      "y": 78,
-                      "name": "通行证波形 · 蓝",
-                      "fill": "#55A8F5",
-                      "width": 190,
-                      "height": 118
-                    },
-                    {
-                      "type": "ellipse",
-                      "id": "jvLGo",
-                      "x": 148,
-                      "y": 74,
-                      "name": "通行证波形 · 橙",
-                      "fill": "#F47C48",
-                      "width": 200,
-                      "height": 124
+                      "type": "rectangle",
+                      "id": "bqU7X",
+                      "x": -10,
+                      "y": -4,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "image-33.png",
+                        "mode": "fill"
+                      },
+                      "width": 100,
+                      "height": 100
                     }
                   ]
                 },
                 {
-                  "type": "ellipse",
-                  "id": "Vd0HT",
-                  "x": -105,
-                  "y": -36,
-                  "name": "彩虹弧线 · 浅黄加宽",
-                  "fill": "#00000000",
-                  "width": 600,
-                  "height": 210,
-                  "stroke": "#FDB358",
-                  "strokeWidth": 40
-                },
-                {
                   "type": "frame",
-                  "id": "cAllo",
-                  "x": 24,
-                  "y": 96,
-                  "name": "参考图设置按钮",
-                  "width": 48,
-                  "height": 48,
-                  "fill": "#FFFFFF",
-                  "cornerRadius": 24,
-                  "effect": {
-                    "type": "shadow",
-                    "shadowType": "outer",
-                    "color": "#00000026",
-                    "offset": {
-                      "x": 0,
-                      "y": 3
-                    },
-                    "blur": 6
-                  },
-                  "justifyContent": "center",
-                  "alignItems": "center",
+                  "id": "BjnGD",
+                  "name": "Frame 1142815193",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 12,
                   "children": [
                     {
-                      "type": "icon",
-                      "id": "GH8gs",
-                      "name": "设置齿轮",
-                      "width": 24,
-                      "height": 24,
-                      "icon": "settings",
-                      "library": "lucide",
-                      "fill": "#3F3F46"
+                      "type": "text",
+                      "id": "ymc56",
+                      "name": "彩虹资料昵称",
+                      "fill": "#1A1A1A",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "神秘用户",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 32,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "DSu3I",
+                      "name": "彩虹资料副标题",
+                      "fill": "#6B7280",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "非常神秘的一位伙伴",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -95325,308 +94627,79 @@
             },
             {
               "type": "frame",
-              "id": "a3Vzz",
-              "x": 20,
-              "y": 486,
-              "name": "参考右图 · 设置菜单",
-              "width": 350,
-              "height": 248,
-              "fill": "#FFFFFF",
+              "id": "kxdnc",
+              "x": 0,
+              "y": 272,
+              "name": "页面内容 · Auto Layout",
+              "width": 390,
+              "height": 445,
               "layout": "vertical",
+              "gap": 20,
               "padding": [
                 0,
-                12
+                20
               ],
               "children": [
                 {
-                  "type": "text",
-                  "id": "MkUh4",
-                  "name": "设置菜单标题",
-                  "fill": "#1A1A1A",
-                  "content": "我的设置",
-                  "fontFamily": "Noto Sans SC",
-                  "fontSize": 18,
-                  "fontWeight": "700"
-                },
-                {
                   "type": "frame",
-                  "id": "h8pZGh",
-                  "name": "设置项 · 修改资料",
+                  "id": "TObq8",
+                  "name": "参考右图 · 设置菜单",
                   "width": "fill_container",
-                  "height": 38,
-                  "stroke": "#ECECEC",
-                  "strokeWidth": {
-                    "bottom": 1
-                  },
-                  "gap": 12,
-                  "alignItems": "center",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 16,
+                  "layout": "vertical",
+                  "padding": [
+                    0,
+                    16
+                  ],
                   "children": [
                     {
-                      "type": "icon",
-                      "id": "YRd38",
-                      "name": "图标 · 修改资料",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "pencil",
-                      "library": "lucide",
-                      "fill": "#6B7280"
-                    },
-                    {
-                      "type": "text",
-                      "id": "qmom8",
-                      "name": "文字 · 修改资料",
-                      "fill": "#1A1A1A",
-                      "textGrowth": "fixed-width",
+                      "type": "frame",
+                      "id": "d2jrwH",
+                      "name": "设置项 · 登录账户",
                       "width": "fill_container",
-                      "content": "修改资料",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "Y4wpt4",
-                      "name": "箭头 · 修改资料",
-                      "width": 15,
-                      "height": 15,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#B0B0B0"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "mD2Bl",
-                  "name": "设置项 · 修改密码",
-                  "width": "fill_container",
-                  "height": 38,
-                  "stroke": "#ECECEC",
-                  "strokeWidth": {
-                    "bottom": 1
-                  },
-                  "gap": 12,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "MlwNg",
-                      "name": "图标 · 修改密码",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "lock-keyhole",
-                      "library": "lucide",
-                      "fill": "#6B7280"
-                    },
-                    {
-                      "type": "text",
-                      "id": "XxnRe",
-                      "name": "文字 · 修改密码",
-                      "fill": "#1A1A1A",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "修改密码",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "EtBG5",
-                      "name": "箭头 · 修改密码",
-                      "width": 15,
-                      "height": 15,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#B0B0B0"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "wgQRU",
-                  "name": "设置项 · 立即登录",
-                  "width": "fill_container",
-                  "height": 38,
-                  "stroke": "#ECECEC",
-                  "strokeWidth": {
-                    "bottom": 1
-                  },
-                  "gap": 12,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "bg8PX",
-                      "name": "图标 · 立即登录",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "log-in",
-                      "library": "lucide",
-                      "fill": "#6B7280"
-                    },
-                    {
-                      "type": "text",
-                      "id": "fPWOl",
-                      "name": "文字 · 立即登录",
-                      "fill": "#1A1A1A",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "立即登录",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "FCaBX",
-                      "name": "箭头 · 立即登录",
-                      "width": 15,
-                      "height": 15,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#B0B0B0"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "yILPv",
-                  "name": "设置项 · 设置面板",
-                  "width": "fill_container",
-                  "height": 38,
-                  "stroke": "#ECECEC",
-                  "strokeWidth": {
-                    "bottom": 1
-                  },
-                  "gap": 12,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "C82Oap",
-                      "name": "图标 · 设置面板",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "sliders-horizontal",
-                      "library": "lucide",
-                      "fill": "#6B7280"
-                    },
-                    {
-                      "type": "text",
-                      "id": "ihofV",
-                      "name": "文字 · 设置面板",
-                      "fill": "#1A1A1A",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "设置面板",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "UaIek",
-                      "name": "箭头 · 设置面板",
-                      "width": 15,
-                      "height": 15,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#B0B0B0"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "YRDMO",
-                  "name": "设置项 · 使用帮助",
-                  "width": "fill_container",
-                  "height": 38,
-                  "stroke": "#ECECEC",
-                  "strokeWidth": {
-                    "bottom": 1
-                  },
-                  "gap": 12,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "JAjDq",
-                      "name": "图标 · 使用帮助",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "info",
-                      "library": "lucide",
-                      "fill": "#6B7280"
-                    },
-                    {
-                      "type": "text",
-                      "id": "l0hko",
-                      "name": "文字 · 使用帮助",
-                      "fill": "#1A1A1A",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "使用帮助",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "LEDam",
-                      "name": "箭头 · 使用帮助",
-                      "width": 15,
-                      "height": 15,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#B0B0B0"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "rZw7e",
-                  "name": "设置项 · 隐私条款",
-                  "width": "fill_container",
-                  "height": 38,
-                  "stroke": "#ECECEC",
-                  "strokeWidth": {
-                    "bottom": 1
-                  },
-                  "gap": 12,
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "UTexR",
-                      "name": "图标 · 隐私条款",
-                      "width": 17,
-                      "height": 17,
-                      "icon": "shield-check",
-                      "library": "lucide",
-                      "fill": "#6B7280"
-                    },
-                    {
-                      "type": "text",
-                      "id": "UAuzS",
-                      "name": "文字 · 隐私条款",
-                      "fill": "#1A1A1A",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "隐私条款",
-                      "fontFamily": "Noto Sans SC",
-                      "fontSize": 13,
-                      "fontWeight": "normal"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "Ct8vv",
-                      "name": "箭头 · 隐私条款",
-                      "width": 15,
-                      "height": 15,
-                      "icon": "chevron-right",
-                      "library": "lucide",
-                      "fill": "#B0B0B0"
+                      "gap": 12,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "bvdOh",
+                          "name": "图标 · 修改资料",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "sign-in",
+                          "library": "phosphor",
+                          "weight": 300,
+                          "fill": "#111827"
+                        },
+                        {
+                          "type": "text",
+                          "id": "f20pK",
+                          "name": "文字 · 修改资料",
+                          "fill": "#111827",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "登录账户",
+                          "lineHeight": 1,
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 16
+                        },
+                        {
+                          "type": "icon",
+                          "id": "mE5Fb",
+                          "name": "箭头 · 修改资料",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "caret-right",
+                          "library": "phosphor",
+                          "weight": 300,
+                          "fill": "#B0B0B0"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -95635,7 +94708,7 @@
           ]
         },
         {
-          "id": "FRbXp",
+          "id": "Fecw4",
           "type": "ref",
           "ref": "ihvbF",
           "name": "顶部导航/我的",
@@ -95645,12 +94718,14 @@
           "y": 0,
           "descendants": {
             "vvex7": {
-              "enabled": false
+              "enabled": false,
+              "width": 390,
+              "height": 44
             }
           }
         },
         {
-          "id": "doRyp",
+          "id": "pl4Kz",
           "type": "ref",
           "ref": "EoArr",
           "name": "底部导航/我的选中",
@@ -95661,7 +94736,7 @@
           "height": 52
         },
         {
-          "id": "DPP5m",
+          "id": "VNbzz",
           "type": "ref",
           "ref": "Hae5C",
           "name": "底部安全区/Touch Bar",
@@ -95674,18 +94749,396 @@
       ]
     },
     {
-      "type": "text",
-      "id": "JwTSh",
-      "x": -4555,
-      "y": 9564,
-      "fill": "#000000ff",
-      "textGrowth": "fixed-width-height",
-      "width": 44,
-      "height": 28,
-      "content": "Be",
-      "fontFamily": "Inter",
-      "fontSize": 16,
-      "fontWeight": "normal"
+      "type": "frame",
+      "id": "j7GSCo",
+      "x": -2083,
+      "y": 8856,
+      "name": "页面 · 我的 · 彩虹会员融合",
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "#f8fafc",
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "OOGJm",
+          "x": 0,
+          "y": 0,
+          "name": "彩虹会员融合 · 内容区",
+          "clip": true,
+          "width": 390,
+          "height": 754,
+          "layout": "none",
+          "children": [
+            {
+              "type": "group",
+              "id": "y2FLj",
+              "x": 0,
+              "y": 0,
+              "name": "顶部彩虹",
+              "children": [
+                {
+                  "type": "path",
+                  "id": "tgQuK",
+                  "x": 0,
+                  "y": 0,
+                  "name": "彩虹带 · 红橙",
+                  "geometry": "M0 0h390v40c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#F15A3A",
+                  "width": 390,
+                  "height": 146
+                },
+                {
+                  "type": "path",
+                  "id": "S39Sa",
+                  "x": 0,
+                  "y": 0,
+                  "name": "彩虹带 · 橙",
+                  "geometry": "M0 40c90-40 300-40 390 0v35c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#F47B2E",
+                  "width": 390,
+                  "height": 146
+                },
+                {
+                  "type": "path",
+                  "id": "ypgxJ",
+                  "x": 0,
+                  "y": 0,
+                  "name": "彩虹带 · 金橙",
+                  "geometry": "M0 75c90-40 300-40 390 0v35c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#F69A45",
+                  "width": 390,
+                  "height": 146
+                },
+                {
+                  "type": "path",
+                  "id": "J23UCr",
+                  "x": 0,
+                  "y": 0,
+                  "name": "彩虹带 · 浅黄",
+                  "geometry": "M0 110c90-40 300-40 390 0v36c-90-40-300-40-390 0z",
+                  "viewBox": [
+                    0,
+                    0,
+                    390,
+                    146
+                  ],
+                  "fill": "#FDB358",
+                  "width": 390,
+                  "height": 146
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "wPNHm",
+              "x": 0,
+              "y": 88,
+              "name": "Frame 1142815192",
+              "width": 390,
+              "layout": "vertical",
+              "gap": 16,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 100,
+                  "id": "JHiYP",
+                  "name": "彩虹资料头像",
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "图片素材/image-11.png",
+                    "mode": "fill"
+                  },
+                  "width": 80,
+                  "height": 80,
+                  "stroke": "#FFFFFF",
+                  "strokeWidth": 1,
+                  "strokeAlignment": "inner"
+                },
+                {
+                  "type": "frame",
+                  "id": "w0BjW",
+                  "name": "Frame 1142815193",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ukXXt",
+                      "name": "彩虹资料昵称",
+                      "fill": "#1A1A1A",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Novusluna",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 32,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "K6STgJ",
+                      "name": "彩虹资料副标题",
+                      "fill": "#6B7280",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "游客  /Joined in 2026",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "mPB37",
+              "x": 0,
+              "y": 272,
+              "name": "页面内容 · Auto Layout",
+              "width": 390,
+              "height": 445,
+              "layout": "vertical",
+              "gap": 20,
+              "padding": [
+                0,
+                20
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "J8LnS",
+                  "name": "参考右图 · 设置菜单",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 16,
+                  "layout": "vertical",
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Y2hvw",
+                      "name": "设置项 · 修改资料",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "z1TpFo",
+                          "name": "图标 · 修改资料",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "pencil-simple",
+                          "library": "phosphor",
+                          "weight": 300,
+                          "fill": "#111827"
+                        },
+                        {
+                          "type": "text",
+                          "id": "ZJ5j1",
+                          "name": "文字 · 修改资料",
+                          "fill": "#111827",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "修改资料",
+                          "lineHeight": 1,
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 16
+                        },
+                        {
+                          "type": "icon",
+                          "id": "lEoHJ",
+                          "name": "箭头 · 修改资料",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "caret-right",
+                          "library": "phosphor",
+                          "weight": 300,
+                          "fill": "#B0B0B0"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Zr5ee",
+                      "name": "设置项 · 修改密码",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "t17Uw",
+                          "name": "图标 · 修改密码",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "lock-key",
+                          "library": "phosphor",
+                          "weight": 300,
+                          "fill": "#111827"
+                        },
+                        {
+                          "type": "text",
+                          "id": "ZvfZc",
+                          "name": "文字 · 修改密码",
+                          "fill": "#111827",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "获取权限",
+                          "lineHeight": 1,
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 16
+                        },
+                        {
+                          "type": "icon",
+                          "id": "RpRhV",
+                          "name": "箭头 · 修改密码",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "caret-right",
+                          "library": "phosphor",
+                          "weight": 300,
+                          "fill": "#B0B0B0"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "DNd4n",
+                      "name": "设置项 · 退出登录",
+                      "width": "fill_container",
+                      "height": 55,
+                      "stroke": "#ECECEC",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "gap": 12,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "upNCH",
+                          "name": "图标 · 退出登录",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "sign-out",
+                          "library": "phosphor",
+                          "weight": 300,
+                          "fill": "#E5484D"
+                        },
+                        {
+                          "type": "text",
+                          "id": "K0zt7",
+                          "name": "文字 · 退出登录",
+                          "fill": "#E5484D",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "退出登录",
+                          "lineHeight": 1,
+                          "fontFamily": "Noto Sans SC",
+                          "fontSize": 16
+                        },
+                        {
+                          "type": "icon",
+                          "id": "pKX6E",
+                          "name": "箭头 · 退出登录",
+                          "width": 14,
+                          "height": 14,
+                          "icon": "caret-right",
+                          "library": "phosphor",
+                          "weight": 300,
+                          "fill": "#B0B0B0"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "j4uwCH",
+          "type": "ref",
+          "ref": "ihvbF",
+          "name": "顶部导航/我的",
+          "width": 390,
+          "height": 88,
+          "x": 0,
+          "y": 0,
+          "descendants": {
+            "vvex7": {
+              "enabled": false,
+              "width": 390,
+              "height": 44
+            }
+          }
+        },
+        {
+          "id": "lDmi2",
+          "type": "ref",
+          "ref": "EoArr",
+          "name": "底部导航/我的选中",
+          "layoutPosition": "absolute",
+          "x": 0,
+          "y": 754,
+          "width": 390,
+          "height": 52
+        },
+        {
+          "id": "LN2bW",
+          "type": "ref",
+          "ref": "Hae5C",
+          "name": "底部安全区/Touch Bar",
+          "x": 0,
+          "y": 806,
+          "width": 390,
+          "height": 38,
+          "layoutPosition": "absolute"
+        }
+      ]
     }
   ],
   "fileToken": "72ba458a-a42c-4e80-8673-926f4cd4215d"

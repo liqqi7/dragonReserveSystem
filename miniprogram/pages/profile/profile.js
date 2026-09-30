@@ -6,6 +6,7 @@ const { isDefaultNickname, isDefaultAvatar } = require("../../utils/profileUtils
 const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
 const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
+const { getProfileSubtitle } = require("../../utils/profilePresentation");
 const DEFAULT_AVATAR = "/images/default-avatar.svg";
 const MEDIA_BASE_URL = String(getApiBaseUrl() || "").replace(/\/api\/v\d+\/?$/, "");
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
@@ -61,7 +62,8 @@ Page({
     user: {
       nickname: "",
       userIdShort: "",
-      avatarUrl: ""
+      avatarUrl: "",
+      subtitle: ""
     },
     showEditModal: false,
     editNickname: "",
@@ -106,7 +108,8 @@ Page({
         user: {
           nickname: profile.nickname || "",
           userIdShort: (userId || "").slice(0, 8),
-          avatarUrl: normalizeAvatarUrl(profile.avatarUrl || "")
+          avatarUrl: normalizeAvatarUrl(profile.avatarUrl || ""),
+          subtitle: getProfileSubtitle(profile.role || app.globalData.userRole, profile.createdAt)
         }
       });
     } else {
@@ -145,7 +148,8 @@ Page({
         user: {
           nickname: currentUser.nickname || "",
           userIdShort: currentUserId.slice(0, 8),
-          avatarUrl: normalizeAvatarUrl(currentUser.avatarUrl || "")
+          avatarUrl: normalizeAvatarUrl(currentUser.avatarUrl || ""),
+          subtitle: getProfileSubtitle(currentUser.role || app.globalData.userRole, currentUser.createdAt)
         }
       });
       if (app.globalData._pendingOpenEditProfile) {
@@ -184,7 +188,8 @@ Page({
           user: {
             nickname: user.nickname || "",
             userIdShort: userId.slice(0, 8),
-            avatarUrl: normalizeAvatarUrl(user.avatar_url || "")
+            avatarUrl: normalizeAvatarUrl(user.avatar_url || ""),
+            subtitle: getProfileSubtitle(user.role || app.globalData.userRole, user.created_at)
           }
         });
         return user;
@@ -201,6 +206,7 @@ Page({
 
   startRegister(options = {}) {
     const openEditAfterLogin = !!options.openEditAfterLogin;
+    const openPermissionAfterLogin = !!options.openPermissionAfterLogin;
     wx.showLoading({ title: "登录中...", mask: true });
     authService.loginWithWechat(app)
       .then(() => {
@@ -209,6 +215,8 @@ Page({
       .then(() => {
         if (openEditAfterLogin) {
           this.openEditModal();
+        } else if (openPermissionAfterLogin) {
+          this.openPermissionModal();
         }
         wx.hideLoading();
         wx.showToast({ title: "登录成功", icon: "success" });
@@ -222,6 +230,26 @@ Page({
           duration: 3000
         });
       });
+  },
+
+  onProfileEditTap() {
+    if (this.data.hasUser) {
+      this.openEditModal();
+      return;
+    }
+    this.startRegister({ openEditAfterLogin: true });
+  },
+
+  onAccessTap() {
+    if (!this.data.hasUser) {
+      this.startRegister({ openPermissionAfterLogin: true });
+      return;
+    }
+    if (this.data.isGuest) {
+      this.openPermissionModal();
+      return;
+    }
+    this.removePermission();
   },
 
   openPermissionModal() {
@@ -261,7 +289,11 @@ Page({
           showPermissionModal: false,
           permissionInput: "",
           permissionSubmitting: false,
-          isGuest: false
+          isGuest: false,
+          user: {
+            ...this.data.user,
+            subtitle: getProfileSubtitle(user.role || app.globalData.userRole, user.created_at)
+          }
         });
         syncProfileTabBarModalMask(this, false);
         wx.showToast({ title: "已获取权限", icon: "success" });
@@ -297,7 +329,11 @@ Page({
         this.setData({
           isGuest: true,
           showDeletePermissionModal: false,
-          permissionRemoving: false
+          permissionRemoving: false,
+          user: {
+            ...this.data.user,
+            subtitle: getProfileSubtitle(user.role || app.globalData.userRole, user.created_at)
+          }
         });
         syncProfileTabBarModalMask(this, false);
         wx.showToast({ title: "已恢复为游客", icon: "success" });
@@ -330,7 +366,7 @@ Page({
     this.setData({
       hasUser: false,
       isGuest: true,
-      user: { nickname: "", userIdShort: "", avatarUrl: "" }
+      user: { nickname: "", userIdShort: "", avatarUrl: "", subtitle: "" }
     });
     wx.showToast({ title: "已退出登录", icon: "success" });
   },
@@ -430,7 +466,8 @@ Page({
           user: {
             nickname: user.nickname || "",
             userIdShort: String(user.id || "").slice(0, 8),
-            avatarUrl: user.avatar_url || ""
+            avatarUrl: user.avatar_url || "",
+            subtitle: getProfileSubtitle(user.role || app.globalData.userRole, user.created_at)
           },
           editAvatarUrl: user.avatar_url || "",
           showEditModal: false,

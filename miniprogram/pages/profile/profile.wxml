@@ -1,57 +1,62 @@
 <view id="qa-profile-page" class="profile-page">
+  <image class="profile-rainbow" src="/images/profile-rainbow.svg" mode="scaleToFill" aria-hidden="true" />
+
   <view class="profile-navbar" style="padding-top: {{statusBarHeight}}px;">
-    <view class="profile-navbar-inner"><text class="profile-navbar-title">我的</text></view>
+    <view class="profile-navbar-inner"></view>
   </view>
 
   <scroll-view class="profile-scroll" type="custom" scroll-y show-scrollbar="{{false}}">
     <view class="container" style="padding-bottom: calc(131.69231rpx + {{bottomSafeAreaRpx}}rpx);">
-      <view class="profile-box">
-    <view class="profile-header">
-      <image wx:if="{{hasUser}}" class="avatar" src="{{user.avatarUrl || '/images/default-avatar.svg'}}" mode="aspectFill" binderror="onProfileAvatarError" />
-      <view wx:else class="avatar placeholder"></view>
-      <view class="info">
-        <view class="nickname"><text>{{hasUser ? (user.nickname || '未命名成员') : '神秘冒险者'}}</text></view>
-        <view class="userid">
-          <text wx:if="{{hasUser}}">公会 ID：{{user.userIdShort}}</text>
-          <text wx:else>登录后可查看对应工会活动</text>
+      <view class="profile-hero">
+        <view class="profile-avatar-frame">
+          <image
+            wx:if="{{hasUser}}"
+            class="profile-avatar-image"
+            src="{{user.avatarUrl || '/images/default-avatar.svg'}}"
+            mode="aspectFill"
+            binderror="onProfileAvatarError"
+          />
+          <image
+            wx:else
+            class="profile-avatar-image profile-avatar-image--guest"
+            src="/images/profile-guest-avatar.png"
+            mode="aspectFill"
+          />
         </view>
+        <text class="profile-nickname">{{hasUser ? (user.nickname || '未命名成员') : '神秘用户'}}</text>
+        <text class="profile-subtitle">{{hasUser ? user.subtitle : '非常神秘的一位伙伴'}}</text>
       </view>
-      <view wx:if="{{hasUser}}" class="header-actions">
-        <view
-          class="icon-btn"
-          bindtap="openEditModal"
-        >
-          <image class="icon-img" src="/images/icon-profile-edit.svg" mode="aspectFit" />
-        </view>
-        <view
-          class="icon-btn"
-          bindtap="logout"
-        >
-          <image class="icon-img" src="/images/icon-profile-logout.svg" mode="aspectFit" />
-        </view>
-      </view>
-      <view
-        wx:else
-        class="icon-btn"
-        bindtap="startRegister"
-      >
-        <image class="icon-img" src="/images/icon-profile-login.svg" mode="aspectFit" />
-      </view>
-    </view>
 
-    <!-- 仅已登录用户展示访问权限模块 -->
-    <view wx:if="{{hasUser}}" class="section">
-      <view class="section-title"><text>访问权限</text></view>
-      <view wx:if="{{isGuest}}" class="cell">
-        <view class="cell-title"><text>当前为游客，无法查看相关活动数据</text></view>
-        <button class="btn primary small" bindtap="openPermissionModal"><text>获取权限</text></button>
-      </view>
-      <view wx:else class="cell">
-        <view class="cell-title"><text>已获取访问权限</text></view>
-        <button class="btn default small" bindtap="removePermission"><text>删除权限</text></button>
-      </view>
-    </view>
+      <view class="profile-menu">
+        <view wx:if="{{!hasUser}}" class="profile-menu-row" bindtap="startRegister" aria-role="button" aria-label="登录账户">
+          <image class="profile-menu-icon" src="/images/profile-icon-login.svg" mode="aspectFit" />
+          <text class="profile-menu-label">登录账户</text>
+          <image class="profile-menu-chevron" src="/images/profile-icon-chevron-right.svg" mode="aspectFit" />
+        </view>
 
+        <view
+          wx:if="{{hasUser}}"
+          class="profile-menu-row"
+          bindtap="onProfileEditTap"
+          aria-role="button"
+          aria-label="修改资料"
+        >
+          <image class="profile-menu-icon" src="/images/profile-icon-pencil.svg" mode="aspectFit" />
+          <text class="profile-menu-label">修改资料</text>
+          <image class="profile-menu-chevron" src="/images/profile-icon-chevron-right.svg" mode="aspectFit" />
+        </view>
+
+        <view wx:if="{{hasUser}}" class="profile-menu-row profile-menu-row--access" bindtap="onAccessTap" aria-role="button" aria-label="{{isGuest ? '获取权限' : '删除权限'}}">
+          <image class="profile-menu-icon" src="{{isGuest ? '/images/profile-icon-lock-keyhole.svg' : '/images/profile-icon-lock-keyhole-danger.svg'}}" mode="aspectFit" />
+          <text class="profile-menu-label {{isGuest ? '' : 'profile-menu-label--danger'}}">{{isGuest ? '获取权限' : '删除权限'}}</text>
+          <image class="profile-menu-chevron" src="/images/profile-icon-chevron-right.svg" mode="aspectFit" />
+        </view>
+
+        <view wx:if="{{hasUser}}" class="profile-menu-row" bindtap="logout" aria-role="button" aria-label="退出登录">
+          <image class="profile-menu-icon" src="/images/profile-icon-logout.svg" mode="aspectFit" />
+          <text class="profile-menu-label profile-menu-label--logout">退出登录</text>
+          <image class="profile-menu-chevron" src="/images/profile-icon-chevron-right.svg" mode="aspectFit" />
+        </view>
       </view>
     </view>
   </scroll-view>

@@ -35,3 +35,11 @@ test('account and permission changes persist immediately', () => {
   h.writes.length=0; h.app.setAuthState('guest',false);
   assert.equal(h.writes.length,0);
 });
+
+test('user creation date is retained in profile state and storage for the membership subtitle', () => {
+  const h=setup();
+  h.app.applyCurrentUser({id:9,role:'user',created_at:'2024-03-05T09:00:00Z'});
+  assert.equal(h.app.globalData.userProfile.createdAt,'2024-03-05T09:00:00Z');
+  assert.equal(h.storage.get('userCreatedAt'),'2024-03-05T09:00:00Z');
+  assert.ok(h.writes.includes('userCreatedAt'));
+});

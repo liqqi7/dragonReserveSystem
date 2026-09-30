@@ -384,6 +384,7 @@ Page({
     statusBarHeight: 0,
     navBarHeight: 0,
     focusedCardIndex: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
+    homeToolIndex: 0,
     mainRefresherTriggered: false,
     mainRefresherHint: "下拉刷新",
     myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
@@ -512,7 +513,8 @@ Page({
       this._focusedCardActivityIds = {};
       this.setData({ groupedActivities: { joined: [], accepting: [], notStarted: [], ended: [] },
         groupSectionVisibility: { joined: false, accepting: false, notStarted: false, ended: false },
-        focusedCardIndex: { joined: 0, accepting: 0, notStarted: 0, ended: 0 }, homeListLoading: true });
+        focusedCardIndex: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
+    homeToolIndex: 0, homeListLoading: true });
     }
     this._homeListOwner = owner;
     // Render any valid cached list first; always refresh in the background.
@@ -575,6 +577,24 @@ Page({
       return;
     }
     tabBar.setData({ hidden: nextHidden });
+  },
+
+  onHomeToolsSwiperChange(e) {
+    const current = e && e.detail && e.detail.current;
+    if (!Number.isInteger(current) || current < 0 || current > 1) return;
+    if (current !== this.data.homeToolIndex) this.setData({ homeToolIndex: current });
+  },
+
+  onHomeChwaziTap() {
+    wx.navigateTo({ url: "/pages/chwazi/chwazi" });
+  },
+
+  onHomeBoardGameTap() {
+    wx.showToast({
+      title: "黑黑正在做，别催",
+      icon: "none",
+      duration: 1800
+    });
   },
 
   _buildGroupSectionVisibility(groupedActivities) {

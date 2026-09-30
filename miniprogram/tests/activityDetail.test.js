@@ -627,8 +627,8 @@ test("prototype key sizes, colors, typography and action layout do not regress",
   assert.match(wxss, /\.weather-metric-value\s*\{[^}]*height:\s*23\.08rpx;[^}]*font-size:\s*23\.08rpx;[^}]*line-height:\s*1;/s);
   assert.match(wxss, /\.weather-metric-label\s*\{[^}]*font-size:\s*19\.23rpx;[^}]*font-weight:\s*500;[^}]*line-height:\s*1\.4;/s);
   assert.match(wxss, /\.weather-unavailable-message\s*\{[^}]*font-size:\s*23\.08rpx;[^}]*font-weight:\s*400;/s);
-  assert.match(wxss, /\.weather-attribution\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*flex-end;/s);
-  assert.match(wxss, /\.weather-attribution-text\s*\{[^}]*font-size:\s*19\.23rpx;[^}]*font-weight:\s*400;[^}]*line-height:\s*1;/s);
+  assert.match(wxss, /\.weather-attribution\s*\{[^}]*height:\s*50rpx;[^}]*padding:\s*0 30\.77rpx;[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*flex-end;[^}]*box-sizing:\s*border-box;/s);
+  assert.match(wxss, /\.weather-attribution-text\s*\{[^}]*position:\s*relative;[^}]*top:\s*-2rpx;[^}]*font-size:\s*19\.23rpx;[^}]*font-weight:\s*400;[^}]*line-height:\s*1\.4;/s);
   assert.match(wxss, /\.bottom-icon-button:first-child\s*\{[^}]*left:\s*38\.46rpx;/s);
   assert.match(wxss, /\.bottom-icon-button:nth-child\(2\)\s*\{[^}]*left:\s*138\.46rpx;/s);
   assert.match(wxss, /\.bottom-icon-button-wide\s*\{[^}]*width:\s*184\.62rpx;/s);

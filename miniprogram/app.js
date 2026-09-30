@@ -82,7 +82,7 @@ App({
 
       const avatarUrl = wx.getStorageSync("userAvatarUrl") || "";
 
-
+      const createdAt = wx.getStorageSync("userCreatedAt") || "";
 
       if (!accessToken || !userId) return;
 
@@ -92,7 +92,7 @@ App({
 
       this.globalData.userId = userId;
 
-      this.globalData.userProfile = { nickname, avatarUrl };
+      this.globalData.userProfile = { nickname, avatarUrl, createdAt };
 
     } catch (e) {
 
@@ -170,7 +170,9 @@ App({
 
       nickname: user.nickname || "",
 
-      avatarUrl: user.avatar_url || ""
+      avatarUrl: user.avatar_url || "",
+
+      createdAt: user.created_at || ""
 
     };
 
@@ -187,6 +189,8 @@ App({
     storeIfChanged("userNickname", user.nickname || "");
 
     storeIfChanged("userAvatarUrl", user.avatar_url || "");
+
+    if (user.created_at) storeIfChanged("userCreatedAt", user.created_at);
 
     storeIfChanged("userRole", role);
 
@@ -275,6 +279,8 @@ App({
       "userNickname",
 
       "userAvatarUrl",
+
+      "userCreatedAt",
 
       "userRole",
 

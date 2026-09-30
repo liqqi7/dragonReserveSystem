@@ -42,11 +42,15 @@ test("activity cards use Skyline open-container for native card-to-page transiti
 });
 
 test("home carousels use native Skyline swiper paging", () => {
-  assert.equal((wxml.match(/<swiper(?:\s|>)/g) || []).length, 4);
+  assert.equal((wxml.match(/<swiper(?:\s|>)/g) || []).length, 5);
   assert.equal((wxml.match(/bindchange="onGroupSwiperChange"/g) || []).length, 4);
-  assert.equal((wxml.match(/cache-extent="1"/g) || []).length, 4);
-  assert.equal((wxml.match(/duration="180"/g) || []).length, 4);
-  assert.equal((wxml.match(/easing-function="easeOutCubic"/g) || []).length, 4);
+  const activitySwipers = [...wxml.matchAll(/<swiper\s+([^>]*bindchange="onGroupSwiperChange"[^>]*)>/g)];
+  assert.equal(activitySwipers.length, 4);
+  for (const [, attributes] of activitySwipers) {
+    assert.match(attributes, /cache-extent="1"/);
+    assert.match(attributes, /duration="180"/);
+    assert.match(attributes, /easing-function="easeOutCubic"/);
+  }
   assert.match(wxml, /id="qaJoinedCardSwiper"[\s\S]*class="cards-swiper large-cards-swiper"/);
   assert.equal((wxml.match(/class="cards-swiper small-cards-swiper"/g) || []).length, 3);
   assert.doesNotMatch(wxml, /bindtouchstart="onGroupTouchStart"|style="transform:translate3d\(-\{\{groupOffset\./);

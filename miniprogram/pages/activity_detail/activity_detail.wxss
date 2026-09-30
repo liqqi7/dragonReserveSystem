@@ -1154,7 +1154,9 @@ page {
 }
 
 .weather-metric {
-  flex: 1;
+  /* auto basis lets longer values (especially wind direction + scale) claim more room;
+   * flex-shrink takes that room from the neighboring metrics instead of overflowing. */
+  flex: 1 1 auto;
   min-width: 0;
   height: 111.54rpx;
   display: flex;
@@ -1170,7 +1172,6 @@ page {
 }
 
 .weather-metric-value {
-  max-width: 126rpx;
   height: 23.08rpx;
   color: #111827;
   font-size: 23.08rpx;
@@ -1211,8 +1212,8 @@ page {
 }
 
 .weather-attribution {
-  min-height: 50rpx;
-  padding: 15.38rpx 30.77rpx;
+  height: 50rpx;
+  padding: 0 30.77rpx;
   border-top: 1.92rpx solid #f3f4f6;
   background: #fafafa;
   display: flex;
@@ -1222,11 +1223,13 @@ page {
 }
 
 .weather-attribution-text {
+  position: relative;
+  top: -2rpx;
   display: block;
   color: #9ca3af;
   font-size: 19.23rpx;
   font-weight: 400;
-  line-height: 1;
+  line-height: 1.4;
   text-align: right;
 }
 

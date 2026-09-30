@@ -315,6 +315,51 @@
         </swiper>
       </view>
 
+      <!-- ── 小工具（管理员首页原型） ── -->
+      <view wx:if="{{isAdmin}}" class="group-section home-tools-section">
+        <view class="group-header">
+          <text class="group-title">小工具</text>
+        </view>
+        <swiper
+          id="qaHomeToolsSwiper"
+          class="cards-swiper home-tools-swiper"
+          current="{{homeToolIndex}}"
+          duration="180"
+          easing-function="easeOutCubic"
+          previous-margin="38.46rpx"
+          next-margin="150rpx"
+          cache-extent="1"
+          bindchange="onHomeToolsSwiperChange"
+        >
+          <swiper-item class="home-tool-slide">
+            <view class="home-tool-card home-tool-card--chwazi" role="button" aria-label="Chwazi" bindtap="onHomeChwaziTap">
+              <view class="home-tool-glow"></view>
+              <view class="home-tool-copy">
+                <text class="home-tool-title">Chwazi</text>
+                <view class="home-tool-description-lines">
+                  <text class="home-tool-description">多人同时触摸屏幕</text>
+                  <text class="home-tool-description">快速选择一人</text>
+                </view>
+              </view>
+              <image class="home-tool-art home-tool-art--chwazi" src="../../images/home-tool-chwazi.png" mode="aspectFill" />
+            </view>
+          </swiper-item>
+          <swiper-item class="home-tool-slide">
+            <view class="home-tool-card home-tool-card--boardgames" role="button" aria-label="桌游库" bindtap="onHomeBoardGameTap">
+              <view class="home-tool-glow"></view>
+              <view class="home-tool-copy">
+                <text class="home-tool-title">桌游库</text>
+                <view class="home-tool-description-lines">
+                  <text class="home-tool-description">管理个人藏品目录</text>
+                  <text class="home-tool-description">记录桌游战绩</text>
+                </view>
+              </view>
+              <image class="home-tool-art home-tool-art--boardgames" src="../../images/home-tool-boardgames.png" mode="aspectFill" />
+            </view>
+          </swiper-item>
+        </swiper>
+      </view>
+
       <!-- ── 未开始 ── -->
       <view wx:if="{{groupSectionVisibility.notStarted}}" class="group-section">
         <view class="group-header">
