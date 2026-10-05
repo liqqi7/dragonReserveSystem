@@ -1417,7 +1417,7 @@ button.create-btn-fixed.create-btn-hover {
   padding: 30.77rpx;
   border-radius: 46.15rpx;
   background-color: #faf7f5;
-  box-shadow: 0 11.54rpx 38.46rpx rgba(0, 0, 0, 0.07);
+  box-shadow: 0 11.54rpx 38.46rpx rgba(0, 0, 0, 0.1);
 }
 
 .home-tool-glow {
