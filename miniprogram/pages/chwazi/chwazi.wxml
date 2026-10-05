@@ -21,12 +21,10 @@
       id="qa-chwazi-stage"
       class="chwazi-stage"
     >
-      <block wx:for="{{touches}}" wx:key="id">
-        <view class="touch-point {{status === 'selected' ? 'touch-point--selected' : ''}}" style="left: {{item.leftRpx}}rpx; top: {{item.topRpx}}rpx;">
-          <canvas class="touch-ring-canvas" type="2d" id="{{item.canvasId}}"></canvas>
-          <view class="touch-inner" style="left: {{item.innerLeftRpx - item.leftRpx}}rpx; top: {{item.innerTopRpx - item.topRpx}}rpx; background: {{item.innerColor}};"></view>
-        </view>
-      </block>
+      <view wx:for="{{slotStyles}}" wx:key="index" class="touch-point {{status === 'selected' ? 'touch-point--selected' : ''}}" id="chwazi-slot-{{index}}" style="transform: {{item.transform}};">
+        <canvas class="touch-ring-canvas" type="2d" id="chwazi-ring-slot-{{index}}"></canvas>
+        <view class="touch-inner" style="background: {{item.innerBackground}};"></view>
+      </view>
 
     </view>
 

@@ -48,7 +48,18 @@ function createPageContext(definition, { liveTimers = false } = {}) {
     },
     _stageRect: { left: 0, top: 130, width: 390, height: 540 },
     setData(patch, callback) {
-      Object.assign(this.data, patch);
+      for (const [key, value] of Object.entries(patch)) {
+        const pathMatch = key.match(/^(\w+)\[(\d+)\]\.(\w+)$/);
+        if (pathMatch) {
+          const [, arrayName, indexText, prop] = pathMatch;
+          const index = Number(indexText);
+          if (!Array.isArray(this.data[arrayName])) this.data[arrayName] = [];
+          if (!this.data[arrayName][index]) this.data[arrayName][index] = {};
+          this.data[arrayName][index][prop] = value;
+        } else {
+          this.data[key] = value;
+        }
+      }
       if (callback) callback();
     }
   };
@@ -348,6 +359,7 @@ test("progress ring uses one rounded canvas arc without a split radial seam", ()
       throw new Error("selector query should not run when the canvas entry is ready");
     }
   };
+  // slot-driven: entry for slot 0 is pre-seeded below
 
   withGlobalWx(wxHarness, () => {
     const page = createPageContext(loadPageDefinition());
@@ -359,7 +371,16 @@ test("progress ring uses one rounded canvas arc without a split radial seam", ()
       startedAt: 100,
       outerColor: "#FFD500"
     }];
-    page._ringCanvasContexts = new Map([["chwazi-ring-1", {
+    page._slotTouches = [{
+      id: "1",
+      startedAt: 100,
+      outerColor: "#FFD500",
+      innerColor: "#FFE663",
+      xPx: 100,
+      yPx: 200
+    }, null, null, null, null];
+    page._slotByTouchId = new Map([["1", 0]]);
+    page._ringCanvasContexts = new Map([["chwazi-ring-slot-0", {
       canvas: { width: 0, height: 0 },
       ctx,
       pixelSize: 0,
@@ -417,16 +438,19 @@ test("ring canvas node is acquired through the 2d canvas selector on demand", ()
     const page = createPageContext(loadPageDefinition());
     page._windowInfo = { pixelRatio: 2 };
     page.data.status = "touching";
-    page.data.touches = [{
+    page._slotTouches = [{
       id: "1",
-      canvasId: "chwazi-ring-1",
       startedAt: 100,
-      outerColor: "#FFD500"
-    }];
+      outerColor: "#FFD500",
+      innerColor: "#FFE663",
+      xPx: 100,
+      yPx: 200
+    }, null, null, null, null];
+    page._slotByTouchId = new Map([["1", 0]]);
     page._drawTouchRings(850);
 
     assert.deepEqual(acquiredKinds, ["2d"]);
-    const entry = page._ringCanvasContexts.get("chwazi-ring-1");
+    const entry = page._ringCanvasContexts.get("chwazi-ring-slot-0");
     assert.equal(entry.ctx, ctx);
     assert.equal(entry.dpr, 2);
   });
@@ -959,7 +983,9 @@ test("Chwazi page matches the Pencil stage, ring and over-five presentation", ()
   assert.match(wxml, /catchtouchend="onStageTouchEnd"/);
   assert.match(wxml, /id="qa-chwazi-touch-surface"[\s\S]*?catchtouchstart="onStageTouchStart"/);
   assert.doesNotMatch(wxml, /id="qa-chwazi-stage"[\s\S]*?catchtouchstart="onStageTouchStart"/);
-  assert.match(wxml, /type="2d" id="\{\{item\.canvasId\}\}"/);
+  assert.match(wxml, /wx:for="\{\{slotStyles\}\}"/);
+  assert.match(wxml, /id="chwazi-slot-\{\{index\}\}"/);
+  assert.match(wxml, /type="2d" id="chwazi-ring-slot-\{\{index\}\}"/);
   assert.doesNotMatch(wxml, /conic-gradient\(|touch-ring-half|touch-ring-cutout|touch-ring-cap/);
   assert.match(wxml, /id="qa-chwazi-winner-curtain"/);
   assert.match(wxml, /data-transition-id="\{\{winnerTransitionId\}\}"/);
@@ -992,4 +1018,109 @@ test("Chwazi page matches the Pencil stage, ring and over-five presentation", ()
   assert.match(wxss, /\.chwazi-too-many\s*{[\s\S]*?top:\s*453\.85rpx;[\s\S]*?z-index:\s*10;[\s\S]*?line-height:\s*1\.45/);
   assert.equal(json.disableScroll, true);
   assert.equal(json.navigationBarTextStyle, "white");
+});
+test("slot assignment reuses freed slots and syncs fallback styles without worklet", () => {
+  const page = createPageContext(loadPageDefinition());
+  page.data.status = "touching";
+  page._initSlotVisuals();
+
+  page._syncTouches(makeRawTouches(2));
+  assert.equal(page._slotTouches.filter(Boolean).length, 2);
+  assert.equal(page._slotByTouchId.size, 2);
+  const firstInnerColors = page._slotTouches.map((slot) => slot && slot.innerColor);
+  assert.ok(firstInnerColors[0] && firstInnerColors[1]);
+
+  page._syncTouches(makeRawTouches(1));
+  assert.equal(page._slotTouches.filter(Boolean).length, 1);
+
+  const styles = page.data.slotStyles;
+  assert.equal(styles.length, 5);
+  const activeStyles = styles.filter((style) => style.transform !== "translate(-9999px, -9999px)");
+  assert.equal(activeStyles.length, 1);
+  assert.match(activeStyles[0].transform, /^translate\(-?\d+(\.\d+)?px, -?\d+(\.\d+)?px\)$/);
+  const colored = styles.filter((style) => style.innerBackground !== "transparent");
+  assert.equal(colored.length, 1);
+});
+
+test("worklet slot visuals use shared values bound through applyAnimatedStyle", () => {
+  const sharedValues = [];
+  const styledSelectors = [];
+  const wxHarness = {
+    worklet: {
+      shared(initial) {
+        const holder = { value: initial };
+        sharedValues.push(holder);
+        return holder;
+      }
+    }
+  };
+
+  withGlobalWx(wxHarness, () => {
+    const page = createPageContext(loadPageDefinition());
+    page.applyAnimatedStyle = (selector, updater) => styledSelectors.push([selector, updater]);
+    page.data.status = "touching";
+    page._initSlotVisuals();
+
+    assert.equal(sharedValues.length, 5);
+    assert.deepEqual(
+      styledSelectors.map((entry) => entry[0]),
+      ["#chwazi-slot-0", "#chwazi-slot-1", "#chwazi-slot-2", "#chwazi-slot-3", "#chwazi-slot-4"]
+    );
+
+    page._syncTouches(makeRawTouches(2));
+    assert.deepEqual(sharedValues.map((holder) => holder.value.active), [1, 1, 0, 0, 0]);
+
+    const activeStyle = styledSelectors[0][1]();
+    assert.match(activeStyle.transform, /^translate\(-?\d+(\.\d+)?px, -?\d+(\.\d+)?px\)$/);
+    const idleStyle = styledSelectors[4][1]();
+    assert.equal(idleStyle.transform, "translate(-9999px, -9999px)");
+  });
+});
+
+test("ring render loop prefers canvas requestAnimationFrame and cancels it on stop", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const rafCallbacks = [];
+  const rafCanvas = {
+    width: 0,
+    height: 0,
+    requestAnimationFrame(callback) {
+      rafCallbacks.push(callback);
+      return 7;
+    },
+    cancelAnimationFrame(id) {
+      rafCallbacks.cancelled = id;
+    }
+  };
+  const wxHarness = {
+    createSelectorQuery() {
+      throw new Error("selector query should not run in this test");
+    }
+  };
+
+  withGlobalWx(wxHarness, () => {
+    const page = createPageContext(loadPageDefinition());
+    page.data.status = "touching";
+    page._slotTouches = [{
+      id: "1",
+      startedAt: Date.now(),
+      outerColor: "#FFD500",
+      innerColor: "#FFE663",
+      xPx: 10,
+      yPx: 10
+    }, null, null, null, null];
+    page._ringCanvasContexts = new Map([["chwazi-ring-slot-0", {
+      canvas: rafCanvas,
+      ctx: { clearRect() {}, beginPath() {}, arc() {}, stroke() {}, setTransform() {} },
+      pixelSize: 0,
+      dpr: 1
+    }]]);
+
+    page._startRingRenderLoop();
+    assert.equal(rafCallbacks.length, 1);
+    assert.equal(page._ringRenderUsingRaf, true);
+
+    page._stopRingRenderLoop();
+    assert.equal(rafCallbacks.cancelled, 7);
+    assert.equal(page._ringRenderTimer, null);
+  });
 });

@@ -81,6 +81,7 @@ Page({
     winnerRevealOriginYpx: 0,
     winnerCollapseDiameterPx: 0,
     winnerTouchId: "",
+    slotStyles: [],
     tooManyMessage: " iPhone 不支持 5 个以上的触摸\n感觉受到了侮辱\n\n但是我猜这句话应该没人看得到\n因为没那么多人玩桌游\n都打羽毛球去了"
   },
 
@@ -102,6 +103,7 @@ Page({
   },
 
   onReady() {
+    this._initSlotVisuals();
     this._measureStage();
     this._setTabBarHidden(true);
   },
@@ -336,6 +338,8 @@ Page({
       startedAt,
       xRpx: toRpx(position.xPx),
       yRpx: toRpx(position.yPx),
+      xPx: position.xPx,
+      yPx: position.yPx,
       leftRpx: toRpx(position.xPx - TOUCH_DIAMETER_PX / 2),
       topRpx: toRpx(position.yPx - TOUCH_DIAMETER_PX / 2),
       innerLeftRpx: toRpx(position.xPx - INNER_DIAMETER_PX / 2),
@@ -346,30 +350,137 @@ Page({
     };
   },
 
+  _initSlotVisuals() {
+    this._slotTouches = Array.from({ length: MAX_TOUCHES }, () => null);
+    this._slotByTouchId = new Map();
+    const slotStyles = Array.from({ length: MAX_TOUCHES }, () => ({
+      transform: "translate(-9999px, -9999px)",
+      innerBackground: "transparent"
+    }));
+    this.setData({ slotStyles }, () => {
+      const useWorklet = typeof wx !== "undefined"
+        && wx.worklet && typeof wx.worklet.shared === "function"
+        && typeof this.applyAnimatedStyle === "function";
+      this._useWorkletVisuals = !!useWorklet;
+      if (!useWorklet) return;
+      this._slotShared = Array.from({ length: MAX_TOUCHES }, () => wx.worklet.shared({ x: -9999, y: -9999, active: 0 }));
+      this._slotShared.forEach((sharedSlot, index) => {
+        this.applyAnimatedStyle("#chwazi-slot-" + index, () => {
+          "worklet";
+          const s = sharedSlot.value;
+          return s && s.active
+            ? { transform: "translate(" + s.x + "px, " + s.y + "px)" }
+            : { transform: "translate(-9999px, -9999px)" };
+        });
+      });
+    });
+  },
+
+  _applySlotPosition(index) {
+    const slot = this._slotTouches && this._slotTouches[index];
+    const x = slot ? slot.xPx - TOUCH_DIAMETER_PX / 2 : -9999;
+    const y = slot ? slot.yPx - TOUCH_DIAMETER_PX / 2 : -9999;
+    if (this._useWorkletVisuals && this._slotShared && this._slotShared[index]) {
+      this._slotShared[index].value = slot ? { x, y, active: 1 } : { x: -9999, y: -9999, active: 0 };
+      return;
+    }
+    const patch = {};
+    patch["slotStyles[" + index + "].transform"] = "translate(" + x + "px, " + y + "px)";
+    this.setData(patch);
+  },
+
+  _applySlotColor(index) {
+    const slot = this._slotTouches && this._slotTouches[index];
+    const patch = {};
+    patch["slotStyles[" + index + "].innerBackground"] = slot ? slot.innerColor : "transparent";
+    this.setData(patch);
+  },
+
+  _assignSlots(next) {
+    if (!this._slotTouches) this._initSlotVisuals();
+    const nextIds = new Set(next.map((touch) => String(touch.id)));
+    for (const [touchId, slotIndex] of Array.from(this._slotByTouchId.entries())) {
+      if (nextIds.has(touchId)) continue;
+      this._slotByTouchId.delete(touchId);
+      this._slotTouches[slotIndex] = null;
+      this._applySlotPosition(slotIndex);
+      this._applySlotColor(slotIndex);
+    }
+    for (const touch of next) {
+      const touchId = String(touch.id);
+      let slotIndex = this._slotByTouchId.get(touchId);
+      if (slotIndex === undefined) {
+        slotIndex = this._slotTouches.findIndex((slot) => slot === null);
+        if (slotIndex === -1) continue;
+        this._slotByTouchId.set(touchId, slotIndex);
+      }
+      const isNew = !this._slotTouches[slotIndex];
+      this._slotTouches[slotIndex] = {
+        id: touchId,
+        startedAt: touch.startedAt,
+        outerColor: touch.outerColor,
+        innerColor: touch.innerColor,
+        xPx: touch.xPx,
+        yPx: touch.yPx
+      };
+      this._applySlotPosition(slotIndex);
+      if (isNew) this._applySlotColor(slotIndex);
+    }
+  },
+
+  _clearSlots() {
+    if (!this._slotTouches) return;
+    for (let index = 0; index < MAX_TOUCHES; index += 1) {
+      if (!this._slotTouches[index]) continue;
+      this._slotTouches[index] = null;
+      this._applySlotPosition(index);
+      this._applySlotColor(index);
+    }
+    if (this._slotByTouchId) this._slotByTouchId.clear();
+  },
+
+  _syncMoveVisuals(rawTouches) {
+    if (!this._slotByTouchId || !this._stageRect) return;
+    const touches = Array.isArray(rawTouches) ? rawTouches : [];
+    for (const [touchId, slotIndex] of this._slotByTouchId.entries()) {
+      const slot = this._slotTouches[slotIndex];
+      if (!slot) continue;
+      const raw = touches.find((touch, index) => getTouchId(touch, index) === touchId);
+      if (!raw) continue;
+      const position = this._getTouchPosition(raw);
+      if (!position) continue;
+      slot.xPx = position.xPx;
+      slot.yPx = position.yPx;
+      this._applySlotPosition(slotIndex);
+    }
+  },
+
   _drawTouchRings(now = Date.now()) {
     if (typeof wx === "undefined" || typeof wx.createSelectorQuery !== "function") return false;
-    const touches = Array.isArray(this.data.touches) ? this.data.touches : [];
     const canvasScale = getFiniteNumber(this._stageRect && this._stageRect.width, DESIGN_WIDTH_PX)
       / DESIGN_WIDTH_PX;
     const canvasSize = TOUCH_DIAMETER_PX * canvasScale;
     if (!this._ringCanvasContexts) this._ringCanvasContexts = new Map();
-    const activeCanvasIds = new Set(touches.map((touch) => touch.canvasId).filter(Boolean));
-    for (const canvasId of Array.from(this._ringCanvasContexts.keys())) {
-      if (!activeCanvasIds.has(canvasId)) this._ringCanvasContexts.delete(canvasId);
-    }
+    if (!this._slotTouches) this._slotTouches = Array.from({ length: MAX_TOUCHES }, () => null);
 
     let animationPending = false;
-    for (const touch of touches) {
-      if (!touch.canvasId) continue;
+    for (let index = 0; index < MAX_TOUCHES; index += 1) {
+      const slot = this._slotTouches[index];
+      const canvasId = "chwazi-ring-slot-" + index;
+      const entry0 = this._ringCanvasContexts.get(canvasId);
+      if (!slot) {
+        if (entry0 && entry0.ctx) entry0.ctx.clearRect(0, 0, canvasSize, canvasSize);
+        continue;
+      }
       const progress = this.data.status === "selected"
         ? 1
-        : getProgress(touch.startedAt, now, PROGRESS_DURATION_MS);
+        : getProgress(slot.startedAt, now, PROGRESS_DURATION_MS);
       if (progress < 1) animationPending = true;
-      let entry = this._ringCanvasContexts.get(touch.canvasId);
+      let entry = entry0;
       if (!entry) {
         entry = { canvas: null, ctx: null, pixelSize: 0, dpr: 1 };
-        this._ringCanvasContexts.set(touch.canvasId, entry);
-        this._acquireRingCanvas(touch.canvasId);
+        this._ringCanvasContexts.set(canvasId, entry);
+        this._acquireRingCanvas(canvasId);
         continue;
       }
       if (!entry.ctx) continue;
@@ -378,7 +489,7 @@ Page({
       ctx.clearRect(0, 0, canvasSize, canvasSize);
       if (progress > 0) {
         ctx.beginPath();
-        ctx.strokeStyle = touch.outerColor;
+        ctx.strokeStyle = slot.outerColor;
         ctx.lineWidth = RING_LINE_WIDTH_PX * canvasScale;
         ctx.lineCap = "round";
         ctx.arc(
@@ -431,22 +542,43 @@ Page({
 
   _startRingRenderLoop() {
     if (this._ringRenderTimer) return;
+    const schedule = (callback) => {
+      const entry = this._ringCanvasContexts
+        && Array.from(this._ringCanvasContexts.values()).find((item) => (
+          item && item.canvas && typeof item.canvas.requestAnimationFrame === "function"
+        ));
+      if (entry) {
+        this._ringRenderRafCanvas = entry.canvas;
+        this._ringRenderTimer = entry.canvas.requestAnimationFrame(callback);
+        this._ringRenderUsingRaf = true;
+      } else {
+        this._ringRenderTimer = setTimeout(callback, RING_FRAME_MS);
+        this._ringRenderUsingRaf = false;
+      }
+    };
     const render = () => {
       this._ringRenderTimer = null;
       if (this.data.status !== "touching") {
         this._drawTouchRings();
         return;
       }
-      if (this._drawTouchRings()) {
-        this._ringRenderTimer = setTimeout(render, RING_FRAME_MS);
-      }
+      if (this._drawTouchRings()) schedule(render);
     };
     render();
   },
 
   _stopRingRenderLoop() {
-    if (this._ringRenderTimer) clearTimeout(this._ringRenderTimer);
+    if (this._ringRenderTimer) {
+      if (this._ringRenderUsingRaf && this._ringRenderRafCanvas
+        && typeof this._ringRenderRafCanvas.cancelAnimationFrame === "function") {
+        this._ringRenderRafCanvas.cancelAnimationFrame(this._ringRenderTimer);
+      } else if (!this._ringRenderUsingRaf) {
+        clearTimeout(this._ringRenderTimer);
+      }
+    }
     this._ringRenderTimer = null;
+    this._ringRenderUsingRaf = false;
+    this._ringRenderRafCanvas = null;
     if (this._ringCanvasContexts) this._ringCanvasContexts.clear();
   },
 
@@ -505,6 +637,12 @@ Page({
         getStoredColorIndex(this.data.touches[0])
       );
       if (!winner) return;
+      const winnerSlotIndex = this._slotByTouchId && this._slotByTouchId.get(String(winner.id));
+      if (Number.isInteger(winnerSlotIndex) && this._slotTouches[winnerSlotIndex]) {
+        this._slotTouches[winnerSlotIndex].xPx = winner.xPx;
+        this._slotTouches[winnerSlotIndex].yPx = winner.yPx;
+        this._applySlotPosition(winnerSlotIndex);
+      }
       const revealOrigin = this._getWinnerRevealOrigin(winner);
       this.setData({
         touches: [winner],
@@ -566,12 +704,18 @@ Page({
       return;
     }
 
-    const patch = { touches: next };
+    this._assignSlots(next);
+    const memberKeyOf = (list) => (list || []).map((touch) => (
+      String(touch.id) + ":" + touch.colorIndex + ":" + touch.startedAt
+    )).join("|");
+    const patch = {};
+    if (memberKeyOf(this.data.touches) !== memberKeyOf(next)) patch.touches = next;
     if (this.data.status !== "touching") {
       patch.status = "touching";
       patch.pageBackground = "#09090B";
     }
-    this.setData(patch, () => this._startRingRenderLoop());
+    if (Object.keys(patch).length) this.setData(patch, () => this._startRingRenderLoop());
+    else this._startRingRenderLoop();
     this._maybeScheduleSelection(next);
   },
 
@@ -610,6 +754,16 @@ Page({
     const rect = this._stageRect || { left: 0, top: 0, width: DESIGN_WIDTH_PX };
     const width = getFiniteNumber(rect.width, DESIGN_WIDTH_PX);
     const scale = width / DESIGN_WIDTH_PX;
+    const slotIndex = this._slotByTouchId && this._slotByTouchId.get(String(winner && winner.id));
+    const slot = Number.isInteger(slotIndex) && this._slotTouches ? this._slotTouches[slotIndex] : null;
+    const xPx = getFiniteNumber(slot && slot.xPx, NaN);
+    const yPx = getFiniteNumber(slot && slot.yPx, NaN);
+    if (Number.isFinite(xPx) && Number.isFinite(yPx)) {
+      return {
+        xPx: Number((getFiniteNumber(rect.left, 0) + xPx).toFixed(2)),
+        yPx: Number((getFiniteNumber(rect.top, 0) - 2 * scale + yPx).toFixed(2))
+      };
+    }
     const xRpx = getFiniteNumber(
       winner && winner.xRpx,
       getFiniteNumber(winner && winner.leftRpx, 0) + toRpx(TOUCH_DIAMETER_PX / 2)
@@ -651,6 +805,7 @@ Page({
     this._playSelection();
     const selected = { ...winner };
     this._winnerTouchId = String(selected.id);
+    this._assignSlots([selected]);
     const revealOrigin = this._getWinnerRevealOrigin(selected);
     const collapseRadius = this._getWinnerCollapseRadius(revealOrigin);
     const transitionId = this._winnerTransitionId;
@@ -726,6 +881,7 @@ Page({
   },
 
   _enterTooMany(reportedTouchCount = MAX_TOUCHES + 1) {
+    this._clearSlots();
     this._cancelTooManyCancellationFallback();
     this._cancelPendingTouchMove();
     this._cancelSelection();
@@ -764,6 +920,7 @@ Page({
 
   _finishTooMany(token = this._tooManyToken) {
     if (Number(token) !== Number(this._tooManyToken) || this.data.status !== "tooMany") return;
+    this._clearSlots();
     this._clearTooManyTimer();
     this._waitForAllTouchesReleased = Number(this._latestTooManyTouchCount) > 0;
     this._pendingRawTouches = null;
@@ -785,6 +942,7 @@ Page({
   },
 
   _resetGame() {
+    this._clearSlots();
     this._cancelTooManyCancellationFallback();
     this._cancelPendingTouchMove();
     this._cancelSelection();
@@ -836,6 +994,7 @@ Page({
   },
 
   onStageTouchMove(e) {
+    this._syncMoveVisuals(e && e.touches);
     this._queueTouchMove(e && e.touches);
   },
 

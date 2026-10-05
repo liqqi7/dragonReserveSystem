@@ -90,6 +90,8 @@ page {
 
 .touch-point {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 230.77rpx;
   height: 230.77rpx;
 }
@@ -123,6 +125,8 @@ page {
 .touch-inner {
   position: absolute;
   z-index: 4;
+  top: 36.54rpx;
+  left: 36.54rpx;
   width: 157.69rpx;
   height: 157.69rpx;
   border-radius: 50%;
