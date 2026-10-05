@@ -25,6 +25,10 @@
 
 ## Pencil 原型规范与全局检查
 
+0. 涉及 `.pen` 文件的操作前，先查阅 `docs/pen-dev/` 下的 pen.dev 官方文档本地镜像（索引见 `docs/pen-dev/README.md`，格式细节以 `for-developers/the-pen-format.md` 为准）。
+
+
+
 ### 画布排列与验收
 
 1. 每次修改 `.pen` 画布后，必须检查整个画布的全部顶层节点排列，不得只检查本次修改的局部区域。

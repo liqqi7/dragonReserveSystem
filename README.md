@@ -48,3 +48,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start_backend_test.ps1
 编辑活动流程以 `prototype/龙城小程序.pen` 中的 `l8JPT0`、`WTdTo`、`VG9sB`、`F2KEFX`、`mzb3Z`、`i0BOQg`、`UHfn0`、`YKzDp` 为验收基准。原型中呈现为圆形的图标、按钮和状态标记必须使用圆形 SVG，不得用 CSS、文字、emoji、字体图标或位图替代；实现必须逐项对齐原型的尺寸、间距、颜色、层级、抽屉、时间选择器和封面预览流程。
 
 该实施计划文档已移除；以上原型节点和实际小程序实现为当前核对依据。
+
+## pen.dev 设计工具文档
+
+`prototype/龙城小程序.pen` 使用 pen.dev 编辑。凡涉及 `.pen` 原型的查看、编辑、组件/变量/插槽、MCP 或 CLI 集成与排障，先查阅本地镜像文档 [docs/pen-dev/](docs/pen-dev/README.md)——这是 pen.dev 官方说明文件的离线副本（镜像自 https://docs.pen.dev，2026-10-05）；线上版本更新后请重新镜像。
