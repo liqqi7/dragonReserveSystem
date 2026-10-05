@@ -223,8 +223,8 @@ test("large card matches the prototype geometry and typography", () => {
   assert.match(wxss, /\.large-card-wrap\s*\{[^}]*width:\s*469\.23rpx;/s);
   assert.match(wxss, /\.large-card-wrap\s*\{[^}]*background-color:\s*transparent;/s);
   assert.match(wxss, /\.large-card-transition\s*\{[^}]*width:\s*469\.23rpx;[^}]*height:\s*626\.92rpx;[^}]*overflow:\s*visible;[^}]*border-radius:\s*46\.15rpx;[^}]*background-color:\s*transparent;[^}]*box-shadow:\s*none;/s);
-  assert.match(wxss, /\.large-card\s*\{[^}]*box-shadow:\s*0 11\.54rpx 38\.46rpx -11\.54rpx rgba\(0, 0, 0, 0\.1\);/s);
-  assert.match(wxss, /\.small-card-shadow\s*\{[^}]*width:\s*307\.69rpx;[^}]*height:\s*307\.69rpx;[^}]*border-radius:\s*46\.15rpx;[^}]*overflow:\s*visible;[^}]*box-shadow:\s*0 11\.54rpx 38\.46rpx -11\.54rpx rgba\(0, 0, 0, 0\.1\);/s);
+  assert.match(wxss, /\.large-card\s*\{[^}]*box-shadow:\s*0 11\.54rpx 38\.46rpx rgba\(0, 0, 0, 0\.1\);/s);
+  assert.match(wxss, /\.small-card-shadow\s*\{[^}]*width:\s*307\.69rpx;[^}]*height:\s*307\.69rpx;[^}]*border-radius:\s*46\.15rpx;[^}]*overflow:\s*visible;[^}]*box-shadow:\s*0 11\.54rpx 38\.46rpx rgba\(0, 0, 0, 0\.1\);/s);
   assert.match(wxss, /\.small-card\s*\{[^}]*width:\s*307\.69rpx;[^}]*height:\s*307\.69rpx;[^}]*border-radius:\s*46\.15rpx;[^}]*overflow:\s*hidden;[^}]*box-shadow:\s*none;/s);
   assert.doesNotMatch(wxss, /\.card-datetime-label\b/);
   assert.match(wxss, /\.glass-bottom\s*\{[^}]*padding:\s*23\.08rpx;/s);
