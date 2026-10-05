@@ -94,7 +94,7 @@
               <open-container
                 class="large-card-transition"
                 closed-color="transparent"
-                closed-elevation="0"
+                closed-elevation="2"
                 closed-border-radius="16"
                 open-elevation="0"
                 open-border-radius="0"
@@ -243,7 +243,7 @@
               <open-container
               class="small-card-wrap"
               closed-color="transparent"
-              closed-elevation="0"
+              closed-elevation="2"
               closed-border-radius="0"
               open-elevation="0"
               open-border-radius="0"
@@ -387,7 +387,7 @@
               <open-container
               class="small-card-wrap"
               closed-color="transparent"
-              closed-elevation="0"
+              closed-elevation="2"
               closed-border-radius="0"
               open-elevation="0"
               open-border-radius="0"
@@ -486,7 +486,7 @@
               <open-container
               class="small-card-wrap"
               closed-color="transparent"
-              closed-elevation="0"
+              closed-elevation="2"
               closed-border-radius="0"
               open-elevation="0"
               open-border-radius="0"
