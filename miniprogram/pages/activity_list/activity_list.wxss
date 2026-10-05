@@ -1402,6 +1402,7 @@ button.create-btn-fixed.create-btn-hover {
   box-sizing: border-box;
   overflow: visible;
   padding-right: 23.08rpx;
+  padding-bottom: 38.46rpx;
 }
 
 .home-tool-card {
