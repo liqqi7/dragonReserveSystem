@@ -442,13 +442,17 @@ Page({
   _syncMoveVisuals(rawTouches) {
     if (!this._slotByTouchId || !this._stageRect) return;
     const touches = Array.isArray(rawTouches) ? rawTouches : [];
+    if (!touches.length) return;
+    const rawById = new Map();
+    touches.forEach((touch, index) => rawById.set(getTouchId(touch, index), touch));
     for (const [touchId, slotIndex] of this._slotByTouchId.entries()) {
       const slot = this._slotTouches[slotIndex];
       if (!slot) continue;
-      const raw = touches.find((touch, index) => getTouchId(touch, index) === touchId);
+      const raw = rawById.get(touchId);
       if (!raw) continue;
       const position = this._getTouchPosition(raw);
       if (!position) continue;
+      if (slot.xPx === position.xPx && slot.yPx === position.yPx) continue;
       slot.xPx = position.xPx;
       slot.yPx = position.yPx;
       this._applySlotPosition(slotIndex);

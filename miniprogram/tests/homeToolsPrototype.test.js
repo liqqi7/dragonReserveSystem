@@ -22,7 +22,7 @@ test("administrator home tools follow the Pencil module and card content", () =>
   assert.match(toolsMarkup, /home-tool-boardgames\.png/);
   assert.doesNotMatch(toolsMarkup, /<scroll-view|scroll-x/);
   // 分页 swiper 保留紧凑卡片视口，并预留字体像素取整余量。
-  assert.match(wxss, /\.home-tools-swiper\s*\{[^}]*height:\s*calc\(187\.69rpx \+ 2px\);[^}]*margin-top:\s*23\.08rpx;[^}]*margin-bottom:\s*38\.46rpx;/);
+  assert.match(wxss, /\.home-tools-swiper\s*\{[^}]*height:\s*calc\(187\.69rpx \+ 3\.85rpx\);[^}]*margin-top:\s*23\.08rpx;[^}]*margin-bottom:\s*38\.46rpx;/);
   const cardStyle = wxss.match(/\.home-tool-card\s*\{([^}]*)\}/)[1];
   assert.match(cardStyle, /width:\s*538\.46rpx;/);
   assert.match(cardStyle, /padding:\s*30\.77rpx;/);

@@ -1392,7 +1392,7 @@ button.create-btn-fixed.create-btn-hover {
 /* 管理员首页「小工具」：与活动卡片一致的分页 swiper，卡片仍按内容撑高。
  * 固定视口保留 2px 文本取整余量，防止卡片底边被裁切。 */
 .home-tools-swiper {
-  height: calc(187.69rpx + 2px);
+  height: calc(187.69rpx + 3.85rpx);
   margin-top: 23.08rpx;
   margin-bottom: 38.46rpx;
 }
