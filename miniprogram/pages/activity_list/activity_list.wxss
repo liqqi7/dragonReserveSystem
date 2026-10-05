@@ -915,7 +915,7 @@ button.create-btn-fixed.create-btn-hover {
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
-  box-shadow: 0 11.54rpx 38.46rpx rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 }
 
 /* 「已结束」横向末尾加载格（宽同 .small-card-wrap，保证横向 snap 步长一致） */
@@ -980,7 +980,7 @@ button.create-btn-fixed.create-btn-hover {
   height: 307.69rpx;
   border-radius: 46.15rpx;
   overflow: visible;
-  box-shadow: 0 11.54rpx 38.46rpx rgba(0, 0, 0, 0.1);
+  box-shadow: none;
   pointer-events: none;
   z-index: 0;
 }
@@ -1468,4 +1468,16 @@ button.create-btn-fixed.create-btn-hover {
   z-index: 2;
   width: 253.85rpx;
   height: 253.85rpx;
+}
+
+/* Card shadows rendered on the native open-container itself so they are
+   not clipped or covered by the container layer. */
+.large-card-transition {
+  border-radius: 46.15rpx;
+  box-shadow: 0 11.54rpx 38.46rpx rgba(0, 0, 0, 0.1);
+}
+
+.small-card-wrap {
+  border-radius: 46.15rpx;
+  box-shadow: 0 11.54rpx 38.46rpx rgba(0, 0, 0, 0.1);
 }
