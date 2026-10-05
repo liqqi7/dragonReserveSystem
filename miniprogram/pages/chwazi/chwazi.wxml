@@ -23,7 +23,7 @@
     >
       <block wx:for="{{touches}}" wx:key="id">
         <view class="touch-point {{status === 'selected' ? 'touch-point--selected' : ''}}" style="left: {{item.leftRpx}}rpx; top: {{item.topRpx}}rpx;">
-          <canvas class="touch-ring-canvas" canvas-id="{{item.canvasId}}"></canvas>
+          <canvas class="touch-ring-canvas" type="2d" id="{{item.canvasId}}"></canvas>
           <view class="touch-inner" style="left: {{item.innerLeftRpx - item.leftRpx}}rpx; top: {{item.innerTopRpx - item.topRpx}}rpx; background: {{item.innerColor}};"></view>
         </view>
       </block>

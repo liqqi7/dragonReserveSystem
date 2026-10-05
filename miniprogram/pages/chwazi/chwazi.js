@@ -347,7 +347,7 @@ Page({
   },
 
   _drawTouchRings(now = Date.now()) {
-    if (typeof wx === "undefined" || typeof wx.createCanvasContext !== "function") return false;
+    if (typeof wx === "undefined" || typeof wx.createSelectorQuery !== "function") return false;
     const touches = Array.isArray(this.data.touches) ? this.data.touches : [];
     const canvasScale = getFiniteNumber(this._stageRect && this._stageRect.width, DESIGN_WIDTH_PX)
       / DESIGN_WIDTH_PX;
@@ -361,22 +361,27 @@ Page({
     let animationPending = false;
     for (const touch of touches) {
       if (!touch.canvasId) continue;
-      let context = this._ringCanvasContexts.get(touch.canvasId);
-      if (!context) {
-        context = wx.createCanvasContext(touch.canvasId, this);
-        this._ringCanvasContexts.set(touch.canvasId, context);
-      }
       const progress = this.data.status === "selected"
         ? 1
         : getProgress(touch.startedAt, now, PROGRESS_DURATION_MS);
       if (progress < 1) animationPending = true;
-      context.clearRect(0, 0, canvasSize, canvasSize);
+      let entry = this._ringCanvasContexts.get(touch.canvasId);
+      if (!entry) {
+        entry = { canvas: null, ctx: null, pixelSize: 0, dpr: 1 };
+        this._ringCanvasContexts.set(touch.canvasId, entry);
+        this._acquireRingCanvas(touch.canvasId);
+        continue;
+      }
+      if (!entry.ctx) continue;
+      this._resizeRingCanvas(entry, canvasSize);
+      const ctx = entry.ctx;
+      ctx.clearRect(0, 0, canvasSize, canvasSize);
       if (progress > 0) {
-        context.beginPath();
-        context.setStrokeStyle(touch.outerColor);
-        context.setLineWidth(RING_LINE_WIDTH_PX * canvasScale);
-        context.setLineCap("round");
-        context.arc(
+        ctx.beginPath();
+        ctx.strokeStyle = touch.outerColor;
+        ctx.lineWidth = RING_LINE_WIDTH_PX * canvasScale;
+        ctx.lineCap = "round";
+        ctx.arc(
           RING_CENTER_PX * canvasScale,
           RING_CENTER_PX * canvasScale,
           RING_RADIUS_PX * canvasScale,
@@ -384,11 +389,44 @@ Page({
           -Math.PI / 2 + Math.PI * 2 * progress,
           false
         );
-        context.stroke();
+        ctx.stroke();
       }
-      context.draw();
     }
     return animationPending;
+  },
+
+  _acquireRingCanvas(canvasId) {
+    if (typeof wx === "undefined" || typeof wx.createSelectorQuery !== "function") return;
+    wx.createSelectorQuery()
+      .select("#" + canvasId)
+      .fields({ node: true })
+      .exec((res) => {
+        const entry = this._ringCanvasContexts && this._ringCanvasContexts.get(canvasId);
+        if (!entry) return;
+        const info = res && res[0];
+        if (!info || !info.node) {
+          setTimeout(() => {
+            if (this._ringCanvasContexts && this._ringCanvasContexts.get(canvasId) === entry) {
+              this._acquireRingCanvas(canvasId);
+            }
+          }, 50);
+          return;
+        }
+        entry.dpr = getFiniteNumber(this._windowInfo && this._windowInfo.pixelRatio, 1);
+        entry.canvas = info.node;
+        entry.ctx = info.node.getContext("2d");
+        this._drawTouchRings();
+      });
+  },
+
+  _resizeRingCanvas(entry, cssSize) {
+    if (!entry.canvas || !cssSize) return;
+    const target = Math.max(1, Math.round(cssSize * entry.dpr));
+    if (entry.pixelSize === target) return;
+    entry.pixelSize = target;
+    entry.canvas.width = target;
+    entry.canvas.height = target;
+    entry.ctx.setTransform(entry.dpr, 0, 0, entry.dpr, 0, 0);
   },
 
   _startRingRenderLoop() {

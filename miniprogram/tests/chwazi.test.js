@@ -74,6 +74,10 @@ function createSelectorQueryHarness() {
             request.selector = selector;
             return this;
           },
+          fields(fieldsValue) {
+            request.fieldsValue = fieldsValue;
+            return this;
+          },
           boundingClientRect(callback) {
             request.rectCallback = callback;
             return this;
@@ -332,20 +336,16 @@ test("touchend cancels a stale queued move before applying the final state", (t)
 
 test("progress ring uses one rounded canvas arc without a split radial seam", () => {
   const calls = [];
-  const context = {
+  const ctx = {
     clearRect: (...args) => calls.push(["clearRect", ...args]),
     beginPath: () => calls.push(["beginPath"]),
-    setStrokeStyle: (value) => calls.push(["setStrokeStyle", value]),
-    setLineWidth: (value) => calls.push(["setLineWidth", value]),
-    setLineCap: (value) => calls.push(["setLineCap", value]),
     arc: (...args) => calls.push(["arc", ...args]),
     stroke: () => calls.push(["stroke"]),
-    draw: () => calls.push(["draw"])
+    setTransform: (...args) => calls.push(["setTransform", ...args])
   };
   const wxHarness = {
-    createCanvasContext(canvasId) {
-      calls.push(["createCanvasContext", canvasId]);
-      return context;
+    createSelectorQuery() {
+      throw new Error("selector query should not run when the canvas entry is ready");
     }
   };
 
@@ -359,16 +359,76 @@ test("progress ring uses one rounded canvas arc without a split radial seam", ()
       startedAt: 100,
       outerColor: "#FFD500"
     }];
+    page._ringCanvasContexts = new Map([["chwazi-ring-1", {
+      canvas: { width: 0, height: 0 },
+      ctx,
+      pixelSize: 0,
+      dpr: 1
+    }]]);
     const pending = page._drawTouchRings(850);
     const arc = calls.find((call) => call[0] === "arc");
-    const lineWidth = calls.find((call) => call[0] === "setLineWidth");
 
     assert.equal(pending, true);
-    assert.deepEqual(calls.find((call) => call[0] === "setLineCap"), ["setLineCap", "round"]);
-    assert.ok(Math.abs(lineWidth[1] - 9 * 375 / 390) < 0.0001);
+    assert.equal(ctx.strokeStyle, "#FFD500");
+    assert.equal(ctx.lineCap, "round");
+    assert.ok(Math.abs(ctx.lineWidth - 9 * 375 / 390) < 0.0001);
     assert.equal(arc.length, 7);
     assert.ok(Math.abs(arc[4] - (-Math.PI / 2)) < 0.0001);
     assert.ok(Math.abs(arc[5] - (Math.PI / 2)) < 0.0001);
+  });
+});
+
+test("ring canvas node is acquired through the 2d canvas selector on demand", () => {
+  const acquiredKinds = [];
+  const ctx = {
+    setTransform: () => {},
+    clearRect: () => {},
+    beginPath: () => {},
+    arc: () => {},
+    stroke: () => {}
+  };
+  const node = {
+    width: 0,
+    height: 0,
+    getContext(kind) {
+      acquiredKinds.push(kind);
+      return ctx;
+    }
+  };
+  const wxHarness = {
+    createSelectorQuery() {
+      return {
+        select(selector) {
+          this.selector = selector;
+          return this;
+        },
+        fields(fields) {
+          this.fieldsValue = fields;
+          return this;
+        },
+        exec(callback) {
+          callback([{ node }]);
+        }
+      };
+    }
+  };
+
+  withGlobalWx(wxHarness, () => {
+    const page = createPageContext(loadPageDefinition());
+    page._windowInfo = { pixelRatio: 2 };
+    page.data.status = "touching";
+    page.data.touches = [{
+      id: "1",
+      canvasId: "chwazi-ring-1",
+      startedAt: 100,
+      outerColor: "#FFD500"
+    }];
+    page._drawTouchRings(850);
+
+    assert.deepEqual(acquiredKinds, ["2d"]);
+    const entry = page._ringCanvasContexts.get("chwazi-ring-1");
+    assert.equal(entry.ctx, ctx);
+    assert.equal(entry.dpr, 2);
   });
 });
 
@@ -899,7 +959,7 @@ test("Chwazi page matches the Pencil stage, ring and over-five presentation", ()
   assert.match(wxml, /catchtouchend="onStageTouchEnd"/);
   assert.match(wxml, /id="qa-chwazi-touch-surface"[\s\S]*?catchtouchstart="onStageTouchStart"/);
   assert.doesNotMatch(wxml, /id="qa-chwazi-stage"[\s\S]*?catchtouchstart="onStageTouchStart"/);
-  assert.match(wxml, /canvas-id="\{\{item\.canvasId\}\}"/);
+  assert.match(wxml, /type="2d" id="\{\{item\.canvasId\}\}"/);
   assert.doesNotMatch(wxml, /conic-gradient\(|touch-ring-half|touch-ring-cutout|touch-ring-cap/);
   assert.match(wxml, /id="qa-chwazi-winner-curtain"/);
   assert.match(wxml, /data-transition-id="\{\{winnerTransitionId\}\}"/);
@@ -920,8 +980,8 @@ test("Chwazi page matches the Pencil stage, ring and over-five presentation", ()
   assert.match(wxss, /\.chwazi-stage\s*{[\s\S]*?min-height:\s*0;[\s\S]*?flex:\s*1 1 auto/);
   assert.doesNotMatch(wxss, /\.chwazi-stage(?:--selected)?\s*{[\s\S]*?height:\s*(?:1038\.46|1269\.23077)rpx/);
   assert.match(wxml, /class="chwazi-bottom-safe-area" style="height: \{\{bottomSafeAreaRpx\}\}rpx;"/);
-  assert.match(js, /setLineCap\("round"\)/);
-  assert.match(js, /context\.arc\([\s\S]*?Math\.PI \* 2 \* progress/);
+  assert.match(js, /ctx\.lineCap = "round"/);
+  assert.match(js, /ctx\.arc\([\s\S]*?Math\.PI \* 2 \* progress/);
   assert.match(wxss, /\.touch-ring-canvas\s*{[\s\S]*?width:\s*230\.77rpx;[\s\S]*?height:\s*230\.77rpx/);
   assert.match(wxss, /\.chwazi-touch-surface\s*{[\s\S]*?overflow:\s*hidden/);
   assert.doesNotMatch(wxss, /chwazi-ring-right|chwazi-ring-left|touch-ring-arc/);
