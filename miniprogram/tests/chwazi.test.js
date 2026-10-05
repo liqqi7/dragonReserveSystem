@@ -1035,9 +1035,9 @@ test("slot assignment reuses freed slots and syncs fallback styles without workl
 
   const styles = page.data.slotStyles;
   assert.equal(styles.length, 5);
-  const activeStyles = styles.filter((style) => style.transform !== "translate(-9999px, -9999px)");
+  const activeStyles = styles.filter((style) => style.transform !== "translate(-9999rpx, -9999rpx)");
   assert.equal(activeStyles.length, 1);
-  assert.match(activeStyles[0].transform, /^translate\(-?\d+(\.\d+)?px, -?\d+(\.\d+)?px\)$/);
+  assert.match(activeStyles[0].transform, /^translate\(-?\d+(\.\d+)?rpx, -?\d+(\.\d+)?rpx\)$/);
   const colored = styles.filter((style) => style.innerBackground !== "transparent");
   assert.equal(colored.length, 1);
 });
@@ -1071,9 +1071,9 @@ test("worklet slot visuals use shared values bound through applyAnimatedStyle", 
     assert.deepEqual(sharedValues.map((holder) => holder.value.active), [1, 1, 0, 0, 0]);
 
     const activeStyle = styledSelectors[0][1]();
-    assert.match(activeStyle.transform, /^translate\(-?\d+(\.\d+)?px, -?\d+(\.\d+)?px\)$/);
+    assert.match(activeStyle.transform, /^translate\(-?\d+(\.\d+)?rpx, -?\d+(\.\d+)?rpx\)$/);
     const idleStyle = styledSelectors[4][1]();
-    assert.equal(idleStyle.transform, "translate(-9999px, -9999px)");
+    assert.equal(idleStyle.transform, "translate(-9999rpx, -9999rpx)");
   });
 });
 
@@ -1123,4 +1123,22 @@ test("ring render loop prefers canvas requestAnimationFrame and cancels it on st
     assert.equal(rafCallbacks.cancelled, 7);
     assert.equal(page._ringRenderTimer, null);
   });
+});
+test("winner reveal origin converts slot design coordinates through the stage scale", () => {
+  const page = createPageContext(loadPageDefinition());
+  page._stageRect = { left: 0, top: 130, width: 375, height: 540 };
+  page._slotByTouchId = new Map([["1", 0]]);
+  page._slotTouches = [{
+    id: "1",
+    startedAt: 1,
+    outerColor: "#FFD500",
+    innerColor: "#FFE663",
+    xPx: 195,
+    yPx: 270
+  }, null, null, null, null];
+
+  const origin = page._getWinnerRevealOrigin({ id: "1", xRpx: 0, yRpx: 0, leftRpx: 0, topRpx: 0 });
+  const scale = 375 / 390;
+  assert.ok(Math.abs(origin.xPx - 195 * scale) < 0.01);
+  assert.ok(Math.abs(origin.yPx - (130 - 2 * scale + 270 * scale)) < 0.01);
 });

@@ -354,7 +354,7 @@ Page({
     this._slotTouches = Array.from({ length: MAX_TOUCHES }, () => null);
     this._slotByTouchId = new Map();
     const slotStyles = Array.from({ length: MAX_TOUCHES }, () => ({
-      transform: "translate(-9999px, -9999px)",
+      transform: "translate(-9999rpx, -9999rpx)",
       innerBackground: "transparent"
     }));
     this.setData({ slotStyles }, () => {
@@ -369,23 +369,23 @@ Page({
           "worklet";
           const s = sharedSlot.value;
           return s && s.active
-            ? { transform: "translate(" + s.x + "px, " + s.y + "px)" }
-            : { transform: "translate(-9999px, -9999px)" };
-        });
+            ? { transform: "translate(" + s.x + "rpx, " + s.y + "rpx)" }
+            : { transform: "translate(-9999rpx, -9999rpx)" };
+        }, { flush: "sync" });
       });
     });
   },
 
   _applySlotPosition(index) {
     const slot = this._slotTouches && this._slotTouches[index];
-    const x = slot ? slot.xPx - TOUCH_DIAMETER_PX / 2 : -9999;
-    const y = slot ? slot.yPx - TOUCH_DIAMETER_PX / 2 : -9999;
+    const x = slot ? toRpx(slot.xPx - TOUCH_DIAMETER_PX / 2) : -9999;
+    const y = slot ? toRpx(slot.yPx - TOUCH_DIAMETER_PX / 2) : -9999;
     if (this._useWorkletVisuals && this._slotShared && this._slotShared[index]) {
       this._slotShared[index].value = slot ? { x, y, active: 1 } : { x: -9999, y: -9999, active: 0 };
       return;
     }
     const patch = {};
-    patch["slotStyles[" + index + "].transform"] = "translate(" + x + "px, " + y + "px)";
+    patch["slotStyles[" + index + "].transform"] = "translate(" + x + "rpx, " + y + "rpx)";
     this.setData(patch);
   },
 
@@ -760,8 +760,8 @@ Page({
     const yPx = getFiniteNumber(slot && slot.yPx, NaN);
     if (Number.isFinite(xPx) && Number.isFinite(yPx)) {
       return {
-        xPx: Number((getFiniteNumber(rect.left, 0) + xPx).toFixed(2)),
-        yPx: Number((getFiniteNumber(rect.top, 0) - 2 * scale + yPx).toFixed(2))
+        xPx: Number((getFiniteNumber(rect.left, 0) + xPx * scale).toFixed(2)),
+        yPx: Number((getFiniteNumber(rect.top, 0) - 2 * scale + yPx * scale).toFixed(2))
       };
     }
     const xRpx = getFiniteNumber(
