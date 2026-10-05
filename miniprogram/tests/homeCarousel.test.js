@@ -25,7 +25,7 @@ test("activity cards use Skyline open-container for native card-to-page transiti
   assert.equal((wxml.match(/closed-color="transparent"/g) || []).length, 4);
   assert.equal(smallCardContainers.length, 3);
   assert.ok(smallCardContainers.every((container) => container.includes('closed-color="transparent"')));
-  assert.ok(smallCardContainers.every((container) => container.includes('closed-border-radius="0"')));
+  assert.ok(smallCardContainers.every((container) => container.includes('closed-border-radius="24"')));
   assert.equal((wxml.match(/class="small-card-layout home-card-entrance home-card-entrance--\{\{!\(item\._homeMediaReady && item\._homeSlotEntered\) \? 'pending' : \(item\._id == createdCardEntranceId \? createdCardEntranceState : 'entered'\)\}\}"/g) || []).length, 3);
   assert.match(wxml, /<view[\s\S]*?class="large-card-wrap home-card-entrance[^\"]*"[\s\S]*?<open-container[\s\S]*?class="large-card-transition"[\s\S]*?closed-color="transparent"/);
   assert.doesNotMatch(wxml, /class="card-datetime-label"/);
@@ -223,8 +223,10 @@ test("large card matches the prototype geometry and typography", () => {
   assert.match(wxss, /\.large-card-wrap\s*\{[^}]*width:\s*469\.23rpx;/s);
   assert.match(wxss, /\.large-card-wrap\s*\{[^}]*background-color:\s*transparent;/s);
   assert.match(wxss, /\.large-card-transition\s*\{[^}]*width:\s*469\.23rpx;[^}]*height:\s*626\.92rpx;[^}]*overflow:\s*visible;[^}]*border-radius:\s*46\.15rpx;[^}]*background-color:\s*transparent;[^}]*box-shadow:\s*none;/s);
-  assert.match(wxss, /\.large-card\s*\{[^}]*box-shadow:\s*0 11\.54rpx 38\.46rpx rgba\(0, 0, 0, 0\.1\);/s);
-  assert.match(wxss, /\.small-card-shadow\s*\{[^}]*width:\s*307\.69rpx;[^}]*height:\s*307\.69rpx;[^}]*border-radius:\s*46\.15rpx;[^}]*overflow:\s*visible;[^}]*box-shadow:\s*0 11\.54rpx 38\.46rpx rgba\(0, 0, 0, 0\.1\);/s);
+  assert.match(wxss, /\.large-card\s*\{[^}]*box-shadow:\s*none;/s);
+  assert.match(wxss, /\.large-card-transition\s*\{[^}]*border-radius:\s*46\.15rpx;[^}]*box-shadow:\s*0 11\.54rpx 38\.46rpx rgba\(0, 0, 0, 0\.1\);/s);
+  assert.match(wxss, /\.small-card-shadow\s*\{[^}]*width:\s*307\.69rpx;[^}]*height:\s*307\.69rpx;[^}]*border-radius:\s*46\.15rpx;[^}]*overflow:\s*visible;[^}]*box-shadow:\s*none;/s);
+  assert.match(wxss, /\.small-card-wrap\s*\{[^}]*border-radius:\s*46\.15rpx;[^}]*box-shadow:\s*0 11\.54rpx 38\.46rpx rgba\(0, 0, 0, 0\.1\);/s);
   assert.match(wxss, /\.small-card\s*\{[^}]*width:\s*307\.69rpx;[^}]*height:\s*307\.69rpx;[^}]*border-radius:\s*46\.15rpx;[^}]*overflow:\s*hidden;[^}]*box-shadow:\s*none;/s);
   assert.doesNotMatch(wxss, /\.card-datetime-label\b/);
   assert.match(wxss, /\.glass-bottom\s*\{[^}]*padding:\s*23\.08rpx;/s);

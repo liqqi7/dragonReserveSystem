@@ -998,6 +998,7 @@ button.create-btn-fixed.create-btn-hover {
 .small-card-info {
   display: flex;
   flex-direction: column;
+  margin-top: 15.38rpx;
   padding: 0;
   background-color: transparent;
 }
@@ -1414,6 +1415,7 @@ button.create-btn-fixed.create-btn-hover {
   padding: 30.77rpx;
   border-radius: 46.15rpx;
   background-color: #faf7f5;
+  box-shadow: 0 11.54rpx 38.46rpx rgba(0, 0, 0, 0.1);
 }
 
 .home-tool-glow {
