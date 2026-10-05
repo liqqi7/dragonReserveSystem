@@ -915,7 +915,7 @@ button.create-btn-fixed.create-btn-hover {
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
-  box-shadow: 0 11.54rpx 38.46rpx rgba(0, 0, 0, 0.08);
+  box-shadow: 0 11.54rpx 38.46rpx -11.54rpx rgba(0, 0, 0, 0.1);
 }
 
 /* 「已结束」横向末尾加载格（宽同 .small-card-wrap，保证横向 snap 步长一致） */
@@ -980,7 +980,7 @@ button.create-btn-fixed.create-btn-hover {
   height: 307.69rpx;
   border-radius: 46.15rpx;
   overflow: visible;
-  box-shadow: 0 11.54rpx 38.46rpx rgba(0, 0, 0, 0.08);
+  box-shadow: 0 11.54rpx 38.46rpx -11.54rpx rgba(0, 0, 0, 0.1);
   pointer-events: none;
   z-index: 0;
 }
