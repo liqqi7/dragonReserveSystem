@@ -131,10 +131,6 @@ button.create-btn-fixed {
 /* ── 点击动效 ── */
 
 /* 卡片按下：轻微缩小 + 变暗 */
-.card-hover {
-  transform: scale(0.975);
-  opacity: 0.82;
-}
 
 /* 筛选 Tab 按下 */
 .tab-hover {
