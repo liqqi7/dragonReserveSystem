@@ -92,7 +92,6 @@
       <text class="intake-version-value">{{candidate.owned_by_actor ? (candidate.ownedVersionLabel || candidate.owned_version_label || '版次未确定') : (selectedVersion ? (selectedVersion.display_name || selectedVersion.name || selectedVersion.languageLabel || '版本名称未知') : (selection === 'unspecified' ? '版次未确定' : '请选择桌游版本'))}}{{!candidate.owned_by_actor && selectedVersion.year_published ? ' · ' + selectedVersion.year_published : ''}}</text>
       <view class="intake-version-action"><text wx:if="{{!candidate.owned_by_actor}}">{{selection ? '更换' : '选择'}}</text><text class="intake-version-chevron">›</text></view>
     </button>
-    <view wx:if="{{!candidate.owned_by_actor}}" class="intake-remark"><text>录入备注</text><textarea placeholder-style="color:#9CA3AF;font-size:14px" class="entry-input entry-textarea" value="{{form.remark}}" data-key="remark" bindinput="field" maxlength="2000" placeholder="选填，仅自己可见" disabled="{{saving || submitUnknown}}"/></view>
     <view wx:if="{{formError}}" class="entry-error"><text>{{formError}}</text></view>
   </block>
   <block wx:if="{{stage === 'recover'}}">
@@ -105,7 +104,9 @@
       <image class="intake-success-art" src="./success-art.png" mode="aspectFit"/>
       <text class="intake-success-message">恭喜你又消费了</text>
     </view>
-    <button class="intake-success-button" bindtap="newEntry">继续录入下一款</button>
+    <view class="intake-success-actions">
+      <view class="intake-success-button" bindtap="newEntry" role="button" aria-label="继续录入下一款"><text>继续录入下一款</text></view>
+    </view>
   </block>
 </scroll-view>
 <view wx:if="{{stage === 'version'}}" class="entry-footer">

@@ -43,12 +43,15 @@ test('search selects the first result, preserves stats and saves only own chosen
   const api=intakeApi(),{instance:p}=page('boardgame_intake',api);
   p.inputQuery({detail:{value:'伯明翰'}});await p.search();
   assert.equal(p.data.stage,'version');assert.equal(p.data.candidate.bgg_rank,1);
-  p.chooseVersion(event(101));p.data.form.remark='中文收藏';await p.save();
+  p.chooseVersion(event(101));await p.save();
   const sent=api.calls.find(c=>c.url==='/boardgame-intakes');
   assert.equal(sent.data.bgg_version_id,101);assert.equal(sent.data.inventory.owner_user_id,7);
-  assert.equal(sent.data.inventory.remark,'中文收藏');
-  assert.deepEqual(Object.keys(sent.data.inventory).sort(),['owner_type','owner_user_id','quantity','remark']);
+  assert.equal(Object.hasOwn(p.data.form,'remark'),false);
+  assert.deepEqual(Object.keys(sent.data.inventory).sort(),['owner_type','owner_user_id','quantity']);
   assert.equal(p.data.stage,'success');
+  p.newEntry();
+  assert.equal(p.data.stage,'intro');
+  assert.equal(p.data.candidate,null);
 });
 test('search automatically selects a ready candidate when the first BGG item is unavailable',async()=>{
   const api=intakeApi();const get=api.get,send=api.send;

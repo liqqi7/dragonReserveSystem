@@ -1,6 +1,6 @@
 const api = require('../../services/boardgames');
 
-const blankForm = () => ({name:'',remark:''});
+const blankForm = () => ({name:''});
 const pending = state => ['queued','fetching','parsing','retry_wait'].includes(state);
 const versionView = v => ({...v, languageLabel:v.language_label || (v.languages || []).join(' / '), publisherLabel:(v.publishers || []).join(' / ')});
 const successMeta = game => {
@@ -205,7 +205,6 @@ module.exports = {
     else this.setData({results:this.data.results.map(i => i.bgg_id === Number(id) ? {...i,cover_url:null} : i)});
   },
   unspecifiedVersion() { if (!this.locked()) { this.dirty(); this.setData({selection:'unspecified', selectedVersion:null}); } },
-  field(e) { if (!this.locked()) { this.dirty(); this.setData({[`form.${e.currentTarget.dataset.key}`]:e.detail.value}); } },
   back() { if (!this.locked()) this.newEntry(); },
   payload() {
     if (!this.data.candidate || !this.data.preview) throw new Error('请先选择桌游');
@@ -215,8 +214,7 @@ module.exports = {
       display_name:this.data.candidate.local_game_id ? null : this.data.form.name.trim(),
       bgg_version_id:this.data.selectedVersion ? this.data.selectedVersion.bgg_version_id : null,
       version_unspecified:this.data.selection === 'unspecified',
-      inventory:{owner_type:'member', owner_user_id:Number(this._account), quantity:1,
-        remark:this.data.form.remark.trim() || null}};
+      inventory:{owner_type:'member', owner_user_id:Number(this._account), quantity:1}};
   },
   async save() {
     if (this.data.saving || !this.current(this._generation)) return;

@@ -74,7 +74,6 @@ button.is-disabled { color:#9CA3AF; background:none; }
 .form-pair { align-items:flex-end; }
 .quantity-field { width:192.31rpx; }
 .currency-field { width:153.85rpx; flex:none; }
-.entry-textarea { height:184.62rpx; min-height:184.62rpx; }
 .member-row { width:100%; display:flex; justify-content:space-between; text-align:left; padding:23.08rpx 0; border-bottom:1.92rpx solid #F5F5F5; }
 .member-row text { color:#7C3A05; }
 .entry-footer { position:fixed; z-index:10; left:0; right:0; bottom:0; background:#FFFFFF; height:153.85rpx; padding:15.38rpx 30.77rpx 0; box-sizing:border-box; display:flex; align-items:flex-start; }
@@ -161,8 +160,8 @@ page { background:#F8FAFC; }
 .intake-success-main { display:flex; flex-direction:column; align-items:center; gap:46.15385rpx; width:100%; }
 .intake-success-art { display:block; width:530.76923rpx; height:365.38462rpx; max-width:100%; }
 .intake-success-message { display:block; width:100%; color:#171A24; font-size:30.76923rpx; line-height:38.46154rpx; font-weight:600; text-align:center; }
-.intake-success-button { display:block; width:calc(100vw - 76.92308rpx); height:92.30769rpx; min-height:92.30769rpx; margin:226.92308rpx auto 0; padding:0; border:1.92308rpx solid #FF9800; border-radius:192.30769rpx; background:#FFFFFF; color:#FF9800; font-size:26.92308rpx; line-height:88.46154rpx; font-weight:700; text-align:center; box-sizing:border-box; }
-.intake-success-button::after { border:0; }
+.intake-success-actions { display:flex; justify-content:center; width:100%; margin-top:226.92308rpx; }
+.intake-success-button { display:flex; align-items:center; justify-content:center; flex:none; width:calc(100% - 15.38462rpx); height:92.30769rpx; min-height:92.30769rpx; margin:0; padding:0; border:1.92308rpx solid #FF9800; border-radius:192.30769rpx; background:#FFFFFF; color:#FF9800; font-size:26.92308rpx; line-height:42.30769rpx; font-weight:700; text-align:center; box-sizing:border-box; }
 .intake-camera-note { background:#FFFFFF; border-radius:23.08rpx; margin:23.08rpx 0; padding:30.77rpx; color:#4B5563; }
 
 /* Flow 03: match the 750rpx Pen layout for the BGG confirmation screen. */
@@ -359,4 +358,4 @@ page { background:#F8FAFC; }
 .intake-version-action { display:flex; align-items:center; flex:none; gap:9.61538rpx; height:53.84615rpx; color:#FF9800; font-size:23.07692rpx; line-height:34.61538rpx; font-weight:600; }
 .intake-version-chevron { font-size:38.46154rpx; line-height:53.84615rpx; font-weight:500; }
 
-.intake-page{height:100vh;display:flex;flex-direction:column}.intake-nav{flex:none}.intake-content{height:0;flex:1;min-height:0}.entry-footer{position:relative;flex:none}.intake-content.version-stage.has-footer,.entry-page.has-footer{padding-bottom:46.15385rpx}.intake-remark{margin-top:23.07692rpx;font-size:26.92308rpx;color:#4B5563}.intake-remark textarea{margin-top:15.38462rpx}
+.intake-page{height:100vh;display:flex;flex-direction:column}.intake-nav{flex:none}.intake-content{height:0;flex:1;min-height:0}.entry-footer{position:relative;flex:none}.intake-content.version-stage.has-footer,.entry-page.has-footer{padding-bottom:46.15385rpx}
