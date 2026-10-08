@@ -24,6 +24,16 @@
 
 录入页保留输入内容、搜索骨架、首个可用结果自动选择、版本抽屉、重复拥有只读状态、返回录入方式页和拍照识别提示“子奇正在加班，别催”。详情页包含中文标题、BGG 资料、人数/时长、玩法机制、实体预览、我的版本、拥有者和底部简介；拥有者和实体图片加载失败不会阻断主详情。
 
+## 本地开发者工具预览
+
+导入仓库根目录（包含 `project.config.json`），不要只导入 `miniprogram` 子目录。
+
+`miniprogram/services/config.js` 被 Git 忽略，新检出目录需要从同目录 `config.js.template` 复制并配置。仅在本机后端已启动的情况下，将 `API_BASE_URL` 设置为 `http://127.0.0.1:8001/api/v1`、`API_ENVIRONMENT` 设置为 `test`；不要误连生产接口。该地址用于开发者工具，手机真机不能用它访问电脑后端。
+
+项目配置 `setting.useGlassEaselForWxml` 必须为 `true`。本地 `project.private.config.json` 的同名设置会覆盖共享配置，也需保持为 `true`。否则可能报 `No any glass-easel component configs found in space`，并连带出现页面路由错误。
+
+2026-10-08 本地修复后，开发者工具 2.02.2609182 Nightly / 基础库 3.17.3 已显示首页和桌游库，活动、桌游列表及近期馆藏请求成功，原启动错误消失。仍有自定义导航、低版本 WebView 回退及 `glassEaselWebview` 校验警告；当前 Nightly 校验器与运行时对该字段的提示不一致，保留页面回退配置，不通过删除配置掩盖警告。此次未验证真机或切换后的 WebView 回退渲染。
+
 ## 验证记录
 
 在集成分支执行：
