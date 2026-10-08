@@ -97,6 +97,44 @@ test('detail edition change uses ownership record and current revision',async()=
   await p.changeDetailVersion();assert.equal(sent.url,'/boardgame-inventory/2/version');assert.equal(sent.data.expected_revision,4);
   assert.equal(p.data.myVersions[0].bgg_version_id,102);assert.equal(p.data.inventoryOpen,false);
 });
+test('legacy detail reads actual owner records, deduplicates people and keeps the latest own edition',async()=>{
+  const api={get:async url=>url==='/boardgame-inventory'?{items:[
+    {id:5,status:'unverified',owner:{id:7},bgg_version_id:101},
+    {id:13,status:'unverified',owner:{id:7},bgg_version_id:102},
+    {id:14,status:'retired',owner:{id:8}},
+    {id:15,archived_at:'2026-10-08',owner:{id:9}}
+  ]}:url.endsWith('/images')?{items:[]}:{name:'伯明翰',inventory_summary:{total:4}},message:()=> 'failed'};
+  const {instance:p}=page('boardgame_detail',api);await p.load();await Promise.resolve();
+  assert.equal(p.data.ownerCount,1);assert.equal(p.data.ownerPreview.length,1);
+  assert.equal(p.data.ownerRows[0].id,13);assert.equal(p.data.myVersions[0].bgg_version_id,102);
+});
+test('an unowned detail never opens a version editor or an intake entry',async()=>{
+  const api={get:async url=>url==='/boardgame-inventory'?{items:[{id:5,owner:{id:8}}]}:
+    url.endsWith('/images')?{items:[]}:{name:'伯明翰',owner_count:1,my_versions:[]},message:()=> 'failed'};
+  const {instance:p,wx}=page('boardgame_detail',api);await p.load();await Promise.resolve();p.openBox();
+  assert.equal(p.data.myVersions.length,0);assert.equal(p.data.inventoryOpen,false);
+  assert.equal(wx.navigation,undefined);assert.equal(p.data.ownerCount,1);
+});
+test('failed optional gallery clears old pictures without blocking the detail',async()=>{
+  const api={get:async()=>{throw new Error('404');},message:()=> 'failed'};
+  const {instance:p}=page('boardgame_detail',api);p.setData({detailImages:[{id:'old',url:'https://cf.geekdo-images.com/old.jpg'}]});
+  await p.loadGallery();assert.equal(p.data.detailImages.length,0);assert.equal(p.data.galleryLoading,false);
+  assert.equal(p.data.error,'');assert.equal(p.data.detailGalleryPosition,'');
+});
+test('a removed library game cannot keep displaying stale ownership data',async()=>{
+  const api={get:async()=>{throw {statusCode:404};},message:()=> '桌游不存在'};
+  const {instance:p}=page('boardgame_detail',api);
+  p.setData({game:{name:'伯明翰'},myVersions:[{id:2}],ownerRows:[{id:2}],ownerPreview:[{id:2}],ownerCount:1});
+  await p.load();
+  assert.equal(p.data.game,null);assert.equal(p.data.myVersions.length,0);
+  assert.equal(p.data.ownerCount,0);assert.equal(p.data.ownerRows.length,0);
+});
+test('description toggle expands and then restores the collapsed state',()=>{
+  const {instance:p}=page('boardgame_detail',{});
+  assert.equal(p.data.descriptionOpen,false);
+  p.toggleDescription();assert.equal(p.data.descriptionOpen,true);
+  p.toggleDescription();assert.equal(p.data.descriptionOpen,false);
+});
 test('cancelled filter changes do not affect applied filters or trigger removed tag API',()=>{
   let calls=0;const {instance:p}=page('boardgame_library',{get:()=>{calls++;}});
   p.setData({filterForm:{player_count:4}});p.openFilter();p.filterField({currentTarget:{dataset:{key:'player_count'}},detail:{value:'2'}});p.closeFilter();

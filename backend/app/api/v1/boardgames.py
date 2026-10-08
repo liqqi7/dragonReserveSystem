@@ -70,10 +70,12 @@ def game_detail(game_id: int, db: Session = Depends(get_db), actor: User = Depen
     member(actor)
     game = catalog.game(db, game_id, actor)
     result = catalog.game_detail(db, game, actor)
+    active = (Inventory.game_id == game_id, Inventory.archived_at.is_(None), Inventory.status != 'retired')
+    result['owner_count'] = db.scalar(select(func.count(func.distinct(Inventory.owner_user_id))).where(*active))
+    if not result['owner_count']:
+        fail('not_found', 404)
     result['my_versions'] = [catalog.inventory_detail(db, box, actor) for box in db.scalars(
-        select(Inventory).where(Inventory.game_id == game_id, Inventory.owner_user_id == actor.id,
-                                Inventory.archived_at.is_(None)).order_by(Inventory.id))]
-    result['owner_count'] = catalog.inventory_summary(db, game_id)['total']
+        select(Inventory).where(*active, Inventory.owner_user_id == actor.id).order_by(Inventory.id.desc()))]
     return result
 
 
@@ -82,7 +84,7 @@ def inventories(game_id: int, limit: int = Query(20, ge=1, le=100), cursor: str 
                 db: Session = Depends(get_db), actor: User = Depends(get_current_user)):
     member(actor)
     catalog.game(db, game_id, actor)
-    stmt = select(Inventory).where(Inventory.game_id == game_id, Inventory.archived_at.is_(None))
+    stmt = select(Inventory).where(Inventory.game_id == game_id, Inventory.archived_at.is_(None), Inventory.status != 'retired')
     return page(db, stmt, Inventory.id, lambda box:catalog.inventory_detail(db, box, actor),
                 limit, cursor, {'game_id':game_id, 'actor':actor.id})
 

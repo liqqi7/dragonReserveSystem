@@ -133,6 +133,21 @@ def test_private_preview_and_owner_data(library):
     assert page2['items'][0]['owner']['id'] != page1['items'][0]['owner']['id']
 
 
+def test_detail_for_nonowner_and_inactive_library_entries(library):
+    client, db, actor, other, factory, app = library
+    result = post(client, '/boardgame-intakes', payload(ready(library))).json()
+    path = f"/api/v1/boardgames/{result['game_id']}"
+    app.dependency_overrides[get_current_user] = lambda:other
+    detail = client.get(path).json()
+    assert detail['my_versions'] == []
+    assert detail['owner_count'] == 1
+    box = db.get(Inventory, result['inventory'][0]['id'])
+    box.status = 'retired'; db.commit()
+    assert client.get(path).status_code == 404
+    assert client.get('/api/v1/boardgames').json()['items'] == []
+    assert client.get(f"/api/v1/boardgame-inventory?game_id={result['game_id']}").json()['items'] == []
+
+
 @pytest.mark.parametrize('status', [202,429,500,401])
 def test_worker_retries_then_terminates(library, status, monkeypatch):
     client, db, actor, other, factory, app = library

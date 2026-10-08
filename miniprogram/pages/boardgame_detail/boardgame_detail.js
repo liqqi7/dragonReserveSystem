@@ -1,8 +1,16 @@
 const api = require('../../services/boardgames');
 const versionView = v => ({...v, languageLabel:v.language_label || (v.languages || []).join(' / '), publisherLabel:(v.publishers || []).join(' / ')});
 const boxes = items => items.map(item => ({...item, ownerInitial:(item.owner?.display_name || '？').slice(0,1)}));
+const owners = items => {
+  const unique = new Map();
+  for (const item of items) {
+    const key = `${item.owner?.type || 'member'}:${item.owner?.id || item.owner?.display_name || item.id}`;
+    if (!unique.has(key) || Number(item.id) > Number(unique.get(key).id)) unique.set(key, item);
+  }
+  return Array.from(unique.values());
+};
 Page({
-  data:{id:null,game:null,inventory:[],myVersions:[],versionOptions:[],ownerPreview:[],ownerCount:0,
+  data:{id:null,game:null,inventory:[],myVersions:[],versionOptions:[],ownerRows:[],ownerPreview:[],ownerCount:0,
     detailImages:[],detailGalleryPosition:'',galleryLoading:false,galleryError:'',inventoryCursor:null,
     loading:false,error:'',statusBarHeight:0,navHeight:44,inventoryOpen:false,ownerOpen:false,
     selectedVersionId:null,currentVersionId:null,saving:false,formError:'',ownerError:'',ownersLoading:false,descriptionOpen:false},
@@ -24,16 +32,18 @@ Page({
     if (!this.data.id) return this.setData({error:'桌游不存在'});
     if (this._account !== String(wx.getStorageSync('userId'))) return this.setData({game:null,error:'账号已切换，请重新打开桌游'});
     const generation = ++this._generation;
-    this.setData({loading:true,error:''});
+    this.setData({loading:true,error:'',detailImages:[],descriptionOpen:false});
     try {
       const game = await api.get(`/boardgames/${this.data.id}`);
       if (!this.current(generation)) return;
+      this._hasMyVersions = Array.isArray(game.my_versions);
       this.setData({game:{...game,bgg_weight_display:Number(game.complexity)>0 ? Number(game.complexity).toFixed(1) : game.bgg_weight_display},
-        myVersions:boxes(game.my_versions || []), versionOptions:(game.version_options || []).map(versionView),ownerCount:game.owner_count || 0});
+        myVersions:boxes(game.my_versions || []), versionOptions:(game.version_options || []).map(versionView),
+        inventory:[],ownerRows:[],ownerPreview:[],inventoryCursor:null,ownerCount:Number(game.owner_count) || 0});
       // Optional photos and owners never delay the saved game data.
       this.loadOwners(false, generation);
       this.loadGallery(generation);
-    } catch (error) { if (this.current(generation)) this.setData({error:api.message(error)}); }
+    } catch (error) { if (this.current(generation)) this.setData({game:null,myVersions:[],inventory:[],ownerRows:[],ownerPreview:[],ownerCount:0,error:api.message(error)}); }
     finally { if (this.current(generation)) this.setData({loading:false}); }
   },
   async loadGallery(generation = this._generation) {
@@ -41,7 +51,7 @@ Page({
     try {
       const result = await api.get(`/boardgames/${this.data.id}/images`);
       if (this.current(generation)) this.setData({detailImages:result.items || [],detailGalleryPosition:result.items?.length ? `1 / ${result.items.length}` : ''});
-    } catch (_) { if (this.current(generation)) this.setData({galleryError:'实体预览暂未加载成功，点击重试'}); }
+    } catch (_) { if (this.current(generation)) this.setData({detailImages:[],detailGalleryPosition:'',galleryError:'实体预览暂未加载成功'}); }
     finally { if (this.current(generation)) this.setData({galleryLoading:false}); }
   },
   retryGallery() { this.loadGallery(); },
@@ -51,8 +61,13 @@ Page({
     try {
       const result = await api.get('/boardgame-inventory',{game_id:this.data.id,limit:20,cursor:more ? this.data.inventoryCursor : null});
       if (!this.current(generation)) return;
-      const inventory = [...(more ? this.data.inventory : []),...boxes(result.items || [])];
-      this.setData({inventory,ownerPreview:inventory.slice(0,5),inventoryCursor:result.next_cursor || null});
+      const inventory = [...(more ? this.data.inventory : []),...boxes(result.items || [])].filter(item=>item.status !== 'retired' && !item.archived_at);
+      const ownerRows = owners(inventory);
+      const update = {inventory,ownerRows,ownerPreview:ownerRows.slice(0,5),
+        ownerCount:Math.max(Number(this.data.game?.owner_count) || 0,ownerRows.length),inventoryCursor:result.next_cursor || null};
+      // Older local APIs omit my_versions; use real ownership records until they are updated.
+      if (!this._hasMyVersions) update.myVersions = inventory.filter(item=>String(item.owner?.id) === this._account).sort((a,b)=>Number(b.id)-Number(a.id));
+      this.setData(update);
     } catch (error) { if (this.current(generation)) this.setData({ownerError:api.message(error)}); }
     finally { if (this.current(generation)) this.setData({ownersLoading:false}); }
   },
@@ -67,7 +82,7 @@ Page({
   closeOwner() { this.setData({ownerOpen:false}); },
   openBox() {
     const box=this.data.myVersions[0];
-    if (!box) return wx.navigateTo({url:'/pages/boardgame_intake/boardgame_intake'+api.query({name:this.data.game.chinese_name || this.data.game.name})});
+    if (!box) return;
     this.setData({inventoryOpen:true,currentVersionId:box.bgg_version_id,selectedVersionId:box.bgg_version_id,formError:''});
   },
   closeBox() { if (!this.data.saving) this.setData({inventoryOpen:false}); },
