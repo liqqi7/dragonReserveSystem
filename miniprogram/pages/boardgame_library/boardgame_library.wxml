@@ -1,0 +1,83 @@
+<import src="../../templates/boardgame-name.wxml"/>
+
+<view class="library-page">
+  <view class="library-nav" style="padding-top:{{statusBarHeight}}px;height:{{statusBarHeight + navHeight}}px">
+    <view class="library-back" bindtap="goBack" role="button" aria-label="返回"><image src="/images/icon-chevron-left-dark.svg" mode="aspectFit"/></view>
+    <text class="library-nav-title">桌游库</text>
+    <view class="library-nav-spacer"></view>
+  </view>
+
+  <scroll-view type="custom" scroll-y class="library-scroll" bindscrolltolower="onReachBottom"><view class="library-content">
+    <view class="library-search">
+      <image class="library-search-icon" src="./search.svg"/>
+      <input placeholder-style="color:#9CA3AF;font-size:14px" class="library-search-input" value="{{query}}" placeholder="搜索名称、人数或机制" confirm-type="search" bindinput="onSearch" bindconfirm="submitSearch" />
+    </view>
+
+    <view class="library-section library-recent-section">
+      <view class="library-section-head"><text class="library-section-title">近期馆藏</text></view>
+      <view wx:if="{{recentLoading}}" class="library-recent-stage library-stage-loading"><text>正在整理近期馆藏…</text></view>
+      <view wx:elif="{{recentGames.length}}" class="library-recent-stage">
+        <view class="recent-caption"><text>LATEST ARRIVALS · 最新录入</text><text>{{recentPosition}} / {{recentGames.length}}</text></view>
+        <view class="recent-covers" bindtouchstart="coverTouchStart" bindtouchend="coverTouchEnd" bindtouchcancel="coverTouchCancel">
+          <view wx:for="{{recentStack}}" wx:key="id" class="recent-cover-slot recent-slot-{{item.slot}}" data-index="{{item.recentIndex}}" bindtap="selectRecent">
+            <image wx:if="{{item.cover_url && !item.imageFailed}}" class="recent-cover" data-path="recentGames[{{item.recentIndex}}].cover_url" src="{{item.cover_url}}" mode="aspectFill" binderror="imageError"/>
+            <view wx:else class="recent-cover recent-cover-placeholder"><text>暂无封面</text></view>
+          </view>
+        </view>
+        <swiper class="recent-details" current="{{recentIndex}}" previous-margin="32px" next-margin="32px" circular="{{recentGames.length > 1}}" bindchange="recentChanged">
+          <swiper-item wx:for="{{recentGames}}" wx:key="id">
+            <view class="recent-detail-card" data-id="{{item.id}}" bindtap="openGame">
+              <view class="recent-title-row"><text class="recent-title" overflow="ellipsis" max-lines="1">{{item.original_name || item.name}}</text><view wx:if="{{item.ratingText}}" class="recent-rating"><image src="./star.svg"/><text>{{item.ratingText}}</text></view></view>
+              <text class="recent-subtitle" overflow="ellipsis" max-lines="1">{{item.name !== item.original_name ? item.name : ''}}</text>
+              <view class="recent-meta"><view><image src="./players.svg"/><text>{{item.displayPlayers}}</text></view><view><image src="./clock.svg"/><text>{{item.displayTime}}</text></view><view><image src="./weight.svg"/>重度 {{item.weightText}}</view></view>
+              <view class="recent-tags"><text wx:for="{{item.featureTags}}" wx:for-item="tag" wx:key="id">{{tag.name}}</text><text wx:if="{{item.year_published}}">{{item.year_published}}</text></view>
+            </view>
+          </swiper-item>
+        </swiper>
+      </view>
+      <view wx:else class="library-recent-stage library-stage-empty"><text>{{recentError || '还没有近期馆藏'}}</text><view class="recent-empty-action" bindtap="{{recentError ? 'retry' : 'openEntry'}}"><text>{{recentError ? '重新加载' : '录入第一款桌游'}}</text></view></view>
+    </view>
+
+    <view class="library-section library-all-section">
+      <view class="library-section-head">
+        <text class="library-section-title">全部桌游</text>
+        <view class="library-filter-link {{filterCount ? 'library-filter-active' : ''}}" bindtap="openFilter"><text>{{filterCount ? '已筛选' : '全部筛选'}}</text><image class="library-chevron" src="{{filterCount ? './chevron-filter-active.svg' : '/images/icon-chevron-down.svg'}}"/></view>
+      </view>
+
+      <view wx:if="{{error}}" class="library-error" bindtap="retry"><text>{{error}} · 点击重试</text></view>
+      <view wx:if="{{loading && !games.length}}" class="library-grid library-grid-skeleton"><view wx:for="{{[1,2,3,4]}}" wx:key="*this" class="library-skeleton-card"></view></view>
+      <view wx:elif="{{games.length}}" class="library-grid">
+        <view wx:for="{{games}}" wx:key="id" class="catalog-card" data-id="{{item.id}}" bindtap="openGame" role="button" aria-label="查看{{item.display_name || item.name}}详情">
+          <view class="catalog-cover-wrap">
+            <image wx:if="{{item.cover_url && !item.imageFailed}}" class="catalog-cover" data-path="games[{{index}}].cover_url" src="{{item.cover_url}}" mode="aspectFill" binderror="imageError" />
+            <view wx:else class="catalog-cover catalog-cover-placeholder"><text>暂无封面</text></view>
+            <view wx:if="{{item.ratingText}}" class="catalog-rating"><image class="rating-star" src="./star.svg"/><text>{{item.ratingText}}</text></view>
+          </view>
+          <view class="catalog-body">
+            <text class="catalog-title" overflow="ellipsis" max-lines="1">{{item.display_name || item.name}}</text>
+            <view class="catalog-meta"><view><image src="./players.svg"/><text>{{item.displayPlayers}}</text></view><view><image src="./clock.svg"/><text>{{item.compactTime}}</text></view><view><image src="./weight.svg"/><text>{{item.displayComplexity}}</text></view></view>
+            <view wx:if="{{item.tags.length}}" class="catalog-tags"><text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="id" class="catalog-tag">{{tag.name}}</text></view>
+          </view>
+        </view>
+      </view>
+      <view wx:elif="{{emptyFiltered && !loading && !error}}" class="library-empty">没有找到符合条件的桌游<text class="library-empty-action" bindtap="resetFilter">清除筛选</text></view>
+      <view wx:elif="{{!loading && !error}}" class="library-empty">还没有桌游，先录入一款吧<text class="library-empty-action" bindtap="openEntry">录入桌游</text></view>
+
+      <view wx:if="{{loading && games.length}}" class="library-loading-more"><text>正在加载更多…</text></view>
+    </view>
+  </view>
+  <view class="library-safe-bottom"></view></scroll-view>
+  <view class="library-add" role="button" bindtap="openEntry" aria-label="录入桌游"><view></view><view></view></view>
+</view>
+
+<boardgame-sheet visible="{{filterOpen}}" title="全部筛选" show-close="{{false}}" kind="form" size="high" bindclose="closeFilter">
+  <view class="filter-label"><text>人数</text></view>
+  <input placeholder-style="color:#9CA3AF;font-size:14px" class="filter-input" type="number" value="{{filterDraft.player_count}}" data-key="player_count" bindinput="filterField" placeholder="例如 4" />
+  <view class="filter-label"><text>最长游戏时间（分钟）</text></view>
+  <input placeholder-style="color:#9CA3AF;font-size:14px" class="filter-input" type="number" value="{{filterDraft.max_minutes}}" data-key="max_minutes" bindinput="filterField" placeholder="不限" />
+  <view class="filter-label"><text>复杂度（1–5）</text></view>
+  <view class="filter-range"><input placeholder-style="color:#9CA3AF;font-size:14px" class="filter-input" type="digit" value="{{filterDraft.min_complexity}}" data-key="min_complexity" bindinput="filterField" placeholder="最低" /><text>—</text><input placeholder-style="color:#9CA3AF;font-size:14px" class="filter-input" type="digit" value="{{filterDraft.max_complexity}}" data-key="max_complexity" bindinput="filterField" placeholder="最高" /></view>
+  <view slot="footer" class="filter-actions"><button class="filter-reset" bindtap="resetFilter">重置</button><button class="filter-apply" bindtap="applyFilter">查看桌游</button></view>
+</boardgame-sheet>
+
+<create-access-dialog id="session-expired-dialog" />

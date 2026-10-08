@@ -11,7 +11,10 @@
     "pages/checkin_map/checkin_map",
     "pages/chwazi/chwazi",
     "pages/activity_create/activity_create",
-    "pages/activity_edit/activity_edit"
+    "pages/activity_edit/activity_edit",
+    "pages/boardgame_library/boardgame_library",
+    "pages/boardgame_intake/boardgame_intake",
+    "pages/boardgame_detail/boardgame_detail"
   ],
   "window": {
     "navigationBarTitleText": "Dragon Reserve",

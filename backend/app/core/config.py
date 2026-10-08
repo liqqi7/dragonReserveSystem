@@ -49,6 +49,13 @@ class Settings(BaseSettings):
     wechat_code2session_url: str = "https://api.weixin.qq.com/sns/jscode2session"
     bgg_api_token: str = ""
     bgg_api_base_url: str = "https://boardgamegeek.com/xmlapi2"
+    boardgame_enabled: bool = False
+    boardgame_preview_worker_enabled: bool = False
+    bgg_enabled: bool = False
+    bgg_timeout_seconds: int = Field(12, ge=1, le=30)
+    bgg_min_interval_seconds: float = Field(5.0, ge=0, le=30)
+    bgg_max_attempts: int = Field(4, ge=1, le=8)
+    bgg_job_max_wait_seconds: int = Field(90, ge=1, le=300)
     qweather_developer_id: str = ""
     qweather_project_id: str = ""
     qweather_credential_id: str = ""

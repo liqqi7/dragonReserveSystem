@@ -1,0 +1,141 @@
+<import src="../../templates/boardgame-name.wxml"/>
+<view class="intake-page"><view class="intake-nav {{stage === 'version' ? 'version-nav' : ''}}" style="padding-top:{{statusBarHeight}}px">
+  <view class="intake-nav-row" style="height:{{navHeight}}px">
+    <view class="intake-back" bindtap="goBack" role="button" aria-label="返回"><image src="/images/icon-chevron-left-dark.svg" mode="aspectFit"/></view>
+    <text class="intake-nav-title">录入桌游</text>
+  </view>
+</view>
+<scroll-view type="custom" scroll-y class="entry-page intake-content {{stage === 'version' ? 'version-stage' : ''}} {{stage === 'version' ? 'has-footer' : ''}} {{stage === 'success' ? 'success-stage' : ''}}">
+  <block wx:if="{{stage === 'intro'}}">
+    <view class="intake-intro-title"><text>把新桌游加入你的个人馆藏</text></view>
+    <view class="intake-subtitle"><text>支持名称搜索，也可以拍照识别盒面</text></view>
+    <view class="intake-option" bindtap="openSearch" role="button">
+      <image class="intake-option-icon" src="./search.svg" mode="aspectFit"/>
+      <view class="intake-option-copy"><view class="intake-option-title"><text>按名称搜索</text></view><view class="intake-option-desc"><text>输入桌游名称，选择 BGG 匹配结果</text></view></view>
+      <image class="intake-option-arrow" src="/images/icon-chevron-right.svg" mode="aspectFit"/>
+    </view>
+    <view class="intake-option" bindtap="openCamera" role="button">
+      <image class="intake-option-icon" src="./camera.svg" mode="aspectFit"/>
+      <view class="intake-option-copy"><view class="intake-option-title"><text>拍照识别（OCR）</text></view><view class="intake-option-desc"><text>识别盒面标题，再从 BGG 候选中确认</text></view></view>
+      <image class="intake-option-arrow" src="/images/icon-chevron-right.svg" mode="aspectFit"/>
+    </view>
+  </block>
+  <block wx:if="{{stage === 'search' || stage === 'version'}}">
+    <view class="intake-search">
+      <image class="intake-search-icon" src="./search.svg" mode="aspectFit"/>
+      <input placeholder-style="color:#9CA3AF;font-size:14px" class="intake-search-input" type="text" value="{{query}}" focus="{{searchFocus}}" adjust-position="true" cursor-spacing="24" bindinput="inputQuery" bindconfirm="search" confirm-type="search" placeholder="请输入桌游名称" maxlength="255"/>
+      <view wx:if="{{query}}" class="intake-icon-button" bindtap="clearSearch" role="button" aria-label="清除搜索"><text>×</text></view>
+    </view>
+    <view wx:if="{{searching || preparing || (preview && preview.state !== 'ready' && preview.state !== 'failed' && preview.state !== 'applied')}}" class="intake-skeleton" aria-label="正在搜索桌游">
+      <view class="intake-skeleton-candidates"><view wx:for="{{[1,2,3]}}" wx:key="*this" class="intake-skeleton-candidate"><view class="intake-skeleton-cover"/><view class="intake-skeleton-line wide"/><view class="intake-skeleton-line short"/></view></view>
+      <view class="intake-skeleton-summary"><view class="intake-skeleton-head"><view class="intake-skeleton-cover large"/><view class="intake-skeleton-copy"><view class="intake-skeleton-line title"/><view class="intake-skeleton-line medium"/></view></view><view wx:for="{{[1,2,3,4]}}" wx:key="*this" class="intake-skeleton-row"><view class="intake-skeleton-line label"/><view class="intake-skeleton-line value"/></view></view>
+      <view class="intake-skeleton-version"><view class="intake-skeleton-line version"/><view class="intake-skeleton-pill"/></view>
+    </view>
+    <view wx:if="{{error}}" class="entry-error">{{error}}<button class="entry-link" bindtap="search">重新搜索</button></view>
+    <view wx:if="{{previewError}}" class="entry-error">{{previewError}}<button class="{{preparing ? 'is-disabled' : ''}} entry-link" bindtap="retryPreview" disabled="{{preparing}}">重新获取资料</button></view>
+    <scroll-view type="custom" enable-flex wx:if="{{results.length && preview && preview.state === 'ready'}}" class="intake-candidates" scroll-x show-scrollbar="{{false}}">
+      <view class="intake-candidate-row">
+        <button wx:for="{{results}}" wx:key="bgg_id" class="{{item.detail_state !== 'ready' || preview.state !== 'ready' ? 'is-disabled' : ''}} intake-candidate {{candidate.bgg_id === item.bgg_id ? 'active' : ''}}" data-id="{{item.bgg_id}}" bindtap="chooseCandidate" disabled="{{item.detail_state !== 'ready' || preview.state !== 'ready'}}">
+          <image wx:if="{{item.cover_url}}" class="intake-mini-cover" src="{{item.cover_url}}" data-id="{{item.bgg_id}}" binderror="imageError" mode="aspectFill"/>
+          <view wx:else class="intake-mini-cover placeholder"><text>{{item.detail_state === 'pending' ? '加载中' : '暂无封面'}}</text></view>
+          <text class="intake-mini-title" overflow="ellipsis" max-lines="1">{{item.display_name || item.name}}</text>
+          <text wx:if="{{item.owned_by_actor}}" class="intake-mini-owned">已拥有</text>
+        </button>
+      </view>
+    </scroll-view>
+    <view wx:if="{{preview && preview.state === 'ready' && (offset > 0 || nextOffset !== null)}}" class="entry-row intake-pagination">
+      <button class="{{offset === 0 || searching ? 'is-disabled' : ''}} entry-link grow" bindtap="previousSearch" disabled="{{offset === 0 || searching}}">上一页</button>
+      <text class="entry-muted">共 {{total}} 项</text>
+      <button class="{{nextOffset === null || searching ? 'is-disabled' : ''}} entry-link" bindtap="nextSearch" disabled="{{nextOffset === null || searching}}">下一页</button>
+    </view>
+    <view wx:if="{{stage === 'search' && !results.length && !searching && !error}}" class="intake-empty {{searched ? 'search-empty' : 'initial-empty'}}">
+      <image wx:if="{{searched}}" class="intake-empty-art" src="./empty-art.png" mode="aspectFit"/>
+      <image wx:else class="intake-empty-art initial-empty-art" src="./initial-art.png" mode="aspectFit"/>
+      <view class="intake-empty-title"><text>{{searched ? '这是什么垃圾桌游' : '你不会又买垃圾毛线了吧'}}</text></view>
+    </view>
+  </block>
+  <block wx:if="{{stage === 'version' && candidate}}">
+    <view class="intake-summary">
+      <view class="entry-row intake-summary-head">
+        <image wx:if="{{candidate.cover_url}}" class="intake-summary-cover" src="{{candidate.cover_url}}" data-kind="game" binderror="imageError" mode="aspectFill"/>
+        <view wx:else class="intake-summary-cover placeholder"><text>暂无封面</text></view>
+        <view class="intake-summary-info grow">
+          <template is="boardgame-name" data="{{game:candidate,titleClass:'intake-game-title'}}"/>
+          <view class="intake-summary-stats">
+            <text class="intake-summary-rating">BGG {{candidate.bgg_rating || candidate.rating || '暂无'}}</text>
+            <text class="intake-summary-rank">综合排名 {{candidate.bgg_rank || '暂无'}}</text>
+            <text class="intake-summary-weight">重度 · {{candidate.complexity || '暂无'}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="intake-data-row"><text>出版年份</text><text class="intake-data-value">{{candidate.year_published || '暂无资料'}}</text></view>
+      <view class="intake-data-row mechanics-row"><view class="intake-data-label"><text>玩法机制</text></view><text class="intake-data-value intake-mechanics-value">{{candidate.mechanics_label || '暂无资料'}}</text></view>
+      <view class="intake-data-row"><text>人数</text><text class="intake-data-value">{{candidate.min_players || '?'}}–{{candidate.max_players || '?'}}人</text></view>
+      <view class="intake-data-row"><text>时长</text><text class="intake-data-value">{{candidate.min_playtime_minutes || '?'}}–{{candidate.max_playtime_minutes || '?'}}分钟</text></view>
+      <view wx:if="{{candidate.owner_count}}" class="intake-owner-row" bindtap="openOwners">
+        <text class="intake-owner-label">拥有者</text>
+        <view class="intake-owner-summary">
+          <view class="intake-owner-avatars">
+            <view wx:for="{{candidate.owners}}" wx:key="id" class="intake-owner-avatar">
+              <image wx:if="{{item.avatar_url}}" src="{{item.avatar_url}}" mode="aspectFill"/>
+              <text wx:else>{{item.initial}}</text>
+            </view>
+            <view wx:if="{{candidate.owner_remaining}}" class="intake-owner-avatar intake-owner-more"><text>+{{candidate.owner_remaining}}</text></view>
+          </view>
+          <text class="intake-owner-count">{{candidate.owner_count}} 位</text>
+          <text class="intake-owner-chevron">›</text>
+        </view>
+      </view>
+      <view wx:else class="intake-first-owner-tip"><text>感谢你的贡献，成为了这个游戏的第一个拥有者，等着大家来借吧</text></view>
+    </view>
+    <button class="{{saving || submitUnknown ? 'is-disabled' : ''}} intake-version-picker {{selection ? 'is-selected' : 'is-unselected'}}" bindtap="openVersions" disabled="{{saving || submitUnknown}}" aria-label="选择桌游版本">
+      <text class="intake-version-value">{{candidate.owned_by_actor ? (candidate.ownedVersionLabel || candidate.owned_version_label || '版次未确定') : (selectedVersion ? (selectedVersion.display_name || selectedVersion.name || selectedVersion.languageLabel || '版本名称未知') : (selection === 'unspecified' ? '版次未确定' : '请选择桌游版本'))}}{{!candidate.owned_by_actor && selectedVersion.year_published ? ' · ' + selectedVersion.year_published : ''}}</text>
+      <view class="intake-version-action"><text wx:if="{{!candidate.owned_by_actor}}">{{selection ? '更换' : '选择'}}</text><text class="intake-version-chevron">›</text></view>
+    </button>
+    <view wx:if="{{!candidate.owned_by_actor}}" class="intake-remark"><text>录入备注</text><textarea placeholder-style="color:#9CA3AF;font-size:14px" class="entry-input entry-textarea" value="{{form.remark}}" data-key="remark" bindinput="field" maxlength="2000" placeholder="选填，仅自己可见" disabled="{{saving || submitUnknown}}"/></view>
+    <view wx:if="{{formError}}" class="entry-error"><text>{{formError}}</text></view>
+  </block>
+  <block wx:if="{{stage === 'recover'}}">
+    <view class="entry-title"><text>继续上次录入</text></view><view class="entry-note"><text>{{recoveryName}}</text></view><view wx:if="{{submitUnknown}}" class="entry-notice"><text>上次录入结果尚未确认，继续确认后即可查看保存结果。</text></view>
+    <view wx:if="{{formError}}" class="entry-error"><text>{{formError}}</text></view><button wx:if="{{submitUnknown}}" class="{{saving ? 'is-disabled' : ''}} entry-button full entry-section" bindtap="save" loading="{{saving}}" disabled="{{saving}}">继续确认录入</button><button wx:else class="entry-button secondary full entry-section" bindtap="newEntry">重新查找桌游</button>
+  </block>
+
+  <block wx:if="{{stage === 'success'}}">
+    <view class="intake-success-main">
+      <image class="intake-success-art" src="./success-art.png" mode="aspectFit"/>
+      <text class="intake-success-message">恭喜你又消费了</text>
+    </view>
+    <button class="intake-success-button" bindtap="newEntry">继续录入下一款</button>
+  </block>
+</scroll-view>
+<view wx:if="{{stage === 'version'}}" class="entry-footer">
+  <view role="button" class="{{saving || candidate.owned_by_actor || (stage === 'version' && !selection) ? 'is-disabled' : ''}} entry-button full" bindtap="save" aria-disabled="{{saving || candidate.owned_by_actor || (stage === 'version' && !selection)}}">{{candidate.owned_by_actor ? '您已拥有' : (submitUnknown ? '重试确认录入' : '确认录入')}}</view>
+</view>
+</view>
+<boardgame-sheet visible="{{versionsOpen}}" title="选择桌游版本" size="high" bindclose="closeVersions">
+    <view class="intake-version-list">
+      <view wx:if="{{versionError}}" class="entry-error">{{versionError}}<button class="entry-link" bindtap="searchVersions">重新获取版本</button></view>
+      <view wx:if="{{versionLoading}}" class="entry-empty"><text>正在获取版本…</text></view>
+      <view role="button" wx:for="{{versions}}" wx:key="bgg_version_id" class="{{candidate.owned_by_actor ? 'is-disabled' : ''}} entry-result entry-card edition {{selection == item.bgg_version_id ? 'selected' : ''}}" data-id="{{item.bgg_version_id}}" bindtap="chooseVersion" aria-disabled="{{candidate.owned_by_actor}}">
+        <image wx:if="{{item.cover_url}}" class="edition-cover" data-kind="version" data-id="{{item.bgg_version_id}}" binderror="imageError" src="{{item.cover_url}}" mode="aspectFill"/><view wx:else class="edition-cover placeholder"><text>暂无版本图</text></view>
+        <view class="grow"><view class="entry-name"><text>{{item.display_name || item.name || '版本名称未知'}}</text></view><view class="entry-meta"><text>{{item.languageLabel || '语言未知'}} · {{item.year_published || '年份未知'}}</text></view><view class="entry-muted"><text>{{item.publisherLabel || '出版商未知'}}</text></view></view><text class="choice">{{selection == item.bgg_version_id ? '✓' : '○'}}</text>
+      </view>
+      <view wx:if="{{!versions.length && !versionLoading && !versionError}}" class="entry-empty"><text>BGG 暂无版本资料</text></view>
+      <button wx:if="{{versionNext !== null}}" class="{{versionLoading ? 'is-disabled' : ''}} entry-button secondary full" bindtap="moreVersions" disabled="{{versionLoading}}">更多版本（共 {{versionTotal}} 个）</button>
+      <view role="button" class="{{candidate.owned_by_actor ? 'is-disabled' : ''}} entry-card unknown-version {{selection === 'unspecified' ? 'selected' : ''}}" bindtap="unspecifiedVersion" aria-disabled="{{candidate.owned_by_actor}}"><view class="grow"><view class="entry-name"><text>版次未确定</text></view><view class="entry-muted"><text>先关联这款桌游，版本信息稍后补充</text></view></view><text class="choice">{{selection === 'unspecified' ? '✓' : '○'}}</text></view>
+    </view>
+</boardgame-sheet>
+<boardgame-sheet visible="{{ownersOpen}}" title="全部拥有者（{{candidate.owner_count}}）" kind="info" size="high" bindclose="closeOwners">
+  <view wx:for="{{candidate.owner_details}}" wx:key="id" class="intake-owner-detail">
+    <view class="intake-owner-detail-avatar">
+      <image wx:if="{{item.avatar_url}}" src="{{item.avatar_url}}" mode="aspectFill"/>
+      <text wx:else>{{item.initial}}</text>
+    </view>
+    <view class="intake-owner-detail-copy">
+      <view class="intake-owner-detail-name"><text>{{item.display_name}}</text></view>
+      <view class="intake-owner-detail-version"><text>{{item.version_label || '版次未确定'}}</text></view>
+    </view>
+  </view>
+</boardgame-sheet>
+
+<create-access-dialog id="session-expired-dialog" />

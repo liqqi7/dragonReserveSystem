@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "游戏详情",
+  "usingComponents": {
+    "boardgame-sheet": "/components/boardgame-sheet/index",
+    "create-access-dialog": "../../components/create-access-dialog/index"
+  },
+  "navigationStyle": "custom",
+  "renderer": "skyline",
+  "disableScroll": true,
+  "glassEaselWebview": true
+}
