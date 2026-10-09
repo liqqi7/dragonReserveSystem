@@ -5,8 +5,8 @@ from PIL import Image
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PROTOTYPE_ASSETS = PROJECT_ROOT / "prototype" / "图片素材"
-EXPECTED_LARGE_URL = "https://dragon.liqqihome.top/media/images/card-bg-other-v2-lg.jpg"
-EXPECTED_SMALL_URL = "https://dragon.liqqihome.top/media/images/card-bg-other-v2-sm.jpg"
+EXPECTED_LARGE_URL = "images/card-bg-other-v2-lg.jpg"
+EXPECTED_SMALL_URL = "images/card-bg-other-v2-sm.jpg"
 
 
 def test_other_activity_background_assets_and_configs_stay_in_sync() -> None:
@@ -19,7 +19,6 @@ def test_other_activity_background_assets_and_configs_stay_in_sync() -> None:
 
     for relative_path in (
         "miniprogram/utils/activityEnrich.js",
-        "backend/app/services/activity_type_style_service.py",
     ):
         source = (PROJECT_ROOT / relative_path).read_text(encoding="utf-8")
         assert EXPECTED_LARGE_URL in source

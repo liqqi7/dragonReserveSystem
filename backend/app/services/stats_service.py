@@ -2,37 +2,21 @@ from __future__ import annotations
 
 """Statistics use cases."""
 
-from datetime import date, datetime, time, timedelta, timezone
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from datetime import date, datetime, time, timedelta
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from app.utils.activity_status import CANCELLED_ACTIVITY_STATUSES, ENDED
 from app.models import Activity, ActivityParticipant, User
 from app.schemas.stats import (
     ActivityHeatmapDayResponse,
     ActivityRankingResponse,
     PigeonRankingResponse,
 )
+from app.utils.app_time import app_now, to_app_naive
 
-# 小程序端对无 Z 后缀的 ISO 时间按设备本地时区解析；国内用户即东八区。
-# 库内 naive datetime 与 utcnow() 直接比较会把「本地日历日」误判为未来，导致已结束活动未计入鸽子榜。
-try:
-    _APP_LOCAL_TZ = ZoneInfo("Asia/Shanghai")
-except (ZoneInfoNotFoundError, ModuleNotFoundError):  # 未安装 tzdata 等，见 PEP 615
-    _APP_LOCAL_TZ = timezone(timedelta(hours=8))  # 中国大陆无夏令时，与东八区一致
-
-_EXCLUDED_ACTIVITY_STATUSES = ("已取消", "已流局")
-
-
-def _now_local_naive() -> datetime:
-    return datetime.now(_APP_LOCAL_TZ).replace(tzinfo=None)
-
-
-def _to_local_naive(value: datetime) -> datetime:
-    if value.tzinfo is None:
-        return value
-    return value.astimezone(_APP_LOCAL_TZ).replace(tzinfo=None)
+_EXCLUDED_ACTIVITY_STATUSES = CANCELLED_ACTIVITY_STATUSES
 
 
 def _heatmap_level(hours: float) -> int:
@@ -61,8 +45,8 @@ def _split_activity_hours_by_day(
     window_start: date,
     window_end: date,
 ) -> dict[date, float]:
-    start = _to_local_naive(start_time)
-    end = _to_local_naive(end_time)
+    start = to_app_naive(start_time)
+    end = to_app_naive(end_time)
     if end <= start:
         return {}
 
@@ -96,14 +80,14 @@ def _ended_participant_rows(db: Session, now_local_naive: datetime):
         .join(Activity, Activity.id == ActivityParticipant.activity_id)
         .join(User, User.id == ActivityParticipant.user_id)
         .where(Activity.status.not_in(_EXCLUDED_ACTIVITY_STATUSES))
-        .where(or_(Activity.end_time <= now_local_naive, Activity.status == "已结束"))
+        .where(or_(Activity.end_time <= now_local_naive, Activity.status == ENDED))
     ).all()
 
 
 def get_pigeon_ranking(db: Session) -> list[PigeonRankingResponse]:
     """Compute the new pigeon board ordered by pigeon count."""
 
-    rows = _ended_participant_rows(db, _now_local_naive())
+    rows = _ended_participant_rows(db, app_now())
     member_map: dict[int, dict[str, int | str]] = {}
     for user_id, nickname, avatar_url, checked_in_at, _, _ in rows:
         stat = member_map.setdefault(
@@ -154,7 +138,7 @@ def get_activity_ranking(
 ) -> list[ActivityRankingResponse]:
     """Rank checked-in users and build heatmaps only for the requested page."""
 
-    now_local_naive = _now_local_naive()
+    now_local_naive = app_now()
     current_day = today or now_local_naive.date()
     window_start, window_end = _heatmap_window(current_day)
     rows = _ended_participant_rows(db, now_local_naive)

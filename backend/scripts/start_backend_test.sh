@@ -76,18 +76,15 @@ set_local_config() {
   if [ -z "$MP_CONFIG_FILE" ]; then
     return 0
   fi
-  cat <<EOF > "$MP_CONFIG_FILE"
-const API_BASE_URL = "http://${APP_HOST}:${APP_PORT}/api/v1";
-
-function getApiBaseUrl() {
-  return API_BASE_URL;
-}
-
-module.exports = {
-  API_BASE_URL,
-  getApiBaseUrl
-};
-EOF
+  local api_host="$APP_HOST"
+  if [ "$api_host" = "0.0.0.0" ]; then
+    api_host="127.0.0.1"
+  fi
+  export PUBLIC_BASE_URL="http://${api_host}:${APP_PORT}"
+  # Preserve every shared helper from the production template.
+  sed -e "s|^const API_BASE_URL = .*|const API_BASE_URL = \"$PUBLIC_BASE_URL/api/v1\";|" \
+      -e 's|^const API_ENVIRONMENT = .*|const API_ENVIRONMENT = "test";|' \
+      "$MP_TEMPLATE_FILE" > "$MP_CONFIG_FILE"
 }
 
 restore_prod_config() {
@@ -97,6 +94,7 @@ restore_prod_config() {
 }
 
 cleanup() {
+  restore_prod_config
   if [ -n "${APP_PID:-}" ] && kill -0 "$APP_PID" >/dev/null 2>&1; then
     kill "$APP_PID" >/dev/null 2>&1 || true
   fi
@@ -136,6 +134,8 @@ SSH_TEST_DB_REMOTE_PORT="${SSH_TEST_DB_REMOTE_PORT:-3306}"
 SSH_TEST_DB_LOCAL_HOST="${SSH_TEST_DB_LOCAL_HOST:-$MYSQL_HOST}"
 SSH_TEST_DB_LOCAL_PORT="${SSH_TEST_DB_LOCAL_PORT:-$MYSQL_PORT}"
 
+trap cleanup EXIT INT TERM
+
 if port_is_open "$SSH_TEST_DB_LOCAL_HOST" "$SSH_TEST_DB_LOCAL_PORT"; then
   echo "Reusing existing DB tunnel on ${SSH_TEST_DB_LOCAL_HOST}:${SSH_TEST_DB_LOCAL_PORT}"
 else
@@ -154,7 +154,6 @@ else
 
   ssh "${SSH_ARGS[@]}" "${SSH_TEST_DB_USER}@${SSH_TEST_DB_HOST}" &
   TUNNEL_PID=$!
-  trap cleanup EXIT INT TERM
 
   if ! wait_for_port "$SSH_TEST_DB_LOCAL_HOST" "$SSH_TEST_DB_LOCAL_PORT"; then
     echo "SSH tunnel did not become ready on ${SSH_TEST_DB_LOCAL_HOST}:${SSH_TEST_DB_LOCAL_PORT}" >&2

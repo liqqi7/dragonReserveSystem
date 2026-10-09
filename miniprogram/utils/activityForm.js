@@ -5,6 +5,14 @@ const MIN_MAX_PARTICIPANTS = 3;
 const MAX_NAME_LENGTH = 10;
 const MAX_REMARK_LENGTH = 200;
 
+function normalizeSubItems(items, quota) {
+  const limit = Math.max(MIN_MAX_PARTICIPANTS, Math.min(999, Number(quota) || DEFAULT_MAX_PARTICIPANTS));
+  return (Array.isArray(items) ? items : []).map(item => ({
+    ...item,
+    max_participants: Math.min(limit, Math.max(1, Number(item.max_participants) || 1))
+  }));
+}
+
 function splitDateTime(value, fallback = {}) {
   const text = String(value || "").trim();
   const matched = text.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})/);
@@ -82,23 +90,6 @@ function buildEditForm(activity = {}) {
   };
 }
 
-function applyStartDateTime(form, value) {
-  const next = { ...form };
-  const start = splitDateTime(value);
-  if (!start.date || !start.time) return next;
-  next.startDate = start.date;
-  next.startTime = start.time;
-
-  const startDateTime = toLocalDateTime(start.date, start.time);
-  if (!startDateTime) return next;
-  if (!next.endDate || !next.endTime) {
-    const end = dateParts(new Date(startDateTime.getTime() + 60 * 60 * 1000));
-    next.endDate = end.date;
-    next.endTime = end.time;
-  }
-  return next;
-}
-
 function validateActivityForm(form, options = {}) {
   const mode = options.mode === "edit" ? "edit" : "create";
   const now = options.now instanceof Date ? options.now : new Date();
@@ -172,11 +163,11 @@ module.exports = {
   MIN_MAX_PARTICIPANTS,
   MAX_NAME_LENGTH,
   MAX_REMARK_LENGTH,
+  normalizeSubItems,
   splitDateTime,
   toLocalDateTime,
   buildCreateForm,
   buildEditForm,
-  applyStartDateTime,
   validateActivityForm,
   buildActivityPayload
 };

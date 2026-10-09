@@ -56,7 +56,8 @@ test("home carousels use native Skyline swiper paging", () => {
   assert.doesNotMatch(wxml, /bindtouchstart="onGroupTouchStart"|style="transform:translate3d\(-\{\{groupOffset\./);
   assert.doesNotMatch(js, /onGroupTouchStart|onGroupTouchMove|onGroupTouchEnd|applyGroupSnap|groupOffset/);
   assert.match(js, /onGroupSwiperChange\(e\)/);
-  assert.match(js, /this\._syncVideoFocus\(group, previous, current\)/);
+  assert.doesNotMatch(js, /_syncVideoFocus|createVideoContext/);
+  assert.doesNotMatch(wxml, /<video\b|showAvatarCluster/);
   assert.match(js, /group === "ended" && this\.data\.endedHasMore && current === endedCount/);
   assert.doesNotMatch(js, /activity\._homeMediaReady\) return;/);
   assert.match(wxss, /\.card-skeleton\s*\{[^}]*pointer-events:\s*none;/s);
@@ -249,13 +250,14 @@ test("large-card glass panel renders the time row instead of remark", () => {
 test("large-card meta icons use the prototype Lucide assets", () => {
   assert.match(wxml, /src="\/images\/icon-home-card-location\.svg"/);
   assert.match(wxml, /src="\/images\/icon-home-card-people\.svg"/);
-  assert.match(wxml, /class="large-card large-card--\{\{item\.activityType\}\}-\{\{item\.activityStyleKey\}\}"/);
+  assert.match(wxml, /class="large-card"/);
 });
 
 test("home large and small cards both use the original cover image", () => {
-  assert.match(js, /activity\.smallCardBgImageUrl = selectedStyle \? \(selectedStyle\.largeCardBgImageUrl \|\| ""\) : ""/);
-  assert.match(js, /activity\.largeCardBgImageUrl = activity\.activityCover\.imageUrl;[\s\S]*?activity\.smallCardBgImageUrl = activity\.activityCover\.imageUrl;/);
-  assert.doesNotMatch(js, /activity\.smallCardBgImageUrl = activity\.activityCover\.thumbnailUrl/);
+  const enrich = fs.readFileSync(path.join(__dirname, "../utils/activityEnrich.js"), "utf8");
+  assert.match(js, /enrichSingleActivity\(rawItem, this\.data\.myUserId, now\)/);
+  assert.match(enrich, /activity\.largeCardBgImageUrl = imageUrl;\s*activity\.smallCardBgImageUrl = imageUrl;/);
+  assert.doesNotMatch(enrich, /activity\.smallCardBgImageUrl = activity\.activityCover\.thumbnailUrl/);
   assert.match(wxml, /class="card-image-bg"[\s\S]*?src="\{\{item\._homeCoverSrc\}\}"[\s\S]*?mode="aspectFill"/);
 });
 
@@ -266,9 +268,7 @@ test("static covers retain pre-rendered glass while GIF covers use the native ba
 
   assert.ok(glassBottomRule, "glass-bottom rule should exist");
   assert.doesNotMatch(js, /buildCardGlassImageUrl|\/activities\/type-styles\//);
-  assert.match(js, /activity\.largeCardGlassImageUrl = selectedStyle/);
   assert.match(fs.readFileSync(path.join(__dirname, "../utils/activityEnrich.js"), "utf8"), /largeCardGlassImageUrl: String\(rawCover\.large_card_glass_image_url \|\| ""\)/);
-  assert.match(js, /activity\.largeCardGlassImageUrl = activity\.activityCover\.largeCardGlassImageUrl \|\| ""/);
   assert.match(wxml, /class="glass-bottom \{\{item\._homeNativeGlass \? 'glass-bottom--native' : ''\}\}"/);
   assert.match(wxml, /wx:if="\{\{!item\._homeNativeGlass\}\}" class="glass-static-blur-layer"/);
   assert.match(wxml, /wx:if="\{\{item\._homeGlassSrc\}\}"/);
@@ -280,7 +280,7 @@ test("static covers retain pre-rendered glass while GIF covers use the native ba
   assert.doesNotMatch(glassSection, /-webkit-mask-image|isolation:\s*isolate/);
   assert.match(glassSection, /\.glass-static-blur-stage\s*\{[\s\S]*left: 0;[\s\S]*bottom: 0;[\s\S]*width: 469\.23rpx;[\s\S]*height: 626\.92rpx;/);
   assert.match(glassSection, /background: linear-gradient\(180deg, rgba\(0,0,0,0\.10\) 0%, rgba\(0,0,0,0\.30\) 100%\)/);
-  assert.match(glassSection, /\.large-card--boardgame-boardgame-default \.glass-tint-layer\s*\{[\s\S]*rgba\(0,0,0,0\.20\)[\s\S]*rgba\(0,0,0,0\.40\)/);
+  assert.doesNotMatch(glassSection, /large-card--boardgame/);
   assert.match(glassSection, /\.glass-bottom--native\s*\{\s*backdrop-filter:\s*blur\(12\.5rpx\);\s*\}/);
   assert.doesNotMatch(glassBottomRule[1], /backdrop-filter/);
 });

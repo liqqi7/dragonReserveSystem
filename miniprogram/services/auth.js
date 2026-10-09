@@ -59,14 +59,19 @@ function fetchLoginCode(flowId) {
 function loginWithWechat(app) {
   const flowId = createTraceId("login");
   const attemptId = ++latestLoginAttempt;
-  const isCurrentAttempt = () => attemptId === latestLoginAttempt;
+  const sessionGeneration = app.invalidateSessionValidation();
+  const isCurrentAttempt = () => attemptId === latestLoginAttempt &&
+    sessionGeneration === app.globalData._sessionGeneration;
   const startAt = Date.now();
 
   logInfo("login_flow_start", { flowId });
 
-  return withTimeout(
+  const login = withTimeout(
     () => fetchLoginCode(flowId)
-      .then((code) => wechatLogin({ code }))
+      .then((code) => {
+        if (!isCurrentAttempt()) throw { message: "登录结果已过期", code: "STALE_LOGIN_ATTEMPT", flowId };
+        return wechatLogin({ code });
+      })
       .then((authRes) => {
         if (!isCurrentAttempt()) throw { message: "登录结果已过期", code: "STALE_LOGIN_ATTEMPT", flowId };
         wx.setStorageSync("accessToken", authRes.access_token);
@@ -101,7 +106,11 @@ function loginWithWechat(app) {
       traceId: err && err.traceId
     });
     throw err;
+  }).finally(() => {
+    if (app.globalData._sessionLoginPromise === login) app.globalData._sessionLoginPromise = null;
   });
+  app.globalData._sessionLoginPromise = login;
+  return login;
 }
 
 module.exports = {

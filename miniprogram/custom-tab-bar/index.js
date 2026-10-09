@@ -167,7 +167,6 @@ Component({
 
   data: {
     selected: 0,
-    isAdmin: false,
     /** 供全屏弹层控制；重新显示时可选择执行一次自底向上的入场。 */
     hidden: true,
     entering: false,
@@ -175,8 +174,7 @@ Component({
     tabGlassBlurOpacity: TAB_GLASS_TUNING.blurLayerOpacity,
     tabGlassFillOpacity: TAB_GLASS_TUNING.whiteFillOpacity,
     bottomInsetPx: TAB_MIN_BOTTOM_GAP_PX,
-    modalMaskVisible: false,
-    modalMaskOpacity: 0.4
+    modalMaskVisible: false
   },
 
   pageLifetimes: {
@@ -186,11 +184,6 @@ Component({
       const shouldHide = shouldKeepTabHidden(route);
       if (this.data.hidden !== shouldHide || this.data.entering) {
         this.setData({ hidden: shouldHide, entering: false });
-      }
-
-      const isAdmin = getApp().globalData.userRole === "admin";
-      if (this.data.isAdmin !== isAdmin) {
-        this.setData({ isAdmin });
       }
     }
   },
@@ -238,14 +231,10 @@ Component({
     },
 
 
-    setModalMaskVisible(visible, opacity = 0.4) {
+    setModalMaskVisible(visible) {
       const nextVisible = !!visible;
-      const nextOpacity = Math.min(1, Math.max(0, Number(opacity) || 0.4));
-      if (this.data.modalMaskVisible === nextVisible && this.data.modalMaskOpacity === nextOpacity) return;
-      this.setData({
-        modalMaskVisible: nextVisible,
-        modalMaskOpacity: nextOpacity
-      });
+      if (this.data.modalMaskVisible === nextVisible) return;
+      this.setData({ modalMaskVisible: nextVisible });
     },
 
     blockTabInteraction() {},

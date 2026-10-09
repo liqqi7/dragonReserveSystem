@@ -134,7 +134,7 @@ function resolvePrimaryAction(activity) {
   if (activity.hasSignedUp && activity.status === "进行中") {
     return { label: "立即签到", disabled: false, action: "checkin" };
   }
-  if (activity.hasSignedUp && activity.status === "未开始" && !activity.signupDeadlinePassed) {
+  if (activity.hasSignedUp && activity.status === "未开始" && !activity.activityStarted) {
     return { label: "取消报名", disabled: false, action: "cancel" };
   }
   if (

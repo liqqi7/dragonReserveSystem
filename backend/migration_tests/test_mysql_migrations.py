@@ -51,7 +51,7 @@ def assert_success(result):
 
 def test_full_chain_and_index_rollback(migration_db):
     engine, migrate = migration_db
-    assert_success(migrate("upgrade", "head"))
+    assert_success(migrate("upgrade", "20261009_0021"))
     inspector = inspect(engine)
     assert "ix_activities_end_time" in {i["name"] for i in inspector.get_indexes("activities")}
     assert "ix_users_wechat_openid" not in {i["name"] for i in inspector.get_indexes("users")}
@@ -64,6 +64,11 @@ def test_full_chain_and_index_rollback(migration_db):
     assert_success(migrate("downgrade", "20260924_0020"))
     assert "ix_users_wechat_openid" in {i["name"] for i in inspect(engine).get_indexes("users")}
     assert_success(migrate("upgrade", "head"))
+    assert {"signup_deadline", "activity_type", "activity_style_key"}.isdisjoint(
+        c["name"] for c in inspect(engine).get_columns("activities")
+    )
+    result = migrate("downgrade", "20261009_0021")
+    assert result.returncode != 0 and "restore the pre-migration database backup" in result.stderr
 
 
 def test_status_backfill_and_dynamic_foreign_key_rollback(migration_db):

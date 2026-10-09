@@ -32,7 +32,7 @@ test('account and permission changes persist immediately', () => {
   assert.equal(h.storage.get('accessToken'),'second');
   assert.equal(h.storage.get('isAuthenticated'),false);
   assert.equal(h.app.globalData.isAuthenticated,false);
-  h.writes.length=0; h.app.setAuthState('guest',false);
+  h.writes.length=0; h.app.applyCurrentUser({id:8,role:'guest'},'second');
   assert.equal(h.writes.length,0);
 });
 

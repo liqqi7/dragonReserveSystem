@@ -3,7 +3,7 @@ from pathlib import Path
 from PIL import Image
 import pytest
 
-from app.api.v1 import activities as activities_api
+from app.api.v2 import activities as activities_api
 from app.services import activity_card_glass_service as glass_service
 
 
@@ -43,8 +43,10 @@ def test_card_glass_cache_reuses_rendered_file(tmp_path: Path, monkeypatch: pyte
     monkeypatch.setattr(glass_service, "CARD_GLASS_CACHE_DIR", tmp_path / "card-glass")
     monkeypatch.setattr(glass_service, "_load_source_image", load_source)
 
-    first = glass_service.get_or_create_activity_card_glass("badminton", "badminton-default")
-    second = glass_service.get_or_create_activity_card_glass("badminton", "badminton-default")
+    monkeypatch.setattr(glass_service, "get_activity_cover_glass_source_path", lambda _: None)
+    monkeypatch.setattr(glass_service, "get_activity_cover_source_path", lambda _: tmp_path / "source.png")
+    first = glass_service.get_or_create_activity_cover_card_glass("aleksey-rico-001")
+    second = glass_service.get_or_create_activity_cover_card_glass("aleksey-rico-001")
 
     assert first == second
     assert first.is_file()
@@ -55,9 +57,9 @@ def test_card_glass_cache_reuses_rendered_file(tmp_path: Path, monkeypatch: pyte
         assert image.mode == "RGB"
 
 
-def test_card_glass_rejects_unknown_fixed_style() -> None:
+def test_card_glass_rejects_unknown_cover() -> None:
     with pytest.raises(glass_service.ActivityCardGlassNotFoundError):
-        glass_service.get_or_create_activity_card_glass("badminton", "unknown-style")
+        glass_service.get_or_create_activity_cover_card_glass("missing-cover")
 
 
 def test_card_glass_route_returns_png(client, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -65,12 +67,12 @@ def test_card_glass_route_returns_png(client, tmp_path: Path, monkeypatch: pytes
     _sample_image().save(image_path, format="PNG")
     monkeypatch.setattr(
         activities_api,
-        "get_or_create_activity_card_glass",
-        lambda activity_type, style_key: image_path,
+        "get_or_create_activity_cover_card_glass",
+        lambda cover_id: image_path,
     )
 
     response = client.get(
-        "/api/v1/activities/type-styles/badminton/badminton-default/glass-image?v=3"
+        "/api/v2/activity-covers/aleksey-rico-001/glass-image?v=2"
     )
 
     assert response.status_code == 200
@@ -79,15 +81,15 @@ def test_card_glass_route_returns_png(client, tmp_path: Path, monkeypatch: pytes
     assert response.content == image_path.read_bytes()
 
 
-def test_card_glass_route_returns_404_for_unknown_style(client, monkeypatch: pytest.MonkeyPatch) -> None:
-    def raise_not_found(activity_type: str, style_key: str) -> Path:
-        raise glass_service.ActivityCardGlassNotFoundError("activity type/style not found")
+def test_card_glass_route_returns_404_for_unknown_cover(client, monkeypatch: pytest.MonkeyPatch) -> None:
+    def raise_not_found(cover_id: str) -> Path:
+        raise glass_service.ActivityCardGlassNotFoundError("activity cover not found")
 
-    monkeypatch.setattr(activities_api, "get_or_create_activity_card_glass", raise_not_found)
+    monkeypatch.setattr(activities_api, "get_or_create_activity_cover_card_glass", raise_not_found)
 
     response = client.get(
-        "/api/v1/activities/type-styles/badminton/unknown-style/glass-image?v=3"
+        "/api/v2/activity-covers/missing-cover/glass-image?v=2"
     )
 
     assert response.status_code == 404
-    assert response.json()["message"] == "activity type/style not found"
+    assert response.json()["message"] == "activity cover not found"

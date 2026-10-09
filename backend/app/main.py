@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.v1 import api_router
 from app.api.v2 import api_router as api_v2_router
+from app.utils.media import resolve_media_root
 from app.core.config import get_settings
 from app.core.exceptions import AppError
 from app.core.logging import error_summary, logger, request_context
@@ -20,7 +21,7 @@ from app.image_transfer_diagnostics import ImageTransferDiagnostics
 
 
 settings = get_settings()
-media_root = Path(settings.media_root).resolve()
+media_root = resolve_media_root()
 media_root.mkdir(parents=True, exist_ok=True)
 
 is_production = settings.environment.strip().lower() == "production"

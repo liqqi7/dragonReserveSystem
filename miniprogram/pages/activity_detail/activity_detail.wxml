@@ -103,35 +103,12 @@
     <block wx:elif="{{activity}}">
       <view id="qaActivityDetailHero" class="immersive-hero">
         <image
-          wx:if="{{activity.largeCardBgImageUrl && !activity.bgVideoUrl}}"
+          wx:if="{{activity.largeCardBgImageUrl}}"
           class="hero-img"
           src="{{activity.largeCardBgImageUrl}}"
           mode="aspectFill"
         />
-        <video
-          wx:if="{{activity.bgVideoUrl}}"
-          class="hero-video"
-          src="{{activity.bgVideoUrl}}"
-          objectFit="cover"
-          autoplay="{{true}}"
-          loop="{{true}}"
-          muted="{{true}}"
-          controls="{{false}}"
-          show-center-play-btn="{{false}}"
-          show-play-btn="{{false}}"
-        />
-        <view wx:if="{{activity.showAvatarCluster}}" class="hero-avatar-cluster">
-          <view wx:if="{{heroCardAvatars.length >= 1}}" class="hero-avatar hero-avatar-tl">
-            <image class="hero-cluster-avatar" src="{{heroCardAvatars[heroCardAvatars.length - 1].url}}" mode="aspectFill" />
-          </view>
-          <view wx:if="{{heroCardAvatars.length >= 2}}" class="hero-avatar hero-avatar-tr">
-            <image class="hero-cluster-avatar" src="{{heroCardAvatars[heroCardAvatars.length - 2].url}}" mode="aspectFill" />
-          </view>
-          <view wx:if="{{heroCardAvatars.length >= 3}}" class="hero-avatar hero-avatar-mid">
-            <image class="hero-cluster-avatar" src="{{heroCardAvatars[heroCardAvatars.length - 3].url}}" mode="aspectFill" />
-          </view>
-        </view>
-        <view wx:if="{{!activity.largeCardBgImageUrl && !activity.bgVideoUrl}}" class="hero-placeholder"></view>
+        <view wx:if="{{!activity.largeCardBgImageUrl}}" class="hero-placeholder"></view>
         <view class="hero-shade"></view>
 
         <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px">

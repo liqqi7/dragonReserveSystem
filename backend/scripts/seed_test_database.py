@@ -87,7 +87,7 @@ def main() -> None:
             users.append(user)
         db.flush()
 
-        def activity(name: str, status: str, start_offset: timedelta, duration: timedelta, capacity: int | None = 12, signup_enabled: bool = True, deadline_offset: timedelta | None = None) -> Activity:
+        def activity(name: str, status: str, start_offset: timedelta, duration: timedelta, capacity: int | None = 12, signup_enabled: bool = True) -> Activity:
             start = now + start_offset
             record = Activity(
                 name=name,
@@ -96,9 +96,7 @@ def main() -> None:
                 max_participants=capacity,
                 start_time=start,
                 end_time=start + duration,
-                signup_deadline=now + deadline_offset if deadline_offset is not None else start - timedelta(hours=2),
                 signup_enabled=signup_enabled,
-                activity_type="badminton" if "羽毛球" in name else "boardgame",
                 location_name="测试运动中心",
                 location_address="北京市昌平区测试路 100 号",
                 location_latitude=40.069,
@@ -114,7 +112,7 @@ def main() -> None:
         future_full = activity("测试桌游满员局", "未开始", timedelta(days=3), timedelta(hours=5), capacity=5)
         add_participants(db, future_full, users, 5)
         activity("测试关闭报名局", "未开始", timedelta(days=1), timedelta(hours=2), signup_enabled=False)
-        activity("测试报名截止局", "未开始", timedelta(days=1), timedelta(hours=2), deadline_offset=timedelta(hours=-1))
+        activity("测试次日开放局", "未开始", timedelta(days=1), timedelta(hours=2))
         ongoing = activity("测试进行中羽毛球", "进行中", timedelta(hours=-1), timedelta(hours=3))
         add_participants(db, ongoing, users, 8, checked_in=3)
         ended = activity("测试已结束羽毛球", "未开始", timedelta(days=-3), timedelta(hours=3))

@@ -3,9 +3,11 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { readWxss } = require("./helpers/readWxss");
 
 const root = path.join(__dirname, "..");
 const source = (relative) => fs.readFileSync(path.join(root, relative), "utf8");
+const stylesSource = (relative) => readWxss(path.join(root, relative));
 
 test("session expiry opens the prototype warning dialog on the active Skyline page", () => {
   let app;
@@ -85,7 +87,7 @@ test("exit confirmation reuses the danger dialog and only removes the intended s
 
 test("prototype dialog style and empty-avatar placeholder match their canvas geometry", () => {
   const markup = source("components/create-access-dialog/index.wxml");
-  const styles = source("components/create-access-dialog/index.wxss");
+  const styles = stylesSource("components/create-access-dialog/index.wxss");
   const detailMarkup = source("pages/activity_detail/activity_detail.wxml");
   const detailStyles = source("pages/activity_detail/activity_detail.wxss");
   assert.match(markup, /wx:if="\{\{variant === 'danger'\}\}"[^>]*src="\/images\/dialog-danger\.svg"/);
@@ -103,7 +105,7 @@ test("prototype dialog style and empty-avatar placeholder match their canvas geo
   assert.match(detailStyles, /\.signup-profile-avatar-placeholder image\s*\{\s*width:\s*30\.76923rpx;\s*height:\s*30\.76923rpx;/);
   assert.match(profileMarkup, /class="modal-title-icon" src="\/images\/icon-message-square-text\.svg"/);
   assert.doesNotMatch(profileMarkup, /class="close-btn"/);
-  assert.match(profileMarkup, /wx:if="\{\{forceProfileForSignup\}\}" class="force-profile-hint"/);
+  assert.doesNotMatch(profileMarkup, /forceProfile|force-profile-hint/);
   assert.match(profileMarkup, /class="avatar-edit-placeholder"><image src="\/images\/icon-avatar-user-round\.svg"/);
   assert.match(profileStyles, /\.modal-overlay\s*\{[^}]*background:\s*rgba\(0, 0, 0, 0\.4\)/s);
   assert.match(profileStyles, /\.modal-content\s*\{[^}]*width:\s*76\.923%;[^}]*border-radius:\s*30\.76923rpx;/s);
@@ -116,7 +118,7 @@ test("prototype dialog style and empty-avatar placeholder match their canvas geo
   assert.match(signupOverlay, /position:\s*fixed;[\s\S]*top:\s*0;[\s\S]*bottom:\s*0;[\s\S]*align-items:\s*center;[\s\S]*justify-content:\s*center;/);
   assert.ok(signupDialogBlocks.length > 0);
   for (const [, block] of signupDialogBlocks) assert.doesNotMatch(block, /transform:|top:|margin-top:/);
-  const sharedDialogStyles = source("components/create-access-dialog/index.wxss");
+  const sharedDialogStyles = stylesSource("components/create-access-dialog/index.wxss");
   assert.match(sharedDialogStyles, /\.create-access-dialog-overlay\s*\{[^}]*position:\s*fixed;[\s\S]*top:\s*0;[\s\S]*bottom:\s*0;[\s\S]*align-items:\s*center;[\s\S]*justify-content:\s*center;/);
   assert.match(profileStyles, /\.avatar-edit-wrap,[^}]*border-radius:\s*38\.46154rpx;/s);
   assert.match(profileStyles, /button\.avatar-edit-btn\s*\{[^}]*width:\s*76\.92308rpx;[^}]*overflow:\s*hidden;/s);

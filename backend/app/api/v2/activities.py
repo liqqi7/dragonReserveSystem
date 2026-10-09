@@ -6,6 +6,7 @@ from fastapi import BackgroundTasks, APIRouter, Depends, HTTPException, Request,
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
+from app.utils.activity_status import NOT_STARTED
 from app.api.deps import (
     get_current_user,
     get_optional_current_user,
@@ -167,10 +168,8 @@ def post_activity_v2(
     current_user: User = Depends(require_activity_create_permission),
 ) -> ActivityV2Response:
     activity = Activity(
-        **payload.model_dump(exclude={"sub_items", "signup_deadline"}),
-        status="未开始",
-        activity_type=None,
-        activity_style_key=None,
+        **payload.model_dump(exclude={"sub_items"}),
+        status=NOT_STARTED,
         created_by=current_user.id,
     )
     db.add(activity)

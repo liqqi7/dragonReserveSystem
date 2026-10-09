@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const vm = require("node:vm");
 
 let definition;
 const previous = { Page: global.Page, getApp: global.getApp, wx: global.wx };
@@ -22,6 +23,18 @@ test("cover category uses 游戏 to match the cover catalog", () => {
   assert.doesNotMatch(fs.readFileSync(path.join(__dirname, "../pages/activity_create/activity_create.js"), "utf8"), /const CATEGORIES = .*桌游/);
 });
 
+test("creation keeps the activity quota at three and caps subitems without raising one-person items", () => {
+  const c = context({ form: { maxParticipants: 3, subItems: [
+    { name: "A", max_participants: 8 }, { name: "B", max_participants: 1 }
+  ] } });
+  c.stepCapacity({ currentTarget: { dataset: { delta: -1 } } });
+  assert.equal(c.data["form.maxParticipants"], 3);
+  assert.deepEqual(c.data["form.subItems"].map(item => item.max_participants), [3, 1]);
+  c.data.form.maxParticipants = 2;
+  c.onSubItemsChange({ detail: { enabled: true, items: [{ name: "A", max_participants: 8 }] } });
+  assert.equal(c.data["form.subItems"][0].max_participants, 3);
+});
+
 test("cover swiper advances exactly four covers per slide", () => {
   const c = context({ covers: Array.from({ length: 12 }, (_, index) => ({ id: index + 1, categories: ["派对"] })), category: "派对" });
   c.filterCovers();
@@ -29,6 +42,10 @@ test("cover swiper advances exactly four covers per slide", () => {
   assert.equal(c.data.galleryPages[0].id, "1-3");
   assert.deepEqual(c.data.galleryPages[0].columns.flatMap(column => column.items.map(item => item.id)), [1, 2, 3, 4]);
   assert.deepEqual(c.data.galleryPages[1].columns.flatMap(column => column.items.map(item => item.id)), [5, 6, 7, 8]);
+  assert.equal(Object.hasOwn(c.data, "columns"), false);
+  c.setData({ category: "生日" });
+  c.filterCovers();
+  assert.deepEqual(c.data.galleryPages, []);
 });
 
 test("cover swiper change keeps its visible page state in sync", () => {
@@ -173,18 +190,40 @@ test("disabled cover action cannot advance without a selected cover", () => {
   assert.equal(c.data.step, 1);
 });
 
-test("edit mode reuses the create wizard and submits a prefilled activity update", () => {
-  const pageDir = path.join(__dirname, "../pages/activity_create");
-  const js = fs.readFileSync(path.join(pageDir, "activity_create.js"), "utf8");
-  const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
-  assert.match(js, /options\.mode === "edit"/);
-  assert.match(js, /activityService\.getActivity\(activityId\)/);
-  assert.match(js, /const form = buildEditForm\(activity\)/);
-  assert.match(js, /validateActivityForm\(form, \{ mode, participantCount: this\.data\.participantCount \}\)/);
-  assert.match(js, /activityService\.updateActivity\(this\.data\.editingActivityId, buildActivityPayload\(form, \{ mode \}\)\)/);
-  assert.match(js, /channel\.emit\(result\.mode === "edit" \? "activityUpdated" : "activityCreated"/);
-  assert.match(wxml, /isEdit \? '保存修改' : '立即发布'/);
-  assert.match(wxml, /isEdit \? '返回活动详情' : '返回首页'/);
+test("legacy edit parameters open an empty creation form without fetching an activity", () => {
+  let pageDefinition;
+  const formUtils = require("../utils/activityForm");
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "../pages/activity_create/activity_create.js"), "utf8"), {
+    Page: value => { pageDefinition = value; },
+    getApp: () => ({ globalData: { isAuthenticated: true, accessToken: "token", userRole: "user" } }),
+    wx: { getStorageSync: () => "token" },
+    require: name => {
+      if (name === "../../utils/activityForm") return formUtils;
+      if (name === "../../utils/safeArea") return {
+        getWindowInfoCompat: () => ({ statusBarHeight: 20 }),
+        getBottomSafeAreaRpx: () => 0
+      };
+      if (name === "../../services/activity") return {
+        getActivity() { assert.fail("creation must not fetch an existing activity"); }
+      };
+      return {};
+    }
+  });
+  for (const options of [{}, { mode: "edit", id: "42" }, { edit: "1", activityId: "42" }]) {
+    let coverLoads = 0;
+    const page = {
+      ...pageDefinition,
+      data: structuredClone(pageDefinition.data),
+      setData(patch) { Object.assign(this.data, patch); },
+      loadCovers() { coverLoads++; }
+    };
+    page.onLoad(options);
+    assert.equal(coverLoads, 1);
+    for (const field of ["name", "remark", "activityCoverId", "startDate", "startTime", "endDate", "endTime"]) {
+      assert.equal(page.data.form[field], "");
+    }
+    assert.equal(page.data.form.maxParticipants, 16);
+  }
 });
 
 test("top-left back always returns to the home tab instead of an earlier wizard step", () => {
@@ -236,7 +275,7 @@ test("wizard markup retains a non-interactive outgoing scene and directional fad
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
   const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
-  assert.match(wxml, /class="back" bindtap="backHome"[^>]*aria-label="\{\{isEdit \? '返回活动详情' : '返回首页'\}\}"/);
+  assert.match(wxml, /class="back" bindtap="backHome"[^>]*aria-label="返回首页"/);
   assert.match(wxml, /class="previous" bindtap="previousStep"/);
   assert.match(wxml, /wx:if="\{\{leavingStep\}\}" class="step-scene step-scene--leaving step-scene--leaving--\{\{stepTransitionDirection\}\}"/);
   assert.match(wxss, /\.step-scene--entering\.step-scene--entering--forward \{[^}]*animation-name:create-step-enter-forward;[^}]*animation-duration:320ms;/);
@@ -313,7 +352,7 @@ test("details step closed state matches the prototype spacing, empty time, and c
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
   const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
 
-  assert.match(js, /const initialForm = isEdit\s*\? buildCreateForm\(\)\s*:\s*\{ \.\.\.buildCreateForm\(\), startDate: "", startTime: "", endDate: "", endTime: "", maxParticipants: 16 \};/);
+  assert.match(js, /const initialForm = \{ \.\.\.buildCreateForm\(\), startDate: "", startTime: "", endDate: "", endTime: "", maxParticipants: 16 \};/);
   assert.match(wxml, /class="fields fields--subitems-\{\{form\.subItemsEnabled \? 'open' : 'closed'\}\} \{\{subItemsClosing \? 'fields--subitems-closing' : ''\}\}"/);
   assert.match(wxml, /class="body body--step-\{\{step\}\} body--subitems-\{\{form\.subItemsEnabled \? 'open' : 'closed'\}\} \{\{subItemsClosing \? 'body--subitems-closing' : ''\}\}"/);
   assert.match(js, /"工作日出去玩的话别让我知道"/);

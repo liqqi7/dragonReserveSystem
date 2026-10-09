@@ -122,6 +122,58 @@ test("detail retry recovers from the initial error while a failed retry keeps it
   assert.equal(page.data.loading, false);
 });
 
+test("a newer refresh wins over an older initial detail response", async () => {
+  const pending = [];
+  const { page } = createPage(() => new Promise(resolve => pending.push(resolve)));
+  page.data.activityId = "73";
+  page.startDetailEntranceTransition = () => page.setData({ loading: false, detailContentVisible: true });
+  const initial = page.bootstrap();
+  const refresh = page.refreshDetail({ silent: true });
+  const raw = {
+    id: 73, start_time: "2030-01-01T12:00:00", end_time: "2030-01-01T14:00:00",
+    participants: [], location_latitude: null, location_longitude: null
+  };
+  pending[1]({ ...raw, name: "New result" });
+  await refresh;
+  pending[0]({ ...raw, name: "Old result" });
+  await initial;
+  assert.equal(page.data.activity.name, "New result");
+  assert.equal(page.data.loading, false);
+  assert.equal(page.data.detailContentVisible, true);
+});
+
+test("superseded errors and responses after unload cannot update the detail UI", async () => {
+  const pending = [];
+  const { page, toasts } = createPage(() => new Promise((resolve, reject) => pending.push({ resolve, reject })));
+  page.data.activityId = "73";
+  const old = page.refreshDetail();
+  const latest = page.refreshDetail({ silent: true });
+  pending[0].reject(Error("Old request failed"));
+  await old;
+  assert.equal(toasts.length, 0);
+  page.onUnload();
+  const before = JSON.stringify(page.data);
+  pending[1].resolve({ id: 73, name: "Detached result", participants: [] });
+  await latest;
+  assert.equal(JSON.stringify(page.data), before);
+  assert.equal(page._detailLoadingVisible, false);
+});
+
+test("a failed return refresh ends initial loading even when the earlier request later succeeds", async () => {
+  const pending = [];
+  const { page } = createPage(() => new Promise((resolve, reject) => pending.push({ resolve, reject })));
+  page.data.activityId = "73";
+  const initial = page.bootstrap();
+  const refresh = page.refreshDetail({ silent: true });
+  pending[1].reject(Error("Latest request failed"));
+  await refresh;
+  pending[0].resolve({ id: 73, name: "Old response", participants: [] });
+  await initial;
+  assert.equal(page.data.loading, false);
+  assert.equal(page.data.loadError, "Latest request failed");
+  assert.equal(page.data.activity, null);
+});
+
 test("missing, blank, nonnumeric or out-of-range coordinates never request location or navigation", () => {
   const { page, locations, navigation, toasts } = createPage();
   const invalid = [

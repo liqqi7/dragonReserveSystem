@@ -1,4 +1,3 @@
-const app = getApp();
 const statsService = require("../../services/stats");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
 const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
@@ -115,8 +114,7 @@ Page({
 
   onShow() {
     patchTabBarIfNeeded(this, {
-      selected: 2,
-      isAdmin: app.globalData.userRole === "admin"
+      selected: 2
     });
     this.loadRankings();
   },

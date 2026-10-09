@@ -10,7 +10,7 @@ test("shared activity enrichment uses full cover rather than thumbnail for small
       image_url: "https://example.com/full.jpg",
       thumbnail_url: "https://example.com/thumb.jpg"
     }
-  }, [], "", "");
+  }, "");
   assert.equal(activity.smallCardBgImageUrl, "https://example.com/full.jpg");
   assert.equal(activity.smallCardBgImageUrl, activity.largeCardBgImageUrl);
 });

@@ -1,24 +1,14 @@
 const app = getApp();
 const authService = require("../../services/auth");
 const userService = require("../../services/user");
-const { getApiBaseUrl, resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
-const { isDefaultNickname, isDefaultAvatar } = require("../../utils/profileUtils");
+const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
+const { isTemporaryAvatarUrl } = require("../../utils/profileUtils");
 const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
 const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
 const { getProfileSubtitle } = require("../../utils/profilePresentation");
 const DEFAULT_AVATAR = "/images/default-avatar.svg";
-const MEDIA_BASE_URL = String(getApiBaseUrl() || "").replace(/\/api\/v\d+\/?$/, "");
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
-
-function isTemporaryAvatarUrl(url) {
-  if (!url) return false;
-  const normalized = String(url).trim().toLowerCase();
-  return normalized.startsWith("http://tmp/")
-    || normalized.startsWith("https://tmp/")
-    || normalized.startsWith("wxfile://")
-    || normalized.startsWith("tmp/");
-}
 
 function normalizeAvatarUrl(url) {
   const value = (url && String(url).trim()) || "";
@@ -67,9 +57,6 @@ Page({
     showEditModal: false,
     editNickname: "",
     editAvatarUrl: "",
-    forceProfileForSignup: false,
-    forceProfileHint: "",
-    forceProfileCanSubmit: true,
     showPermissionModal: false,
     showDeletePermissionModal: false,
     permissionInput: "",
@@ -90,8 +77,7 @@ Page({
   onShow() {
     this.setData({ bottomSafeAreaRpx: getBottomSafeAreaRpx() });
     patchTabBarIfNeeded(this, {
-      selected: 3,
-      isAdmin: app.globalData.userRole === "admin",
+      selected: 3
     });
     this.syncGuestState();
     if (this.data.showPermissionModal || this.data.showDeletePermissionModal) {
@@ -160,7 +146,6 @@ Page({
     return userService.getMe()
       .then((user) => {
         app.applyCurrentUser(user);
-        const userId = String(user.id || "");
         this.setData({
           hasUser: true,
           isGuest: !app.globalData.isAuthenticated,
@@ -348,35 +333,18 @@ Page({
     });
     wx.showToast({ title: "已退出登录", icon: "success" });
   },
-  updateForceProfileValidation() {
-    if (!this.data.forceProfileForSignup) {
-      this.setData({ forceProfileCanSubmit: true });
-      return;
-    }
-    const nickname = (this.data.editNickname || "").trim();
-    const avatarUrl = (this.data.editAvatarUrl || "").trim();
-    const canSubmit = !isDefaultNickname(nickname) && !isDefaultAvatar(avatarUrl);
-    this.setData({ forceProfileCanSubmit: canSubmit });
-  },
-
-  openEditModal(options = {}) {
+  openEditModal() {
     const { user } = this.data;
-    const forceProfileForSignup = !!options.forceProfileForSignup;
     this.setData({
       showEditModal: true,
       editNickname: user.nickname,
-      editAvatarUrl: normalizeAvatarUrl(user.avatarUrl || ""),
-      forceProfileForSignup,
-      forceProfileHint: forceProfileForSignup ? "请修改昵称和头像后再进行报名" : ""
-    }, () => this.updateForceProfileValidation());
+      editAvatarUrl: normalizeAvatarUrl(user.avatarUrl || "")
+    });
   },
 
   closeEditModal() {
     this.setData({
-      showEditModal: false,
-      forceProfileForSignup: false,
-      forceProfileHint: "",
-      forceProfileCanSubmit: true
+      showEditModal: false
     });
   },
 
@@ -391,13 +359,13 @@ Page({
   },
 
   onInputNickname(e) {
-    this.setData({ editNickname: e.detail.value || "" }, () => this.updateForceProfileValidation());
+    this.setData({ editNickname: e.detail.value || "" });
   },
 
   onChooseAvatar() {
     chooseUploadedAvatar()
       .then((avatarUrl) => {
-        this.setData({ editAvatarUrl: avatarUrl }, () => this.updateForceProfileValidation());
+        this.setData({ editAvatarUrl: avatarUrl });
       })
       .catch((error) => {
         const message = (error && error.message) || "选择头像失败";
@@ -415,10 +383,6 @@ Page({
 
     if (!nickname) {
       wx.showToast({ title: "请输入昵称", icon: "none" });
-      return;
-    }
-    if (this.data.forceProfileForSignup && !this.data.forceProfileCanSubmit) {
-      wx.showToast({ title: "请修改昵称和头像后再进行报名", icon: "none" });
       return;
     }
     if (!userId) {
@@ -447,10 +411,7 @@ Page({
             subtitle: getProfileSubtitle(user.role || app.globalData.userRole, user.created_at)
           },
           editAvatarUrl: user.avatar_url || "",
-          showEditModal: false,
-          forceProfileForSignup: false,
-          forceProfileHint: "",
-          forceProfileCanSubmit: true
+          showEditModal: false
         });
         wx.hideLoading();
         wx.showToast({ title: "保存成功", icon: "success" });

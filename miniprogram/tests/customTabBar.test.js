@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const { readWxss } = require("./helpers/readWxss");
 
 const tabDir = path.join(__dirname, "../custom-tab-bar");
 const createAccessDialogDir = path.join(__dirname, "../components/create-access-dialog");
@@ -131,7 +132,7 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.match(wxss, /\.tab-items-wrap--modal \.tab-glass-fill\s*\{[^}]*opacity:\s*0;/s);
   assert.match(wxss, /\.tab-items-wrap--modal \.tab-glass-stroke,[\s\S]*?\.tab-items-wrap--modal \.tab-create-item\s*\{[^}]*opacity:\s*0\.6;/s);
   assert.match(wxss, /\.tab-modal-mask\s*\{[^}]*background:\s*transparent;/s);
-  assert.match(js, /setModalMaskVisible\(visible, opacity = 0\.4\)/);
+  assert.match(js, /setModalMaskVisible\(visible\)/);
   assert.ok(activeLabelRule);
   assert.doesNotMatch(activeLabelRule[1], /gap:|margin:|padding:|font-size:|font-weight:|line-height:|transform:/);
   assert.doesNotMatch(wxss, /border-radius:\s*999(?:r?px)|tab-indicator/);
@@ -172,7 +173,7 @@ test("tab labels inherit the runtime system font", () => {
 
 test("create access dialog follows the warning-level centered modal spec", () => {
   const wxml = fs.readFileSync(path.join(createAccessDialogDir, "index.wxml"), "utf8");
-  const wxss = fs.readFileSync(path.join(createAccessDialogDir, "index.wxss"), "utf8");
+  const wxss = readWxss(path.join(createAccessDialogDir, "index.wxss"));
   const warningSvg = fs.readFileSync(path.join(imageDir, "dialog-warning.svg"), "utf8");
   const appJs = fs.readFileSync(path.join(__dirname, "../app.js"), "utf8");
   const profileJs = fs.readFileSync(path.join(__dirname, "../pages/profile/profile.js"), "utf8");
@@ -219,14 +220,18 @@ test("tab modal mask can be synchronized by page-level dialogs", () => {
     delete require.cache[require.resolve(componentPath)];
     require(componentPath);
 
+    const patches = [];
     const ctx = {
-      data: { modalMaskVisible: false, modalMaskOpacity: 0.4 },
-      setData(patch) { Object.assign(this.data, patch); }
+      data: { modalMaskVisible: false },
+      setData(patch) { patches.push(patch); Object.assign(this.data, patch); }
     };
-    definition.methods.setModalMaskVisible.call(ctx, true, 0.5);
-    assert.deepEqual(ctx.data, { modalMaskVisible: true, modalMaskOpacity: 0.5 });
-    definition.methods.setModalMaskVisible.call(ctx, false, 0.5);
-    assert.deepEqual(ctx.data, { modalMaskVisible: false, modalMaskOpacity: 0.5 });
+    definition.methods.setModalMaskVisible.call(ctx, true);
+    assert.deepEqual(ctx.data, { modalMaskVisible: true });
+    definition.methods.setModalMaskVisible.call(ctx, true);
+    assert.equal(patches.length, 1);
+    definition.methods.setModalMaskVisible.call(ctx, false);
+    assert.deepEqual(ctx.data, { modalMaskVisible: false });
+    assert.equal(patches.length, 2);
   } finally {
     delete require.cache[require.resolve(componentPath)];
     if (previousComponent === undefined) delete global.Component;
@@ -296,7 +301,7 @@ test("tab bar remount preserves the hidden state while the home drawer survives 
     require(componentPath);
 
     const ctx = {
-      data: { selected: 0, hidden: false, entering: false, isAdmin: true },
+      data: { selected: 0, hidden: false, entering: false },
       syncBottomSafeArea() {},
       setData(patch) { Object.assign(this.data, patch); }
     };
@@ -463,7 +468,7 @@ test("tab selection follows the visible route without mutating the page being le
 
     const patches = [];
     const ctx = {
-      data: { selected: 1, hidden: false, isAdmin: false },
+      data: { selected: 1, hidden: false },
       syncBottomSafeArea() {},
       setData(patch) {
         patches.push(patch);

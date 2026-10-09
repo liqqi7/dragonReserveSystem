@@ -3,13 +3,13 @@ const { prepareHomeImage, invalidateHomeImageCache } = require("../../utils/home
 const app = getApp();
 const activityService = require("../../services/activity");
 const { createTraceId, logInfo, summarizeError } = require("../../services/logger");
-const { enrichSingleActivity, DEFAULT_AVATAR, DEFAULT_ACTIVITY_TYPE_KEY, DEFAULT_ACTIVITY_TYPE_STYLES, adaptActivity, buildTypeStyleMap, normalizeActivityTypeByMap, resolveStyleByTypeAndKey, normalizeAvatarUrl } = require("../../utils/activityEnrich");
-const { orderParticipantsForRecentAvatarSlice } = require("../../utils/participantSort");
+const { enrichSingleActivity } = require("../../utils/activityEnrich");
 const cacheManager = require("../../services/cacheManager");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
 const { createHomeCardMediaLoader } = require("../../utils/homeCardMediaLoader");
 const { createHomePresentationDiagnostics } = require("../../utils/homePresentationDiagnostics");
 const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
+const { isSameHomeViewData } = require("../../utils/homeViewData");
 
 
 const WEEKDAY_LABELS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
@@ -72,17 +72,14 @@ Page({
     groupedActivities: { joined: [], accepting: [], notStarted: [], ended: [] },
     groupSectionVisibility: { joined: false, accepting: false, notStarted: false, ended: false },
     endedHasMore: false,
-    endedLoadingMore: false,
     statusBarHeight: 0,
     focusedCardIndex: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
     homeToolIndex: 0,
     mainRefresherTriggered: false,
     mainRefresherHint: "下拉刷新",
-    myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
-    myNickname: "", // 当前用户昵称，用于登录态和缓存刷新元信息
+    myUserId: "", // 当前用户 ID，用于匹配报名记录
     isAdmin: false,
     isGuest: true,
-    activityTypeStyles: DEFAULT_ACTIVITY_TYPE_STYLES,
     homeListLoading: true,
     skeletonShimmerRunning: false,
     createdCardEntranceId: null,
@@ -151,8 +148,7 @@ Page({
     ));
     const isAdmin = app.globalData.userRole === "admin";
     const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
-    const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
-    this.setData({ isAdmin, myUserId, myNickname }, () => {
+    this.setData({ isAdmin, myUserId }, () => {
       this.loadActivityListByCachePolicy();
       this.consumePendingCreateActivity();
     });
@@ -312,7 +308,7 @@ Page({
   },
 
   _cardMediaKey(item, group) {
-    return JSON.stringify([group, String(item._id), ...this._cardImageUrls(item, group), item.bgVideoUrl || ""]);
+    return JSON.stringify([group, String(item._id), ...this._cardImageUrls(item, group)]);
   },
 
   _prepareColdStartCardPresentation(groupedActivities) {
@@ -321,9 +317,10 @@ Page({
       decorated[group] = groupedActivities[group].map((item) => {
         const key = this._cardMediaKey(item, group);
         const cover = group === "joined" ? item.largeCardBgImageUrl : item.smallCardBgImageUrl;
-        const { participants, avatarList, activityCover, ...view } = item;
-        view.participantCount = participants ? participants.length : (item.participantCount || 0);
-        view.cardAvatars = item.showAvatarCluster ? (item.cardAvatars || []).map(a => ({url: a.url})) : [];
+        const view = Object.assign({}, item);
+        delete view.participants;
+        delete view.activityCover;
+        view.participantCount = item.participants ? item.participants.length : (item.participantCount || 0);
         return { ...view, _homeSlotEntered: this._homeSlotStates?.get(cardVisibilityKey(group, item._id)) ?? !!this._homeSlotEntranceDone, _homeMediaKey: key, _homeMediaReady: this._homeEnteredMediaKeys.has(key),
           _homeMediaError: !this._homeEnteredMediaKeys.has(key) && this._cardImageUrls(item, group).some(url => this._homeExhaustedImages?.has(url)),
           _homeCoverSrc: this._homeReadyImages.get(cover) || "",
@@ -577,7 +574,7 @@ Page({
       cards.forEach((item, index) => {
         const ref = { group, index, item };
         this._homeMediaPendingCards.add(ref);
-        const urls = [...this._cardImageUrls(item, group), item.bgVideoUrl].filter(Boolean);
+        const urls = this._cardImageUrls(item, group);
         for (const url of new Set(urls)) {
           if (!this._homeMediaUrlIndex.has(url)) this._homeMediaUrlIndex.set(url, []);
           this._homeMediaUrlIndex.get(url).push(ref);
@@ -658,8 +655,7 @@ Page({
         const failed = !item._homeMediaReady && urls.some(url => this._homeExhaustedImages?.has(url));
         if (!!item._homeMediaError !== failed) patch[`${prefix}._homeMediaError`] = failed;
         if (item._homeMediaReady) continue;
-        const videoOnlyPending = !urls.length && item.bgVideoUrl && !this._homeReadyImages.has(item.bgVideoUrl);
-        if (videoOnlyPending || !urls.every(url => this._homeReadyImages.has(url))) continue;
+        if (!urls.every(url => this._homeReadyImages.has(url))) continue;
         this._homeEnteredMediaKeys.add(this._cardMediaKey(item, group));
         patch[`${prefix}._homeMediaReady`] = true;
       }
@@ -800,33 +796,15 @@ Page({
     this._tryRevealCreatedCard();
   },
 
-  _syncVideoFocus(group, oldIndex, newIndex) {
-    const previousIndex = typeof oldIndex === "number" ? oldIndex : 0;
-    const nextIndex = typeof newIndex === "number" ? newIndex : previousIndex;
-    if (previousIndex === nextIndex) return;
-
-    try {
-      wx.createVideoContext(`vid-${group}-${previousIndex}`, this).stop();
-    } catch (e) {}
-
-    setTimeout(() => {
-      try {
-        wx.createVideoContext(`vid-${group}-${nextIndex}`, this).play();
-      } catch (e) {}
-    }, 30);
-  },
-
   onGroupSwiperChange(e) {
     const group = e.currentTarget && e.currentTarget.dataset
       ? String(e.currentTarget.dataset.group || "")
       : "";
     if (!group || !Object.prototype.hasOwnProperty.call(this.data.focusedCardIndex, group)) return;
     const current = Math.max(0, Math.floor(Number(e.detail && e.detail.current) || 0));
-    const previous = Number(this.data.focusedCardIndex[group]) || 0;
     this._homePresentationDiagnostics?.swipe();
     this._rememberFocusedCard(group, current);
     this.setData({ [`focusedCardIndex.${group}`]: current }, () => {
-      this._syncVideoFocus(group, previous, current);
       // Native intersection updates cover scrolling and partial cards. Promote a
       // touched swiper immediately too, without waiting for its animation to end.
       if (e.detail && e.detail.source === "touch") {
@@ -850,88 +828,11 @@ Page({
     this.loadMoreEndedActivities();
   },
 
-  onMainScroll(e) {
-    const scrollTop = (e && e.detail && typeof e.detail.scrollTop === "number") ? e.detail.scrollTop : null;
-
-    // 节流：避免日志刷屏
-    const now = Date.now();
-    if (this._lastScrollLogAt && now - this._lastScrollLogAt < 350) return;
-    this._lastScrollLogAt = now;
-
-    if (this._didMeasureAtScrollTop0 == null && (scrollTop === 0 || (scrollTop != null && scrollTop < 2))) {
-      this._didMeasureAtScrollTop0 = true;
-    }
-
-    // 在滚动接近 0 / 50 / 120 这些点采样一次布局，用于判断“顶部是否跟随滚动”和 Logo 层级
-    const shouldMeasure =
-      this._lastMeasuredBucket == null ||
-      (scrollTop != null && Math.abs(scrollTop - (this._lastMeasuredScrollTop || 0)) > 60);
-    if (!shouldMeasure) return;
-    this._lastMeasuredScrollTop = scrollTop || 0;
-    this._lastMeasuredBucket = Math.round((scrollTop || 0) / 60);
-
-    const q = wx.createSelectorQuery();
-    q.select(".custom-navbar").boundingClientRect();
-    q.select(".page-watermark").boundingClientRect();
-    q.select(".group-section").boundingClientRect();
-    q.select(".group-section .group-header").boundingClientRect();
-    q.select(".navbar-inner").boundingClientRect();
-    q.select(".navbar-title").boundingClientRect();
-    q.select(".large-card").boundingClientRect();
-    q.select(".small-card").boundingClientRect();
-    q.selectAll(".group-section").boundingClientRect();
-    q.selectAll("video.card-video-bg").boundingClientRect();
-    q.selectAll(".card-type-label-sm").boundingClientRect();
-    q.selectAll(".glass-meta-icon-img").boundingClientRect();
-    q.select(".group-section .group-header").boundingClientRect();
-    q.select(".group-section .card-datetime-label").boundingClientRect();
-    q.select(".large-card").boundingClientRect();
-    q.select(".avatar-tl").boundingClientRect();
-    q.select(".avatar-tr").boundingClientRect();
-    q.select(".avatar-mid").boundingClientRect();
-    q.select(".small-card").boundingClientRect();
-    q.select(".avatar-tl-sm").boundingClientRect();
-    q.select(".avatar-tr-sm").boundingClientRect();
-    q.select(".avatar-mid-sm").boundingClientRect();
-    q.exec((res) => {
-      const navbarRect = res && res[0] ? res[0] : null;
-      const logoRect = res && res[1] ? res[1] : null;
-      const firstGroupRect = res && res[2] ? res[2] : null;
-      const firstGroupHeaderRect = res && res[3] ? res[3] : null;
-      const navbarInnerRect = res && res[4] ? res[4] : null;
-      const navbarTitleRect = res && res[5] ? res[5] : null;
-      const largeCardRect = res && res[6] ? res[6] : null;
-      const smallCardRect = res && res[7] ? res[7] : null;
-      const allGroupRects = res && res[8] ? res[8] : null;
-      const allVideoRects = res && res[9] ? res[9] : null;
-      const allSmallTypeLabelRects = res && res[10] ? res[10] : null;
-      const allGlassMetaIconRects = res && res[11] ? res[11] : null;
-      const firstGroupHeaderRect2 = res && res[12] ? res[12] : null;
-      const firstCardDateLabelRect = res && res[13] ? res[13] : null;
-      const largeCardRect2 = res && res[14] ? res[14] : null;
-      const avatarTlRect = res && res[15] ? res[15] : null;
-      const avatarTrRect = res && res[16] ? res[16] : null;
-      const avatarMidRect = res && res[17] ? res[17] : null;
-      const smallCardRect2 = res && res[18] ? res[18] : null;
-      const avatarTlSmRect = res && res[19] ? res[19] : null;
-      const avatarTrSmRect = res && res[20] ? res[20] : null;
-      const avatarMidSmRect = res && res[21] ? res[21] : null;
-
-      const gapNavbarToFirstGroup = (navbarRect && firstGroupRect)
-        ? (firstGroupRect.top - navbarRect.bottom)
-        : null;
-      const gapNavbarToFirstGroupHeader = (navbarRect && firstGroupHeaderRect)
-        ? (firstGroupHeaderRect.top - navbarRect.bottom)
-        : null;
-    });
-  },
-
   /** 首页列表强制走网络刷新（scroll-view 内须用 refresher；游客态同样可下拉拉新） */
   runListPullRefresh() {
     this.syncGuestState();
     const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
-    const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
-    this.setData({ isAdmin: app.globalData.userRole === "admin", myUserId, myNickname });
+    this.setData({ isAdmin: app.globalData.userRole === "admin", myUserId });
     this._prepareHomeCardImages({ retryFailed: true });
     return this.loadActivityList();
   },
@@ -995,7 +896,7 @@ Page({
   loadMoreEndedActivities() {
     const allEndedActivities = this._allEndedActivities || [];
     const currentEnded = (this.data.groupedActivities && this.data.groupedActivities.ended) || [];
-    if (this.data.endedLoadingMore || currentEnded.length >= allEndedActivities.length) {
+    if (currentEnded.length >= allEndedActivities.length) {
       return;
     }
 
@@ -1008,8 +909,7 @@ Page({
     };
     this.setData({
       groupedActivities: this._prepareColdStartCardPresentation(groupedActivities).groupedActivities,
-      endedHasMore,
-      endedLoadingMore: false
+      endedHasMore
     }, () => this._scheduleColdStartCardEntrance());
   },
 
@@ -1021,19 +921,19 @@ Page({
     const stream = this.buildEndedStreamState(fullGroups, visibleCount);
     this._allEndedActivities = stream.allEndedActivities;
     const presentation = this._prepareColdStartCardPresentation(stream.groupedActivities);
-    const next = { endedHasMore: stream.endedHasMore, endedLoadingMore: false,
+    const next = { endedHasMore: stream.endedHasMore,
       focusedCardIndex: this._resolveFocusedCardIndex(stream.groupedActivities), homeListLoading: false,
       groupSectionVisibility: presentation.groupSectionVisibility };
     const patch = {};
     for (const [key, value] of Object.entries(next)) {
-      if (JSON.stringify(this.data[key]) !== JSON.stringify(value)) patch[key] = value;
+      if (!isSameHomeViewData(this.data[key], value)) patch[key] = value;
     }
     for (const [group, cards] of Object.entries(presentation.groupedActivities)) {
       const old = this.data.groupedActivities[group] || [];
       const sameOrder = old.length === cards.length && old.every((card, i) => String(card._id) === String(cards[i]._id));
       if (!sameOrder) patch[`groupedActivities.${group}`] = cards;
       else cards.forEach((card, index) => {
-        if (JSON.stringify(old[index]) !== JSON.stringify(card)) patch[`groupedActivities.${group}[${index}]`] = card;
+        if (!isSameHomeViewData(old[index], card)) patch[`groupedActivities.${group}[${index}]`] = card;
       });
     }
     const complete = () => { this._scheduleColdStartCardEntrance(); if (callback) callback(); };
@@ -1052,13 +952,15 @@ Page({
     const now = Date.now();
     const listWithFlags = reapplyListParticipationFlags(list, myUserId).map(item => {
       const activity = { ...item };
+      for (const key of ["signupDeadline", "signupDeadlinePassed", "signupDeadlineWeekdayLabel"]) delete activity[key];
       const time = value => new Date(String(value || "").replace(" ", "T") + ":00").getTime();
+      const start = activity.startTimeRaw ? new Date(activity.startTimeRaw).getTime() : time(activity.startTime);
+      const end = time(activity.endTime);
       if (!["已取消", "已流局"].includes(activity.status)) {
-        const start = time(activity.startTime), end = time(activity.endTime);
         if (Number.isFinite(start) && Number.isFinite(end)) activity.status = now < start ? "未开始" : now < end ? "进行中" : "已结束";
       }
-      const deadline = time(activity.signupDeadline);
-      activity.isSignupClosed = activity.signupEnabled === false || (Number.isFinite(deadline) && now >= deadline);
+      activity.activityStarted = Number.isFinite(start) && now >= start;
+      activity.isSignupClosed = activity.signupEnabled === false || activity.activityStarted;
       return activity;
     });
     this._commitHomeList(listWithFlags);
@@ -1074,7 +976,7 @@ Page({
         if (this._pageVisible !== false && generation === (this._loadGeneration || 0)) this._homePresentationDiagnostics?.list("response_received");
         if (this._pageVisible === false || generation !== (this._loadGeneration || 0)) return null;
         const now = Date.now();
-        const signature = JSON.stringify([this.data.myUserId, this.data.myNickname, this.data.activityTypeStyles, res]);
+        const signature = JSON.stringify([this.data.myUserId, res]);
         if (signature === this._lastRawListSignature && now >= this._lastListProcessedAt && now < this._nextListStatusAt) {
           return { list: this._activityList || [], unchanged: true };
         }
@@ -1082,7 +984,8 @@ Page({
         this._lastRawListSignature = signature;
         this._lastListProcessedAt = now;
         this._nextListStatusAt = Math.min(Infinity, ...result.list.flatMap(item =>
-          [item.startTime, item.endTime, item.signupDeadline].map(value => new Date(String(value || "").replace(" ", "T") + ":00").getTime()).filter(time => time > now)));
+          [new Date(item.startTimeRaw || (String(item.startTime || "").replace(" ", "T") + ":00")).getTime(),
+            new Date(String(item.endTime || "").replace(" ", "T") + ":00").getTime()].filter(time => time > now)));
         return result;
       })
       .then(result => {
@@ -1104,151 +1007,23 @@ Page({
         console.error(err);
         // The independent Tab entrance also runs when the request never resolves.
         this._scheduleColdStartCardEntrance();
-        // 测试环境切换后常见：本地缓存 token 对应的用户不在当前库中
-        if (err && err.statusCode === 404 && String(err.message || "").includes("User not found")) {
-          app.logout();
-          this.syncGuestState();
-          wx.showToast({ title: "测试环境用户不存在，请重新登录", icon: "none", duration: 2500 });
-          wx.switchTab({ url: "/pages/profile/profile" });
-          return;
-        }
         wx.showToast({ title: "加载失败", icon: "none" });
       });
   },
 
   processActivityList(resData, now) {
-    const myUserId = String(this.data.myUserId || "").trim();
-    const typeStyleMap = buildTypeStyleMap(this.data.activityTypeStyles);
-
     const list = (resData || []).map(rawItem => {
-      const activity = adaptActivity(rawItem);
-
-      const rawType = activity._rawActivityType;
-      const normalizedType = normalizeActivityTypeByMap(rawType, typeStyleMap);
-      activity.activityType = normalizedType;
-      const selectedStyle = resolveStyleByTypeAndKey(activity.activityType, activity.activityStyleKey, typeStyleMap);
-      activity.activityStyleKey = selectedStyle ? selectedStyle.styleKey : "";
-      activity.typeBadgeLabel = selectedStyle ? selectedStyle.badgeLabel : "";
-      activity.showTypeBadge = selectedStyle ? (!!selectedStyle.showBadge && !!selectedStyle.badgeLabel) : false;
-      activity.showAvatarCluster = selectedStyle ? !!selectedStyle.showAvatarCluster : false;
-      activity.bgVideoUrl = selectedStyle ? (selectedStyle.bgVideoUrl || "") : "";
-      activity.largeCardBgImageUrl = selectedStyle ? (selectedStyle.largeCardBgImageUrl || "") : "";
-      activity.largeCardGlassImageUrl = selectedStyle ? (selectedStyle.largeCardGlassImageUrl || "") : "";
-      // 首页大小卡统一使用高清原图；小卡仅改变 aspectFill 裁切区域，不加载缩略图。
-      activity.smallCardBgImageUrl = selectedStyle ? (selectedStyle.largeCardBgImageUrl || "") : "";
-      if (activity.activityCover && activity.activityCover.imageUrl) {
-        activity.largeCardBgImageUrl = activity.activityCover.imageUrl;
-        activity.smallCardBgImageUrl = activity.activityCover.imageUrl;
-        activity.largeCardGlassImageUrl = activity.activityCover.largeCardGlassImageUrl || "";
-        activity.bgVideoUrl = "";
-        activity.showTypeBadge = false;
-        activity.showAvatarCluster = false;
-      }
-      const signupDeadline = activity.startTime;
-      activity.signupDeadline = signupDeadline;
-
-      // 计算开始时间与报名截止时间对应的周几标签，用于前端展示
+      const activity = enrichSingleActivity(rawItem, this.data.myUserId, now);
       activity.startWeekdayLabel = getWeekdayLabel(activity.startTime || activity.date);
-      activity.signupDeadlineWeekdayLabel = getWeekdayLabel(signupDeadline);
-
-      // 大卡顶部时间：MM-DD 周几 HH:mm-HH:mm
-      const formatRangeLabel = () => {
-        const start = activity.startTime;
-        if (!start) return "";
-        const s = String(start);
-        const datePart = s.split(" ")[0] || "";
-        const timePart = s.split(" ")[1] || "";
-        const mmdd = datePart ? datePart.slice(5) : "";
-        const weekday = activity.startWeekdayLabel || "";
-        const startHm = timePart ? timePart.slice(0, 5) : "";
-        const end = activity.endTime ? String(activity.endTime) : "";
-        const endHm = end.split(" ")[1] ? end.split(" ")[1].slice(0, 5) : "";
-        if (!mmdd || !startHm) return "";
-        return `${mmdd} ${weekday} ${startHm}${endHm ? `-${endHm}` : ""}`;
-      };
-      activity.cardDateTimeLabel = formatRangeLabel();
-      activity.smallCardTimeLabel = formatRangeLabel();
-
-      let hasSignedUp = false;
-      let hasCheckedIn = false;
-      let checkinCount = 0;
-      const rawParticipants = orderParticipantsForRecentAvatarSlice(activity.participants || []);
-      const avatarList = [];
-
-      rawParticipants.forEach(p => {
-        if (typeof p === "object" && p !== null) {
-          const uidStr = p.userId != null ? String(p.userId) : "";
-          const checkedIn = !!p.checkedInAt;
-          if (checkedIn) {
-            checkinCount += 1;
-          }
-          const avatarUrl = normalizeAvatarUrl(p.avatarUrl);
-          const hasCustomAvatar = avatarUrl !== DEFAULT_AVATAR;
-          avatarList.push({
-            url: avatarUrl,
-            isDefault: !hasCustomAvatar
-          });
-          if (myUserId && uidStr && uidStr === myUserId) {
-            hasSignedUp = true;
-            if (checkedIn) {
-              hasCheckedIn = true;
-            }
-          }
-        } else if (typeof p === "string") {
-          avatarList.push({
-            url: DEFAULT_AVATAR,
-            isDefault: true
-          });
-        }
-      });
-      activity.hasSignedUp = hasSignedUp;
-      activity.hasCheckedIn = hasCheckedIn;
-      activity.checkinCount = checkinCount;
-      activity.avatarList = avatarList;
-      // 卡片头像：按 created_at 升序生成 avatarList 后取末尾 3 人 = 最近报名；与大卡 TL>TR>Mid 索引一致
-      activity.cardAvatars = avatarList.slice(-3);
-
-      // 是否已满员（仅在设置了人数上限时生效）
-      const max = activity.maxParticipants;
-      const currentCount = rawParticipants.length;
-      activity.isFull = max != null && currentCount >= max;
-
-      // 报名是否已截止（受报名开关与截止时间共同控制）
-      let isSignupClosed = false;
-      if (activity.signupEnabled === false) {
-        isSignupClosed = true;
-      } else if (signupDeadline) {
-        const dl = new Date(activity.startTimeRaw || (signupDeadline.replace(" ", "T") + ":00"));
-        if (!isNaN(dl.getTime())) {
-          isSignupClosed = now.getTime() >= dl.getTime();
-        }
-      }
-      activity.isSignupClosed = isSignupClosed;
-
-      // 基于时间自动更新状态（已取消、已流局是终态，不参与自动推算）
-      const parseDateTime = (s) => new Date(s.replace(" ", "T") + ":00");
-      const start = activity.startTimeRaw ? new Date(activity.startTimeRaw) : parseDateTime(activity.startTime);
-      const end = parseDateTime(activity.endTime);
-      let autoStatus = activity.status || "未开始";
-      if (activity.status === "已取消" || activity.status === "已流局") {
-        autoStatus = activity.status;
-      } else if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
-        if (now.getTime() < start.getTime()) {
-          autoStatus = "未开始";
-        } else if (now.getTime() < end.getTime()) {
-          autoStatus = "进行中";
-        } else {
-          autoStatus = "已结束";
-        }
-      }
-
-      if (activity.status !== "已取消" && activity.status !== "已流局") {
-        activity.status = autoStatus;
-      }
-
+      const [date, startTime] = activity.startTime.split(" ");
+      const endTime = activity.endTime.split(" ")[1] || "";
+      const label = date && startTime
+        ? `${date.slice(5)} ${activity.startWeekdayLabel} ${startTime}${endTime ? `-${endTime}` : ""}`
+        : "";
+      activity.cardDateTimeLabel = label;
+      activity.smallCardTimeLabel = label;
       return activity;
     });
-
     return { list };
   },
 
@@ -1361,7 +1136,6 @@ Page({
       this.setData({
         groupedActivities: this._prepareColdStartCardPresentation(groupedActivities).groupedActivities,
         endedHasMore: endedStream.endedHasMore,
-        endedLoadingMore: false,
         focusedCardIndex,
         groupSectionVisibility: this._buildGroupSectionVisibility(groupedActivities),
         createdCardEntranceId: createdActivity._id,
@@ -1396,31 +1170,17 @@ Page({
 
   stopPropagation() {},
 
-  onAvatarError(e) {
-    const { index, activityId } = e.currentTarget.dataset;
-    const activityList = this._activityList || [];
-    const activity = activityList.find((item) => String(item._id) === String(activityId));
-    const cardIndex = Number(index);
-    if (!activity || !Number.isInteger(cardIndex) || cardIndex < 0 ||
-      !activity.cardAvatars?.[cardIndex]) return;
-    const replacement = { url: DEFAULT_AVATAR, isDefault: true };
-    const fullIndex = Math.max(0, (activity.avatarList || []).length - 3) + cardIndex;
-    if (activity.avatarList?.[fullIndex]) activity.avatarList[fullIndex] = replacement;
-    activity.cardAvatars[cardIndex] = replacement;
-    this._commitHomeList(activityList);
-  },
-
   onCardBgLoaded(e) {
     if (!this._isCurrentHomeImageEvent(e, "cover")) return;
     const meta = pickCardMediaMetaFromDataset(e && e.currentTarget && e.currentTarget.dataset, "image");
-    this._homePresentationDiagnostics?.media(meta.url, meta.mediaType === "video" ? "video" : "cover", "loaded", meta);
+    this._homePresentationDiagnostics?.media(meta.url, "cover", "loaded", meta);
     this._markHomeImageReady(meta.url);
   },
 
   onCardBgError(e) {
     if (!this._isCurrentHomeImageEvent(e, "cover")) return;
     const meta = pickCardMediaMetaFromDataset(e && e.currentTarget && e.currentTarget.dataset, "image");
-    this._homePresentationDiagnostics?.media(meta.url, meta.mediaType === "video" ? "video" : "cover", "error", meta);
+    this._homePresentationDiagnostics?.media(meta.url, "cover", "error", meta);
     this._homePresentationDiagnostics?.snapshot("native_media_error", {
       url: String(meta.url || "").split(/[?#]/)[0], summary: summarizeError(e && e.detail)
     });
@@ -1446,30 +1206,5 @@ Page({
     });
     this._recoverHomeImage(e);
     // Failure never releases a card: keep its own skeleton visible.
-  },
-
-  onCardVideoLoaded(e) {
-    const meta = pickCardMediaMetaFromDataset(e && e.currentTarget && e.currentTarget.dataset, "video");
-    this._homePresentationDiagnostics?.media(meta.url, meta.mediaType === "video" ? "video" : "cover", "loaded", meta);
-    this._markHomeImageReady(meta.url);
-  },
-
-  onCardVideoError(e) {
-    const meta = pickCardMediaMetaFromDataset(e && e.currentTarget && e.currentTarget.dataset, "video");
-    this._homePresentationDiagnostics?.media(meta.url, meta.mediaType === "video" ? "video" : "cover", "error", meta);
-    this._homePresentationDiagnostics?.snapshot("native_media_error", {
-      url: String(meta.url || "").split(/[?#]/)[0], summary: summarizeError(e && e.detail)
-    });
-  },
-
-  onCardVideoWaiting(e) {
-    const meta = pickCardMediaMetaFromDataset(e && e.currentTarget && e.currentTarget.dataset, "video");
-    this._homePresentationDiagnostics?.snapshot("video_waiting", {
-      group: meta.group,
-      cardSize: meta.cardSize,
-      activityId: meta.activityId,
-      activityName: meta.activityName,
-      url: meta.url
-    });
   }
 });

@@ -1,16 +1,8 @@
 const app = getApp();
 const activityService = require("../../services/activity");
-const { buildEditForm, validateActivityForm, buildActivityPayload } = require("../../utils/activityForm");
+const { buildEditForm, validateActivityForm, buildActivityPayload, normalizeSubItems } = require("../../utils/activityForm");
 const { adaptActivity } = require("../../utils/activityEnrich");
 const { getWindowInfoCompat, getBottomSafeAreaRpx } = require("../../utils/safeArea");
-
-function normalizeSubItems(items, quota) {
-  const limit = Math.max(3, Math.min(999, Number(quota) || 12));
-  return (Array.isArray(items) ? items : []).map(item => ({
-    ...item,
-    max_participants: Math.min(limit, Math.max(1, Number(item.max_participants) || 1))
-  }));
-}
 
 function formatDateLabel(dateValue, timeValue) {
   if (!dateValue || !timeValue) return "";
@@ -68,7 +60,13 @@ Page({
         this.applyActivity(activity);
       });
     }
-    this.loadActivity(activityId);
+  },
+
+  onReady() {
+    // The opener can prefill before the first render; fetch only for direct entry.
+    if (!this._unloaded && !this._prefilled && this.data.activityId) {
+      return this.loadActivity(this.data.activityId);
+    }
   },
 
   onUnload() {
@@ -258,14 +256,8 @@ Page({
     }
     this.setData({ saving: true });
     activityService.updateActivity(this.data.activityId, buildActivityPayload(this.data.form, { mode: "edit" }))
-      .then(activity => {
+      .then(() => {
         if (this._unloaded) return;
-        try {
-          const channel = this.getOpenerEventChannel && this.getOpenerEventChannel();
-          if (channel && typeof channel.emit === "function") channel.emit("activityUpdated", activity);
-        } catch (error) {
-          console.error("通知活动更新失败:", error);
-        }
         wx.showToast({ title: "保存成功", icon: "success" });
         wx.navigateBack();
       })
@@ -290,12 +282,6 @@ Page({
         activityService.cancelActivity(this.data.activityId)
           .then(() => {
             if (this._unloaded) return;
-            try {
-              const channel = this.getOpenerEventChannel && this.getOpenerEventChannel();
-              if (channel && typeof channel.emit === "function") channel.emit("activityUpdated");
-            } catch (error) {
-              console.error("通知活动取消失败:", error);
-            }
             wx.showToast({ title: "已取消活动", icon: "success" });
             wx.navigateBack();
           })

@@ -55,15 +55,6 @@ def _public_url(path: str, base_url: str = "") -> str:
 
 
 @lru_cache(maxsize=1)
-def _webp_manifest() -> dict[str, Any]:
-    # Opt-in only after the client preparation path supports WebP.
-    if os.environ.get("ACTIVITY_COVER_WEBP_ENABLED") != "1":
-        return {}
-    path = ASSET_ROOT / "webp-q90-manifest.json"
-    return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
-
-
-@lru_cache(maxsize=1)
 def _jpeg_manifest() -> dict[str, Any]:
     # Explicit rollout switch; preserve legacy URLs until client validation passes.
     if os.environ.get("ACTIVITY_COVER_JPEG_ENABLED") != "1":
@@ -73,7 +64,7 @@ def _jpeg_manifest() -> dict[str, Any]:
 
 
 def _delivery_url(path: str, base_url: str = "") -> str:
-    variant = _jpeg_manifest().get(path) or _webp_manifest().get(path)
+    variant = _jpeg_manifest().get(path)
     if variant:
         return _public_url(variant["path"], base_url) + "?v=" + variant["sha256"][:16]
     return _public_url(path, base_url)
@@ -94,7 +85,7 @@ def _public_artwork(artist: dict[str, Any], artwork: dict[str, Any], base_url: s
         "image_url": _delivery_url(artwork["image_path"], base_url),
         "large_card_glass_image_url": (
             _delivery_url(glass_path, base_url)
-            if glass_path in _jpeg_manifest() or glass_path in _webp_manifest()
+            if glass_path in _jpeg_manifest()
             else (
                 _public_url(glass_path, base_url)
                 if get_settings().activity_cover_cdn_base_url.strip() and glass_path

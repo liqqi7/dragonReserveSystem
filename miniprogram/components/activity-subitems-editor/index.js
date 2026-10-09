@@ -1,7 +1,13 @@
+const { getRpxPerPx } = require("../../utils/safeArea");
+const { clamp } = require("../../utils/number");
+const {
+  getSwipeSettledState: settleSwipe,
+  SWIPE_OPEN_THRESHOLD_RATIO,
+  SWIPE_CLOSE_THRESHOLD_RATIO
+} = require("../../utils/swipe");
+
 const ACTION_OFFSET_RPX = 138.46;
 const ACTION_AREA_WIDTH_RPX = 130.77;
-const SWIPE_OPEN_THRESHOLD_RATIO = 0.25;
-const SWIPE_CLOSE_THRESHOLD_RATIO = 0.15;
 const MIN_SUBITEM_COUNT = 2;
 const INSERT_ACTIVATION_DELAY_MS = 32;
 const INSERT_ANIMATION_MS = 240;
@@ -13,30 +19,8 @@ const ITEM_REMOVE_COLLAPSE_ANIMATION_MS = 240;
 const ITEM_REMOVE_ANIMATION_MS = ITEM_REMOVE_COLLAPSE_DELAY_MS + ITEM_REMOVE_COLLAPSE_ANIMATION_MS;
 const SWIPE_TRANSITION_RESTORE_DELAY_MS = 32;
 
-function getRpxPerPx() {
-  try {
-    const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
-    const width = Number(info && info.windowWidth);
-    return width > 0 ? 750 / width : 750 / 390;
-  } catch (error) {
-    return 750 / 390;
-  }
-}
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
 function getSwipeSettledState(startOffsetX, endOffsetX) {
-  const startedOpen = Number(startOffsetX) < 0;
-  const movedRightRpx = Number(endOffsetX) - Number(startOffsetX);
-  const actionOpen = startedOpen
-    ? movedRightRpx < ACTION_OFFSET_RPX * SWIPE_CLOSE_THRESHOLD_RATIO
-    : Math.abs(Number(endOffsetX) || 0) >= ACTION_OFFSET_RPX * SWIPE_OPEN_THRESHOLD_RATIO;
-  return {
-    offsetX: actionOpen ? -ACTION_OFFSET_RPX : 0,
-    actionOpen
-  };
+  return settleSwipe(startOffsetX, endOffsetX, ACTION_OFFSET_RPX);
 }
 
 function rowKey(item, index) {
@@ -105,11 +89,11 @@ Component({
         && list.length === Math.max(0, previous.length - 1);
       const next = list.map((item, index) => {
         const key = rowKey(item, index);
-        if (removalCommitted || !canRemoveSubitem(list)) return { key, offsetX: 0, actionOpen: false };
+        if (removalCommitted || !canRemoveSubitem(list)) return { key, offsetX: 0 };
         const prior = previous.find(row => row.key === key);
         return prior
           ? { ...prior, key }
-          : { key, offsetX: 0, actionOpen: false };
+          : { key, offsetX: 0 };
       });
       const patch = { rowStates: next };
       if (removalCommitted) {
@@ -145,7 +129,7 @@ Component({
         removingIndex: -1,
         removalPhase: "",
         suppressSwipeTransition: false,
-        rowStates: items.map((item, index) => ({ key: rowKey(item, index), offsetX: 0, actionOpen: false }))
+        rowStates: items.map((item, index) => ({ key: rowKey(item, index), offsetX: 0 }))
       });
     },
     detached() {
@@ -248,7 +232,7 @@ Component({
       const states = Array.isArray(this.data.rowStates) ? this.data.rowStates.slice() : [];
       while (states.length < items.length) {
         const index = states.length;
-        states.push({ key: rowKey(items[index], index), offsetX: 0, actionOpen: false });
+        states.push({ key: rowKey(items[index], index), offsetX: 0 });
       }
       return states.slice(0, items.length);
     },
@@ -288,7 +272,7 @@ Component({
       const next = clamp(gesture.startOffsetX + dx * getRpxPerPx(), -ACTION_OFFSET_RPX, 0);
       gesture.currentOffsetX = next;
       const states = this.getRowStates().map((row, index) => index === gesture.index
-        ? { ...row, offsetX: next, actionOpen: Math.abs(next) >= ACTION_OFFSET_RPX * SWIPE_OPEN_THRESHOLD_RATIO }
+        ? { ...row, offsetX: next }
         : row);
       this.setData({ rowStates: states });
     },
@@ -301,9 +285,9 @@ Component({
       const row = states[gesture.index];
       if (!row) return;
       const endOffsetX = Number.isFinite(gesture.currentOffsetX) ? gesture.currentOffsetX : (row.offsetX || 0);
-      const settled = getSwipeSettledState(gesture.startOffsetX, endOffsetX);
+      const { offsetX } = getSwipeSettledState(gesture.startOffsetX, endOffsetX);
       this.setData({
-        rowStates: states.map((item, index) => index === gesture.index ? { ...item, ...settled } : item)
+        rowStates: states.map((item, index) => index === gesture.index ? { ...item, offsetX } : item)
       });
     },
 
@@ -314,7 +298,7 @@ Component({
     closeOpenRows(exceptIndex) {
       const states = this.getRowStates().map((row, index) => index === exceptIndex
         ? row
-        : { ...row, offsetX: 0, actionOpen: false });
+        : { ...row, offsetX: 0 });
       this.setData({ rowStates: states });
     },
 
@@ -330,8 +314,7 @@ Component({
       this._gesture = null;
       const rowStates = this.getRowStates().map(row => ({
         ...row,
-        offsetX: 0,
-        actionOpen: false
+        offsetX: 0
       }));
       this.setData({
         rowStates,

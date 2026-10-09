@@ -125,7 +125,8 @@ Component({
 
       // mode 是 observer 监听的 property。这里若再次 setData({ mode })，
       // 微信运行时会反复触发 observer，导致选择器递归初始化并卡死模拟器。
-      const { mode, ...renderState } = pickerState;
+      const renderState = Object.assign({}, pickerState);
+      delete renderState.mode;
       const hourColumnIndex = renderState.showDate ? 3 : 0;
       const minuteColumnIndex = renderState.showDate ? 4 : 1;
       renderState.hourColumnIndex = hourColumnIndex;
@@ -146,43 +147,6 @@ Component({
       if (this._containerCloseNotified) return;
       this._containerCloseNotified = true;
       this.triggerEvent("close");
-    },
-
-    onPickerChange(e) {
-      const mode = this.data.mode;
-      const next = (e.detail && e.detail.value ? e.detail.value : []).slice();
-      if (mode === "time") {
-        this.setData({
-          pickerValue: next,
-          hourPickerIndex: next[0] || 0,
-          minutePickerIndex: next[1] || 0,
-          hourSwiperIndex: next[0] || 0,
-          minuteSwiperIndex: next[1] || 0
-        });
-        return;
-      }
-
-      const yearIndex = clamp(Number(next[0]) || 0, 0, this.data.years.length - 1);
-      const monthIndex = clamp(Number(next[1]) || 0, 0, 11);
-      const year = this.data.years[yearIndex];
-      const month = this.data.months[monthIndex];
-      const nextDays = range(1, daysInMonth(year, month));
-      const dayIndex = clamp(Number(next[2]) || 0, 0, nextDays.length - 1);
-      next[0] = yearIndex;
-      next[1] = monthIndex;
-      next[2] = dayIndex;
-      this.setData({
-        days: nextDays,
-        dayLabels: buildDayLabels(year, month),
-        pickerValue: next,
-        yearSwiperIndex: next[0] || 0,
-        monthSwiperIndex: next[1] || 0,
-        daySwiperIndex: next[2] || 0,
-        hourPickerIndex: next[3] || 0,
-        minutePickerIndex: next[4] || 0,
-        hourSwiperIndex: next[3] || 0,
-        minuteSwiperIndex: next[4] || 0
-      });
     },
 
     onFlatColumnChange(e) {

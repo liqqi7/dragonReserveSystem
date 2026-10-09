@@ -38,18 +38,17 @@ def test_status_cas_updates_a_matching_snapshot(db_session, sample_activity):
     assert sample_activity.status == "已结束"
 
 
-@pytest.mark.parametrize("version", ["v1", "v2"])
 @pytest.mark.parametrize("detail", [False, True])
 def test_api_exposes_participant_locations_to_all_viewers(client, db_session, signed_up_activity,
                                                   user_headers, second_user_headers, admin_headers,
-                                                  version, detail):
+                                                  detail):
     participant = signed_up_activity.participants[0]
     participant.checkin_lat = 31.234
     participant.checkin_lng = 121.456
     participant.checkin_location_name = "私人位置"
     participant.checkin_address = "私人地址"
     db_session.commit()
-    path = f"/api/{version}/activities" + (f"/{signed_up_activity.id}" if detail else "")
+    path = f"/api/v2/activities" + (f"/{signed_up_activity.id}" if detail else "")
     for headers in (None, second_user_headers, user_headers, admin_headers):
         response = client.get(path, headers=headers)
         assert response.status_code == 200, response.text
@@ -71,10 +70,9 @@ def test_non_admin_creator_can_see_participant_locations(client, db_session, sam
                                        display_nickname=second_user.nickname, display_avatar_url="",
                                        checkin_lat=31.2, checkin_address="管理可见"))
     db_session.commit()
-    for version in ("v1", "v2"):
-        response = client.get(f"/api/{version}/activities/{sample_activity.id}", headers=user_headers)
-        assert response.status_code == 200, response.text
-        assert response.json()["participants"][0]["checkin_address"] == "管理可见"
+    response = client.get(f"/api/v2/activities/{sample_activity.id}", headers=user_headers)
+    assert response.status_code == 200, response.text
+    assert response.json()["participants"][0]["checkin_address"] == "管理可见"
 
 
 @pytest.mark.parametrize("status,offset,participants,expected", [

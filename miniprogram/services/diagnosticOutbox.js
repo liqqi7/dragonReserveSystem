@@ -1,5 +1,7 @@
 // Best-effort, at-least-once diagnostic delivery. IDs remain stable across retries.
 // Never persist access tokens; isolate records by API endpoint and account.
+const { isNormalHomeDiagnostic } = require('./diagnosticPolicy');
+
 const STORAGE_KEY = 'client-diagnostic-outbox-v1';
 const MAX_ENTRIES = 64;
 const ANONYMOUS = '__anonymous__';
@@ -136,10 +138,7 @@ function createDiagnosticOutbox({ wxApi, getApiBaseUrl, createId, onFailure = ()
       queueDirty = true;
       queue.push({ id, owner: current.owner, endpoint: current.endpoint, createdAt: now(), body: clean });
       // Only ordinary success logs may wait briefly. Failures remain durable immediately.
-      const normal = body.event === 'home_presentation_snapshot' && body.payload?.reason === 'all_ready_state_committed' ||
-        body.event === 'home_media_attempt' && body.payload?.stage === 'attempt_succeeded' &&
-        !body.payload?.slowAttempt && !/failed|timeout|invalid|error/.test(Object.keys(body.payload?.evidence || {}).join(' '));
-      if (normal) {
+      if (isNormalHomeDiagnostic(body.event, body.payload)) {
         prune();
         if (persistTimer === null) persistTimer = setTimer(() => { persistTimer = null; persist(); }, 200);
       } else persist();

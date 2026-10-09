@@ -4,17 +4,18 @@ const assert = require("node:assert/strict");
 function definition(file, registration) {
   const previous = global[registration];
   let result;
+  let exports;
   global[registration] = value => { result = value; };
   const modulePath = require.resolve(file);
   try {
     delete require.cache[modulePath];
-    require(modulePath);
+    exports = require(modulePath);
   } finally {
     delete require.cache[modulePath];
     if (previous === undefined) delete global[registration];
     else global[registration] = previous;
   }
-  return result;
+  return { config: result, exports };
 }
 
 function instance(def, data, properties = {}) {
@@ -35,13 +36,13 @@ function instance(def, data, properties = {}) {
   return object;
 }
 
-const picker = definition("../components/activity-cover-picker-sheet/index.js", "Component");
-const preview = definition("../pages/activity_cover_preview/activity_cover_preview.js", "Page");
+const { config: picker, exports: { normalizeCatalog } } = definition("../components/activity-cover-picker-sheet/index.js", "Component");
+const { config: preview } = definition("../pages/activity_cover_preview/activity_cover_preview.js", "Page");
 const url = name => `https://example.com/${name}.jpg`;
-const artist = {
-  avatarUrl: url("avatar"), displayAvatarUrl: "",
-  artworks: [0, 1, 2].map(index => ({ id: String(index), imageUrl: url(index), displayUrl: "" }))
-};
+const [artist] = normalizeCatalog([{
+  slug: "artist", avatar_url: url("avatar"),
+  artworks: [0, 1, 2].map(index => ({ id: String(index), thumbnail_url: url(`thumb-${index}`), image_url: url(index), categories: ["派对"] }))
+}]);
 
 test("picker gives visible artwork precedence and pauses when hidden", () => {
   const calls = [];
@@ -54,8 +55,8 @@ test("picker gives visible artwork precedence and pauses when hidden", () => {
     resume: () => calls.push("resume")
   };
   sheet._prepareCoverImages();
-  assert.deepEqual(calls[0].urls, [url("avatar"), url("1"), url("0"), url("2")]);
-  assert.deepEqual(calls[0].options.foregroundUrls, [url("avatar"), url("1")]);
+  assert.deepEqual(calls[0].urls, [url("1"), url("0"), url("2")]);
+  assert.deepEqual(calls[0].options.foregroundUrls, [url("1")]);
   assert.equal(calls[1], "resume");
   picker.pageLifetimes.hide.call(sheet);
   assert.equal(calls.at(-1), "pause");

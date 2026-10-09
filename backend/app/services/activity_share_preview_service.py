@@ -3,7 +3,6 @@ from __future__ import annotations
 """Generate immutable share cards after an activity write is committed."""
 
 from dataclasses import dataclass
-from datetime import datetime
 from functools import lru_cache
 from hashlib import sha256
 from io import BytesIO
@@ -12,17 +11,18 @@ import os
 from pathlib import Path
 import re
 import tempfile
-from zoneinfo import ZoneInfo
 
 import cairosvg
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
+from app.utils.media import resolve_media_root
 from app.core.config import get_settings
 from app.core.exceptions import SharePreviewGenerationError
 from app.models import Activity
 from app.services.activity_cover_service import get_activity_cover_source_path
+from app.utils.app_time import to_app_naive
 
 
 logger = logging.getLogger(__name__)
@@ -36,12 +36,13 @@ INFO_PADDING_X = 24
 ICON_SIZE = 22
 ICON_GAP = 10
 SECTION_GAP = 24
-MEDIA_ROOT = Path(settings.media_root).resolve()
+MEDIA_ROOT = resolve_media_root()
 SHARE_PREVIEW_DIR = MEDIA_ROOT / "share-previews"
 ASSET_ROOT = Path(__file__).resolve().parents[1] / "assets"
 FONT_PATH = ASSET_ROOT / "fonts" / "NotoSansCJK-Regular.ttc"
 SHARE_ICON_ROOT = ASSET_ROOT / "share-icons"
-APP_TIME_ZONE = ZoneInfo("Asia/Shanghai")
+# Serving accepts only the 24-digit hash produced by _source_and_name.
+# The offline prune script deliberately scans a broader historical name range.
 _FILE_NAME = re.compile(r"activity-(\d+)-[0-9a-f]{24}\.png\Z")
 
 
@@ -106,10 +107,6 @@ def refresh_activity_share_preview_in_background(bind, activity_id: int) -> None
         logger.exception("share_preview_refresh_failed activity_id=%s", activity_id)
 
 
-def _wall_time(value: datetime) -> datetime:
-    return value.astimezone(APP_TIME_ZONE).replace(tzinfo=None) if value.tzinfo else value
-
-
 def _source_and_name(activity: Activity) -> tuple[Path, str]:
     source = get_activity_cover_source_path(activity.activity_cover_id)
     if source is None:
@@ -121,7 +118,7 @@ def _source_and_name(activity: Activity) -> tuple[Path, str]:
         str(activity.activity_cover_id),
         str(source), str(stat.st_size), str(stat.st_mtime_ns),
         str(activity.location_name or ""), str(activity.location_address or ""),
-        _wall_time(activity.start_time).isoformat(), _wall_time(activity.end_time).isoformat(),
+        to_app_naive(activity.start_time).isoformat(), to_app_naive(activity.end_time).isoformat(),
     ))
     return source, f"activity-{activity.id}-{sha256(raw.encode('utf-8')).hexdigest()[:24]}.png"
 
@@ -217,7 +214,7 @@ def _icon(name: str) -> Image.Image:
 
 
 def _time_text(activity: Activity) -> str:
-    start, end = _wall_time(activity.start_time), _wall_time(activity.end_time)
+    start, end = to_app_naive(activity.start_time), to_app_naive(activity.end_time)
     if start.date() == end.date():
         suffix = end.strftime("%H:%M")
     elif start.year == end.year:

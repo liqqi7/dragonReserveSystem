@@ -1,91 +1,39 @@
 const app = getApp();
 const activityService = require("../../services/activity");
-const { buildCreateForm, buildEditForm, validateActivityForm, buildActivityPayload } = require("../../utils/activityForm");
-const { adaptActivity } = require("../../utils/activityEnrich");
+const { buildCreateForm, validateActivityForm, buildActivityPayload, normalizeSubItems } = require("../../utils/activityForm");
 const { getWindowInfoCompat, getBottomSafeAreaRpx } = require("../../utils/safeArea");
 const { createHomeCardMediaLoader } = require("../../utils/homeCardMediaLoader");
 const { prepareHomeImage, invalidateHomeImageCache } = require("../../utils/homeImagePreparation");
 const CATEGORIES = ["派对", "运动", "外出", "游戏", "电影", "生日", "吃饭", "杂项"];
 
-function normalizeSubItems(items, quota) {
-  const limit = Math.max(1, Math.min(999, Number(quota) || 12));
-  return (Array.isArray(items) ? items : []).map(item => ({
-    ...item,
-    max_participants: Math.min(limit, Math.max(1, Number(item.max_participants) || 1))
-  }));
-}
 const STEP_TRANSITION_DURATION = 320;
 const SUBITEMS_LAYOUT_ANIMATION_MS = 360;
 Page({
   data: {
-    step: 1, form: {}, covers: [], columns: [], galleryPages: [], galleryCurrent: 0, categories: CATEGORIES, category: CATEGORIES[0],
-    mode: "create", isEdit: false, editingActivityId: "", loadingEditActivity: false, editLoadError: "", participantCount: 0, minParticipants: 3, locationDisabled: false,
+    step: 1, form: {}, covers: [], galleryPages: [], galleryCurrent: 0, categories: CATEGORIES, category: CATEGORIES[0],
     loadingCovers: true, coverError: "", coverImageStates: {}, coverImagePaths: {}, coverSkeletonShimmerRunning: false, submitting: false, pickerVisible: false,
     pickerTarget: "start", pickerValue: "", statusBarHeight: 20, footerSafeAreaRpx: 7.69, startDateDisplay: "", endDateDisplay: "",
     leavingStep: 0, leavingScrollTop: 0, stepTransitioning: false, stepTransitionDirection: "forward", remarkComposing: false, subItemsClosing: false,
     titles: ["选择活动封面", "活动基本信息", "活动细节安排"],
     subtitles: ["都是成年人了，请减少二次元图片的使用", "取个正经名字吧，求求你了", "工作日出去玩的话别让我知道"]
   },
-  onLoad(options = {}) {
+  onLoad() {
     this._unloaded = false;
     const token = app.globalData.accessToken || wx.getStorageSync("accessToken");
     if (!app.globalData.isAuthenticated || !token || !["user", "admin"].includes(app.globalData.userRole)) {
       wx.navigateBack(); return;
     }
     const info = getWindowInfoCompat();
-    const editId = String(options.mode === "edit" || options.edit === "1" ? (options.id || options.activityId || "") : "").trim();
-    const isEdit = Boolean(editId);
-    const initialForm = isEdit
-      ? buildCreateForm()
-      : { ...buildCreateForm(), startDate: "", startTime: "", endDate: "", endTime: "", maxParticipants: 16 };
+    const initialForm = { ...buildCreateForm(), startDate: "", startTime: "", endDate: "", endTime: "", maxParticipants: 16 };
     const footerSafeAreaRpx = Math.round((getBottomSafeAreaRpx() + 7.69) * 100) / 100;
     this.setData({
       form: initialForm,
-      mode: isEdit ? "edit" : "create",
-      isEdit,
-      editingActivityId: editId,
-      loadingEditActivity: isEdit,
-      editLoadError: "",
       startDateDisplay: String(initialForm.startDate || "").replace(/-/g, "/"),
       endDateDisplay: String(initialForm.endDate || "").replace(/-/g, "/"),
       statusBarHeight: info.statusBarHeight || 20,
       footerSafeAreaRpx
     });
     this.loadCovers();
-    if (isEdit) this.loadActivityForEdit(editId);
-  },
-  loadActivityForEdit(activityId) {
-    return activityService.getActivity(activityId).then(rawActivity => {
-      if (this._unloaded) return;
-      const activity = rawActivity && rawActivity._id ? rawActivity : adaptActivity(rawActivity || {});
-      const participantCount = Array.isArray(activity.participants)
-        ? activity.participants.length
-        : Math.max(0, Number(activity.current_participants) || 0);
-      const form = buildEditForm(activity);
-      const minParticipants = Math.max(3, participantCount);
-      if (form.limitEnabled) form.maxParticipants = Math.max(minParticipants, Number(form.maxParticipants) || minParticipants);
-      const selectedCover = (this.data.covers || []).find(item => String(item.id) === String(form.activityCoverId));
-      const coverCategory = selectedCover && selectedCover.categories && selectedCover.categories.length
-        ? selectedCover.categories[0]
-        : this.data.category;
-      this.setData({
-        form,
-        participantCount,
-        minParticipants,
-        locationDisabled: (activity.checkinCount || 0) > 0,
-        loadingEditActivity: false,
-        category: coverCategory,
-        startDateDisplay: String(form.startDate || "").replace(/-/g, "/"),
-        endDateDisplay: String(form.endDate || "").replace(/-/g, "/")
-      }, () => {
-        if (selectedCover) this.filterCovers();
-      });
-    }).catch(error => {
-      if (this._unloaded) return;
-      console.error(error);
-      this.setData({ loadingEditActivity: false, editLoadError: "活动信息加载失败，请返回重试" });
-      wx.showToast({ title: "活动信息加载失败", icon: "none" });
-    });
   },
   onReady() {
     this.configureCategoryScroller();
@@ -124,17 +72,11 @@ Page({
         // Use the categories assigned in the cover catalog.
         categories: Array.isArray(item.categories) ? item.categories : []
       })));
-      const selectedCover = this.data.isEdit && this.data.form.activityCoverId
-        ? covers.find(item => String(item.id) === String(this.data.form.activityCoverId))
-        : null;
-      const category = selectedCover && selectedCover.categories.length
-        ? selectedCover.categories[0]
-        : this.data.category;
       const coverImageStates = covers.reduce((states, item) => {
         states[item.id] = this.data.coverImageStates[item.id] || "loading";
         return states;
       }, {});
-      this.setData({ covers, coverImageStates, loadingCovers: false, category });
+      this.setData({ covers, coverImageStates, loadingCovers: false });
       this.filterCovers();
     }).catch(() => {
       if (!this._unloaded) this.setData({ loadingCovers: false, coverError: "封面加载失败，点击重试" });
@@ -159,7 +101,6 @@ Page({
       });
     }
     this.setData({
-      columns,
       galleryPages,
       galleryCurrent: 0
     }, () => {
@@ -286,10 +227,6 @@ Page({
     this.setData({ remarkComposing: false, "form.remark": value });
   },
   chooseLocation() {
-    if (this.data.isEdit && this.data.locationDisabled) {
-      wx.showToast({ title: "已有用户完成签到，不可修改活动地点", icon: "none" });
-      return;
-    }
     wx.chooseLocation({ success: location => {
       if (this._unloaded) return;
       this.setData({
@@ -302,7 +239,7 @@ Page({
     } });
   },
   stepCapacity(e) {
-    const nextMax = Math.max(this.data.minParticipants || 3, Math.min(999, Number(this.data.form.maxParticipants) + Number(e.currentTarget.dataset.delta)));
+    const nextMax = Math.max(3, Math.min(999, Number(this.data.form.maxParticipants) + Number(e.currentTarget.dataset.delta)));
     this.setData({
       "form.maxParticipants": nextMax,
       "form.subItems": normalizeSubItems(this.data.form.subItems, nextMax)
@@ -337,10 +274,6 @@ Page({
   },
   backHome() {
     if (this.data.submitting) return;
-    if (this.data.isEdit) {
-      wx.navigateBack();
-      return;
-    }
     wx.switchTab({ url: "/pages/activity_list/activity_list" });
   },
   onStepScroll(e) {
@@ -386,18 +319,15 @@ Page({
       }
       this.goToStep(3); return;
     }
-    const mode = this.data.isEdit ? "edit" : "create";
-    const result = validateActivityForm(form, { mode, participantCount: this.data.participantCount });
+    const result = validateActivityForm(form, { mode: "create" });
     if (!result.ok) { wx.showToast({ title: result.message, icon: "none" }); return; }
     this.setData({ submitting: true });
     // Let the service finish cache invalidation even if the user has left.
-    const request = this.data.isEdit
-      ? activityService.updateActivity(this.data.editingActivityId, buildActivityPayload(form, { mode }))
-      : activityService.createActivity(buildActivityPayload(form, { mode }));
+    const request = activityService.createActivity(buildActivityPayload(form, { mode: "create" }));
     return request.then(activity => {
       if (this._unloaded) return;
       this._submissionSucceeded = true;
-      this._submissionResult = { success: true, activity, mode };
+      this._submissionResult = { success: true, activity };
       this.finishSubmission();
     }, error => {
       if (this._unloaded) return;
@@ -422,7 +352,7 @@ Page({
     try {
       const channel = typeof this.getOpenerEventChannel === "function" ? this.getOpenerEventChannel() : null;
       if (channel && typeof channel.emit === "function") {
-        channel.emit(result.mode === "edit" ? "activityUpdated" : "activityCreated", result.activity);
+        channel.emit("activityCreated", result.activity);
       }
     } catch (error) {
       console.error("通知活动发布结果失败:", error);
@@ -430,7 +360,7 @@ Page({
     // An opener listener can itself navigate, so check again before popping.
     const currentPages = getCurrentPages();
     if (this._unloaded || this._pageVisible === false || currentPages[currentPages.length - 1] !== this) return;
-    wx.showToast({ title: result.mode === "edit" ? "保存成功" : "发布成功", icon: "success" });
+    wx.showToast({ title: "发布成功", icon: "success" });
     wx.navigateBack();
   }
 });

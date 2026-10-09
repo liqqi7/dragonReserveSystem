@@ -1,6 +1,5 @@
 """User routes."""
 
-from pathlib import Path
 from collections import defaultdict, deque
 from threading import Lock
 from time import monotonic
@@ -10,6 +9,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.utils.media import resolve_media_root
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.exceptions import ValidationAppError
@@ -93,7 +93,7 @@ async def upload_my_avatar(
         if len(content) > MAX_AVATAR_BYTES:
             raise ValidationAppError("Avatar must be 2 MB or smaller")
 
-        avatars_dir = Path(settings.media_root).resolve() / "avatars"
+        avatars_dir = resolve_media_root() / "avatars"
         avatars_dir.mkdir(parents=True, exist_ok=True)
 
         extension = CONTENT_TYPE_EXTENSIONS[file.content_type]

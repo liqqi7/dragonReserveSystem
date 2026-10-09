@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const { readWxss, readRules } = require("./helpers/readWxss");
 
 const detail = require("../utils/activityDetail");
 const { enrichSingleActivity } = require("../utils/activityEnrich");
@@ -10,7 +11,7 @@ const activityServiceSource = fs.readFileSync(path.join(__dirname, "../services/
 const pageDir = path.join(__dirname, "../pages/activity_detail");
 const js = fs.readFileSync(path.join(pageDir, "activity_detail.js"), "utf8");
 const wxml = fs.readFileSync(path.join(pageDir, "activity_detail.wxml"), "utf8");
-const wxss = fs.readFileSync(path.join(pageDir, "activity_detail.wxss"), "utf8");
+const wxss = readWxss(path.join(pageDir, "activity_detail.wxss"));
 const pageJson = JSON.parse(fs.readFileSync(path.join(pageDir, "activity_detail.json"), "utf8"));
 
 test("activity detail loading state matches the prototype skeleton and reuses the cover shimmer", () => {
@@ -34,16 +35,17 @@ test("activity detail loading state matches the prototype skeleton and reuses th
   assert.match(wxss, /\.detail-skeleton-weather-card\s*\{\s*height:\s*192\.31rpx;/s);
   assert.match(wxss, /\.detail-skeleton-block\s*\{[^}]*position:\s*relative;[^}]*overflow:\s*hidden;[^}]*background-color:\s*#eaecef;/s);
   assert.doesNotMatch(wxss, /\.detail-skeleton-block\s*\{[^}]*animation-/s);
-  const shimmerRule = wxss.match(/\.detail-skeleton-shimmer\s*\{([^}]*)\}/s)?.[1] || "";
+  const shimmerRule = Object.entries(readRules(path.join(pageDir, "activity_detail.wxss"))[".detail-skeleton-shimmer"])
+    .map(([key, value]) => `${key}: ${value};`).join("\n");
   assert.match(shimmerRule, /position:\s*absolute;/);
   assert.match(shimmerRule, /width:\s*72%;/);
   assert.match(shimmerRule, /rgba\(248, 249, 251, 0\.52\) 42%/);
   assert.match(shimmerRule, /rgba\(248, 249, 251, 0\.52\) 58%/);
   assert.match(shimmerRule, /transform:\s*translateX\(-100%\);/);
-  assert.match(shimmerRule, /animation-name:\s*detail-skeleton-shimmer;/);
+  assert.match(shimmerRule, /animation-name:\s*shared-skeleton-shimmer;/);
   assert.match(shimmerRule, /animation-duration:\s*1800ms;/);
   assert.match(shimmerRule, /animation-timing-function:\s*linear;/);
-  assert.match(wxss, /@keyframes detail-skeleton-shimmer\s*\{\s*from\s*\{\s*transform:\s*translateX\(-100%\);\s*\}\s*to\s*\{\s*transform:\s*translateX\(150%\);\s*\}\s*\}/s);
+  assert.match(wxss, /@keyframes shared-skeleton-shimmer\s*\{\s*from\s*\{\s*transform:\s*translateX\(-100%\);\s*\}\s*to\s*\{\s*transform:\s*translateX\(150%\);\s*\}\s*\}/s);
 });
 
 test("activity detail skeleton keeps its bottom actions visible and crossfades into content", () => {
@@ -279,7 +281,7 @@ test("primary action keeps signup, cancel, checkin and disabled business states"
   assert.deepEqual(detail.resolvePrimaryAction({ status: "未开始", hasSignedUp: false }), {
     label: "立即报名", disabled: false, action: "signup"
   });
-  assert.deepEqual(detail.resolvePrimaryAction({ status: "未开始", hasSignedUp: true, signupDeadlinePassed: false }), {
+  assert.deepEqual(detail.resolvePrimaryAction({ status: "未开始", hasSignedUp: true, activityStarted: false }), {
     label: "取消报名", disabled: false, action: "cancel"
   });
   assert.deepEqual(detail.resolvePrimaryAction({ status: "进行中", hasSignedUp: true }), {
@@ -351,7 +353,7 @@ test("detail exposes checkin only after the activity enters the ongoing state", 
 test("editing opens the dedicated edit page", () => {
   assert.equal(pageJson.usingComponents["date-time-picker-sheet"], undefined);
   assert.match(js, /wx\.navigateTo\(\{[\s\S]*url: `\/pages\/activity_edit\/activity_edit\?id=\$\{activityId\}`/);
-  assert.match(js, /activityUpdated:\s*\(\) => this\.refreshDetail\(\{ silent: true \}\)/);
+  assert.doesNotMatch(js, /activityUpdated:/);
   assert.equal(pageJson.usingComponents["activity-form-sheet"], undefined);
   assert.doesNotMatch(wxml, /<activity-form-sheet/);
   const editPageSource = fs.readFileSync(path.join(__dirname, "../pages/activity_edit/activity_edit.js"), "utf8");
@@ -422,7 +424,6 @@ test("signup status remains global after the current user has signed up", () => 
     status: "未开始",
     start_time: "2026-10-18T10:00:00",
     end_time: "2026-10-18T12:00:00",
-    signup_deadline: "2026-10-17T23:00:00",
     signup_enabled: true,
     max_participants: null,
     activity_type: "other",
@@ -434,7 +435,7 @@ test("signup status remains global after the current user has signed up", () => 
       checked_in_at: null,
       created_at: "2026-09-01T08:00:00"
     }]
-  }, [], "7", "当前用户", new Date("2026-09-02T10:00:00"));
+  }, "7", new Date("2026-09-02T10:00:00"));
 
   assert.equal(activity.hasSignedUp, true);
   assert.equal(activity.detailStatusTag, "报名中");
@@ -456,7 +457,7 @@ test("cover-based activities retain the server-rendered large-card glass image",
       image_url: "https://example.test/lam-001.jpg",
       large_card_glass_image_url: "https://example.test/lam-001-glass.png"
     }
-  }, [], "", "", new Date("2026-09-06T10:00:00"));
+  }, "", new Date("2026-09-06T10:00:00"));
 
   assert.equal(activity.largeCardBgImageUrl, "https://example.test/lam-001.jpg");
   assert.equal(activity.largeCardGlassImageUrl, "https://example.test/lam-001-glass.png");
@@ -469,12 +470,11 @@ test("flow-cancelled activity remains a terminal state after frontend enrichment
     status: "已流局",
     start_time: "2026-10-18T10:00:00",
     end_time: "2026-10-18T12:00:00",
-    signup_deadline: "2026-10-17T23:00:00",
     signup_enabled: true,
     max_participants: 12,
     activity_type: "other",
     participants: []
-  }, [], "", "", new Date("2026-09-02T10:00:00"));
+  }, "", new Date("2026-09-02T10:00:00"));
 
   assert.equal(activity.status, "已流局");
   assert.equal(activity.detailStatusTag, "已流局");
@@ -505,7 +505,7 @@ test("activity detail locks the viewport instead of exposing page overscroll", (
   assert.match(wxml, /<scroll-view[^>]*\s+class="main-scroll"[\s\S]*?height: calc\(100vh - \{\{bottomBarHeightRpx\}\}rpx\)/);
   assert.doesNotMatch(wxml, /scroll-into-view="{{detailAnchor}}"/);
   assert.doesNotMatch(wxml, /class="scroll-bottom-spacer"/);
-  assert.match(wxss, /^page\s*\{[^}]*height:\s*100%;[^}]*overflow:\s*hidden;/s);
+  assert.match(wxss, /(?:^|\n)page\s*\{[^}]*height:\s*100%;[^}]*overflow:\s*hidden;/s);
   assert.match(wxss, /\.page-wrap\s*\{[^}]*height:\s*100vh;[^}]*overflow:\s*hidden;/s);
   assert.match(wxss, /\.main-scroll\s*\{[^}]*overflow:\s*hidden;[^}]*display:\s*flex;[^}]*flex-direction:\s*column;/s);
   assert.match(wxss, /\.immersive-hero\s*\{[^}]*height:\s*750rpx;[^}]*flex:\s*1 1 750rpx;[^}]*min-height:\s*0;/s);
@@ -587,11 +587,10 @@ test("activity detail uses the shared rpx safe-area resolver", () => {
   assert.doesNotMatch(wxml, /safeBottom\}\}px/);
 });
 
-test("detail hero avatar composition scales the home large-card layout by width", () => {
-  assert.match(wxss, /\.hero-avatar-tl\s*\{[^}]*top:\s*43\.48rpx;[^}]*left:\s*43\.48rpx;[^}]*width:\s*448\.37rpx;[^}]*height:\s*448\.37rpx;/s);
-  assert.match(wxss, /\.hero-avatar-tr\s*\{[^}]*top:\s*364\.13rpx;[^}]*left:\s*451\.09rpx;[^}]*width:\s*255\.43rpx;[^}]*height:\s*255\.43rpx;/s);
-  assert.match(wxss, /\.hero-avatar-mid\s*\{[^}]*top:\s*505\.43rpx;[^}]*left:\s*233\.70rpx;[^}]*width:\s*222\.83rpx;[^}]*height:\s*222\.83rpx;/s);
-  assert.doesNotMatch(wxss, /\.hero-avatar-tr\s*\{[^}]*right:/s);
+test("detail hero renders the current cover without retired video or avatar overlays", () => {
+  assert.match(wxml, /wx:if="\{\{activity.largeCardBgImageUrl\}\}"[\s\S]*?class="hero-img"/);
+  assert.doesNotMatch(wxml, /bgVideoUrl|showAvatarCluster|heroCardAvatars|<video/);
+  assert.doesNotMatch(wxss, /\.hero-avatar|\.hero-video|\.hero-cluster-avatar/);
 });
 
 test("prototype key sizes, colors, typography and action layout do not regress", () => {
@@ -747,11 +746,11 @@ test("signup ownership is matched by user id, never by nickname", () => {
     signup_enabled: true,
     participants: [{ user_id: 11, display_nickname: "同名", created_at: "2026-10-01T10:00:00" }]
   };
-  const otherUser = enrichSingleActivity(raw, [], "10", "同名", new Date("2026-10-01T11:00:00"));
+  const otherUser = enrichSingleActivity(raw, "10", new Date("2026-10-01T11:00:00"));
   assert.equal(otherUser.hasSignedUp, false);
-  const sameUser = enrichSingleActivity({ ...raw, participants: [{ ...raw.participants[0], user_id: 10 }] }, [], "10", "同名", new Date("2026-10-01T11:00:00"));
+  const sameUser = enrichSingleActivity({ ...raw, participants: [{ ...raw.participants[0], user_id: 10 }] }, "10", new Date("2026-10-01T11:00:00"));
   assert.equal(sameUser.hasSignedUp, true);
-  const noUserId = enrichSingleActivity(raw, [], "", "同名", new Date("2026-10-01T11:00:00"));
+  const noUserId = enrichSingleActivity(raw, "", new Date("2026-10-01T11:00:00"));
   assert.equal(noUserId.hasSignedUp, false);
 });
 

@@ -32,19 +32,19 @@ App({
 
     isAuthenticated: false,
 
-    userInfo: null,
-
     accessToken: "",
 
     userId: "",
-
-    userDocId: "",
 
     userProfile: null,
 
     sessionValidated: false,
 
     _sessionValidationPromise: null,
+
+    _sessionLoginPromise: null,
+
+    _sessionGeneration: 0,
 
     _sessionExpiredPromptShown: false
 
@@ -120,12 +120,6 @@ App({
 
         this.globalData.isAuthenticated = !!isAuthenticated;
 
-        this.globalData.userInfo = {
-
-          role: userRole
-
-        };
-
       }
 
     } catch (e) {
@@ -139,6 +133,8 @@ App({
 
 
   applyCurrentUser(user, accessToken) {
+
+    this.invalidateSessionValidation();
 
     const role = user.role || "guest";
 
@@ -158,13 +154,9 @@ App({
 
     this.globalData.userId = String(user.id || "");
 
-    this.globalData.userDocId = "";
-
     this.globalData.userRole = role;
 
     this.globalData.isAuthenticated = isAuthenticated;
-
-    this.globalData.userInfo = { role };
 
     this.globalData.userProfile = {
 
@@ -202,28 +194,12 @@ App({
 
 
 
-  setAuthState(role, isAuthenticated) {
-
-    this.globalData.userRole = role;
-
-    this.globalData.isAuthenticated = isAuthenticated;
-
-    this.globalData.userInfo = { role };
-
-
-
-    try {
-
-      storeIfChanged("userRole", role);
-
-      storeIfChanged("isAuthenticated", isAuthenticated);
-
-    } catch (e) {
-
-      console.error("保存登录状态失败", e);
-
-    }
-
+  invalidateSessionValidation() {
+    this.globalData._sessionGeneration += 1;
+    this.globalData._sessionValidationPromise = null;
+    this.globalData._sessionLoginPromise = null;
+    this.globalData.sessionValidated = false;
+    return this.globalData._sessionGeneration;
   },
 
 
@@ -233,17 +209,15 @@ App({
 
   logout() {
 
+    this.invalidateSessionValidation();
+
     this.globalData.userRole = null;
 
     this.globalData.isAuthenticated = false;
 
-    this.globalData.userInfo = null;
-
     this.globalData.accessToken = "";
 
     this.globalData.userId = "";
-
-    this.globalData.userDocId = "";
 
     this.globalData.userProfile = null;
 
@@ -305,9 +279,11 @@ App({
   showSessionExpiredPrompt() {
     if (this.globalData._sessionExpiredPromptShown) return;
     this.globalData._sessionExpiredPromptShown = true;
+    const generation = this.globalData._sessionGeneration;
 
     let attempts = 0;
     const openPrompt = () => {
+      if (generation !== this.globalData._sessionGeneration) return;
       const pages = typeof getCurrentPages === "function" ? getCurrentPages() : [];
       const currentPage = pages.length ? pages[pages.length - 1] : null;
       const dialog = currentPage && typeof currentPage.selectComponent === "function"
@@ -328,13 +304,15 @@ App({
         setTimeout(openPrompt, 100);
         return;
       }
-      // 若页面尚未挂载或旧版页面没有组件，仍保留可操作的原生兜底。
+      // 页面组件尚未挂载时，保留可操作的原生兜底。
       wx.showModal({
         title: "登录后即可使用",
         content: "登录后才能参加活动和查看个人信息",
         confirmText: "立即登录",
         cancelText: "取消",
-        success: (res) => { if (res.confirm) this.reauthenticateAfterExpiry(); }
+        success: (res) => {
+          if (res.confirm && generation === this.globalData._sessionGeneration) this.reauthenticateAfterExpiry();
+        }
       });
     };
     setTimeout(openPrompt, 300);
@@ -371,6 +349,13 @@ App({
 
   validateStoredSession({ promptOnExpired = false } = {}) {
 
+    if (this.globalData._sessionLoginPromise) {
+      return this.globalData._sessionLoginPromise.then(
+        () => !!(this.globalData.sessionValidated && this.globalData.accessToken),
+        () => false
+      );
+    }
+
     const token = this.globalData.accessToken || wx.getStorageSync("accessToken");
 
     if (!token) return Promise.resolve(false);
@@ -381,9 +366,15 @@ App({
 
     }
 
+    const generation = this.globalData._sessionGeneration;
+    const isCurrentSession = () => generation === this.globalData._sessionGeneration &&
+      token === (this.globalData.accessToken || wx.getStorageSync("accessToken"));
+
     const validation = userService.getMe()
 
       .then((user) => {
+
+        if (!isCurrentSession()) return false;
 
         this.applyCurrentUser(user);
 
@@ -393,7 +384,7 @@ App({
 
       .catch((err) => {
 
-        if (this.isExpiredSessionError(err)) {
+        if (isCurrentSession() && this.isExpiredSessionError(err)) {
 
           this.logout();
 
@@ -407,7 +398,9 @@ App({
 
       .finally(() => {
 
-        this.globalData._sessionValidationPromise = null;
+        if (this.globalData._sessionValidationPromise === validation) {
+          this.globalData._sessionValidationPromise = null;
+        }
 
       });
 

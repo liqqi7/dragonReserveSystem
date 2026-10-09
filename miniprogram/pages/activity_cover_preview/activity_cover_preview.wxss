@@ -1,5 +1,3 @@
-@import "../../components/activity-cover-picker-sheet/index.wxss";
-
 page {
   width: 100%;
   height: 100%;
@@ -7,20 +5,164 @@ page {
   background: #08090b;
 }
 
-/* 独立预览页直接锁定原型几何；操作控件使用 view，避免 Skyline 原生 button 的固有宽度。 */
-.cover-preview-stage {
-  bottom: 345.15rpx;
+.cover-preview-avatar-image { width: 100%; height: 100%; display: block; }
+
+.cover-preview {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 30;
+  overflow: hidden;
+  background: #08090b;
+  color: #ffffff;
 }
 
+.cover-preview-nav {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 2;
+  padding: 0;
+  box-sizing: border-box;
+  background: #08090b;
+}
+
+.cover-preview-titlebar {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.cover-preview-nav-button {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 19.23rpx;
+  width: 84.62rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cover-preview-back-icon {
+  width: 34.62rpx;
+  height: 34.62rpx;
+  display: block;
+}
+
+.cover-preview-count {
+  position: absolute;
+  left: 50%;
+  width: 384.62rpx;
+  transform: translateX(-50%);
+  color: #ffffff;
+  font-size: 38.46rpx;
+  line-height: 53.85rpx;
+  font-weight: 700;
+  text-align: center;
+}
+
+.cover-preview-nav-spacer {
+  position: absolute;
+  right: 0;
+  width: 158.65rpx;
+  height: 100%;
+  pointer-events: none;
+}
+
+.cover-preview-stage {
+  position: absolute;
+  right: 0;
+  bottom: 345.15rpx;
+  left: 0;
+  overflow: hidden;
+  background: #0d0f12;
+}
+
+.cover-preview-swiper,
+.cover-preview-slide { width: 100%; height: 100%; }
+.cover-preview-slide { display: flex; align-items: center; justify-content: center; }
+.cover-preview-image-placeholder { width: 100%; height: 100%; background: #111318; }
+
+.cover-preview-image { width: 100%; height: 100%; display: block; }
+
+.cover-preview-arrow {
+  position: absolute;
+  top: 503.85rpx;
+  width: 76.92rpx;
+  height: 76.92rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 38.46rpx;
+  background: rgba(0, 0, 0, 0.4);
+}
+.cover-preview-arrow--left { left: 23.08rpx; }
+.cover-preview-arrow--right { right: 23.08rpx; }
+.cover-preview-arrow-icon { width: 38.46rpx; height: 38.46rpx; display: block; }
+
 .cover-preview-info {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 346.15rpx;
+  padding: 0;
   border: 0;
   border-top: 0;
   box-shadow: none;
+  background: #111318;
+  box-sizing: border-box;
 }
 
+.cover-preview-artist {
+  position: absolute;
+  top: 30.77rpx;
+  right: 30.77rpx;
+  left: 30.77rpx;
+  height: 69.23rpx;
+  display: flex;
+  align-items: center;
+  gap: 23.08rpx;
+}
+.cover-preview-avatar { width: 69.23rpx; height: 69.23rpx; flex: none; border-radius: 50%; overflow: hidden; background: #252830; }
+.cover-preview-artist-copy { display: flex; flex-direction: column; }
+.cover-preview-artist-name { color: #ffffff; font-size: 26.92rpx; line-height: 38.46rpx; font-weight: 600; }
+.cover-preview-hint { color: rgba(255, 255, 255, 0.6); font-size: 23.08rpx; line-height: 30.77rpx; font-weight: 400; }
+
 .cover-preview-confirm {
+  position: absolute;
+  top: 146.15rpx;
   right: 38.46rpx;
   left: 38.46rpx;
   width: auto;
+  height: 84.62rpx;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 23.08rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15.38rpx;
+  background: #ff9800;
+  color: #ffffff;
+  font-size: 26.92rpx;
+  line-height: 84.62rpx;
+  font-weight: 600;
   box-sizing: border-box;
+}
+.cover-preview-confirm-icon { width: 30.77rpx; height: 30.77rpx; }
+.cover-preview-safe-area {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 73.08rpx;
+  pointer-events: none;
 }

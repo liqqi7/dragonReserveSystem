@@ -8,6 +8,11 @@ function getApiEnvironment() {
   return API_ENVIRONMENT;
 }
 
+function getMediaUrl(path) {
+  const apiOrigin = API_BASE_URL.replace(/\/api\/v\d+\/?$/, '');
+  return `${apiOrigin}/media/${String(path || '').replace(/^\/+/, '')}`;
+}
+
 function resolveLocalMediaUrl(url) {
   const value = String(url || '').trim();
   if (!value || !API_BASE_URL.startsWith('http://')) return value;
@@ -27,6 +32,7 @@ module.exports = {
   API_ENVIRONMENT,
   getApiBaseUrl,
   getApiEnvironment,
+  getMediaUrl,
   resolveLocalMediaUrl,
   isLocalTestMediaUrl
 };

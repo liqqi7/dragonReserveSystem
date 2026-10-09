@@ -5,7 +5,7 @@ from app.services.stats_service import get_activity_ranking
 
 
 def _activity(admin_user, *, name, start, end, status="已结束"):
-    return Activity(name=name, status=status, remark="", max_participants=10, start_time=start, end_time=end, signup_deadline=None, location_name="Venue", location_address="Address", location_latitude=None, location_longitude=None, created_by=admin_user.id)
+    return Activity(name=name, status=status, remark="", max_participants=10, start_time=start, end_time=end, location_name="Venue", location_address="Address", location_latitude=None, location_longitude=None, created_by=admin_user.id)
 
 
 def test_activity_ranking_accumulates_same_day_and_splits_cross_day(db_session, admin_user, normal_user) -> None:

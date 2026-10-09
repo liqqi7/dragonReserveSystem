@@ -12,7 +12,7 @@ const COVER_CATEGORIES = ["派对", "运动", "外出", "游戏", "电影", "生
 function normalizeCatalog(value) {
   if (!Array.isArray(value)) return [];
   const groups = new Map(COVER_CATEGORIES.map((name) => [name, {
-    slug: name, displayName: name, avatarUrl: "", artworks: []
+    slug: name, displayName: name, artworks: []
   }]));
   value.forEach((artist) => {
     (Array.isArray(artist.artworks) ? artist.artworks : []).forEach((artwork) => {
@@ -270,14 +270,8 @@ Component({
       });
       const rankedUrls = [];
       const foregroundUrls = [];
-      const avatarSeen = new Set();
       ranked.forEach((item) => {
         const artist = this.data.artists[item.artistIndex];
-        if (artist && artist.avatarUrl && !artist.displayAvatarUrl && !avatarSeen.has(artist.avatarUrl)) {
-          avatarSeen.add(artist.avatarUrl);
-          rankedUrls.push(artist.avatarUrl);
-          if (item.priority === 0) foregroundUrls.push(artist.avatarUrl);
-        }
         const artwork = artist && artist.artworks[item.artworkIndex];
         if (artwork && !artwork.displayUrl) rankedUrls.push(item.url);
         if (item.priority === 0) foregroundUrls.push(item.url);
@@ -293,10 +287,6 @@ Component({
     _markCoverImageReady(url, path) {
       const patch = {};
       this.data.artists.forEach((artist, artistIndex) => {
-        if (artist.avatarUrl === url) {
-          patch[`artists[${artistIndex}].displayAvatarUrl`] = path || url;
-          patch[`artists[${artistIndex}].avatarLoadFailed`] = false;
-        }
         artist.artworks.forEach((artwork, artworkIndex) => {
           if (artwork.imageUrl !== url) return;
           patch[`artists[${artistIndex}].artworks[${artworkIndex}].displayUrl`] = path || url;
@@ -309,7 +299,6 @@ Component({
     _markCoverImageFailed(url) {
       const patch = {};
       this.data.artists.forEach((artist, artistIndex) => {
-        if (artist.avatarUrl === url) patch[`artists[${artistIndex}].avatarLoadFailed`] = true;
         artist.artworks.forEach((artwork, artworkIndex) => {
           if (artwork.imageUrl === url) patch[`artists[${artistIndex}].artworks[${artworkIndex}].imageLoadFailed`] = true;
         });
@@ -323,10 +312,6 @@ Component({
       invalidateHomeImageCache(wx, url);
       const patch = {};
       this.data.artists.forEach((artist, artistIndex) => {
-        if (artist.avatarUrl === url) {
-          patch[`artists[${artistIndex}].displayAvatarUrl`] = "";
-          patch[`artists[${artistIndex}].avatarLoadFailed`] = false;
-        }
         artist.artworks.forEach((artwork, artworkIndex) => {
           if (artwork.imageUrl !== url) return;
           patch[`artists[${artistIndex}].artworks[${artworkIndex}].displayUrl`] = "";
@@ -357,7 +342,6 @@ Component({
       const artworkIndex = Number(e.currentTarget.dataset.artworkIndex);
       const artist = this.data.artists[artistIndex];
       if (!artist || !artist.artworks[artworkIndex]) return;
-      const artwork = artist.artworks[artworkIndex];
       setActivityCoverPreviewSession({ artist, artworkIndex });
 
       const openPreview = (openContainer) => {

@@ -7,20 +7,9 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.services.activity_type_style_service import get_allowed_activity_types, normalize_activity_type_key
-from app.utils.app_time import to_app_naive
 
-
-ACTIVITY_STATUSES = {"未开始", "进行中", "已结束", "已取消", "已流局"}
 MAX_ACTIVITY_NAME_LENGTH = 10
 MAX_ACTIVITY_REMARK_LENGTH = 200
-
-
-def _validate_activity_status(value: str) -> str:
-    normalized = value.strip()
-    if normalized not in ACTIVITY_STATUSES:
-        raise ValueError("status is invalid")
-    return normalized
 
 
 def _validate_required_text(value: object, field_name: str) -> object:
@@ -31,18 +20,6 @@ def _validate_required_text(value: object, field_name: str) -> object:
     normalized = value.strip()
     if not normalized:
         raise ValueError(f"{field_name} is required")
-    return normalized
-
-
-def _normalize_activity_type(value: Optional[str]) -> Optional[str]:
-    if value is None:
-        return None
-    normalized = normalize_activity_type_key(value)
-    if not normalized:
-        return None
-    allowed = get_allowed_activity_types()
-    if normalized not in allowed:
-        raise ValueError(f"activity_type must be one of: {', '.join(sorted(allowed))}")
     return normalized
 
 
@@ -91,38 +68,6 @@ class ActivityParticipantResponse(BaseModel):
     sub_item_ids: list[int] = Field(default_factory=list)
 
 
-class ActivityResponse(BaseModel):
-    """Activity payload."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    name: str
-    status: str
-    remark: str
-    max_participants: Optional[int]
-    start_time: datetime
-    end_time: datetime
-    signup_deadline: Optional[datetime]
-    signup_enabled: bool
-    activity_type: Optional[str]
-    activity_style_key: Optional[str]
-    location_name: str
-    location_address: str
-    location_latitude: Optional[float]
-    location_longitude: Optional[float]
-    created_by: int
-    created_at: datetime
-    updated_at: datetime
-    participants: list[ActivityParticipantResponse]
-
-    @field_validator("activity_type", mode="before")
-    @classmethod
-    def default_activity_type(cls, value: Optional[str]) -> str:
-        normalized = _normalize_activity_type(value)
-        return normalized or "other"
-
-
 class ActivityWeatherResponse(BaseModel):
     """Server-persisted weather state for an activity detail response."""
 
@@ -143,110 +88,6 @@ class ActivityWeatherResponse(BaseModel):
     fetched_at: Optional[datetime] = None
     valid_until: Optional[datetime] = None
     stale: bool = False
-
-
-class ActivityDetailResponse(ActivityResponse):
-    """Activity detail payload; list payloads intentionally omit weather."""
-
-    weather: ActivityWeatherResponse
-
-
-class ActivityCreateRequest(BaseModel):
-    """Admin-only activity creation payload."""
-
-    name: str = Field(min_length=1, max_length=MAX_ACTIVITY_NAME_LENGTH)
-    status: str = Field(default="未开始", max_length=32)
-    remark: str = Field(min_length=1, max_length=MAX_ACTIVITY_REMARK_LENGTH)
-    max_participants: Optional[int] = Field(default=None, ge=3, le=999)
-    start_time: datetime
-    end_time: datetime
-    signup_deadline: Optional[datetime] = None
-    signup_enabled: bool = Field(default=True)
-    activity_type: Optional[str] = Field(default=None, max_length=32)
-    activity_style_key: Optional[str] = Field(default=None, max_length=64)
-    location_name: str = Field(default="", max_length=255)
-    location_address: str = Field(default="", max_length=255)
-    location_latitude: Optional[float] = None
-    location_longitude: Optional[float] = None
-
-    @field_validator("name", "remark", mode="before")
-    @classmethod
-    def validate_required_text(cls, value: object, info) -> object:
-        return _validate_required_text(value, info.field_name)
-
-    @field_validator("start_time", "end_time", "signup_deadline", mode="after")
-    @classmethod
-    def normalize_timezones(cls, value):
-        return to_app_naive(value)
-
-    @field_validator("end_time")
-    @classmethod
-    def validate_end_time(cls, value: datetime, info) -> datetime:
-        start_time = info.data.get("start_time")
-        if start_time and value <= start_time:
-            raise ValueError("end_time must be later than start_time")
-        return value
-
-    @field_validator("signup_deadline")
-    @classmethod
-    def validate_signup_deadline(cls, value: Optional[datetime], info) -> Optional[datetime]:
-        return None  # Deprecated compatibility input; cutoff is start_time.
-
-    @field_validator("activity_type")
-    @classmethod
-    def validate_activity_type(cls, value: Optional[str]) -> Optional[str]:
-        return _normalize_activity_type(value)
-
-    @field_validator("status")
-    @classmethod
-    def validate_status(cls, value: str) -> str:
-        return _validate_activity_status(value)
-
-
-class ActivityUpdateRequest(BaseModel):
-    """Admin-only activity update payload."""
-
-    name: Optional[str] = Field(default=None, min_length=1, max_length=MAX_ACTIVITY_NAME_LENGTH)
-    status: Optional[str] = Field(default=None, max_length=32)
-    remark: Optional[str] = Field(default=None, min_length=1, max_length=MAX_ACTIVITY_REMARK_LENGTH)
-    max_participants: Optional[int] = Field(default=None, ge=3, le=999)
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-    signup_deadline: Optional[datetime] = None
-    signup_enabled: Optional[bool] = None
-    activity_type: Optional[str] = Field(default=None, max_length=32)
-    activity_style_key: Optional[str] = Field(default=None, max_length=64)
-    location_name: Optional[str] = Field(default=None, max_length=255)
-    location_address: Optional[str] = Field(default=None, max_length=255)
-    location_latitude: Optional[float] = None
-    location_longitude: Optional[float] = None
-
-    @field_validator("status", "start_time", "end_time", "signup_enabled", "location_name", "location_address", mode="before")
-    @classmethod
-    def reject_explicit_null(cls, value, info):
-        if value is None:
-            raise ValueError(f"{info.field_name} cannot be cleared")
-        return value
-
-    @field_validator("start_time", "end_time", "signup_deadline", mode="after")
-    @classmethod
-    def normalize_timezones(cls, value):
-        return to_app_naive(value)
-
-    @field_validator("name", "remark", mode="before")
-    @classmethod
-    def validate_required_text(cls, value: object, info) -> object:
-        return _validate_required_text(value, info.field_name)
-
-    @field_validator("activity_type")
-    @classmethod
-    def validate_activity_type(cls, value: Optional[str]) -> Optional[str]:
-        return _normalize_activity_type(value)
-
-    @field_validator("status")
-    @classmethod
-    def validate_status(cls, value: Optional[str]) -> Optional[str]:
-        return _validate_activity_status(value) if value is not None else None
 
 
 class ActivitySignupRequest(BaseModel):
@@ -271,34 +112,8 @@ class ActivityCheckinRequest(BaseModel):
     lng: float
 
 
-class ActivityTypeStyleResponse(BaseModel):
-    """Activity type style payload."""
-
-    class StyleVariant(BaseModel):
-        style_key: str
-        style_name: str
-        badge_label: str
-        show_badge: bool
-        show_avatar_cluster: bool
-        large_card_bg_image_url: str
-        small_card_bg_image_url: str
-        bg_video_url: Optional[str]
-
-    key: str
-    display_name: str
-    default_style_key: str
-    styles: list[StyleVariant]
-
-
 class ActivitySharePreviewResponse(BaseModel):
     """Read-only share preview result."""
 
     status: str
     image_url: Optional[str] = None
-
-
-class ActivityStyleSignatureResponse(BaseModel):
-    """Global signature for style-related resource invalidation."""
-
-    signature: str
-    activity_count: int

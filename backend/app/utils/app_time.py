@@ -6,6 +6,11 @@ from zoneinfo import ZoneInfo
 APP_TIME_ZONE = ZoneInfo("Asia/Shanghai")
 
 
+def app_now() -> datetime:
+    """Return application-local time in the naive format used by activity storage."""
+    return datetime.now(APP_TIME_ZONE).replace(tzinfo=None)
+
+
 def to_app_naive(value: datetime | None) -> datetime | None:
     """Convert aware datetimes to Shanghai local time and remove tzinfo.
 

@@ -3,12 +3,36 @@ const assert = require("node:assert/strict");
 const {
   MAX_NAME_LENGTH,
   MAX_REMARK_LENGTH,
+  normalizeSubItems,
   buildCreateForm,
   buildEditForm,
-  applyStartDateTime,
   validateActivityForm,
   buildActivityPayload
 } = require("../utils/activityForm");
+
+test("shared subitem normalization uses an activity quota of at least three", () => {
+  const items = [{ id: 7, name: "A", max_participants: 8, current_participants: 1 },
+    { name: "B", max_participants: 1 }];
+  for (const quota of [1, 2, 3, -1]) {
+    assert.deepEqual(normalizeSubItems(items, quota), [
+      { id: 7, name: "A", max_participants: 3, current_participants: 1 },
+      { name: "B", max_participants: 1 }
+    ]);
+  }
+  assert.equal(items[0].max_participants, 8);
+});
+
+test("shared subitem normalization preserves defaults and capacity boundaries", () => {
+  for (const quota of [undefined, null, 0, "invalid"]) {
+    assert.equal(normalizeSubItems([{ max_participants: 20 }], quota)[0].max_participants, 12);
+  }
+  assert.equal(normalizeSubItems([{ max_participants: 1200 }], 1500)[0].max_participants, 999);
+  assert.equal(normalizeSubItems([{ max_participants: 10 }], 8)[0].max_participants, 8);
+  for (const max_participants of [undefined, null, 0, -1, "invalid"]) {
+    assert.equal(normalizeSubItems([{ max_participants }], 8)[0].max_participants, 1);
+  }
+  for (const items of [undefined, null, {}]) assert.deepEqual(normalizeSubItems(items, 8), []);
+});
 
 
 test("new and edited activities use a cover instead of an activity type", () => {
@@ -24,7 +48,6 @@ test("activity name limit is 10 characters", () => {
     ...buildCreateForm(now),
     startDate: "2026-08-16", startTime: "12:00",
     endDate: "2026-08-16", endTime: "13:00",
-    signupDeadlineDate: "2026-08-16", signupDeadlineTime: "11:00",
     remark: "活动说明",
     activityCoverId: "lam-001"
   };
@@ -41,7 +64,6 @@ test("activity remark limit is 200 characters", () => {
     name: "羽毛球",
     startDate: "2026-08-16", startTime: "12:00",
     endDate: "2026-08-16", endTime: "13:00",
-    signupDeadlineDate: "2026-08-16", signupDeadlineTime: "11:00",
     activityCoverId: "lam-001"
   };
   assert.equal(validateActivityForm({ ...base, remark: "备".repeat(200) }, { mode: "create", now }).ok, true);
@@ -78,17 +100,13 @@ test("edit form raises legacy limited activities to the minimum capacity", () =>
   assert.equal(buildEditForm({ maxParticipants: null }).maxParticipants, 12);
 });
 
-test("applyStartDateTime only fills empty linked fields", () => {
-  const filled = applyStartDateTime({ endDate: "", endTime: "", signupDeadlineDate: "", signupDeadlineTime: "" }, "2026-08-20 19:00");
-  assert.equal(`${filled.endDate} ${filled.endTime}`, "2026-08-20 20:00");
-  assert.equal(filled.signupDeadlineDate, "");
-
-  const preserved = applyStartDateTime({
-    endDate: "2026-08-21", endTime: "21:00",
-    signupDeadlineDate: "2026-08-19", signupDeadlineTime: "12:00"
-  }, "2026-08-20 19:00");
-  assert.equal(`${preserved.endDate} ${preserved.endTime}`, "2026-08-21 21:00");
-  assert.equal(`${preserved.signupDeadlineDate} ${preserved.signupDeadlineTime}`, "2026-08-19 12:00");
+test("edit form preserves independently selected start and end times", () => {
+  const form = buildEditForm({
+    startTime: "2026-08-20 19:00",
+    endTime: "2026-08-21 21:00"
+  });
+  assert.equal(`${form.startDate} ${form.startTime}`, "2026-08-20 19:00");
+  assert.equal(`${form.endDate} ${form.endTime}`, "2026-08-21 21:00");
 });
 
 test("validation checks text, time and participant limits", () => {
@@ -99,7 +117,6 @@ test("validation checks text, time and participant limits", () => {
     remark: "活动说明",
     startDate: "2026-08-16", startTime: "12:00",
     endDate: "2026-08-16", endTime: "13:00",
-    signupDeadlineDate: "2026-08-16", signupDeadlineTime: "11:00",
     activityCoverId: "lam-001"
   };
   assert.equal(validateActivityForm(valid, { mode: "create", now }).ok, true);
@@ -107,7 +124,6 @@ test("validation checks text, time and participant limits", () => {
   assert.match(validateActivityForm({ ...valid, remark: "" }, { mode: "create", now }).message, /请输入活动备注/);
   assert.match(validateActivityForm({ ...valid, remark: "   " }, { mode: "edit", now }).message, /请输入活动备注/);
   assert.match(validateActivityForm({ ...valid, endTime: "11:00" }, { mode: "create", now }).message, /结束时间/);
-  assert.equal(validateActivityForm({ ...valid, signupDeadlineTime: "12:30" }, { mode: "create", now }).ok, true);
   assert.match(validateActivityForm({ ...valid, limitEnabled: true, maxParticipants: 2 }, { mode: "create", now }).message, /3–999/);
   assert.equal(validateActivityForm({ ...valid, limitEnabled: true, maxParticipants: 3 }, { mode: "create", now }).ok, true);
   assert.match(validateActivityForm({ ...valid, limitEnabled: true, maxParticipants: 1000 }, { mode: "create", now }).message, /999/);
@@ -124,6 +140,8 @@ test("payload includes the selected cover and no activity type", () => {
   assert.equal(Object.prototype.hasOwnProperty.call(editPayload, "activity_type"), false);
   assert.equal(Object.prototype.hasOwnProperty.call(editPayload, "activity_style_key"), false);
   assert.equal(createPayload.max_participants, 12);
+  assert.equal(Object.hasOwn(createPayload, "signup_deadline"), false);
+  assert.equal(Object.hasOwn(editPayload, "signup_deadline"), false);
 
   const unlimitedPayload = buildActivityPayload({ ...form, limitEnabled: false }, { mode: "create" });
   assert.equal(unlimitedPayload.max_participants, null);

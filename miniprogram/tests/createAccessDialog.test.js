@@ -18,8 +18,8 @@ test("create access dialog buttons close and route to the requested Profile acti
   let emittedConfirm = null;
   const tabMaskCalls = [];
   const tabBar = {
-    setModalMaskVisible(visible, opacity) {
-      tabMaskCalls.push({ visible, opacity });
+    setModalMaskVisible(visible) {
+      tabMaskCalls.push({ visible });
     }
   };
   let currentPage = {
@@ -63,10 +63,10 @@ test("create access dialog buttons close and route to the requested Profile acti
       confirmText: "去获取权限"
     });
     assert.equal(ctx.data.visible, true);
-    assert.deepEqual(tabMaskCalls.at(-1), { visible: true, opacity: undefined });
+    assert.deepEqual(tabMaskCalls.at(-1), { visible: true });
     definition.methods.close.call(ctx);
     assert.equal(ctx.data.visible, false, "取消按钮必须立即关闭弹窗");
-    assert.deepEqual(tabMaskCalls.at(-1), { visible: false, opacity: undefined });
+    assert.deepEqual(tabMaskCalls.at(-1), { visible: false });
 
     definition.methods.open.call(ctx, {
       type: "permission",
@@ -76,7 +76,7 @@ test("create access dialog buttons close and route to the requested Profile acti
     });
     definition.methods.confirm.call(ctx);
     assert.equal(ctx.data.visible, false);
-    assert.deepEqual(tabMaskCalls.at(-1), { visible: false, opacity: undefined });
+    assert.deepEqual(tabMaskCalls.at(-1), { visible: false });
     assert.equal(switchedUrl, "/pages/profile/profile", "去获取权限必须切换到我的页面");
     assert.equal(app.globalData.pendingCreateAccessAction, "permission");
     assert.equal(app.globalData.tabBarSelected, 3);

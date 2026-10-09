@@ -14,6 +14,33 @@ function withWx(wxValue, callback) {
   }
 }
 
+test("shared gesture conversion uses the current window width on every call", () => {
+  let width = 375;
+  withWx({ getWindowInfo: () => ({ windowWidth: width }) }, () => {
+    assert.equal(safeArea.getRpxPerPx(), 2);
+    width = 750;
+    assert.equal(safeArea.getRpxPerPx(), 1);
+    width = "390";
+    assert.equal(safeArea.getRpxPerPx(), 750 / 390);
+  });
+  withWx({ getSystemInfoSync: () => ({ windowWidth: 375 }) }, () => {
+    assert.equal(safeArea.getRpxPerPx(), 2);
+  });
+});
+
+test("shared gesture conversion preserves the 390px fallback for unavailable width", () => {
+  const fail = () => { throw new Error("unavailable"); };
+  for (const wxValue of [undefined, null, {}, { getWindowInfo: fail },
+    { getSystemInfoSync: fail }, { getWindowInfo: () => null },
+    ...[undefined, 0, -1, "invalid"].map(windowWidth => ({ getWindowInfo: () => ({ windowWidth }) }))
+  ]) {
+    withWx(wxValue, () => assert.equal(safeArea.getRpxPerPx(), 750 / 390));
+  }
+  withWx({ getWindowInfo: fail, getSystemInfoSync: () => ({ windowWidth: 375 }) }, () => {
+    assert.equal(safeArea.getRpxPerPx(), 750 / 390);
+  });
+});
+
 test("runtime info falls back independently when newer APIs fail or return no object", () => {
   const legacyInfo = {
     windowWidth: 375,
@@ -39,7 +66,7 @@ test("runtime info falls back independently when newer APIs fail or return no ob
       assert.equal(safeArea.getWindowInfoCompat(), legacyInfo);
       assert.equal(safeArea.getDeviceInfoCompat(), legacyInfo);
       assert.equal(safeArea.getBottomSafeAreaRpx(), 68);
-      assert.equal(safeArea.buildSafeAreaDiagnostic().model, "Legacy Android");
+      assert.equal(safeArea.getDeviceInfoCompat().model, "Legacy Android");
     });
   }
 });
@@ -59,7 +86,7 @@ test("valid newer runtime info avoids the legacy API", () => {
   });
 });
 
-test("missing or failing runtime APIs leave safe-area diagnostics usable", () => {
+test("missing or failing runtime APIs return empty info and zero bottom inset", () => {
   const fail = () => { throw new Error("runtime unavailable"); };
   for (const wxValue of [undefined, null, {}, {
     getWindowInfo: fail, getDeviceInfo: fail, getSystemInfoSync: fail
@@ -70,7 +97,6 @@ test("missing or failing runtime APIs leave safe-area diagnostics usable", () =>
       assert.deepEqual(safeArea.getWindowInfoCompat(), {});
       assert.deepEqual(safeArea.getDeviceInfoCompat(), {});
       assert.equal(safeArea.getBottomSafeAreaRpx(), 0);
-      assert.equal(safeArea.buildSafeAreaDiagnostic().resolvedBottomRpx, 0);
     });
   }
 });
@@ -126,11 +152,6 @@ test("Android uses the 24px design fallback when the runtime explicitly reports 
   }, () => {
     assert.equal(safeArea.getBottomSafeAreaPx(safeArea.getWindowInfoCompat()), 0);
     assert.equal(safeArea.getBottomSafeAreaRpx(), 46.15);
-    const diagnostic = safeArea.buildSafeAreaDiagnostic();
-    assert.equal(diagnostic.computedBottomPx, 0);
-    assert.equal(diagnostic.computedBottomRpx, 0);
-    assert.equal(diagnostic.resolvedBottomRpx, 46.15);
-    assert.equal(diagnostic.androidFallbackApplied, true);
   });
 });
 
@@ -152,10 +173,7 @@ test("HarmonyOS simulator uses the same 24px design fallback when no inset is re
       };
     }
   }, () => {
-    const diagnostic = safeArea.buildSafeAreaDiagnostic();
-    assert.equal(diagnostic.computedBottomPx, 0);
-    assert.equal(diagnostic.resolvedBottomRpx, 46.15);
-    assert.equal(diagnostic.androidFallbackApplied, true);
+    assert.equal(safeArea.getBottomSafeAreaPx(safeArea.getWindowInfoCompat()), 0);
     assert.equal(safeArea.getBottomSafeAreaRpx(), 46.15);
   });
 });
@@ -175,9 +193,6 @@ test("Android still prefers a real positive bottom inset", () => {
     }
   }, () => {
     assert.equal(safeArea.getBottomSafeAreaRpx(), 42.86);
-    const diagnostic = safeArea.buildSafeAreaDiagnostic();
-    assert.equal(diagnostic.resolvedBottomRpx, 42.86);
-    assert.equal(diagnostic.androidFallbackApplied, false);
   });
 });
 
@@ -205,7 +220,7 @@ test("safe area clamps invalid or negative values to zero outside Android", () =
   });
 });
 
-test("safe area diagnostic exposes raw and resolved runtime values", () => {
+test("runtime info preserves raw device values while the resolver converts the inset", () => {
   withWx({
     getWindowInfo() {
       return {
@@ -227,15 +242,14 @@ test("safe area diagnostic exposes raw and resolved runtime values", () => {
       };
     }
   }, () => {
-    const diagnostic = safeArea.buildSafeAreaDiagnostic();
-    assert.deepEqual(diagnostic.safeAreaInsets, { bottom: 24 });
-    assert.deepEqual(diagnostic.safeArea, { top: 36, bottom: 852 });
-    assert.equal(diagnostic.platform, "android");
-    assert.equal(diagnostic.windowHeight, 876);
-    assert.equal(diagnostic.screenHeight, 900);
-    assert.equal(diagnostic.computedBottomPx, 24);
-    assert.equal(diagnostic.computedBottomRpx, 42.86);
-    assert.equal(diagnostic.resolvedBottomRpx, 42.86);
+    const windowInfo = safeArea.getWindowInfoCompat();
+    const deviceInfo = safeArea.getDeviceInfoCompat();
+    assert.deepEqual(windowInfo.safeAreaInsets, { bottom: 24 });
+    assert.deepEqual(windowInfo.safeArea, { top: 36, bottom: 852 });
+    assert.equal(deviceInfo.platform, "android");
+    assert.equal(windowInfo.windowHeight, 876);
+    assert.equal(windowInfo.screenHeight, 900);
+    assert.equal(safeArea.getBottomSafeAreaPx(windowInfo), 24);
     assert.equal(safeArea.getBottomSafeAreaRpx(), 42.86);
   });
 });

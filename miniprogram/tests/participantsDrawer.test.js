@@ -2,11 +2,12 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const { readWxss } = require("./helpers/readWxss");
 
 const componentDir = path.join(__dirname, "../components/participants-drawer");
 const js = fs.readFileSync(path.join(componentDir, "index.js"), "utf8");
 const wxml = fs.readFileSync(path.join(componentDir, "index.wxml"), "utf8");
-const wxss = fs.readFileSync(path.join(componentDir, "index.wxss"), "utf8");
+const wxss = readWxss(path.join(componentDir, "index.wxss"));
 const definition = require(path.join(componentDir, "logic.js"));
 
 function readSvg(name) {
@@ -197,7 +198,6 @@ test("rows preserve check-in time and location for ordinary users", () => {
   assert.match(wxml, /checkinTimeText/);
   assert.match(wxml, /checkinLocationText/);
   assert.match(wxml, /wx:if="\{\{canManage\}\}"/);
-  assert.match(js, /availableActions:\s*this\.properties\.canManage\s*\?/);
 });
 
 test("unchecked check-in placeholders are centered while checked-in details remain left aligned", () => {
@@ -287,7 +287,6 @@ test("swipe action width and threshold stay in RPX and close other rows", () => 
 });
 
 test("ordinary activity creators can reveal only the single remove action", () => {
-  assert.match(js, /availableActions:\s*this\.properties\.canManage[\s\S]*?this\.properties\.isAdmin[\s\S]*?: \["remove"\]/);
   assert.match(wxml, /wx:if="\{\{canManage\}\}"[\s\S]*?wx:if="\{\{isAdmin && row\.hasCheckedIn\}\}"[\s\S]*?wx:elif="\{\{isAdmin\}\}"[\s\S]*?data-action="remove"/);
   assert.deepEqual(definition.getSwipeSettledState(0, -50, definition.REMOVE_ACTION_WIDTH_RPX), {
     offsetX: -definition.REMOVE_ACTION_WIDTH_RPX,
@@ -298,6 +297,15 @@ test("ordinary activity creators can reveal only the single remove action", () =
     actionOpen: false
   });
   assert.match(js, /\(action === "retrocheckin" \|\| action === "cancelcheckin"\) && !this\.properties\.isAdmin/);
+  const drawer = createParticipantsDrawerInstance("skyline");
+  drawer.properties.canManage = true;
+  drawer.setRows([{ id: 7, name: "A" }]);
+  const actions = [];
+  drawer.triggerEvent = (action, detail) => actions.push({ action, id: detail.id });
+  for (const action of ["retrocheckin", "cancelcheckin", "remove"]) {
+    drawer.onActionTap({ currentTarget: { dataset: { index: 0, action } } });
+  }
+  assert.deepEqual(actions, [{ action: "remove", id: 7 }]);
 });
 
 test("drawer keeps stable QA anchors and page integration events", () => {

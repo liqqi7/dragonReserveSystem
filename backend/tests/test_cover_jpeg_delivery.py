@@ -28,7 +28,7 @@ class JpegDeliveryTests(unittest.TestCase):
         config.get_settings = lambda: self.settings
         with patch.dict('sys.modules', {'app.core.config': config}):
             self.service = module_at('jpeg_delivery_under_test', BACKEND / 'app/services/activity_cover_service.py')
-        self.env = patch.dict(os.environ, {'ACTIVITY_COVER_JPEG_ENABLED': '0', 'ACTIVITY_COVER_WEBP_ENABLED': '0'})
+        self.env = patch.dict(os.environ, {'ACTIVITY_COVER_JPEG_ENABLED': '0'})
         self.env.start()
         self.addCleanup(self.env.stop)
 
@@ -64,9 +64,34 @@ class JpegDeliveryTests(unittest.TestCase):
         for artwork in artworks.values():
             self.assertNotIn('jpeg-q88-v1', str(self.service.get_activity_cover_source_path(artwork['id'])))
 
-    def test_jpeg_takes_precedence_over_webp(self):
-        os.environ.update(ACTIVITY_COVER_JPEG_ENABLED='1', ACTIVITY_COVER_WEBP_ENABLED='1')
-        self.assertNotIn('.webp', json.dumps(self.service.list_activity_cover_artists()))
+    def test_retired_webp_switch_has_no_effect(self):
+        os.environ['ACTIVITY_COVER_WEBP_ENABLED'] = '1'
+        original = self.service.list_activity_cover_artists()
+        self.assertNotIn('jpeg-q88-v1', json.dumps(original))
+        self.assertNotIn('.webp', json.dumps(original))
+        self.assertFalse(hasattr(self.service, '_webp_manifest'))
+        os.environ['ACTIVITY_COVER_JPEG_ENABLED'] = '1'
+        self.service._jpeg_manifest.cache_clear()
+        delivered = json.dumps(self.service.list_activity_cover_artists())
+        self.assertIn('jpeg-q88-v1', delivered)
+        self.assertNotIn('.webp', delivered)
+
+    def test_trial_assets_removed_and_catalog_sources_preserved(self):
+        for variant in ('webp-q90', 'jpeg-q92'):
+            self.assertFalse((ROOT / f'{variant}-v1').exists())
+            self.assertFalse((ROOT / f'{variant}-manifest.json').exists())
+        self.assertFalse((BACKEND / 'scripts/build_cover_webp.py').exists())
+        self.assertTrue((BACKEND / 'scripts/backfill_activity_share_previews.py').is_file())
+        catalog = json.loads((ROOT / 'catalog.json').read_text(encoding='utf-8'))
+        for artist in catalog['artists']:
+            paths = [artist['avatar_path']]
+            for artwork in artist['artworks']:
+                paths.extend(artwork[key] for key in ('image_path', 'thumbnail_path', 'glass_path') if artwork.get(key))
+            for path in paths:
+                with self.subTest(path=path):
+                    self.assertTrue((ROOT / path).is_file())
+                    self.assertNotIn('webp-q90-v1', path)
+                    self.assertNotIn('jpeg-q92-v1', path)
 
     def test_cdn_prefix_preserved(self):
         os.environ['ACTIVITY_COVER_JPEG_ENABLED'] = '1'

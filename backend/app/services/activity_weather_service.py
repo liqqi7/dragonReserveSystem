@@ -5,24 +5,20 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import date, datetime, time, timedelta
 from typing import Any
-from zoneinfo import ZoneInfo
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
+from app.utils.activity_status import ACTIVE_ACTIVITY_STATUSES
 from app.core.config import get_settings
 from app.core.logging import logger
 from app.models import Activity, ActivityWeatherSnapshot
 from app.services.qweather_client import QWeatherClient
 from app.services.qweather_parser import extract_air_quality, extract_daily_weather
+from app.utils.app_time import app_now
 
 ATTRIBUTION = "天气服务驱动 by QWeather"
-APP_TIME_ZONE = ZoneInfo("Asia/Shanghai")
-ACTIVE_STATUSES = {"未开始", "进行中"}
-
-
-def app_now() -> datetime:
-    return datetime.now(APP_TIME_ZONE).replace(tzinfo=None)
+ACTIVE_STATUSES = ACTIVE_ACTIVITY_STATUSES
 
 
 def build_weather_location_key(longitude: float, latitude: float) -> str:

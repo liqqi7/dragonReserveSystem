@@ -82,11 +82,10 @@ def test_cross_activity_selection_and_edit(client, admin_headers, user_headers):
                         json={"sub_items": [dict(id=foreign_id, name="外部", max_participants=2)]}).status_code == 422
 
 
-def test_old_deadline_ignored_and_start_boundary(client, admin_headers, user_headers, second_user_headers, db_session, monkeypatch):
+def test_signup_start_boundary(client, admin_headers, user_headers, second_user_headers, db_session, monkeypatch):
     activity = create(client, admin_headers).json()
     stored = db_session.get(Activity, activity["id"])
     now = _app_now()
-    stored.signup_deadline = now - timedelta(hours=1)
     stored.start_time = now + timedelta(seconds=1)
     db_session.commit()
     monkeypatch.setattr("app.services.activity_service._app_now", lambda: now)

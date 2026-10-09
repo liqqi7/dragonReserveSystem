@@ -7,6 +7,15 @@
  * - 昵称：空或微信占位名「微信用户」视为不通过（与头像独立）。
  */
 
+function isTemporaryAvatarUrl(url) {
+  if (!url) return false;
+  const normalized = String(url).trim().toLowerCase();
+  return normalized.startsWith("http://tmp/")
+    || normalized.startsWith("https://tmp/")
+    || normalized.startsWith("wxfile://")
+    || normalized.startsWith("tmp/");
+}
+
 function isDefaultNickname(nickname) {
   const nn = String(nickname || "").trim();
   return !nn || nn === "微信用户";
@@ -38,4 +47,4 @@ function isDefaultAvatar(avatarUrl) {
   return false;
 }
 
-module.exports = { isDefaultNickname, isDefaultAvatar };
+module.exports = { isDefaultNickname, isDefaultAvatar, isTemporaryAvatarUrl };

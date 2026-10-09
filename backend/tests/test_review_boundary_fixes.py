@@ -16,17 +16,15 @@ from app.services import auth_service, activity_share_preview_service as preview
 from app.services.activity_service import signup_activity
 
 
-@pytest.mark.parametrize("version", ["v1", "v2"])
 @pytest.mark.parametrize("field", ["name", "remark", "start_time", "end_time", "signup_enabled", "location_name", "location_address"])
-def test_patch_required_fields_reject_null(client, admin_headers, sample_activity, version, field):
-    response = client.patch(f"/api/{version}/activities/{sample_activity.id}",
+def test_patch_required_fields_reject_null(client, admin_headers, sample_activity, field):
+    response = client.patch(f"/api/v2/activities/{sample_activity.id}",
                             headers=admin_headers, json={field: None})
     assert response.status_code == 422, response.text
 
 
-@pytest.mark.parametrize("version", ["v1", "v2"])
-def test_patch_nullable_fields_can_be_cleared(client, admin_headers, sample_activity, version):
-    response = client.patch(f"/api/{version}/activities/{sample_activity.id}", headers=admin_headers,
+def test_patch_nullable_fields_can_be_cleared(client, admin_headers, sample_activity):
+    response = client.patch(f"/api/v2/activities/{sample_activity.id}", headers=admin_headers,
                             json={"max_participants": None, "location_latitude": None, "location_longitude": None})
     assert response.status_code == 200, response.text
     for key in ("max_participants", "location_latitude", "location_longitude"):
@@ -160,6 +158,6 @@ def test_unchanged_preview_inputs_do_not_render(client, admin_headers, monkeypat
 def test_safe_log_path_escapes_controls_without_changing_normal_path():
     from app.core.logging import safe_log_path
 
-    assert safe_log_path("/api/v1/activities") == "/api/v1/activities"
+    assert safe_log_path("/api/v2/activities") == "/api/v2/activities"
     assert safe_log_path("/fake\nclient_diagnostic forged") == "/fake\\x0aclient_diagnostic forged"
     assert safe_log_path("/fake\x7fpath") == "/fake\\x7fpath"

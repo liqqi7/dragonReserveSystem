@@ -25,7 +25,6 @@
     type="list"
     scroll-y="{{true}}"
     show-scrollbar="false"
-    bindscroll="onMainScroll"
     style="height: 100vh"
     refresher-enabled="{{true}}"
     refresher-threshold="{{80}}"
@@ -104,7 +103,7 @@
                 data-id="{{item._id}}"
               >
                 <!-- 大卡片 -->
-                <view class="large-card large-card--{{item.activityType}}-{{item.activityStyleKey}}">
+                <view class="large-card">
                 <image
                   wx:if="{{item._homeCoverSrc}}"
                   class="card-image-bg"
@@ -120,55 +119,6 @@
                   data-activity-name="{{item.name}}"
                   data-url="{{item.largeCardBgImageUrl}}"
                 />
-                <video
-                  wx:if="{{item.bgVideoUrl}}"
-                  id="vid-joined-{{index}}"
-                  class="card-video-bg"
-                  src="{{item.bgVideoUrl}}"
-                  objectFit="cover"
-                  autoplay="{{focusedCardIndex.joined === index}}"
-                  loop="{{true}}"
-                  muted="{{true}}"
-                  controls="{{false}}"
-                  show-center-play-btn="{{false}}"
-                  show-play-btn="{{false}}"
-                  enable-progress-gesture="{{false}}"
-                  bindloadedmetadata="onCardVideoLoaded"
-                  binderror="onCardVideoError"
-                  bindwaiting="onCardVideoWaiting"
-                  data-group="joined"
-                  data-card-size="large"
-                  data-activity-id="{{item._id}}"
-                  data-activity-name="{{item.name}}"
-                  data-url="{{item.bgVideoUrl}}"
-                />
-                <!-- 头像群（最近 3 人，从下往上递减：TL > TR > Middle） -->
-                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-large">
-                  <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl">
-                    <image
-                      class="cluster-avatar"
-                      src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}"
-                      mode="aspectFill"
-                      binderror="onAvatarError"
-                      data-index="{{item.cardAvatars.length - 1}}"
-                      data-activity-id="{{item._id}}"
-                    />
-                  </view>
-                  <view wx:if="{{item.cardAvatars.length >= 2}}" class="avatar-tr">
-                    <image
-                      class="cluster-avatar"
-                      src="{{item.cardAvatars[item.cardAvatars.length - 2].url}}"
-                      mode="aspectFill"
-                    />
-                  </view>
-                  <view wx:if="{{item.cardAvatars.length >= 3}}" class="avatar-mid">
-                    <image
-                      class="cluster-avatar"
-                      src="{{item.cardAvatars[item.cardAvatars.length - 3].url}}"
-                      mode="aspectFill"
-                    />
-                  </view>
-                </view>
                 <!-- 卡片内部底部毛玻璃：模糊层与信息层共用同一个边界，避免顶部出现接缝 -->
                 <view class="glass-bottom {{item._homeNativeGlass ? 'glass-bottom--native' : ''}}">
                   <view wx:if="{{!item._homeNativeGlass}}" class="glass-static-blur-layer">
@@ -269,39 +219,6 @@
                   data-activity-name="{{item.name}}"
                   data-url="{{item.smallCardBgImageUrl}}"
                 />
-                <video
-                  wx:if="{{item.bgVideoUrl}}"
-                  id="vid-accepting-{{index}}"
-                  class="card-video-bg"
-                  src="{{item.bgVideoUrl}}"
-                  objectFit="cover"
-                  autoplay="{{focusedCardIndex.accepting === index}}"
-                  loop="{{true}}"
-                  muted="{{true}}"
-                  controls="{{false}}"
-                  show-center-play-btn="{{false}}"
-                  show-play-btn="{{false}}"
-                  enable-progress-gesture="{{false}}"
-                  bindloadedmetadata="onCardVideoLoaded"
-                  binderror="onCardVideoError"
-                  bindwaiting="onCardVideoWaiting"
-                  data-group="accepting"
-                  data-card-size="small"
-                  data-activity-id="{{item._id}}"
-                  data-activity-name="{{item.name}}"
-                  data-url="{{item.bgVideoUrl}}"
-                />
-                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
-                  <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
-                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
-                  </view>
-                  <view wx:if="{{item.cardAvatars.length >= 2}}" class="avatar-tr-sm">
-                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 2].url}}" mode="aspectFill" />
-                  </view>
-                  <view wx:if="{{item.cardAvatars.length >= 3}}" class="avatar-mid-sm">
-                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 3].url}}" mode="aspectFill" />
-                  </view>
-                </view>
                 </view>
               </view>
               </open-container>
@@ -413,39 +330,6 @@
                   data-activity-name="{{item.name}}"
                   data-url="{{item.smallCardBgImageUrl}}"
                 />
-                <video
-                  wx:if="{{item.bgVideoUrl}}"
-                  id="vid-notStarted-{{index}}"
-                  class="card-video-bg"
-                  src="{{item.bgVideoUrl}}"
-                  objectFit="cover"
-                  autoplay="{{focusedCardIndex.notStarted === index}}"
-                  loop="{{true}}"
-                  muted="{{true}}"
-                  controls="{{false}}"
-                  show-center-play-btn="{{false}}"
-                  show-play-btn="{{false}}"
-                  enable-progress-gesture="{{false}}"
-                  bindloadedmetadata="onCardVideoLoaded"
-                  binderror="onCardVideoError"
-                  bindwaiting="onCardVideoWaiting"
-                  data-group="notStarted"
-                  data-card-size="small"
-                  data-activity-id="{{item._id}}"
-                  data-activity-name="{{item.name}}"
-                  data-url="{{item.bgVideoUrl}}"
-                />
-                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
-                  <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
-                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
-                  </view>
-                  <view wx:if="{{item.cardAvatars.length >= 2}}" class="avatar-tr-sm">
-                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 2].url}}" mode="aspectFill" />
-                  </view>
-                  <view wx:if="{{item.cardAvatars.length >= 3}}" class="avatar-mid-sm">
-                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 3].url}}" mode="aspectFill" />
-                  </view>
-                </view>
                 </view>
               </view>
               </open-container>
@@ -512,39 +396,6 @@
                   data-activity-name="{{item.name}}"
                   data-url="{{item.smallCardBgImageUrl}}"
                 />
-                <video
-                  wx:if="{{item.bgVideoUrl}}"
-                  id="vid-ended-{{index}}"
-                  class="card-video-bg"
-                  src="{{item.bgVideoUrl}}"
-                  objectFit="cover"
-                  autoplay="{{focusedCardIndex.ended === index}}"
-                  loop="{{true}}"
-                  muted="{{true}}"
-                  controls="{{false}}"
-                  show-center-play-btn="{{false}}"
-                  show-play-btn="{{false}}"
-                  enable-progress-gesture="{{false}}"
-                  bindloadedmetadata="onCardVideoLoaded"
-                  binderror="onCardVideoError"
-                  bindwaiting="onCardVideoWaiting"
-                  data-group="ended"
-                  data-card-size="small"
-                  data-activity-id="{{item._id}}"
-                  data-activity-name="{{item.name}}"
-                  data-url="{{item.bgVideoUrl}}"
-                />
-                <view wx:if="{{item.showAvatarCluster}}" class="avatar-cluster-small">
-                  <view wx:if="{{item.cardAvatars.length >= 1}}" class="avatar-tl-sm">
-                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 1].url}}" mode="aspectFill" />
-                  </view>
-                  <view wx:if="{{item.cardAvatars.length >= 2}}" class="avatar-tr-sm">
-                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 2].url}}" mode="aspectFill" />
-                  </view>
-                  <view wx:if="{{item.cardAvatars.length >= 3}}" class="avatar-mid-sm">
-                    <image class="cluster-avatar" src="{{item.cardAvatars[item.cardAvatars.length - 3].url}}" mode="aspectFill" />
-                  </view>
-                </view>
                 </view>
               </view>
               </open-container>
@@ -558,7 +409,7 @@
           <swiper-item wx:if="{{endedHasMore && groupedActivities.ended.length > 0}}" class="small-card-slide">
             <view class="small-card-wrap ended-more-strip">
               <view class="ended-more-card" catchtap="onEndedHorizontalLoadMore">
-                <text class="ended-more-text">{{endedLoadingMore ? '加载中…' : '点击加载更多'}}</text>
+                <text class="ended-more-text">点击加载更多</text>
               </view>
             </view>
           </swiper-item>

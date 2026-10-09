@@ -2,10 +2,11 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const { readWxss } = require("./helpers/readWxss");
 
 const pageDir = path.join(__dirname, "../pages/profile");
 const wxml = fs.readFileSync(path.join(pageDir, "profile.wxml"), "utf8");
-const wxss = fs.readFileSync(path.join(pageDir, "profile.wxss"), "utf8");
+const wxss = readWxss(path.join(pageDir, "profile.wxss"));
 const js = fs.readFileSync(path.join(pageDir, "profile.js"), "utf8");
 
 test("permission dialogs use the prototype prompt and danger variants", () => {
@@ -17,9 +18,9 @@ test("permission dialogs use the prototype prompt and danger variants", () => {
 });
 
 test("permission dialog dimensions and colors match the shared modal specification", () => {
-  assert.match(wxss, /\.permission-dialog\s*\{[\s\S]*?padding:\s*38\.46154rpx[\s\S]*?gap:\s*30\.76923rpx[\s\S]*?border-radius:\s*30\.76923rpx[\s\S]*?box-shadow:\s*0 19\.23077rpx 53\.84615rpx rgba\(0, 0, 0, 0\.15\)/);
+  assert.match(wxss, /\.permission-dialog,\s*\.create-access-dialog\s*\{[^}]*padding:\s*38\.46154rpx[^}]*gap:\s*30\.76923rpx[^}]*border-radius:\s*30\.76923rpx[^}]*box-shadow:\s*0 19\.23077rpx 53\.84615rpx rgba\(0, 0, 0, 0\.15\)/);
   assert.match(wxss, /\.permission-dialog-input\s*\{[\s\S]*?height:\s*84\.61538rpx[\s\S]*?border-radius:\s*23\.07692rpx[\s\S]*?background:\s*#f5f5f5/);
-  assert.match(wxss, /\.permission-dialog-button--danger\s*\{[\s\S]*?background:\s*#ef4444/);
+  assert.match(wxss, /\.permission-dialog-button--danger,\s*\.create-access-dialog-button--danger\s*\{\s*background:\s*#ef4444/);
   assert.match(fs.readFileSync(path.join(__dirname, "../images/dialog-danger.svg"), "utf8"), /stroke="#DC2626"/);
 });
 
@@ -80,14 +81,14 @@ test("permission prompt and danger actions execute their real page handlers", as
       setData(patch) { Object.assign(this.data, patch); },
       getTabBar() {
         return {
-          setModalMaskVisible(visible, opacity) { masks.push({ visible, opacity }); }
+          setModalMaskVisible(visible) { masks.push({ visible }); }
         };
       }
     };
 
     pageDefinition.openPermissionModal.call(ctx);
     assert.equal(ctx.data.showPermissionModal, true);
-    assert.deepEqual(masks.at(-1), { visible: true, opacity: undefined });
+    assert.deepEqual(masks.at(-1), { visible: true });
 
     pageDefinition.submitPermission.call(ctx);
     assert.equal(toasts.at(-1).title, "请输入邀请码");
@@ -112,7 +113,7 @@ test("permission prompt and danger actions execute their real page handlers", as
     assert.equal(clearCalls, 1);
     assert.equal(ctx.data.showDeletePermissionModal, false);
     assert.equal(ctx.data.isGuest, true);
-    assert.deepEqual(masks.at(-1), { visible: false, opacity: undefined });
+    assert.deepEqual(masks.at(-1), { visible: false });
   } finally {
     userService.updateMyRole = originalUpdateMyRole;
     userService.clearMyRole = originalClearMyRole;

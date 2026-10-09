@@ -111,23 +111,30 @@ test("picker initialization does not write observed mode property", () => {
 
 test("datetime wheel keeps all five column indexes without delayed visual-selection state", () => {
   const definition = loadPickerComponentDefinition();
-  let patch;
   const context = {
     data: {
       mode: "datetime",
+      pickerValue: [0, 0, 0, 0, 0],
+      hourColumnIndex: 3,
+      minuteColumnIndex: 4,
       years: [2026],
       months: Array.from({ length: 12 }, (_, index) => index + 1)
     },
-    setData(value) { patch = value; }
+    setData(patch) { applyComponentPatch(this, patch); }
   };
 
-  definition.methods.onPickerChange.call(context, {
-    detail: { value: [0, 7, 16, 19, 6] }
+  [0, 7, 16, 19, 6].forEach((current, column) => {
+    definition.methods.onFlatColumnChange.call(context, {
+      currentTarget: { dataset: { column } },
+      detail: { current, source: "touch" }
+    });
   });
 
-  assert.deepEqual(patch.pickerValue, [0, 7, 16, 19, 6]);
-  assert.equal(Object.prototype.hasOwnProperty.call(patch, "selectedHourIndex"), false);
-  assert.equal(Object.prototype.hasOwnProperty.call(patch, "selectedMinuteIndex"), false);
+  assert.deepEqual(context.data.pickerValue, [0, 7, 16, 19, 6]);
+  assert.equal(context.data.hourPickerIndex, 19);
+  assert.equal(context.data.minutePickerIndex, 6);
+  assert.equal(Object.prototype.hasOwnProperty.call(context.data, "selectedHourIndex"), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(context.data, "selectedMinuteIndex"), false);
 });
 
 test("flat swiper column updates only its own index and keeps all five datetime values", () => {
@@ -205,17 +212,50 @@ test("changing year or month rebuilds weekday labels for the day column", () => 
   const context = {
     data: {
       mode: "date",
+      pickerValue: [0, 1, 27],
       years: [2026, 2027],
       months: Array.from({ length: 12 }, (_, index) => index + 1)
     },
     setData(value) { patch = value; }
   };
 
-  definition.methods.onPickerChange.call(context, {
-    detail: { value: [1, 1, 27] }
+  definition.methods.onFlatColumnChange.call(context, {
+    currentTarget: { dataset: { column: 0 } },
+    detail: { current: 1, source: "touch" }
   });
 
   assert.equal(patch.days.length, 28);
   assert.equal(patch.dayLabels[0], "01日 · 周一");
   assert.equal(patch.dayLabels[27], "28日 · 周日");
+});
+
+test("month and year swiper changes clamp month-end dates including leap years", () => {
+  const definition = loadPickerComponentDefinition();
+  const context = {
+    data: {
+      mode: "datetime",
+      pickerValue: [0, 0, 30, 19, 6],
+      years: [2028, 2029],
+      months: Array.from({ length: 12 }, (_, index) => index + 1)
+    },
+    setData(patch) { applyComponentPatch(this, patch); }
+  };
+
+  definition.methods.onFlatColumnChange.call(context, {
+    currentTarget: { dataset: { column: 1 } },
+    detail: { current: 1, source: "touch" }
+  });
+  assert.deepEqual(context.data.pickerValue, [0, 1, 28, 19, 6]);
+  assert.equal(context.data.days.length, 29);
+  assert.equal(context.data.daySwiperIndex, 28);
+  assert.equal(context.data.dayLabels.at(-1), "29日 · 周二");
+
+  definition.methods.onFlatColumnChange.call(context, {
+    currentTarget: { dataset: { column: 0 } },
+    detail: { current: 1, source: "touch" }
+  });
+  assert.deepEqual(context.data.pickerValue, [1, 1, 27, 19, 6]);
+  assert.equal(context.data.days.length, 28);
+  assert.equal(context.data.daySwiperIndex, 27);
+  assert.equal(context.data.dayLabels.at(-1), "28日 · 周三");
 });

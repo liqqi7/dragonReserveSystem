@@ -92,12 +92,17 @@ for (const name of ["activity_create", "checkin_map"]) {
     h.submit();
     assert.equal(h.requests.length, 1);
     assert.equal(h.page.data.submitting, true);
+    if (name === "activity_create") {
+      assert.equal(h.requests[0].options.method, "POST");
+      assert.equal(h.requests[0].options.url, "/activities");
+    }
     h.requests[0].resolve({ id: "activity-1" });
     await pending;
     assert.equal(h.ui.filter(call => call.type === "navigateBack").length, 1);
     assert.equal(h.ui.filter(call => call.type === "toast").length, 1);
     assert.equal(h.page.data.submitting, false);
     assert.deepEqual(h.invalidated, { list: 1 });
+    if (name === "activity_create") assert.deepEqual(h.events, [["activityCreated", { id: "activity-1" }]]);
     h.submit();
     h.page.onShow();
     assert.equal(h.requests.length, 1, "a completed POST must never be resubmitted");

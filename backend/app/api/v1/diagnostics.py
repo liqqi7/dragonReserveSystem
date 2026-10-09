@@ -8,12 +8,21 @@ from app.api.deps import get_current_user, require_admin
 from app.models import User
 from app.schemas.diagnostic import (
     ClientDiagnosticLogBatchRequest,
+    ClientDiagnosticLogRequest,
     ClientDiagnosticLogResponse,
 )
 from app.services.diagnostic_service import append_client_diagnostic_log, read_recent_client_diagnostic_logs
 
 
 router = APIRouter(prefix="/diagnostics", tags=["diagnostics"])
+
+
+def _build_record(event: ClientDiagnosticLogRequest, user: User | None = None) -> dict:
+    return {
+        **event.model_dump(),
+        "user_id": user.id if user is not None else None,
+        "user_role": user.role if user is not None else "anonymous",
+    }
 
 
 @router.post("/client-logs/batch", response_model=ClientDiagnosticLogResponse, summary="Ingest a batch of client diagnostic logs")
@@ -24,21 +33,7 @@ def post_client_diagnostic_log_batch(
     """Persist a bounded batch without making one request per event."""
 
     for event in payload.events:
-        append_client_diagnostic_log(
-            {
-                "user_id": current_user.id,
-                "user_role": current_user.role,
-                "event": event.event,
-                "trace_id": event.trace_id,
-                "session_id": event.session_id,
-                "page": event.page,
-                "level": event.level,
-                "client_version": event.client_version,
-                "base_lib_version": event.base_lib_version,
-                "system_type": event.system_type,
-                "payload": event.payload,
-            }
-        )
+        append_client_diagnostic_log(_build_record(event, current_user))
     return ClientDiagnosticLogResponse(stored=bool(payload.events))
 
 
@@ -60,11 +55,5 @@ def post_anonymous_diagnostics(payload: ClientDiagnosticLogBatchRequest):
     } for event in payload.events):
         raise HTTPException(status_code=422, detail="Unsupported anonymous diagnostic batch")
     for event in payload.events:
-        append_client_diagnostic_log({
-            "user_id": None, "user_role": "anonymous", "event": event.event,
-            "trace_id": event.trace_id, "session_id": event.session_id,
-            "page": event.page, "level": event.level,
-            "client_version": event.client_version, "base_lib_version": event.base_lib_version,
-            "system_type": event.system_type, "payload": event.payload,
-        })
+        append_client_diagnostic_log(_build_record(event))
     return ClientDiagnosticLogResponse(stored=bool(payload.events))

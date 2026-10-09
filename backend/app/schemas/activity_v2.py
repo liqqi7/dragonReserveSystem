@@ -52,7 +52,6 @@ class ActivityV2Response(BaseModel):
     max_participants: Optional[int]
     start_time: datetime
     end_time: datetime
-    signup_deadline: Optional[datetime]
     signup_enabled: bool
     location_name: str
     location_address: str
@@ -81,7 +80,6 @@ class ActivityCreateV2Request(BaseModel):
     max_participants: Optional[int] = Field(default=None, ge=3, le=999)
     start_time: datetime
     end_time: datetime
-    signup_deadline: Optional[datetime] = None
     signup_enabled: bool = Field(default=True)
     activity_cover_id: str = Field(min_length=1, max_length=96)
     location_name: str = Field(default="", max_length=255)
@@ -99,7 +97,7 @@ class ActivityCreateV2Request(BaseModel):
     def validate_cover(cls, value: str) -> str:
         return require_activity_cover_id(value)
 
-    @field_validator("start_time", "end_time", "signup_deadline", mode="after")
+    @field_validator("start_time", "end_time", mode="after")
     @classmethod
     def normalize_timezones(cls, value):
         return to_app_naive(value)
@@ -112,10 +110,6 @@ class ActivityCreateV2Request(BaseModel):
             raise ValueError("end_time must be later than start_time")
         return value
 
-    @field_validator("signup_deadline")
-    @classmethod
-    def validate_signup_deadline(cls, value: Optional[datetime], info) -> Optional[datetime]:
-        return None  # Deprecated compatibility input; cutoff is start_time.
 
 class ActivityUpdateV2Request(BaseModel):
     sub_items: list[ActivitySubItemInput] = Field(default_factory=list, max_length=4)
@@ -126,7 +120,6 @@ class ActivityUpdateV2Request(BaseModel):
     max_participants: Optional[int] = Field(default=None, ge=3, le=999)
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
-    signup_deadline: Optional[datetime] = None
     signup_enabled: Optional[bool] = None
     activity_cover_id: Optional[str] = Field(default=None, min_length=1, max_length=96)
     location_name: Optional[str] = Field(default=None, max_length=255)
@@ -141,7 +134,7 @@ class ActivityUpdateV2Request(BaseModel):
             raise ValueError(f"{info.field_name} cannot be cleared")
         return value
 
-    @field_validator("start_time", "end_time", "signup_deadline", mode="after")
+    @field_validator("start_time", "end_time", mode="after")
     @classmethod
     def normalize_timezones(cls, value):
         return to_app_naive(value)

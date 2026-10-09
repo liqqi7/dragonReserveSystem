@@ -12,7 +12,6 @@ def _activity_payload(name: str = "普通用户创建的活动") -> dict:
         "max_participants": 12,
         "start_time": start_time.isoformat(),
         "end_time": (start_time + timedelta(hours=2)).isoformat(),
-        "signup_deadline": (start_time - timedelta(hours=1)).isoformat(),
         "location_name": "测试场地",
         "activity_cover_id": "aleksey-rico-001",
     }
@@ -134,7 +133,6 @@ def test_v2_create_and_update_persist_cover_without_activity_type(client, admin_
         "max_participants": 12,
         "start_time": start_time.isoformat(),
         "end_time": (start_time + timedelta(hours=2)).isoformat(),
-        "signup_deadline": (start_time - timedelta(hours=1)).isoformat(),
         "location_name": "测试场地",
         "activity_cover_id": "aleksey-rico-001",
     }
@@ -287,7 +285,6 @@ def test_v2_owner_can_remove_participants_but_cannot_manage_checkin(
         {
             "start_time": start_time.isoformat(),
             "end_time": (start_time + timedelta(hours=2)).isoformat(),
-            "signup_deadline": (start_time - timedelta(hours=1)).isoformat(),
         }
     )
     created = client.post(

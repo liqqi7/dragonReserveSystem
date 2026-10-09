@@ -59,7 +59,7 @@ test('logger uploads snapshots through existing batch transport with correlation
   const sandbox = { module: {exports:{}}, console: {info(){},error(){}}, setTimeout: fn => timers.push(fn), clearTimeout(){},
     require: name => name === './diagnosticOutbox' ? {
       createDiagnosticOutbox: opts => require('../services/diagnosticOutbox').createDiagnosticOutbox({ ...opts, setTimer: fn => timers.push(fn), clearTimer(){} })
-    } : ({getApiBaseUrl: () => 'https://example.test/api/v1'}),
+    } : name === './diagnosticPolicy' ? require('../services/diagnosticPolicy') : ({getApiBaseUrl: () => 'https://example.test/api/v1'}),
     getCurrentPages: () => [{route:'pages/activity_list/activity_list'}],
     wx: {getStorageSync: key => key === 'userId' ? '42' : key === 'accessToken' ? 'test-token' : [], setStorageSync(){}, request: req => requests.push(req), getRealtimeLogManager: () => ({info: p=>realtime.push(p)})} };
   vm.runInNewContext(fs.readFileSync(require.resolve('../services/logger'), 'utf8'), sandbox);
@@ -182,7 +182,7 @@ test('legacy duplicate scanner and per-card success emitters are removed from pa
   const source=require('node:fs').readFileSync(require.resolve('../pages/activity_list/activity_list'),'utf8');
   assert.doesNotMatch(source, /_startCardMediaDiagnostics|_cardMediaDiagWarnTimer|activity_card_presentation_ready|activity_card_media_loaded|activity_card_glass_load_failed/);
   assert.match(source, /snapshot\("glass_error"/);
-  assert.match(source, /snapshot\("video_waiting"/);
+  assert.doesNotMatch(source, /video_waiting/);
 });
 
 test('successful preparation taking eight seconds is retained even outside normal sample', () => {

@@ -1,39 +1,35 @@
 """Activity use cases."""
 
 from datetime import datetime
-import hashlib
-import json
 
-from typing import Optional
-
-from sqlalchemy import func, select, update
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.orm.attributes import set_committed_value
 
+from app.utils.activity_status import (
+    CANCELLED,
+    CANCELLED_ACTIVITY_STATUSES,
+    ENDED,
+    FLOW_CANCELLED,
+    NOT_STARTED,
+    ONGOING,
+    RETROACTIVE_CHECKIN_STATUSES,
+    TERMINAL_ACTIVITY_STATUSES,
+)
 from app.core.config import get_settings
 from app.core.exceptions import ConflictError, NotFoundError, ValidationAppError
 from app.models import Activity, ActivityParticipant, User
 from app.models.activity import ActivitySubItem, ActivityParticipantSubItem
-from app.services.activity_weather_service import ensure_weather_snapshot, invalidate_weather_snapshot
-from app.schemas.activity import (
-    ActivityCheckinRequest,
-    ActivityCreateRequest,
-    ActivityUpdateRequest,
-)
+from app.services.activity_weather_service import invalidate_weather_snapshot
+from app.schemas.activity import ActivityCheckinRequest
+from app.schemas.activity_v2 import ActivityUpdateV2Request
 from app.services.amap_service import ReverseGeocodeResult, reverse_geocode
-from app.services.activity_type_style_service import (
-    get_activity_style,
-    list_available_style_keys_in_order,
-    normalize_activity_style_key,
-    normalize_activity_type_key,
-)
 from app.utils.geo import haversine_distance_meters
-from app.utils.app_time import APP_TIME_ZONE, to_app_naive
+from app.utils.app_time import app_now as _app_now, to_app_naive
 
 
 settings = get_settings()
 FLOW_CANCEL_MIN_PARTICIPANTS = 2  # 触发流局的最低人数阈值
-TERMINAL_ACTIVITY_STATUSES = frozenset({"已结束", "已取消", "已流局"})
 
 
 def _get_activity_query():
@@ -43,10 +39,18 @@ def _get_activity_query():
     )
 
 
-def _app_now() -> datetime:
-    """Return a naive datetime in the timezone used by stored activity times."""
-
-    return datetime.now(APP_TIME_ZONE).replace(tzinfo=None)
+def _find_participant(
+    db: Session, activity_id: int, *, participant_id: int | None = None, user_id: int | None = None,
+) -> ActivityParticipant | None:
+    if (participant_id is None) == (user_id is None):
+        raise ValueError("Provide exactly one participant identity")
+    identity = (
+        ActivityParticipant.id == participant_id if participant_id is not None
+        else ActivityParticipant.user_id == user_id
+    )
+    return db.scalar(select(ActivityParticipant).where(
+        ActivityParticipant.activity_id == activity_id, identity,
+    ))
 
 
 def get_activity_by_id(db: Session, activity_id: int) -> Activity:
@@ -63,21 +67,21 @@ def get_activity_by_id(db: Session, activity_id: int) -> Activity:
 
 def _calculate_activity_status(activity: Activity, now: datetime) -> str:
     """Derive time-based status without dirtying an ORM object."""
-    if activity.status in ("已取消", "已流局"):
+    if activity.status in CANCELLED_ACTIVITY_STATUSES:
         return activity.status
     now = to_app_naive(now)
     start_time = to_app_naive(activity.start_time)
     end_time = to_app_naive(activity.end_time)
     if end_time <= now:
-        new_status = "已结束"
+        new_status = ENDED
     elif start_time <= now:
         participant_count = len(activity.participants)
         if participant_count <= FLOW_CANCEL_MIN_PARTICIPANTS:
-            new_status = "已流局"
+            new_status = FLOW_CANCELLED
         else:
-            new_status = "进行中"
+            new_status = ONGOING
     else:
-        new_status = "未开始"
+        new_status = NOT_STARTED
     return new_status
 
 
@@ -141,103 +145,10 @@ def list_my_activities(db: Session, user: User) -> list[Activity]:
     return activities
 
 
-def _resolve_style_key_implicit(db: Session, activity_type: str) -> Optional[str]:
-    """Pick style_key when client omits it: rotate if multiple styles, else single or default."""
-
-    type_key = normalize_activity_type_key(activity_type) or "other"
-    keys = list_available_style_keys_in_order(type_key)
-    if not keys:
-        return normalize_activity_style_key(type_key, None)
-    if len(keys) == 1:
-        return keys[0]
-    count = (
-        db.scalar(
-            select(func.count(Activity.id)).where(
-                Activity.activity_type == type_key,
-                Activity.status != "已取消",
-            )
-        )
-        or 0
-    )
-    return keys[count % len(keys)]
-
-
-def get_activity_style_signature(db: Session) -> tuple[str, int]:
-    """Return signature for all persisted activity style-related fields."""
-
-    rows = db.execute(
-        select(Activity.id, Activity.activity_type, Activity.activity_style_key).order_by(Activity.id.asc())
-    ).all()
-    signature_items: list[dict[str, object]] = []
-    for activity_id, activity_type, activity_style_key in rows:
-        style = get_activity_style(activity_type or "other", activity_style_key)
-        signature_items.append(
-            {
-                "id": int(activity_id),
-                "activity_type": str(activity_type or "other"),
-                "activity_style_key": str(activity_style_key or ""),
-                "large_card_bg_image_url": str((style or {}).get("large_card_bg_image_url") or ""),
-                "small_card_bg_image_url": str((style or {}).get("small_card_bg_image_url") or ""),
-                "bg_video_url": str((style or {}).get("bg_video_url") or ""),
-                "show_avatar_cluster": bool((style or {}).get("show_avatar_cluster", False)),
-            }
-        )
-    payload = json.dumps(signature_items, ensure_ascii=False, separators=(",", ":"))
-    signature = hashlib.sha256(payload.encode("utf-8")).hexdigest()
-    return signature, len(signature_items)
-
-
-def create_activity(db: Session, payload: ActivityCreateRequest, created_by: User) -> Activity:
-    """Create a new activity."""
-
-    activity_type = payload.activity_type or "other"
-    explicit = (payload.activity_style_key or "").strip()
-    if explicit:
-        activity_style_key = normalize_activity_style_key(activity_type, payload.activity_style_key)
-    else:
-        activity_style_key = _resolve_style_key_implicit(db, activity_type)
-        if not activity_style_key:
-            activity_style_key = normalize_activity_style_key(activity_type, None)
-    activity = Activity(
-        name=payload.name,
-        status=payload.status,
-        remark=payload.remark,
-        max_participants=payload.max_participants,
-        start_time=payload.start_time,
-        end_time=payload.end_time,
-        signup_deadline=None,
-        signup_enabled=payload.signup_enabled,
-        activity_type=activity_type,
-        activity_style_key=activity_style_key,
-        location_name=payload.location_name,
-        location_address=payload.location_address,
-        location_latitude=payload.location_latitude,
-        location_longitude=payload.location_longitude,
-        created_by=created_by.id,
-    )
-    db.add(activity)
-    db.flush()
-    _sync_activity_status(activity, _app_now())
-
-    # Auto-signup creator as a participant
-    creator_participant = ActivityParticipant(
-        activity_id=activity.id,
-        user_id=created_by.id,
-        display_nickname=created_by.nickname,
-        display_avatar_url=created_by.avatar_url,
-    )
-    db.add(creator_participant)
-    ensure_weather_snapshot(db, activity)
-
-    db.commit()
-    db.refresh(activity)
-    return get_activity_by_id(db, activity.id)
-
-
 def update_activity(
     db: Session,
     activity: Activity,
-    payload: ActivityUpdateRequest,
+    payload: ActivityUpdateV2Request,
     actor: User | None = None,
 ) -> Activity:
     """Update an activity."""
@@ -249,13 +160,11 @@ def update_activity(
 
     data = payload.model_dump(exclude_unset=True)
     sub_items = data.pop("sub_items", None)
-    data.pop("signup_deadline", None)
     if sub_items is not None:
         replace_sub_items(activity, sub_items)
     capacity = data.get("max_participants")
     if capacity is not None and capacity < len(activity.participants):
         raise ValidationAppError("活动名额不能少于已报名人数")
-    prev_type = activity.activity_type
     weather_source_changed = any(
         key in data and getattr(activity, key) != value
         for key, value in data.items()
@@ -264,33 +173,8 @@ def update_activity(
     for key, value in data.items():
         setattr(activity, key, value)
 
-    if "activity_type" in data or "activity_style_key" in data:
-        activity.activity_type = activity.activity_type or "other"
-        prev_norm = normalize_activity_type_key(prev_type or "other") or "other"
-        new_norm = normalize_activity_type_key(activity.activity_type or "other") or "other"
-        if "activity_style_key" in data:
-            activity.activity_style_key = normalize_activity_style_key(
-                activity.activity_type,
-                data["activity_style_key"],
-            )
-        elif "activity_type" in data and prev_norm != new_norm:
-            resolved = _resolve_style_key_implicit(db, activity.activity_type)
-            activity.activity_style_key = resolved or normalize_activity_style_key(activity.activity_type, None)
-        elif "activity_type" in data:
-            try:
-                activity.activity_style_key = normalize_activity_style_key(
-                    activity.activity_type,
-                    activity.activity_style_key,
-                )
-            except ValueError:
-                resolved = _resolve_style_key_implicit(db, activity.activity_type)
-                activity.activity_style_key = resolved or normalize_activity_style_key(
-                    activity.activity_type, None
-                )
-
     if to_app_naive(activity.end_time) <= to_app_naive(activity.start_time):
         raise ValidationAppError("end_time must be later than start_time")
-    activity.signup_deadline = None
 
     _sync_activity_status(activity, _app_now())
     if weather_source_changed:
@@ -306,14 +190,14 @@ def cancel_activity(db: Session, activity: Activity, actor: User | None = None) 
     """Cancel an activity through an explicit state transition."""
 
     activity = lock_activity(db, activity)
-    if activity.status == "已取消":
+    if activity.status == CANCELLED:
         raise ValidationAppError("Activity is already cancelled")
 
     is_admin = bool(actor and getattr(actor, "role", None) == "admin")
     if activity.status in TERMINAL_ACTIVITY_STATUSES and not is_admin:
         raise ValidationAppError("Terminal activities cannot be cancelled")
 
-    activity.status = "已取消"
+    activity.status = CANCELLED
     db.add(activity)
     db.commit()
     db.refresh(activity)
@@ -383,7 +267,7 @@ def signup_activity(db: Session, activity: Activity, user: User, sub_item_ids: l
 
     activity = lock_activity(db, activity)
     if activity.status in TERMINAL_ACTIVITY_STATUSES:
-        message = "Activity has been cancelled" if activity.status == "已取消" else f"活动{activity.status}"
+        message = "Activity has been cancelled" if activity.status == CANCELLED else f"活动{activity.status}"
         raise ValidationAppError(message)
 
     if activity.signup_enabled is False:
@@ -441,12 +325,7 @@ def remove_participant(
 
     activity = lock_activity(db, activity)
 
-    participant = db.scalar(
-        select(ActivityParticipant).where(
-            ActivityParticipant.activity_id == activity.id,
-            ActivityParticipant.id == participant_id,
-        )
-    )
+    participant = _find_participant(db, activity.id, participant_id=participant_id)
     if participant is None:
         raise NotFoundError("Participant not found")
 
@@ -479,15 +358,10 @@ def admin_checkin_participant(
     if actor.role != "admin":
         raise ValidationAppError("Only admins can perform retroactive checkin")
     activity = lock_activity(db, activity)
-    if activity.status not in {"进行中", "已结束"}:
+    if activity.status not in RETROACTIVE_CHECKIN_STATUSES:
         raise ValidationAppError("Retroactive checkin is only allowed for ongoing or ended activities")
 
-    participant = db.scalar(
-        select(ActivityParticipant).where(
-            ActivityParticipant.activity_id == activity.id,
-            ActivityParticipant.id == participant_id,
-        )
-    )
+    participant = _find_participant(db, activity.id, participant_id=participant_id)
     if participant is None:
         raise NotFoundError("Participant not found")
     if participant.checked_in_at is not None:
@@ -516,15 +390,10 @@ def admin_cancel_checkin_participant(
     if actor.role != "admin":
         raise ValidationAppError("Only admins can cancel checkin")
     activity = lock_activity(db, activity)
-    if activity.status == "已取消":
+    if activity.status == CANCELLED:
         raise ValidationAppError("Cannot cancel checkin for a cancelled activity")
 
-    participant = db.scalar(
-        select(ActivityParticipant).where(
-            ActivityParticipant.activity_id == activity.id,
-            ActivityParticipant.id == participant_id,
-        )
-    )
+    participant = _find_participant(db, activity.id, participant_id=participant_id)
     if participant is None:
         raise NotFoundError("Participant not found")
     if participant.checked_in_at is None:
@@ -551,15 +420,10 @@ def checkin_activity(
     """Check the current user in to an activity."""
 
     activity = lock_activity(db, activity)
-    if activity.status != "进行中":
+    if activity.status != ONGOING:
         raise ValidationAppError("Only ongoing activities can be checked in")
 
-    participant = db.scalar(
-        select(ActivityParticipant).where(
-            ActivityParticipant.activity_id == activity.id,
-            ActivityParticipant.user_id == user.id,
-        )
-    )
+    participant = _find_participant(db, activity.id, user_id=user.id)
     if participant is None:
         raise ValidationAppError("You must sign up before checking in")
     if participant.checked_in_at is not None:
@@ -593,25 +457,3 @@ def checkin_activity(
     db.commit()
     db.refresh(participant)
     return participant
-
-
-def cancel_signup(db: Session, activity: Activity, user: User) -> None:
-    """Remove the current user's signup if still allowed."""
-
-    activity = lock_activity(db, activity)
-
-    participant = db.scalar(
-        select(ActivityParticipant).where(
-            ActivityParticipant.activity_id == activity.id,
-            ActivityParticipant.user_id == user.id,
-        )
-    )
-    if participant is None:
-        raise NotFoundError("Signup record not found")
-
-    deadline = activity.start_time
-    if user.role != "admin" and deadline and _app_now() >= deadline:
-        raise ValidationAppError("Signup deadline has passed; contact an admin to remove this signup")
-
-    db.delete(participant)
-    db.commit()

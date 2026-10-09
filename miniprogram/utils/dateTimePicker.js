@@ -1,9 +1,9 @@
-function pad(value) {
-  return String(value).padStart(2, "0");
-}
+const { pad, formatDate, formatTime } = require("./dateFormat");
+const { clamp: clampNumber } = require("./number");
 
 function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
+  // Keep the picker's upper-bound priority for inverted bounds.
+  return Math.min(max, clampNumber(value, min, max));
 }
 
 function daysInMonth(year, month) {
@@ -69,14 +69,6 @@ function roundUpToMinuteStep(input, step = 5) {
     date.setMinutes(date.getMinutes() + (remainder ? safeStep - remainder : safeStep));
   }
   return date;
-}
-
-function formatDate(year, month, day) {
-  return `${year}-${pad(month)}-${pad(day)}`;
-}
-
-function formatTime(hour, minute) {
-  return `${pad(hour)}:${pad(minute)}`;
 }
 
 const WEEKDAY_LABELS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];

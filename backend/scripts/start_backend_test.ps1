@@ -121,45 +121,14 @@ $tunnelProcess = $null
 try {
     # Switch WeChat miniprogram config to local backend for this test session
     if (Test-Path $MpConfigFile) {
-        # Use a literal single-quoted here-string for JS so PowerShell never parses `function` / `Try`-like tokens.
-        # Closing '@ must start at column 0.
         $apiHost = if ($MiniProgramHost) { $MiniProgramHost } elseif ($AppHost -eq "0.0.0.0") { "127.0.0.1" } else { $AppHost }
         $apiUrl = "http://$apiHost`:$AppPort/api/v1"
         $env:PUBLIC_BASE_URL = "http://$apiHost`:$AppPort"
         $env:TEST_REQUEST_LOG_FILE = Join-Path $RootDir "test-request.log"
-        $localConfig = "const API_BASE_URL = `"$apiUrl`";`r`nconst API_ENVIRONMENT = `"test`";" + @'
-
-function getApiBaseUrl() {
-  return API_BASE_URL;
-}
-
-function getApiEnvironment() {
-  return API_ENVIRONMENT;
-}
-
-function resolveLocalMediaUrl(url) {
-  const value = String(url || '').trim();
-  if (!value || !API_BASE_URL.startsWith('http://')) return value;
-  const apiOrigin = API_BASE_URL.replace(/\/api\/v\d+\/?$/, '');
-  const match = value.match(/^http:\/\/(?:127\.0\.0\.1|localhost)(:\d+)?(\/.*)$/i);
-  return match ? `${apiOrigin}${match[2]}` : value;
-}
-
-function isLocalTestMediaUrl(url) {
-  if (!API_BASE_URL.startsWith('http://')) return false;
-  const apiOrigin = API_BASE_URL.replace(/\/api\/v\d+\/?$/, '');
-  return resolveLocalMediaUrl(url).startsWith(`${apiOrigin}/`);
-}
-
-module.exports = {
-  API_BASE_URL,
-  API_ENVIRONMENT,
-  getApiBaseUrl,
-  getApiEnvironment,
-  resolveLocalMediaUrl,
-  isLocalTestMediaUrl
-};
-'@
+        # Keep shared config helpers when switching environments.
+        $template = Get-Content -LiteralPath $MpTemplateFile -Raw -Encoding UTF8
+        $localConfig = $template -replace 'const API_BASE_URL = "[^"]+";', ('const API_BASE_URL = "' + $apiUrl + '";')
+        $localConfig = $localConfig -replace 'const API_ENVIRONMENT = "[^"]+";', 'const API_ENVIRONMENT = "test";'
         Set-Content -Path $MpConfigFile -Value $localConfig -Encoding UTF8 -NoNewline:$false
     }
 

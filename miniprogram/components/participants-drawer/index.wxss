@@ -1,3 +1,4 @@
+@import "../../styles/sheet.wxss";
 .drawer-sheet {
   position: relative;
   width: 100%;
@@ -17,10 +18,7 @@
   flex: 0 0 auto;
   height: 76.92rpx;
   padding: 0 30.77rpx;
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  box-sizing: border-box;
 }
 
 .drawer-title {
@@ -28,19 +26,6 @@
   line-height: 76.92rpx;
   font-weight: 700;
   color: #000000;
-}
-
-.drawer-close {
-  width: 61.54rpx;
-  height: 61.54rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.drawer-close image {
-  width: 38.46rpx;
-  height: 38.46rpx;
 }
 
 .drawer-body {

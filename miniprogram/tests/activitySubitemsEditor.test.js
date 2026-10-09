@@ -21,8 +21,7 @@ function context(items, locked = false, maxParticipants = 12) {
       ...definition.data,
       rowStates: items.map((item, index) => ({
         key: item.id != null ? `subitem-${item.id}` : `subitem-new-${index}`,
-        offsetX: 0,
-        actionOpen: false
+        offsetX: 0
       }))
     },
     triggerEvent(name, detail) { this.result = detail; },
@@ -142,15 +141,13 @@ test("removing the first subitem exits left, collapses its space, and does not t
     ]);
     c.data.rowStates[0] = {
       ...c.data.rowStates[0],
-      offsetX: -exported.ACTION_OFFSET_RPX,
-      actionOpen: true
+      offsetX: -exported.ACTION_OFFSET_RPX
     };
     c.remove({ currentTarget: { dataset: { index: 0 } } });
     assert.equal(c.data.removingIndex, 0);
     assert.equal(c.data.removalPhase, "exiting");
     assert.equal(c.data.suppressSwipeTransition, true);
     assert.deepEqual(c.data.rowStates.map(row => row.offsetX), [0, 0, 0]);
-    assert.deepEqual(c.data.rowStates.map(row => row.actionOpen), [false, false, false]);
     assert.equal(scheduled[0].delay, exported.ITEM_REMOVE_COLLAPSE_DELAY_MS);
 
     scheduled[0].callback();
@@ -164,7 +161,6 @@ test("removing the first subitem exits left, collapses its space, and does not t
     assert.equal(c.data.rowStates.length, 2);
     assert.equal(c.data.rowStates[0].key, "subitem-new-0");
     assert.equal(c.data.rowStates[0].offsetX, 0);
-    assert.equal(c.data.rowStates[0].actionOpen, false);
     assert.equal(c.data.removingIndex, -1);
     assert.equal(c.data.removalPhase, "");
     assert.equal(c.data.suppressSwipeTransition, true);
@@ -198,7 +194,6 @@ test("two subitems cannot reveal or trigger deletion", () => {
     c.moveSwipe({ touches: [{ clientX: 140, clientY: 20 }] });
     c.endSwipe();
     assert.equal(c.data.rowStates[0].offsetX, 0);
-    assert.equal(c.data.rowStates[0].actionOpen, false);
 
     c.remove({ currentTarget: { dataset: { index: 0 } } });
     assert.equal(c.result, undefined);
@@ -219,19 +214,17 @@ test("row swipe follows the finger, opens one delete action, and a short right s
     assert.ok(c.data.rowStates[0].offsetX < 0);
     c.endSwipe();
     assert.equal(c.data.rowStates[0].offsetX, -exported.ACTION_OFFSET_RPX);
-    assert.equal(c.data.rowStates[0].actionOpen, true);
 
     c.startSwipe({ currentTarget: { dataset: { index: 1 } }, touches: [{ clientX: 200, clientY: 20 }] });
     assert.equal(c.data.rowStates[0].offsetX, 0);
     c.moveSwipe({ touches: [{ clientX: 145, clientY: 21 }] });
     c.endSwipe();
-    assert.equal(c.data.rowStates[1].actionOpen, true);
+    assert.equal(c.data.rowStates[1].offsetX, -exported.ACTION_OFFSET_RPX);
 
     c.startSwipe({ currentTarget: { dataset: { index: 1 } }, touches: [{ clientX: 100, clientY: 20 }] });
     c.moveSwipe({ touches: [{ clientX: 112, clientY: 20 }] });
     c.endSwipe();
     assert.equal(c.data.rowStates[1].offsetX, 0);
-    assert.equal(c.data.rowStates[1].actionOpen, false);
   } finally {
     global.wx = oldWx;
   }

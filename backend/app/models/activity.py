@@ -8,6 +8,7 @@ from typing import Optional
 from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, String, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.utils.activity_status import ONGOING
 from app.core.database import Base
 
 
@@ -23,15 +24,12 @@ class Activity(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(128), nullable=False)
-    status: Mapped[str] = mapped_column(String(32), nullable=False, default="进行中")
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default=ONGOING)
     remark: Mapped[str] = mapped_column(String(1000), nullable=False, default="")
     max_participants: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, default=None)
     start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     end_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    signup_deadline: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     signup_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    activity_type: Mapped[Optional[str]] = mapped_column(String(32), nullable=True, default=None)
-    activity_style_key: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, default=None)
     activity_cover_id: Mapped[str] = mapped_column(
         String(96),
         nullable=False,

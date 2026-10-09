@@ -74,7 +74,6 @@ class Settings(BaseSettings):
     activity_cover_cdn_base_url: str = ""
     media_root: str = "storage"
     media_url_prefix: str = "/media"
-    client_cache_version: str = Field(default="1", validation_alias="CLIENT_CACHE_VERSION")
 
     cors_origins: list[str] = Field(default_factory=list)
 

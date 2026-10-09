@@ -47,7 +47,7 @@ function createHomePresentationDiagnostics({ page, wxApi, emit, traceId, now = D
         result.push({ group, activityId: String(item._id), focused: index === (page.data.focusedCardIndex[group] || 0),
           exposed: page._homeVisibilityKnown ? !!page._homeVisibleCardKeys?.has(JSON.stringify([group, String(item._id)])) : index === (page.data.focusedCardIndex[group] || 0),
           ready: !!item._homeMediaReady, coverPhases: phases.get(cover) || {}, glassPhases: phases.get(glass) || {}, cover: state(cover, 'cover'), glass: state(glass, 'glass'),
-          video: state(item.bgVideoUrl, 'video'), coverUrl: safeUrl(cover), glassUrl: safeUrl(glass) });
+          coverUrl: safeUrl(cover), glassUrl: safeUrl(glass) });
       });
     });
     return result;

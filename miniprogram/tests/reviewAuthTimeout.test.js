@@ -32,7 +32,12 @@ test("late login response after timeout cannot write token or update user", asyn
     setStorageSync(key, value) { storage.set(key, value); },
     removeStorageSync(key) { storage.delete(key); }
   };
-  global.getApp = () => ({ applyCurrentUser: (...args) => applied.push(args) });
+  const app = {
+    globalData: { _sessionGeneration: 0 },
+    invalidateSessionValidation() { return ++this.globalData._sessionGeneration; },
+    applyCurrentUser: (...args) => applied.push(args)
+  };
+  global.getApp = () => app;
   const requestPath = require.resolve("../services/request.js");
   const userPath = require.resolve("../services/user.js");
   const requestModule = require(requestPath);

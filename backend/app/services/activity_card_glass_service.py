@@ -13,16 +13,16 @@ from urllib.parse import urlparse
 import httpx
 from PIL import Image, ImageFilter, ImageOps
 
+from app.utils.media import resolve_media_root
 from app.core.config import get_settings
 from app.services.activity_cover_service import (
     get_activity_cover_glass_source_path,
     get_activity_cover_source_path,
 )
-from app.services.activity_type_style_service import get_activity_style
 
 
 settings = get_settings()
-MEDIA_ROOT = Path(settings.media_root).resolve()
+MEDIA_ROOT = resolve_media_root()
 CARD_GLASS_CACHE_DIR = MEDIA_ROOT / "card-glass"
 CARD_GLASS_RENDER_VERSION = "v4"
 CARD_GLASS_REMOTE_IMAGE_TIMEOUT = 8.0
@@ -33,27 +33,7 @@ CARD_GLASS_BLUR_RADIUS_RATIO = 6.5 / (469.23 * 420 / 750)
 
 
 class ActivityCardGlassNotFoundError(ValueError):
-    """Raised when the requested fixed activity type/style has no large image."""
-
-
-def get_or_create_activity_card_glass(activity_type: str, style_key: str) -> Path:
-    """Return a cached, pre-blurred image for one trusted activity style."""
-
-    try:
-        style = get_activity_style(activity_type, style_key)
-    except ValueError as exc:
-        raise ActivityCardGlassNotFoundError("activity type/style not found") from exc
-    if not style:
-        raise ActivityCardGlassNotFoundError("activity type/style not found")
-
-    source = str(style.get("large_card_bg_image_url") or "").strip()
-    if not source:
-        raise ActivityCardGlassNotFoundError("large card background image not found")
-
-    return _get_or_create_card_glass(
-        source,
-        cache_identity=f"legacy-style|{activity_type}|{style_key}|{source}",
-    )
+    """Raised when the requested activity cover has no source image."""
 
 
 def get_or_create_activity_cover_card_glass(cover_id: str) -> Path:

@@ -39,7 +39,6 @@ def make_activity(
         max_participants=None,
         start_time=start_time,
         end_time=start_time + timedelta(hours=2),
-        signup_deadline=start_time - timedelta(hours=1),
         signup_enabled=True,
         location_name="北京测试地点",
         location_address="北京测试地址",
@@ -114,10 +113,11 @@ class FakeQWeatherClient:
 def test_activity_detail_returns_stable_pending_weather_without_upstream_request(client, admin_headers) -> None:
     start_time = datetime(2026, 9, 5, 14, 0, 0)
     created = client.post(
-        "/api/v1/activities",
+        "/api/v2/activities",
         headers=admin_headers,
         json={
             "name": "天气详情",
+            "activity_cover_id": "aleksey-rico-001",
             "remark": "测试详情只读取快照",
             "start_time": start_time.isoformat(),
             "end_time": (start_time + timedelta(hours=2)).isoformat(),
@@ -127,7 +127,7 @@ def test_activity_detail_returns_stable_pending_weather_without_upstream_request
     )
     assert created.status_code == 201
 
-    response = client.get(f"/api/v1/activities/{created.json()['id']}", headers=admin_headers)
+    response = client.get(f"/api/v2/activities/{created.json()['id']}", headers=admin_headers)
 
     assert response.status_code == 200
     assert response.json()["weather"] == {
@@ -162,7 +162,7 @@ def test_activity_detail_serializes_available_weather_date(client, db_session, a
     snapshot.valid_until = NOW + timedelta(hours=6)
     db_session.commit()
 
-    response = client.get(f"/api/v1/activities/{activity.id}", headers=admin_headers)
+    response = client.get(f"/api/v2/activities/{activity.id}", headers=admin_headers)
 
     assert response.status_code == 200
     assert response.json()["weather"]["available"] is True
@@ -428,23 +428,17 @@ def test_background_refresh_only_fetches_requested_activity(db_session, admin_us
 
 
 def test_create_and_update_schedule_weather_refresh(client, admin_headers, monkeypatch):
-    from app.api.v1 import activities as v1
     from app.api.v2 import activities as v2
     calls = []
-    monkeypatch.setattr(v1, "refresh_activity_weather_in_background", lambda bind, activity_id: calls.append(activity_id))
     monkeypatch.setattr(v2, "refresh_activity_weather_in_background", lambda bind, activity_id: calls.append(activity_id))
     payload = {
-        "name": "后台天气", "remark": "后台刷新测试",
+        "name": "后台天气", "remark": "后台刷新测试", "activity_cover_id": "aleksey-rico-001",
         "start_time": "2026-09-05T14:00:00", "end_time": "2026-09-05T16:00:00",
         "location_latitude": 39.9042, "location_longitude": 116.4074,
     }
-    for version in ("v1", "v2"):
-        data = dict(payload)
-        if version == "v2":
-            data["activity_cover_id"] = "aleksey-rico-001"
-        created = client.post(f"/api/{version}/activities", headers=admin_headers, json=data)
-        assert created.status_code == 201, created.text
-        activity_id = created.json()["id"]
-        edited = client.patch(f"/api/{version}/activities/{activity_id}", headers=admin_headers, json={"remark": "新备注"})
-        assert edited.status_code == 200, edited.text
-        assert calls[-2:] == [activity_id, activity_id]
+    created = client.post("/api/v2/activities", headers=admin_headers, json=payload)
+    assert created.status_code == 201, created.text
+    activity_id = created.json()["id"]
+    edited = client.patch(f"/api/v2/activities/{activity_id}", headers=admin_headers, json={"remark": "新备注"})
+    assert edited.status_code == 200, edited.text
+    assert calls == [activity_id, activity_id]

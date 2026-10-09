@@ -1,5 +1,6 @@
 const { getApiBaseUrl } = require("./config");
 const KEY_ACTIVITY_LIST_CACHE = "activityListCache";
+const ACTIVITY_LIST_CACHE_VERSION = 2;
 
 function cacheKey(key) {
   const api = String(getApiBaseUrl() || "default").replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_+|_+$/g, "");
@@ -22,11 +23,13 @@ function _safeSet(key, value) {
 }
 
 function getCachedActivityList() {
-  return _safeGet(cacheKey(KEY_ACTIVITY_LIST_CACHE), null);
+  const cached = _safeGet(cacheKey(KEY_ACTIVITY_LIST_CACHE), null);
+  return cached && cached.version === ACTIVITY_LIST_CACHE_VERSION ? cached : null;
 }
 
 function setCachedActivityList(list, userId = "") {
   _safeSet(cacheKey(KEY_ACTIVITY_LIST_CACHE), {
+    version: ACTIVITY_LIST_CACHE_VERSION,
     list: Array.isArray(list) ? list : [],
     userId: String(userId || ""),
     updatedAt: Date.now()

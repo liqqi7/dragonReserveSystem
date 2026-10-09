@@ -7,7 +7,7 @@ const {
   DEFAULT_AVATAR
 } = require("../../utils/activityEnrich");
 const { buildActivityShareAppMessageOptions } = require("../../utils/shareActivity");
-const { isDefaultNickname, isDefaultAvatar } = require("../../utils/profileUtils");
+const { isDefaultNickname, isDefaultAvatar, isTemporaryAvatarUrl } = require("../../utils/profileUtils");
 const { orderParticipantsForDrawerRecentFirst } = require("../../utils/participantSort");
 const { resolveLocalMediaUrl, isLocalTestMediaUrl, getApiEnvironment } = require("../../services/config");
 const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
@@ -26,17 +26,6 @@ const {
 
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
 const PROFILE_EDIT_DEFAULT_AVATAR = "/images/default-avatar.svg";
-
-function isTemporaryAvatarUrl(url) {
-  if (!url) return false;
-  const normalized = String(url).trim().toLowerCase();
-  return (
-    normalized.startsWith("http://tmp/") ||
-    normalized.startsWith("https://tmp/") ||
-    normalized.startsWith("wxfile://") ||
-    normalized.startsWith("tmp/")
-  );
-}
 
 function normalizeProfileAvatarForModal(url) {
   const value = (url && String(url).trim()) || "";
@@ -57,8 +46,6 @@ function normalizeProfileAvatarForModal(url) {
   return value;
 }
 
-const PARTICIPANT_PREVIEW_MAX = 14;
-const PARTICIPANTS_MORE_ICON = "/images/icon-participants-more.png";
 const LOCATION_MAP_MARKER_ICON = "/images/icon-activity-map-marker.png";
 const LOCATION_MAP_MARKER_DESIGN_SIZE_PX = 54;
 const LOCATION_MAP_MARKER_ANCHOR_Y = 23 / 54;
@@ -121,7 +108,6 @@ Page({
     projectMembersDrawerHeightRpx: 576.92,
     projectMembersDrawerMaxHeightRpx: 1384.62,
     projectMemberTitle: "",
-    heroCardAvatars: [],
     participantDrawerList: [],
     participantCurrentText: "0",
     participantMaxText: "",
@@ -161,7 +147,7 @@ Page({
     signupProfileCanSubmit: false
   },
 
-  _activityTypeStyles: [],
+  _detailRequestId: 0,
   _locationRequestId: 0,
   _hasShownOnce: false,
   _windowWidthPx: 390,
@@ -212,11 +198,20 @@ Page({
       this._hasShownOnce = true;
       return;
     }
-    this.refreshDetail({ silent: true });
+    return this.refreshDetail({ silent: true });
+  },
+
+  onHide() {
+    if (this._detailLoadingVisible) {
+      wx.hideLoading();
+      this._detailLoadingVisible = false;
+    }
   },
 
   onUnload() {
     this._detailUnloaded = true;
+    this._detailRequestId += 1;
+    this.onHide();
     this._pendingExitParticipant = null;
     this._localSharePreviewSource = "";
     this._locationRequestId += 1;
@@ -366,6 +361,8 @@ Page({
   },
 
   bootstrap() {
+    if (this._detailUnloaded || !this.data.activityId) return Promise.resolve();
+    const requestId = ++this._detailRequestId;
     this.clearDetailEntranceTransition();
     this.setData({
       loading: true,
@@ -373,30 +370,29 @@ Page({
       detailContentVisible: false,
       loadError: ""
     });
-    activityService.getActivity(this.data.activityId)
+    return activityService.getActivity(this.data.activityId)
       .then((raw) => {
-        this._activityTypeStyles = [];
+        if (this._detailUnloaded || requestId !== this._detailRequestId) return;
         const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
-        const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
-        const activity = enrichSingleActivity(
-          raw,
-          this._activityTypeStyles,
-          myUserId,
-          myNickname
-        );
+        const activity = enrichSingleActivity(raw, myUserId);
         this.applyActivity(activity, () => this.startDetailEntranceTransition());
       })
       .catch((err) => {
+        if (this._detailUnloaded || requestId !== this._detailRequestId) return;
         console.error(err);
-        this.clearDetailEntranceTransition();
-        this.setData({
-          loading: false,
-          detailSkeletonLeaving: false,
-          detailContentVisible: true,
-          loadError: (err && err.message) || "加载失败",
-          sharePreviewImageUrl: ""
-        });
+        this.showDetailLoadError(err);
       });
+  },
+
+  showDetailLoadError(error) {
+    this.clearDetailEntranceTransition();
+    this.setData({
+      loading: false,
+      detailSkeletonLeaving: false,
+      detailContentVisible: true,
+      loadError: (error && error.message) || "加载失败",
+      sharePreviewImageUrl: ""
+    });
   },
 
   clearDetailEntranceTransition() {
@@ -415,6 +411,7 @@ Page({
       detailContentVisible: false
     }, () => {
       const revealContent = () => {
+        if (this._detailUnloaded) return;
         this._detailEntranceFrameTimer = setTimeout(() => {
           this._detailEntranceFrameTimer = null;
           this.setData({ detailContentVisible: true }, () => {
@@ -434,50 +431,37 @@ Page({
 
   refreshDetail(options = {}) {
     const { silent } = options;
-    if (!this.data.activityId) return Promise.resolve();
+    if (this._detailUnloaded || !this.data.activityId) return Promise.resolve();
+    const requestId = ++this._detailRequestId;
     if (!silent) {
       wx.showLoading({ title: "刷新中..." });
+      this._detailLoadingVisible = true;
     }
     return activityService.getActivity(this.data.activityId)
       .then((raw) => {
-        this._activityTypeStyles = [];
+        if (this._detailUnloaded || requestId !== this._detailRequestId) return;
         const myUserId = app.globalData.userId || wx.getStorageSync("userId") || "";
-        const myNickname = (app.globalData.userProfile?.nickname || wx.getStorageSync("userNickname") || "").trim();
-        const activity = enrichSingleActivity(
-          raw,
-          this._activityTypeStyles,
-          myUserId,
-          myNickname
-        );
-        this.applyActivity(activity);
+        const activity = enrichSingleActivity(raw, myUserId);
+        this.applyActivity(activity, this.data.loading ? () => this.startDetailEntranceTransition() : undefined);
       })
       .catch((err) => {
+        if (this._detailUnloaded || requestId !== this._detailRequestId) return;
         console.error(err);
+        if (this.data.loading) this.showDetailLoadError(err);
         if (!silent) {
           wx.showToast({ title: (err && err.message) || "刷新失败", icon: "none" });
         }
       })
       .finally(() => {
-        if (!silent) wx.hideLoading();
+        if (!this._detailUnloaded && requestId === this._detailRequestId && this._detailLoadingVisible) {
+          wx.hideLoading();
+          this._detailLoadingVisible = false;
+        }
       });
   },
 
   applyActivity(activity, onApplied) {
     const canManageActivity = this.resolveCanManageActivity(activity);
-    const rawAvatars = (activity.avatarList || []).slice().reverse().map((a, i) => ({
-      url: (a && a.url) || DEFAULT_AVATAR,
-      pKey: `av-${i}`
-    }));
-    let list;
-    if (rawAvatars.length <= PARTICIPANT_PREVIEW_MAX) {
-      list = rawAvatars;
-    } else {
-      list = rawAvatars.slice(0, PARTICIPANT_PREVIEW_MAX - 1).map((item, i) => ({
-        ...item,
-        pKey: `av-${i}`
-      }));
-      list.push({ url: PARTICIPANTS_MORE_ICON, pKey: "more" });
-    }
     const max = activity.maxParticipants;
     const n = (activity.participants || []).length;
     const participantCurrentText = `${n}`;
@@ -512,9 +496,6 @@ Page({
       };
     });
 
-    const heroCardAvatars = Array.isArray(activity.cardAvatars)
-      ? activity.cardAvatars.slice(-3)
-      : [];
     const primaryAction = resolvePrimaryAction(activity);
     const remark = String(activity.remark || "").trim();
     const shouldExpandRemarkByDefault = activity.status === "已结束";
@@ -551,7 +532,6 @@ Page({
       activity,
       loadError: "",
       canManageActivity,
-      heroCardAvatars,
       participantDrawerList,
       participantCurrentText,
       participantMaxText,
@@ -856,9 +836,6 @@ Page({
     const activityId = encodeURIComponent(String(activity._id));
     wx.navigateTo({
       url: `/pages/activity_edit/activity_edit?id=${activityId}`,
-      events: {
-        activityUpdated: () => this.refreshDetail({ silent: true })
-      },
       success: (res) => {
         if (res && res.eventChannel) res.eventChannel.emit("initActivityEdit", { activity });
       },

@@ -43,7 +43,6 @@ def test_create_prepares_card_and_reads_never_generate(client, admin_headers, mo
     detail = client.get(f"/api/v2/activities/{body['id']}")
     assert detail.json()["share_preview_image_url"] == image_url
     assert client.get(f"/api/v2/activities/{body['id']}/share-preview").json()["image_url"] == image_url
-    assert client.get(f"/api/v1/activities/{body['id']}/share-preview").json()["image_url"] == image_url
 
 
 def test_edited_static_fields_change_url_but_other_data_does_not(client, db_session, admin_headers, normal_user, monkeypatch, tmp_path):
@@ -121,18 +120,17 @@ def test_selected_gif_cover_produces_png(sample_activity, monkeypatch, tmp_path)
 
 
 
-def test_v1_create_also_prepares_share_card(client, db_session, admin_headers, monkeypatch, tmp_path):
+def test_create_persists_selected_cover_and_share_card(client, db_session, admin_headers, monkeypatch, tmp_path):
     monkeypatch.setattr(preview, "SHARE_PREVIEW_DIR", tmp_path)
     payload = _payload()
-    payload.pop("activity_cover_id")  # The legacy endpoint uses the database default cover.
-    response = client.post("/api/v1/activities", headers=admin_headers, json=payload)
+    response = client.post("/api/v2/activities", headers=admin_headers, json=payload)
     assert response.status_code == 201, response.text
     activity = db_session.get(Activity, response.json()["id"])
     assert activity.activity_cover_id == "aleksey-rico-001"
     assert activity.share_preview_file
     with Image.open(tmp_path / activity.share_preview_file) as image:
         assert image.format == "PNG" and image.size == (550, 440)
-    assert client.get(f"/api/v1/activities/{activity.id}/share-preview").json()["status"] == "ready"
+    assert client.get(f"/api/v2/activities/{activity.id}/share-preview").json()["status"] == "ready"
 
 
 def test_failed_render_does_not_rollback_created_activity(
@@ -214,18 +212,17 @@ def test_corrupt_cached_file_is_rebuilt_before_commit(sample_activity, monkeypat
         image.verify()
 
 
-def test_v1_location_edit_replaces_card_reference(client, db_session, admin_headers, monkeypatch, tmp_path):
+def test_location_edit_replaces_card_reference(client, db_session, admin_headers, monkeypatch, tmp_path):
     monkeypatch.setattr(preview, "SHARE_PREVIEW_DIR", tmp_path)
     payload = _payload()
-    payload.pop("activity_cover_id")
-    activity_id = client.post("/api/v1/activities", headers=admin_headers, json=payload).json()["id"]
-    old_url = client.get(f"/api/v1/activities/{activity_id}/share-preview").json()["image_url"]
+    activity_id = client.post("/api/v2/activities", headers=admin_headers, json=payload).json()["id"]
+    old_url = client.get(f"/api/v2/activities/{activity_id}/share-preview").json()["image_url"]
     response = client.patch(
-        f"/api/v1/activities/{activity_id}", headers=admin_headers,
+        f"/api/v2/activities/{activity_id}", headers=admin_headers,
         json={"location_address": "different street"},
     )
     assert response.status_code == 200, response.text
-    new_url = client.get(f"/api/v1/activities/{activity_id}/share-preview").json()["image_url"]
+    new_url = client.get(f"/api/v2/activities/{activity_id}/share-preview").json()["image_url"]
     assert new_url != old_url
     assert (tmp_path / Path(new_url).name).is_file()
     assert (tmp_path / Path(old_url).name).is_file()

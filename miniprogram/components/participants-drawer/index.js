@@ -1,5 +1,4 @@
 const {
-  SWIPE_OPEN_THRESHOLD_RATIO,
   clamp,
   getSwipeSettledState,
   getActionMetrics,
@@ -7,15 +6,7 @@ const {
   buildProgressView,
   getMaxHeightRpx
 } = require("./logic");
-function getRpxPerPx() {
-  try {
-    const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
-    const width = Number(info && info.windowWidth);
-    return width > 0 ? 750 / width : 750 / 390;
-  } catch (error) {
-    return 750 / 390;
-  }
-}
+const { getRpxPerPx } = require("../../utils/safeArea");
 
 function shouldUseExplicitSurfaceHeight(renderer) {
   return String(renderer || "").toLowerCase() === "webview";
@@ -172,13 +163,7 @@ Component({
           checkinDateText: checked ? parts.date : "—",
           checkinTimeText: checked ? parts.time : "—",
           checkinLocationText: checkinLocation || "—",
-          availableActions: this.properties.canManage
-            ? (this.properties.isAdmin
-              ? (checked ? ["cancelcheckin", "remove"] : ["retrocheckin", "remove"])
-              : ["remove"])
-            : [],
-          offsetX: 0,
-          actionOpen: false
+          offsetX: 0
         };
       });
       const drawerHeightRpx = getDrawerHeightRpx(
@@ -237,7 +222,7 @@ Component({
       // gesture offset locally so touchend never snaps from stale row data.
       gesture.currentOffsetX = next;
       const rows = this.data.rows.map((row, i) => i === gesture.index
-        ? { ...row, offsetX: next, actionOpen: Math.abs(next) >= actionOffsetRpx * SWIPE_OPEN_THRESHOLD_RATIO }
+        ? { ...row, offsetX: next }
         : row);
       this.setData({ rows, memberListScrollEnabled: false });
     },
@@ -257,13 +242,13 @@ Component({
       const endOffsetX = Number.isFinite(gesture.currentOffsetX)
         ? gesture.currentOffsetX
         : (row.offsetX || 0);
-      const settledState = getSwipeSettledState(
+      const { offsetX } = getSwipeSettledState(
         gesture.startOffsetX,
         endOffsetX,
         this.data.actionOffsetRpx
       );
       const rows = this.data.rows.map((item, index) => index === gesture.index
-        ? { ...item, ...settledState }
+        ? { ...item, offsetX }
         : item);
       this.setData({ rows, memberListScrollEnabled: true });
     },
@@ -275,7 +260,7 @@ Component({
     closeOpenRows(exceptIndex) {
       const rows = this.data.rows.map((row, index) => index === exceptIndex
         ? row
-        : { ...row, offsetX: 0, actionOpen: false });
+        : { ...row, offsetX: 0 });
       this.setData({ rows });
     },
 
@@ -293,8 +278,6 @@ Component({
       if (this._containerCloseNotified) return;
       this._containerCloseNotified = true;
       this.triggerEvent("close");
-    },
-
-    noop() {}
+    }
   }
 });

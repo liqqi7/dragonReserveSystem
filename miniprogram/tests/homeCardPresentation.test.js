@@ -23,20 +23,21 @@ function clock() {
     }
   };
 }
-function harness() {
+function harness(options = {}) {
   const c = clock(), requests = [], logs = [], tabCalls = [], prefetchCalls = [];
   let definition;
   const app = { globalData: {} };
   const navigationCalls = [];
   const wx = { nextTick: fn => fn(), getImageInfo: req => requests.push(req), getStorageSync: () => "", navigateTo: options => navigationCalls.push(options) };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../pages/activity_list/activity_list.js'), 'utf8'), {
-    Page: p => { definition = p; }, getApp: () => app, wx, console,
+    Page: p => { definition = p; }, getApp: () => app, wx, console, JSON: options.JSON || JSON,
     Date: class extends Date { static now() { return c.now(); } },
     setTimeout: c.set, clearTimeout: c.clear,
     require(name) {
       if (name.endsWith("/homeCardImagePriority")) return require("../utils/homeCardImagePriority");
       if (name.endsWith("/activityEnrich")) return require("../utils/activityEnrich");
       if (name.endsWith("/homeImagePreparation")) return require("../utils/homeImagePreparation");
+      if (name.endsWith("/homeViewData")) return require("../utils/homeViewData");
       if (name.endsWith('/homePresentationDiagnostics')) return {
         createHomePresentationDiagnostics: opts => require('../utils/homePresentationDiagnostics').createHomePresentationDiagnostics({ ...opts, now: c.now, setTimer: c.set, clearTimer: c.clear })
       };
@@ -74,6 +75,29 @@ function harness() {
 }
 const big = (id, cover = `cover-${id}`, glass = `glass-${id}`) => ({ _id: String(id), largeCardBgImageUrl: cover, largeCardGlassImageUrl: glass });
 const small = id => ({ _id: String(id), smallCardBgImageUrl: `small-${id}` });
+
+function commitHarness(options) {
+  const h = harness(options);
+  const patches = [], events = [], original = h.page.setData;
+  h.page._scheduleColdStartCardEntrance = () => events.push('schedule');
+  h.page.setData = function(patch, callback) {
+    patches.push(patch);
+    events.push('setData');
+    original.call(this, patch, callback);
+  };
+  const list = [1, 2].map(id => ({
+    ...big(id), name: `card${id}`, status: '未开始', hasSignedUp: true,
+    startTime: `2026-10-10 ${id === 1 ? '12' : '14'}:00`, maxParticipants: 8,
+    hasCheckedIn: false, locationName: 'Hall', locationLatitude: null,
+    participants: [{ userId: 'a', avatarUrl: 'avatar-a' }, { userId: 'b', avatarUrl: 'avatar-b' }],
+    subItems: [{ id: 'project', current_participants: 1, max_participants: 3 }],
+    weather: { temperature: 20 }
+  }));
+  h.page._commitHomeList(list);
+  patches.length = 0;
+  events.length = 0;
+  return { ...h, list, patches, events };
+}
 
 test('Tab appears after first frame even when the activity request never returns', () => {
   const h = harness();
@@ -696,14 +720,14 @@ test('queued ready frame resolves reordered and replaced cards through rebuilt i
 
 test('presentation removes full duplicate payloads but keeps counts and render fields', () => {
   const h = harness();
-  const full = {...big(1), title:'title', participants:[{id:1},{id:2}],
-    activityCover:{large:'unused'}, avatarList:[{url:'unused'}],
-    showAvatarCluster:true, cardAvatars:[{url:'avatar',name:'unused',id:1}]};
+  const full = {...big(1), title:'title', participants:[{id:1,avatarUrl:'avatar-1'},{id:2}],
+    activityCover:{large:'unused'}};
   const card = h.page._prepareColdStartCardPresentation({joined:[full]}).groupedActivities.joined[0];
   assert.equal(card.participantCount,2); assert.equal(card.title,'title');
-  for (const key of ['participants','avatarList','activityCover']) assert.equal(key in card,false);
-  assert.equal(card.cardAvatars[0].url,'avatar'); assert.equal('name' in card.cardAvatars[0],false);
+  for (const key of ['participants','activityCover']) assert.equal(key in card,false);
   assert.equal(full.participants.length,2);
+  assert.equal(full.activityCover.large, 'unused');
+  assert.equal(full.participants[0].avatarUrl, 'avatar-1');
   for (const key of ['activityList','filteredList','allEndedActivities']) assert.equal(key in h.page.data,false);
 });
 
@@ -727,6 +751,111 @@ test('identical responses skip processing; changed card updates without replacin
   assert.ok(!patches.some(patch=>'groupedActivities' in patch));
 });
 
+test('unchanged list commits skip setData but still schedule entrance and complete once', () => {
+  const h = commitHarness();
+  const cards = h.page.data.groupedActivities.joined;
+  const next = structuredClone(h.list);
+  h.page._commitHomeList(next, () => h.events.push('callback'));
+  assert.equal(h.patches.length, 0);
+  assert.equal(h.page.data.groupedActivities.joined, cards);
+  assert.equal(h.page._activityList, next);
+  assert.deepEqual(h.events, ['schedule', 'callback']);
+});
+
+test('card property insertion order does not cause a redundant update', () => {
+  const h = commitHarness();
+  const next = h.list.map(card => Object.fromEntries(Object.entries(structuredClone(card)).reverse()));
+  h.page._commitHomeList(next);
+  assert.equal(h.patches.length, 0);
+});
+
+for (const [label, change] of [
+  ['name', card => { card.name = 'changed'; }],
+  ['check-in state', card => { card.hasCheckedIn = true; }],
+  ['participant count', card => { card.participants.push({ userId: 'c' }); }],
+  ['cover URL', card => { card.largeCardBgImageUrl = 'new-cover'; }],
+  ['glass URL', card => { card.largeCardGlassImageUrl = 'new-glass'; }],
+  ['subitem signup count', card => { card.subItems[0].current_participants = 2; }],
+  ['nested weather', card => { card.weather.temperature = 21; }],
+  ['nullable location', card => { card.locationLatitude = 0; }],
+  ['new data field', card => { card.futureRenderField = { value: 1 }; }],
+  ['removed data field', card => { delete card.locationName; }]
+]) {
+  test(`a changed ${label} updates only its card`, () => {
+    const h = commitHarness();
+    const untouched = h.page.data.groupedActivities.joined[0];
+    const next = structuredClone(h.list);
+    change(next[1]);
+    h.page._commitHomeList(next, () => h.events.push('callback'));
+    assert.equal(h.patches.length, 1);
+    assert.deepEqual(Object.keys(h.patches[0]), ['groupedActivities.joined[1]']);
+    assert.equal(h.page.data.groupedActivities.joined[0], untouched);
+    const expected = h.page._prepareColdStartCardPresentation({ joined: [next[1]] }).groupedActivities.joined[0];
+    assert.deepEqual(h.page.data.groupedActivities.joined[1], expected);
+    assert.deepEqual(h.events, ['setData', 'schedule', 'callback']);
+    h.patches.length = 0;
+    h.page._commitHomeList(structuredClone(next));
+    assert.equal(h.patches.length, 0);
+  });
+}
+
+test('list reordering replaces only its group and keeps focus on the remembered activity', () => {
+  const h = commitHarness();
+  h.page.data.focusedCardIndex.joined = 1;
+  h.page._rememberFocusedCard('joined', 1);
+  const next = structuredClone(h.list);
+  next[1].startTime = '2026-10-10 10:00';
+  h.page._commitHomeList(next);
+  assert.equal(h.patches.length, 1);
+  assert.deepEqual(Object.keys(h.patches[0]).sort(), ['focusedCardIndex', 'groupedActivities.joined']);
+  assert.deepEqual(h.page.data.groupedActivities.joined.map(card => card._id), ['2', '1']);
+  assert.equal(h.page.data.focusedCardIndex.joined, 0);
+});
+
+test('joining state moves cards between groups and updates section visibility', () => {
+  const h = commitHarness();
+  const next = structuredClone(h.list);
+  next[1].hasSignedUp = false;
+  h.page._commitHomeList(next);
+  assert.equal(h.patches.length, 1);
+  assert.deepEqual(Object.keys(h.patches[0]).sort(), [
+    'groupSectionVisibility', 'groupedActivities.accepting', 'groupedActivities.joined'
+  ]);
+  assert.deepEqual(h.page.data.groupedActivities.joined.map(card => card._id), ['1']);
+  assert.deepEqual(h.page.data.groupedActivities.accepting.map(card => card._id), ['2']);
+  assert.equal(h.page.data.groupSectionVisibility.accepting, true);
+});
+
+test('adding and removing cards keeps the group update strategy and empty state', () => {
+  const h = commitHarness();
+  const added = { ...structuredClone(h.list[1]), _id: '3' };
+  h.page._commitHomeList([...h.list, added]);
+  assert.deepEqual(Object.keys(h.patches[0]), ['groupedActivities.joined']);
+  assert.equal(h.page.data.groupedActivities.joined.length, 3);
+  h.patches.length = 0;
+  h.page._commitHomeList([]);
+  assert.deepEqual(Object.keys(h.patches[0]).sort(), ['groupSectionVisibility', 'groupedActivities.joined']);
+  assert.equal(h.page.data.groupedActivities.joined.length, 0);
+  assert.equal(h.page.data.groupSectionVisibility.joined, false);
+});
+
+test('list commits serialize only compact media keys, not card or page-state data', () => {
+  let mediaKeys = 0;
+  const h = commitHarness({ JSON: {
+    stringify(value) {
+      assert.ok(Array.isArray(value), 'full card or page-state serialization is forbidden');
+      mediaKeys++;
+      return JSON.stringify(value);
+    }
+  } });
+  h.page._commitHomeList(structuredClone(h.list));
+  const next = structuredClone(h.list);
+  next[1].name = 'changed';
+  h.page._commitHomeList(next);
+  assert.equal(h.patches.length, 1);
+  assert.equal(mediaKeys, 6);
+});
+
 test('same response reprocesses at a time boundary and after account change', async () => {
   const h=harness(); let processed=0;
   const list=[{...small(1),name:'event',startTime:'1970-01-01 00:01',status:'未开始',participants:[]}];
@@ -741,20 +870,14 @@ test('same response reprocesses at a time boundary and after account change', as
   assert.equal(processed,3);
 });
 
-test('avatar fallback updates the displayed last-three avatar rather than an earlier participant', () => {
-  const { page } = harness();
-  const avatars = Array.from({length: 6}, (_, i) => ({url: `avatar-${i}`}));
-  const activity = {_id: 61, avatarList: avatars, cardAvatars: avatars.slice(-3)};
-  page._activityList = [activity];
-  let commits = 0;
-  page._commitHomeList = () => { commits++; };
-  page.onAvatarError({currentTarget: {dataset: {activityId: '61', index: 2}}});
-  assert.equal(commits, 1);
-  assert.equal(activity.avatarList[2].url, 'avatar-2');
-  assert.equal(activity.cardAvatars[2], activity.avatarList[5]);
-  assert.equal(activity.cardAvatars[2].isDefault, true);
-  page.onAvatarError({currentTarget: {dataset: {activityId: '61', index: -1}}});
-  assert.equal(commits, 1);
+test('non-rendered participant avatars do not update home cards', () => {
+  const h = commitHarness();
+  const next = structuredClone(h.list);
+  next[1].participants[0].avatarUrl = 'new-avatar';
+  next[1].participants.reverse();
+  h.page._commitHomeList(next);
+  assert.equal(h.patches.length, 0);
+  assert.equal(h.page._activityList[1].participants[1].avatarUrl, 'new-avatar');
 });
 
 test('touch promotion updates image priority without controlling skeleton visibility', () => {

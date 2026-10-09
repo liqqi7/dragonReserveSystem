@@ -148,16 +148,16 @@ test("stale cover image events cannot reveal a newer cover", () => {
 });
 
 
-test("detail prefills edit page and opens cover drawer without waiting for its request", async () => {
+test("detail prefill opens the edit cover drawer without issuing a redundant detail request", async () => {
   const definition = loadPageDefinition({ accessToken: "token", isAuthenticated: true, userRole: "admin" });
   const service = require("../services/activity");
   const originalGet = service.getActivity;
   const originalList = service.listActivityCovers;
   const previousWx = global.wx;
-  let resolveDetail;
+  let detailCalls = 0;
   let listCalls = 0;
   let init;
-  service.getActivity = () => new Promise(resolve => { resolveDetail = resolve; });
+  service.getActivity = () => { detailCalls += 1; return Promise.resolve({ id: "activity-1" }); };
   service.listActivityCovers = () => { listCalls += 1; return Promise.resolve([]); };
   global.wx = { showToast() {}, navigateBack() {} };
   try {
@@ -173,14 +173,14 @@ test("detail prefills edit page and opens cover drawer without waiting for its r
       activityCover: { id: "cover-1", imageUrl: "https://example.com/cover.jpg", thumbnailUrl: "https://example.com/thumb.jpg" },
       participants: [], subItems: []
     } });
+    await page.onReady();
     assert.equal(page.data.loading, false);
     assert.equal(page.data.coverImageSrc, "https://example.com/cover.jpg");
     assert.equal(page.data.coverImageMounted, true);
     page.openCoverPicker();
     assert.equal(page.data.coverPickerVisible, true);
     assert.equal(listCalls, 0);
-    resolveDetail({ id: "activity-1", name: "过期网络数据" });
-    await Promise.resolve();
+    assert.equal(detailCalls, 0);
     assert.equal(page.data.form.name, "原活动");
   } finally {
     service.getActivity = originalGet;
@@ -203,13 +203,40 @@ test("direct edit entry uses detail cover without requesting the cover catalog",
   service.listActivityCovers = () => { listCalls += 1; return Promise.resolve([]); };
   try {
     const page = createPage({ loading: true, coverPickerVisible: false });
-    await definition.loadActivity.call({ ...page, applyActivity: definition.applyActivity }, "activity-2");
+    page.data.activityId = "activity-2";
+    await definition.onReady.call({
+      ...definition,
+      ...page
+    });
     assert.equal(page.data.loading, false);
     assert.equal(page.data.coverImageSrc, "https://example.com/direct.jpg");
     assert.equal(listCalls, 0);
   } finally {
     service.getActivity = originalGet;
     service.listActivityCovers = originalList;
+  }
+});
+
+test("a late opener prefill remains authoritative over the fallback detail request", async () => {
+  const definition = loadPageDefinition();
+  const service = require("../services/activity");
+  const originalGet = service.getActivity;
+  let resolveDetail;
+  service.getActivity = () => new Promise(resolve => { resolveDetail = resolve; });
+  try {
+    const page = {
+      ...definition,
+      ...createPage({ loading: true, activityId: "activity-2" })
+    };
+    const pending = page.onReady();
+    page._prefilled = true;
+    page.applyActivity({ _id: "activity-2", name: "Prefilled", participants: [], subItems: [] });
+    resolveDetail({ id: "activity-2", name: "Outdated response", participants: [] });
+    await pending;
+    assert.equal(page.data.form.name, "Prefilled");
+    assert.equal(page.data.loading, false);
+  } finally {
+    service.getActivity = originalGet;
   }
 });
 

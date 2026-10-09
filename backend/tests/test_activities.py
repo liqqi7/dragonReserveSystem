@@ -2,67 +2,67 @@ from datetime import datetime, timedelta
 from types import SimpleNamespace
 
 from app.models import Activity, ActivityParticipant
-from app.services.activity_service import APP_TIME_ZONE, _sync_activity_status
+from app.services.activity_service import _sync_activity_status
+from app.utils.app_time import APP_TIME_ZONE
 
 
 def _activity_for_status_sync(
     *,
     now: datetime,
     participant_count: int,
-    signup_deadline: datetime | None,
+    start_time: datetime,
     status: str = "未开始",
 ):
     return SimpleNamespace(
         status=status,
-        start_time=now + timedelta(hours=1) if signup_deadline is not None else now,
+        start_time=start_time,
         end_time=now + timedelta(hours=3),
-        signup_deadline=signup_deadline,
         participants=[object() for _ in range(participant_count)],
     )
 
 
-def test_activity_does_not_flow_before_signup_deadline() -> None:
+def test_activity_does_not_flow_before_start() -> None:
     now = datetime(2026, 8, 20, 10, 0, 0)
     activity = _activity_for_status_sync(
         now=now,
         participant_count=2,
-        signup_deadline=now + timedelta(seconds=1),
+        start_time=now + timedelta(seconds=1),
     )
 
     assert _sync_activity_status(activity, now) is False
     assert activity.status == "未开始"
 
 
-def test_historical_signup_deadline_does_not_flow_before_start() -> None:
+def test_activity_does_not_flow_an_hour_before_start() -> None:
     now = datetime(2026, 8, 20, 10, 0, 0)
     activity = _activity_for_status_sync(
         now=now,
         participant_count=2,
-        signup_deadline=now,
+        start_time=now + timedelta(hours=1),
     )
 
     assert _sync_activity_status(activity, now) is False
     assert activity.status == "未开始"
 
 
-def test_activity_does_not_flow_at_signup_deadline_with_three_people() -> None:
+def test_activity_does_not_flow_before_start_with_three_people() -> None:
     now = datetime(2026, 8, 20, 10, 0, 0)
     activity = _activity_for_status_sync(
         now=now,
         participant_count=3,
-        signup_deadline=now,
+        start_time=now + timedelta(hours=1),
     )
 
     assert _sync_activity_status(activity, now) is False
     assert activity.status == "未开始"
 
 
-def test_activity_without_signup_deadline_checks_at_start_time() -> None:
+def test_activity_checks_at_start_time() -> None:
     now = datetime(2026, 8, 20, 10, 0, 0)
     activity = _activity_for_status_sync(
         now=now,
         participant_count=2,
-        signup_deadline=None,
+        start_time=now,
     )
 
     assert _sync_activity_status(activity, now) is True
@@ -75,7 +75,7 @@ def test_terminal_activity_status_is_not_overwritten() -> None:
         activity = _activity_for_status_sync(
             now=now,
             participant_count=2,
-            signup_deadline=now,
+            start_time=now + timedelta(hours=1),
             status=status,
         )
 
@@ -91,7 +91,6 @@ def _create_signed_up_activity_for_checkin(db_session, admin_user, normal_user, 
         max_participants=10,
         start_time=start_time,
         end_time=end_time,
-        signup_deadline=start_time - timedelta(hours=1),
         signup_enabled=True,
         location_name="球馆",
         location_address="地址",
@@ -114,7 +113,7 @@ def _create_signed_up_activity_for_checkin(db_session, admin_user, normal_user, 
 
 
 def test_activity_list_allows_guest(client) -> None:
-    response = client.get("/api/v1/activities")
+    response = client.get("/api/v2/activities")
 
     assert response.status_code == 200
 
@@ -124,172 +123,157 @@ def test_admin_can_create_list_get_update_delete_activity(client, admin_headers)
     end_time = start_time + timedelta(hours=2)
 
     create_response = client.post(
-        "/api/v1/activities",
+        "/api/v2/activities",
         headers=admin_headers,
         json={
             "name": "羽毛球活动",
-            "status": "进行中",
+            "activity_cover_id": "aleksey-rico-001",
             "remark": "周末开打",
             "max_participants": 12,
             "start_time": start_time.isoformat(),
             "end_time": end_time.isoformat(),
-            "signup_deadline": (start_time - timedelta(hours=3)).isoformat(),
             "location_name": "球馆 A",
             "location_address": "测试地址 A",
             "location_latitude": 39.9042,
             "location_longitude": 116.4074,
-            "activity_type": "badminton",
         },
     )
     assert create_response.status_code == 201
     activity = create_response.json()
     activity_id = activity["id"]
     assert activity["name"] == "羽毛球活动"
-    assert activity["activity_type"] == "badminton"
+    assert activity["activity_cover_id"] == "aleksey-rico-001"
     # 默认允许报名
     assert activity["signup_enabled"] is True
 
-    list_response = client.get("/api/v1/activities", headers=admin_headers)
+    list_response = client.get("/api/v2/activities", headers=admin_headers)
     assert list_response.status_code == 200
     assert len(list_response.json()) == 1
 
-    detail_response = client.get(f"/api/v1/activities/{activity_id}", headers=admin_headers)
+    detail_response = client.get(f"/api/v2/activities/{activity_id}", headers=admin_headers)
     assert detail_response.status_code == 200
     assert detail_response.json()["id"] == activity_id
 
     update_response = client.patch(
-        f"/api/v1/activities/{activity_id}",
+        f"/api/v2/activities/{activity_id}",
         headers=admin_headers,
-        json={"remark": "已修改", "max_participants": 16, "activity_type": "boardgame"},
+        json={"remark": "已修改", "max_participants": 16, "activity_cover_id": "lam-002"},
     )
     assert update_response.status_code == 200
     assert update_response.json()["remark"] == "已修改"
     assert update_response.json()["max_participants"] == 16
-    assert update_response.json()["activity_type"] == "boardgame"
+    assert update_response.json()["activity_cover_id"] == "lam-002"
 
     logical_delete_response = client.patch(
-        f"/api/v1/activities/{activity_id}",
+        f"/api/v2/activities/{activity_id}",
         headers=admin_headers,
         json={"status": "已删除"},
     )
     assert logical_delete_response.status_code == 422
 
-    delete_response = client.delete(f"/api/v1/activities/{activity_id}", headers=admin_headers)
+    delete_response = client.delete(f"/api/v2/activities/{activity_id}", headers=admin_headers)
     assert delete_response.status_code == 204
 
-    list_after_delete = client.get("/api/v1/activities", headers=admin_headers)
+    list_after_delete = client.get("/api/v2/activities", headers=admin_headers)
     assert list_after_delete.status_code == 200
     assert list_after_delete.json() == []
 
 
-def test_admin_can_physically_delete_terminal_activities(client, admin_headers, db_session) -> None:
-    now = datetime.utcnow()
+def test_admin_can_physically_delete_terminal_activities(client, admin_user, admin_headers, db_session) -> None:
+    now = datetime.now(APP_TIME_ZONE).replace(tzinfo=None)
     cases = (
         ("删除已取消", "已取消", now + timedelta(days=2), now + timedelta(days=2, hours=1)),
         ("删除已流局", "已流局", now + timedelta(days=3), now + timedelta(days=3, hours=1)),
         ("删除已结束", "已结束", now - timedelta(hours=2), now - timedelta(hours=1)),
     )
-
     for name, status, start_time, end_time in cases:
-        create_response = client.post(
-            "/api/v1/activities",
-            headers=admin_headers,
-            json={
-                "name": name,
-                "status": status,
-                "remark": "物理删除测试",
-                "start_time": start_time.isoformat(),
-                "end_time": end_time.isoformat(),
-                "signup_deadline": start_time.isoformat(),
-            },
-        )
-        assert create_response.status_code == 201
-        activity_id = create_response.json()["id"]
-
-        delete_response = client.delete(f"/api/v1/activities/{activity_id}", headers=admin_headers)
+        activity = Activity(name=name, status=status, remark="物理删除测试",
+                            start_time=start_time, end_time=end_time, created_by=admin_user.id)
+        db_session.add(activity)
+        db_session.flush()
+        db_session.add(ActivityParticipant(activity_id=activity.id, user_id=admin_user.id,
+                                          display_nickname=admin_user.nickname, display_avatar_url=""))
+        db_session.commit()
+        activity_id = activity.id
+        delete_response = client.delete(f"/api/v2/activities/{activity_id}", headers=admin_headers)
         assert delete_response.status_code == 204
-        assert client.get(f"/api/v1/activities/{activity_id}").status_code == 404
+        assert client.get(f"/api/v2/activities/{activity_id}").status_code == 404
         assert db_session.get(Activity, activity_id) is None
-        assert (
-            db_session.query(ActivityParticipant)
-            .filter(ActivityParticipant.activity_id == activity_id)
-            .count()
-            == 0
-        )
-
+        assert db_session.query(ActivityParticipant).filter_by(activity_id=activity_id).count() == 0
 
 def test_activity_name_and_remark_constraints(client, admin_headers) -> None:
     start_time = datetime.utcnow() + timedelta(days=2)
     end_time = start_time + timedelta(hours=2)
     base_payload = {
         "name": "一二三四五六七八九十",
+        "activity_cover_id": "aleksey-rico-001",
         "remark": "活动说明",
         "start_time": start_time.isoformat(),
         "end_time": end_time.isoformat(),
     }
 
-    valid_response = client.post("/api/v1/activities", headers=admin_headers, json=base_payload)
+    valid_response = client.post("/api/v2/activities", headers=admin_headers, json=base_payload)
     assert valid_response.status_code == 201
     activity_id = valid_response.json()["id"]
 
     too_long_name = client.post(
-        "/api/v1/activities",
+        "/api/v2/activities",
         headers=admin_headers,
         json={**base_payload, "name": "一二三四五六七八九十甲"},
     )
     assert too_long_name.status_code == 422
 
     missing_remark = client.post(
-        "/api/v1/activities",
+        "/api/v2/activities",
         headers=admin_headers,
         json={key: value for key, value in base_payload.items() if key != "remark"},
     )
     assert missing_remark.status_code == 422
 
     blank_remark = client.post(
-        "/api/v1/activities",
+        "/api/v2/activities",
         headers=admin_headers,
         json={**base_payload, "remark": "   "},
     )
     assert blank_remark.status_code == 422
 
     max_length_remark = client.post(
-        "/api/v1/activities",
+        "/api/v2/activities",
         headers=admin_headers,
         json={**base_payload, "remark": "备" * 200},
     )
     assert max_length_remark.status_code == 201
 
     too_long_remark = client.post(
-        "/api/v1/activities",
+        "/api/v2/activities",
         headers=admin_headers,
         json={**base_payload, "remark": "备" * 201},
     )
     assert too_long_remark.status_code == 422
 
     update_too_long_name = client.patch(
-        f"/api/v1/activities/{activity_id}",
+        f"/api/v2/activities/{activity_id}",
         headers=admin_headers,
         json={"name": "一二三四五六七八九十甲"},
     )
     assert update_too_long_name.status_code == 422
 
     update_blank_remark = client.patch(
-        f"/api/v1/activities/{activity_id}",
+        f"/api/v2/activities/{activity_id}",
         headers=admin_headers,
         json={"remark": "   "},
     )
     assert update_blank_remark.status_code == 422
 
     update_too_long_remark = client.patch(
-        f"/api/v1/activities/{activity_id}",
+        f"/api/v2/activities/{activity_id}",
         headers=admin_headers,
         json={"remark": "备" * 201},
     )
     assert update_too_long_remark.status_code == 422
 
     partial_update = client.patch(
-        f"/api/v1/activities/{activity_id}",
+        f"/api/v2/activities/{activity_id}",
         headers=admin_headers,
         json={"max_participants": 20},
     )
@@ -297,7 +281,7 @@ def test_activity_name_and_remark_constraints(client, admin_headers) -> None:
 
 
 def test_my_activities_requires_auth(client) -> None:
-    response = client.get("/api/v1/activities/me/signed-up")
+    response = client.get("/api/v2/activities/me/signed-up")
 
     assert response.status_code == 401
 
@@ -324,7 +308,6 @@ def test_my_activities_returns_only_current_user_signups_sorted(
             max_participants=None,
             start_time=start_time,
             end_time=start_time + timedelta(hours=1),
-            signup_deadline=start_time - timedelta(hours=1),
             signup_enabled=True,
             location_name="测试地点",
             location_address="测试地址",
@@ -359,7 +342,7 @@ def test_my_activities_returns_only_current_user_signups_sorted(
     )
     db_session.commit()
 
-    response = client.get("/api/v1/activities/me/signed-up", headers=user_headers)
+    response = client.get("/api/v2/activities/me/signed-up", headers=user_headers)
 
     assert response.status_code == 200
     data = response.json()
@@ -372,45 +355,40 @@ def test_my_activities_returns_only_current_user_signups_sorted(
     assert "他人活动" not in [item["name"] for item in data]
     assert all(any(p["user_id"] == normal_user.id for p in item["participants"]) for item in data)
 
-    second_response = client.get("/api/v1/activities/me/signed-up", headers=second_user_headers)
+    second_response = client.get("/api/v2/activities/me/signed-up", headers=second_user_headers)
 
     assert second_response.status_code == 200
     assert [item["name"] for item in second_response.json()] == ["他人活动"]
 
 
-def test_non_admin_cannot_create_activity(client, user_headers) -> None:
+def test_normal_user_can_create_activity(client, user_headers) -> None:
     start_time = datetime.utcnow() + timedelta(days=1)
     end_time = start_time + timedelta(hours=1)
     response = client.post(
-        "/api/v1/activities",
+        "/api/v2/activities",
         headers=user_headers,
         json={
             "name": "普通用户建活动",
+            "activity_cover_id": "aleksey-rico-001",
             "remark": "权限测试",
             "start_time": start_time.isoformat(),
             "end_time": end_time.isoformat(),
         },
     )
 
-    assert response.status_code == 403
-    assert response.json()["code"] == "PERMISSION_DENIED"
+    assert response.status_code == 201
 
 
 def test_admin_can_signup(client, sample_activity, admin_headers) -> None:
-    signup_response = client.post(f"/api/v1/activities/{sample_activity.id}/signup", headers=admin_headers)
+    signup_response = client.post(f"/api/v2/activities/{sample_activity.id}/signup", headers=admin_headers)
     assert signup_response.status_code == 200
     assert signup_response.json()["status"] == "signed_up"
 
 
-def test_legacy_activity_aliases_remain_available(client) -> None:
-    paths = client.app.openapi()["paths"]
-
-    assert "/api/v1/activities/mine" in paths
-    assert "delete" in paths["/api/v1/activities/{activity_id}/signup"]
 
 
 def test_normal_user_can_signup(client, sample_activity, user_headers) -> None:
-    response = client.post(f"/api/v1/activities/{sample_activity.id}/signup", headers=user_headers)
+    response = client.post(f"/api/v2/activities/{sample_activity.id}/signup", headers=user_headers)
 
     assert response.status_code == 200
     assert response.json()["status"] == "signed_up"
@@ -421,10 +399,11 @@ def test_creator_auto_signed_up_on_create(client, admin_headers) -> None:
     end_time = start_time + timedelta(hours=2)
 
     create_response = client.post(
-        "/api/v1/activities",
+        "/api/v2/activities",
         headers=admin_headers,
         json={
             "name": "自动报名活动",
+            "activity_cover_id": "aleksey-rico-001",
             "remark": "自动报名测试",
             "start_time": start_time.isoformat(),
             "end_time": end_time.isoformat(),
@@ -450,7 +429,6 @@ def test_unlimited_capacity_allows_admin_signup(client, db_session, admin_user, 
         max_participants=None,
         start_time=start_time,
         end_time=end_time,
-        signup_deadline=start_time - timedelta(minutes=30),
         signup_enabled=True,
         location_name="球馆",
         location_address="地址",
@@ -463,7 +441,7 @@ def test_unlimited_capacity_allows_admin_signup(client, db_session, admin_user, 
     db_session.refresh(activity)
 
     # 先报名一次
-    response1 = client.post(f"/api/v1/activities/{activity.id}/signup", headers=admin_headers)
+    response1 = client.post(f"/api/v2/activities/{activity.id}/signup", headers=admin_headers)
     assert response1.status_code == 200
 
     # 伪造另一个用户报名，验证不会触发人数上限（这里只是覆盖逻辑，不检查重复用户）
@@ -485,7 +463,6 @@ def test_signup_disabled_returns_validation_error(client, db_session, admin_user
         max_participants=10,
         start_time=start_time,
         end_time=end_time,
-        signup_deadline=start_time,
         signup_enabled=False,
         location_name="球馆",
         location_address="地址",
@@ -497,7 +474,7 @@ def test_signup_disabled_returns_validation_error(client, db_session, admin_user
     db_session.commit()
     db_session.refresh(activity)
 
-    response = client.post(f"/api/v1/activities/{activity.id}/signup", headers=admin_headers)
+    response = client.post(f"/api/v2/activities/{activity.id}/signup", headers=admin_headers)
     assert response.status_code == 422
     assert response.json()["code"] == "VALIDATION_ERROR"
 
@@ -519,7 +496,7 @@ def test_checkin_before_start_time_returns_validation_error(
     )
 
     response = client.post(
-        f"/api/v1/activities/{activity.id}/checkin",
+        f"/api/v2/activities/{activity.id}/checkin",
         headers=user_headers,
         json={"lat": 39.9042, "lng": 116.4074},
     )
@@ -545,7 +522,7 @@ def test_checkin_within_30_minutes_before_start_still_returns_validation_error(
     )
 
     response = client.post(
-        f"/api/v1/activities/{activity.id}/checkin",
+        f"/api/v2/activities/{activity.id}/checkin",
         headers=user_headers,
         json={"lat": 39.9042, "lng": 116.4074},
     )
@@ -571,7 +548,7 @@ def test_self_checkin_after_activity_ends_returns_validation_error(
     )
 
     response = client.post(
-        f"/api/v1/activities/{activity.id}/checkin",
+        f"/api/v2/activities/{activity.id}/checkin",
         headers=user_headers,
         json={"lat": 39.9042, "lng": 116.4074},
     )
@@ -581,11 +558,11 @@ def test_self_checkin_after_activity_ends_returns_validation_error(
 
 
 def test_admin_can_remove_participant(client, signed_up_activity, admin_headers, db_session, normal_user) -> None:
-    detail_response = client.get(f"/api/v1/activities/{signed_up_activity.id}", headers=admin_headers)
+    detail_response = client.get(f"/api/v2/activities/{signed_up_activity.id}", headers=admin_headers)
     participant_id = detail_response.json()["participants"][0]["id"]
 
     response = client.delete(
-        f"/api/v1/activities/{signed_up_activity.id}/participants/{participant_id}",
+        f"/api/v2/activities/{signed_up_activity.id}/participants/{participant_id}",
         headers=admin_headers,
     )
 
@@ -610,7 +587,6 @@ def test_admin_can_retro_checkin_participant(
         max_participants=None,
         start_time=start_time,
         end_time=end_time,
-        signup_deadline=start_time - timedelta(hours=1),
         signup_enabled=True,
         location_name="球馆",
         location_address="地址",
@@ -632,7 +608,7 @@ def test_admin_can_retro_checkin_participant(
     db_session.refresh(participant)
 
     response = client.post(
-        f"/api/v1/activities/{activity.id}/participants/{participant.id}/admin-checkin",
+        f"/api/v2/activities/{activity.id}/participants/{participant.id}/admin-checkin",
         headers=admin_headers,
     )
 
@@ -664,7 +640,6 @@ def test_admin_can_cancel_checkin_participant(
         max_participants=None,
         start_time=start_time,
         end_time=end_time,
-        signup_deadline=start_time - timedelta(hours=1),
         signup_enabled=True,
         location_name="球馆",
         location_address="地址",
@@ -687,7 +662,7 @@ def test_admin_can_cancel_checkin_participant(
     db_session.refresh(participant)
 
     response = client.delete(
-        f"/api/v1/activities/{activity.id}/participants/{participant.id}/admin-checkin",
+        f"/api/v2/activities/{activity.id}/participants/{participant.id}/admin-checkin",
         headers=admin_headers,
     )
 
@@ -715,11 +690,12 @@ def test_user_cannot_remove_other_participant(
     db_session.commit()
 
     response = client.delete(
-        f"/api/v1/activities/{sample_activity.id}/participants/{participant.id}",
+        f"/api/v2/activities/{sample_activity.id}/participants/{participant.id}",
         headers=user_headers,
     )
 
-    assert response.status_code == 422
+    assert response.status_code == 403
+    assert response.json()["code"] == "PERMISSION_DENIED"
 
 
 def test_duplicate_admin_signup_returns_conflict(client, db_session, sample_activity, admin_user, admin_headers) -> None:
@@ -731,7 +707,7 @@ def test_duplicate_admin_signup_returns_conflict(client, db_session, sample_acti
     ))
     db_session.commit()
 
-    response = client.post(f"/api/v1/activities/{sample_activity.id}/signup", headers=admin_headers)
+    response = client.post(f"/api/v2/activities/{sample_activity.id}/signup", headers=admin_headers)
 
     assert response.status_code == 409
     assert response.json()["code"] == "CONFLICT"
@@ -747,7 +723,7 @@ def test_checkin_success(client, db_session, admin_user, normal_user, second_use
     )
 
     response = client.post(
-        f"/api/v1/activities/{activity.id}/checkin",
+        f"/api/v2/activities/{activity.id}/checkin",
         headers=user_headers,
         json={"lat": 39.9042, "lng": 116.4074},
     )
@@ -768,7 +744,7 @@ def test_checkin_outside_radius_returns_validation_error(
     )
 
     response = client.post(
-        f"/api/v1/activities/{activity.id}/checkin",
+        f"/api/v2/activities/{activity.id}/checkin",
         headers=user_headers,
         json={"lat": 31.2304, "lng": 121.4737},
     )
@@ -789,7 +765,6 @@ def test_signup_after_deadline_returns_validation_error(client, db_session, admi
         max_participants=10,
         start_time=start_time,
         end_time=end_time,
-        signup_deadline=start_time - timedelta(hours=1),
         location_name="球馆",
         location_address="地址",
         location_latitude=39.9042,
@@ -800,7 +775,7 @@ def test_signup_after_deadline_returns_validation_error(client, db_session, admi
     db_session.commit()
     db_session.refresh(activity)
 
-    response = client.post(f"/api/v1/activities/{activity.id}/signup", headers=admin_headers)
+    response = client.post(f"/api/v2/activities/{activity.id}/signup", headers=admin_headers)
 
     assert response.status_code == 422
     assert response.json()["code"] == "VALIDATION_ERROR"
@@ -819,7 +794,6 @@ def test_admin_can_update_terminal_activity(client, db_session, admin_user, admi
         max_participants=10,
         start_time=start_time,
         end_time=end_time,
-        signup_deadline=start_time - timedelta(hours=1),
         location_name="龙城俱乐部",
         location_address="常州龙城",
         location_latitude=31.8112,
@@ -829,16 +803,6 @@ def test_admin_can_update_terminal_activity(client, db_session, admin_user, admi
     db_session.add(activity)
     db_session.commit()
     db_session.refresh(activity)
-
-    # 管理员通过 v1 更新
-    v1_response = client.patch(
-        f"/api/v1/activities/{activity.id}",
-        headers=admin_headers,
-        json={"remark": "管理员更新已结束活动备注v1", "name": "拼豆手工活动"},
-    )
-    assert v1_response.status_code == 200
-    assert v1_response.json()["remark"] == "管理员更新已结束活动备注v1"
-    assert v1_response.json()["status"] == "已结束"
 
     # 管理员通过 v2 更新
     v2_response = client.patch(
@@ -864,7 +828,6 @@ def test_non_admin_owner_cannot_update_terminal_activity(client, db_session, nor
         max_participants=10,
         start_time=start_time,
         end_time=end_time,
-        signup_deadline=start_time - timedelta(hours=1),
         location_name="龙城俱乐部",
         location_address="常州龙城",
         location_latitude=31.8112,
@@ -899,7 +862,6 @@ def test_admin_can_cancel_ended_terminal_activity(client, db_session, admin_user
         max_participants=10,
         start_time=start_time,
         end_time=end_time,
-        signup_deadline=start_time - timedelta(hours=1),
         location_name="龙城俱乐部",
         location_address="常州龙城",
         location_latitude=31.8112,
@@ -946,7 +908,6 @@ def test_non_admin_cannot_cancel_ended_terminal_activity(client, db_session, nor
         max_participants=10,
         start_time=start_time,
         end_time=end_time,
-        signup_deadline=start_time - timedelta(hours=1),
         location_name="龙城俱乐部",
         location_address="常州龙城",
         location_latitude=31.8112,

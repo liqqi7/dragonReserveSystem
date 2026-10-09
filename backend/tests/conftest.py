@@ -89,7 +89,7 @@ def second_user_headers(second_user: User) -> dict[str, str]:
 @pytest.fixture()
 def sample_activity(db_session: Session, admin_user: User) -> Activity:
     now = datetime.utcnow()
-    activity = Activity(name="Sample activity", status="ongoing", remark="", max_participants=10, start_time=now + timedelta(days=1), end_time=now + timedelta(days=1, hours=2), signup_deadline=now + timedelta(hours=12), location_name="Venue", location_address="Address", location_latitude=39.9042, location_longitude=116.4074, created_by=admin_user.id)
+    activity = Activity(name="Sample activity", status="ongoing", remark="", max_participants=10, start_time=now + timedelta(days=1), end_time=now + timedelta(days=1, hours=2), location_name="Venue", location_address="Address", location_latitude=39.9042, location_longitude=116.4074, created_by=admin_user.id)
     db_session.add(activity)
     db_session.commit()
     db_session.refresh(activity)

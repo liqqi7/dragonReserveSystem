@@ -1,5 +1,6 @@
 const { getApiBaseUrl } = require("./config");
 const { createDiagnosticOutbox } = require("./diagnosticOutbox");
+const { isNormalHomeDiagnostic } = require("./diagnosticPolicy");
 
 function createTraceId(prefix = "trace") {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
@@ -75,8 +76,7 @@ function shouldUploadBackend(event) {
     event === "home_media_attempt" ||
     event === "request_fail" ||
     event === "request_slow" ||
-    event === "page_error" ||
-    event === "activity_card_video_waiting"
+    event === "page_error"
   );
 }
 
@@ -326,12 +326,6 @@ function logPageError(operation, err, context = {}) {
     traceId: (err && err.traceId) || "",
     ...normalizeRealtimeValue(context)
   });
-}
-
-function isNormalHomeDiagnostic(event, payload = {}) {
-  return event === 'home_presentation_snapshot' && payload.reason === 'all_ready_state_committed' ||
-    event === 'home_media_attempt' && payload.stage === 'attempt_succeeded' && !payload.slowAttempt &&
-    !/failed|timeout|invalid|error/.test(Object.keys(payload.evidence || {}).join(' '));
 }
 
 function reportRealtime(level, event, payload) {

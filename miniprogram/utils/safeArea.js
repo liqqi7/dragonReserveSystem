@@ -22,6 +22,16 @@ function getWindowInfoCompat() {
   return readRuntimeInfo("getWindowInfo");
 }
 
+function getRpxPerPx() {
+  try {
+    const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
+    const width = Number(info && info.windowWidth);
+    return width > 0 ? 750 / width : 750 / 390;
+  } catch (error) {
+    return 750 / 390;
+  }
+}
+
 function getDeviceInfoCompat() {
   return readRuntimeInfo("getDeviceInfo");
 }
@@ -71,37 +81,6 @@ function resolveBottomSafeAreaRpx(windowInfo, deviceInfo) {
   return 0;
 }
 
-function buildSafeAreaDiagnostic() {
-  const windowInfo = getWindowInfoCompat();
-  const deviceInfo = getDeviceInfoCompat();
-  const windowWidth = finiteNumber(windowInfo.windowWidth);
-  const reportedBottomPx = getBottomSafeAreaPx(windowInfo);
-  const reportedBottomRpx = windowWidth && reportedBottomPx > 0
-    ? roundRpx(reportedBottomPx * 750 / windowWidth)
-    : 0;
-  const resolvedBottomRpx = resolveBottomSafeAreaRpx(windowInfo, deviceInfo);
-
-  return {
-    platform: deviceInfo.platform || windowInfo.platform || "",
-    brand: deviceInfo.brand || "",
-    model: deviceInfo.model || "",
-    system: deviceInfo.system || windowInfo.system || "",
-    pixelRatio: windowInfo.pixelRatio,
-    screenWidth: windowInfo.screenWidth,
-    screenHeight: windowInfo.screenHeight,
-    windowWidth: windowInfo.windowWidth,
-    windowHeight: windowInfo.windowHeight,
-    screenTop: windowInfo.screenTop,
-    statusBarHeight: windowInfo.statusBarHeight,
-    safeAreaInsets: windowInfo.safeAreaInsets || null,
-    safeArea: windowInfo.safeArea || null,
-    computedBottomPx: reportedBottomPx,
-    computedBottomRpx: reportedBottomRpx,
-    resolvedBottomRpx,
-    androidFallbackApplied: reportedBottomPx <= 0 && isAndroidDevice(deviceInfo, windowInfo)
-  };
-}
-
 function getBottomSafeAreaRpx() {
   const windowInfo = getWindowInfoCompat();
   const deviceInfo = getDeviceInfoCompat();
@@ -111,8 +90,8 @@ function getBottomSafeAreaRpx() {
 module.exports = {
   ANDROID_BOTTOM_SAFE_AREA_FALLBACK_RPX,
   getWindowInfoCompat,
+  getRpxPerPx,
   getDeviceInfoCompat,
   getBottomSafeAreaPx,
-  buildSafeAreaDiagnostic,
   getBottomSafeAreaRpx
 };
