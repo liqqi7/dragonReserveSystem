@@ -58,7 +58,7 @@ def recent_arrivals(limit: int = Query(50, ge=1, le=50), db: Session = Depends(g
                     actor: User = Depends(get_current_user)):
     member(actor)
     latest = select(Inventory.game_id, func.max(Inventory.created_at).label('entered_at')).where(
-        Inventory.owner_user_id == actor.id, Inventory.archived_at.is_(None),
+        Inventory.archived_at.is_(None),
         Inventory.status != 'retired').group_by(Inventory.game_id).subquery()
     rows = db.scalars(select(BoardGame).join(latest, latest.c.game_id == BoardGame.id)
         .where(*visible_games()).order_by(latest.c.entered_at.desc(), BoardGame.id.desc()).limit(limit))

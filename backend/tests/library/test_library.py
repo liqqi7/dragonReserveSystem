@@ -97,7 +97,7 @@ def test_version_permissions_revision_and_wrong_game(library):
     data = {'expected_revision':box['revision'], 'bgg_version_id':102}
     app.dependency_overrides[get_current_user] = lambda:other
     assert client.put(url, json=data).status_code == 403
-    assert client.get('/api/v1/boardgames/recent-arrivals').json()['items'] == []
+    assert client.get('/api/v1/boardgames/recent-arrivals').json()['items'][0]['id'] == result['game_id']
     app.dependency_overrides[get_current_user] = lambda:actor
     assert client.put(url, json={**data,'bgg_version_id':999}).status_code == 422
     saved = client.put(url, json=data)
@@ -276,3 +276,30 @@ def test_gallery_is_optional_cached_and_uses_game_id(library, monkeypatch):
     assert client.get(path).status_code == 503
     assert client.get(f"/api/v1/boardgames/{result['game_id']}").status_code == 200
     boardgame_images._cache.clear()
+
+
+def test_recent_arrivals_all_owners_deduplicated_and_ordered(library):
+    client, db, actor, other, factory, app = library
+    from datetime import datetime
+    fields = dict(aliases=[], game_type='base', local_overrides={}, search_text='',
+                  created_by=actor.id, updated_by=actor.id, created_at=now(), updated_at=now())
+    first = BoardGame(name='First', is_visible=True, **fields)
+    second = BoardGame(name='Second', is_visible=True, **fields)
+    db.add_all([first, second]); db.flush()
+    inventory_fields = dict(owner_type='member', created_by=actor.id, updated_by=actor.id, updated_at=now())
+    boxes = [Inventory(**inventory_fields, game_id=first.id, owner_user_id=actor.id, created_at=datetime(2026,1,1)),
+             Inventory(**inventory_fields, game_id=first.id, owner_user_id=other.id, created_at=datetime(2026,3,1)),
+             Inventory(**inventory_fields, game_id=second.id, owner_user_id=other.id, created_at=datetime(2026,2,1))]
+    db.add_all(boxes); db.commit()
+    def ids():
+        return [g['id'] for g in client.get('/api/v1/boardgames/recent-arrivals').json()['items']]
+    assert ids() == [first.id, second.id]
+    app.dependency_overrides[get_current_user] = lambda:other
+    assert ids() == [first.id, second.id]
+    assert len(client.get('/api/v1/boardgames/recent-arrivals?limit=1').json()['items']) == 1
+    boxes[1].status='retired'; db.commit()
+    assert ids() == [second.id, first.id]
+    boxes[2].archived_at=datetime(2026,4,1); db.commit()
+    assert ids() == [first.id]
+    first.is_visible=False; db.commit()
+    assert ids() == []
