@@ -1,6 +1,6 @@
 /**
- * Shared activity adaptation + list-style enrichment for detail page.
- * Mirrors activity_list processActivityList mapping for a single item.
+ * Shared activity adaptation for the home and detail pages.
+ * Also enriches a single activity with list-style presentation fields.
  */
 
 const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
@@ -314,7 +314,7 @@ function adaptActivity(item) {
  * @param {object} rawItem - API activity payload
  * @param {Array} typeStyles - optional legacy cache fallback while upgrading existing local data
  * @param {string} myUserId
- * @param {string} myNickname
+ * @param {string} myNickname 保留调用兼容性；不用于身份判断
  * @param {Date} [now]
  */
 function enrichSingleActivity(rawItem, typeStyles, myUserId, myNickname, now) {
@@ -360,7 +360,6 @@ function enrichSingleActivity(rawItem, typeStyles, myUserId, myNickname, now) {
   rawParticipants.forEach((p) => {
     if (typeof p === "object" && p !== null) {
       const uid = p.userId;
-      const name = (p.name || "").trim();
       const checkedIn = !!p.checkedInAt;
       if (checkedIn) checkinCount += 1;
       const avatarUrl = normalizeAvatarUrl(p.avatarUrl);
@@ -370,15 +369,9 @@ function enrichSingleActivity(rawItem, typeStyles, myUserId, myNickname, now) {
       if (myIdStr && uidStr && uidStr === myIdStr) {
         hasSignedUp = true;
         if (checkedIn) hasCheckedIn = true;
-      } else if (myNickname && name === myNickname) {
-        hasSignedUp = true;
-        if (checkedIn) hasCheckedIn = true;
       }
     } else if (typeof p === "string") {
       avatarList.push({ url: DEFAULT_AVATAR, isDefault: true });
-      if (myNickname && p === myNickname) {
-        hasSignedUp = true;
-      }
     }
   });
   activity.hasSignedUp = hasSignedUp;
@@ -453,24 +446,7 @@ function enrichSingleActivity(rawItem, typeStyles, myUserId, myNickname, now) {
   return activity;
 }
 
-function formatDetailTimeRange(activity) {
-  const start = activity.startTime || "";
-  if (!start) return "";
-  const datePart = start.split(" ")[0] || "";
-  const timePart = (start.split(" ")[1] || "").slice(0, 5);
-  const end = activity.endTime ? String(activity.endTime) : "";
-  const endTimePart = end.split(" ")[1] ? end.split(" ")[1].slice(0, 5) : "";
-  const md = datePart.length >= 10 ? `${datePart.slice(5, 7)}.${datePart.slice(8, 10)}` : "";
-  if (!md || !timePart) return start;
-  return endTimePart ? `${md} ${timePart} - ${endTimePart}` : `${md} ${timePart}`;
-}
 
-function formatLocationLine(activity) {
-  const a = (activity.locationName || "").trim();
-  const b = (activity.locationAddress || "").trim();
-  if (a && b) return `${a} ${b}`;
-  return a || b || "—";
-}
 
 module.exports = {
   DEFAULT_AVATAR,
@@ -480,7 +456,7 @@ module.exports = {
   adaptActivity,
   normalizeAvatarUrl,
   normalizeTypeKey,
-  formatDetailTimeRange,
-  formatLocationLine,
-  buildTypeStyleMap
+  buildTypeStyleMap,
+  normalizeActivityTypeByMap,
+  resolveStyleByTypeAndKey
 };

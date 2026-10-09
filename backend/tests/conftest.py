@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+import os
 from pathlib import Path
 from typing import Generator
 
@@ -9,8 +10,10 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
+os.environ["APP_ENV"] = "test"
+
 from app.core.database import Base, get_db
-from app.core.security import get_password_hash
+from app.core.security import create_access_token, get_password_hash
 from app.main import app
 from app.models import Activity, ActivityParticipant, User
 
@@ -66,18 +69,21 @@ def second_user(db_session: Session) -> User:
 
 
 @pytest.fixture()
-def admin_headers(client: TestClient, admin_user: User) -> dict[str, str]:
-    return {"Authorization": f"Bearer {client.post('/api/v1/auth/login', json={'username': admin_user.username, 'password': 'admin123456'}).json()['access_token']}"}
+def admin_headers(admin_user: User) -> dict[str, str]:
+    token = create_access_token(subject=str(admin_user.id), role=admin_user.role)
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture()
-def user_headers(client: TestClient, normal_user: User) -> dict[str, str]:
-    return {"Authorization": f"Bearer {client.post('/api/v1/auth/login', json={'username': normal_user.username, 'password': 'member123456'}).json()['access_token']}"}
+def user_headers(normal_user: User) -> dict[str, str]:
+    token = create_access_token(subject=str(normal_user.id), role=normal_user.role)
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture()
-def second_user_headers(client: TestClient, second_user: User) -> dict[str, str]:
-    return {"Authorization": f"Bearer {client.post('/api/v1/auth/login', json={'username': second_user.username, 'password': 'member223456'}).json()['access_token']}"}
+def second_user_headers(second_user: User) -> dict[str, str]:
+    token = create_access_token(subject=str(second_user.id), role=second_user.role)
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture()
@@ -96,3 +102,14 @@ def signed_up_activity(db_session: Session, sample_activity: Activity, normal_us
     db_session.commit()
     db_session.refresh(sample_activity)
     return sample_activity
+
+
+@pytest.fixture(autouse=True)
+def reset_invite_rate_limit_state():
+    """Each fixture DB represents a fresh application with fresh user IDs."""
+    from app.api.v1 import users
+    with users._invite_attempts_lock:
+        users._invite_attempts.clear()
+    yield
+    with users._invite_attempts_lock:
+        users._invite_attempts.clear()

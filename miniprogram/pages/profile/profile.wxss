@@ -37,12 +37,6 @@ page {
   align-items: center;
 }
 
-.profile-navbar-title {
-  color: #0a0a0a;
-  font-size: 46.15385rpx;
-  font-weight: 600;
-  line-height: 65.38462rpx;
-}
 
 .profile-scroll {
   position: relative;

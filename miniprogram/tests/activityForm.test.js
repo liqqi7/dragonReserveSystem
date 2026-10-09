@@ -73,6 +73,11 @@ test("buildEditForm preserves values without reviving the removed deadline", () 
   assert.equal(form.signupEnabled, false);
 });
 
+test("edit form raises legacy limited activities to the minimum capacity", () => {
+  assert.equal(buildEditForm({ maxParticipants: 2 }).maxParticipants, 3);
+  assert.equal(buildEditForm({ maxParticipants: null }).maxParticipants, 12);
+});
+
 test("applyStartDateTime only fills empty linked fields", () => {
   const filled = applyStartDateTime({ endDate: "", endTime: "", signupDeadlineDate: "", signupDeadlineTime: "" }, "2026-08-20 19:00");
   assert.equal(`${filled.endDate} ${filled.endTime}`, "2026-08-20 20:00");
@@ -103,6 +108,8 @@ test("validation checks text, time and participant limits", () => {
   assert.match(validateActivityForm({ ...valid, remark: "   " }, { mode: "edit", now }).message, /请输入活动备注/);
   assert.match(validateActivityForm({ ...valid, endTime: "11:00" }, { mode: "create", now }).message, /结束时间/);
   assert.equal(validateActivityForm({ ...valid, signupDeadlineTime: "12:30" }, { mode: "create", now }).ok, true);
+  assert.match(validateActivityForm({ ...valid, limitEnabled: true, maxParticipants: 2 }, { mode: "create", now }).message, /3–999/);
+  assert.equal(validateActivityForm({ ...valid, limitEnabled: true, maxParticipants: 3 }, { mode: "create", now }).ok, true);
   assert.match(validateActivityForm({ ...valid, limitEnabled: true, maxParticipants: 1000 }, { mode: "create", now }).message, /999/);
   assert.match(validateActivityForm({ ...valid, limitEnabled: true, maxParticipants: 3 }, { mode: "edit", participantCount: 4, now }).message, /当前报名人数 4/);
 });

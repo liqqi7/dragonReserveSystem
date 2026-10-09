@@ -1,12 +1,9 @@
-"""Keep deployed legacy client endpoints available during the v2 rollout."""
+"""Compatibility for the legacy activity endpoints still retained."""
 
 
 def test_legacy_v1_read_endpoints(client, user_headers):
     for path in [
         "/api/v1/activities/mine",
-        "/api/v1/stats/history",
-        "/api/v1/stats/history-summary",
-        "/api/v1/weather/activity?longitude=116.4&latitude=39.9&date=2026-09-07",
     ]:
         response = client.get(path, headers=user_headers)
         assert response.status_code == 200, (path, response.text)

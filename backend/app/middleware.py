@@ -6,9 +6,8 @@ import time
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response
 
-from app.core.logging import ensure_trace_id, logger
+from app.core.logging import ensure_trace_id, logger, safe_log_path
 
 
 class RequestContextMiddleware(BaseHTTPMiddleware):
@@ -25,7 +24,7 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
         logger.info(
             "request_completed method=%s path=%s status=%s duration_ms=%s trace_id=%s",
             request.method,
-            request.url.path,
+            safe_log_path(request.url.path),
             response.status_code,
             duration_ms,
             trace_id,

@@ -372,7 +372,5 @@ module.exports = {
   logInfo,
   logError,
   logPageError,
-  reportTransportFailToWechatAnalytics,
-  logRequestTransportFail,
-  getClientDiagnosticSessionId
+  logRequestTransportFail
 };

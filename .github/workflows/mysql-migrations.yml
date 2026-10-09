@@ -1,0 +1,32 @@
+name: MySQL migrations
+on:
+  push:
+    paths: ['backend/**', '.github/workflows/mysql-migrations.yml']
+  pull_request:
+    paths: ['backend/**', '.github/workflows/mysql-migrations.yml']
+jobs:
+  migrations:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: 'migration%test'
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install --require-hashes -r requirements-dev.lock
+      - run: python -m pytest migration_tests -q
+        env:
+          MIGRATION_TEST_SERVER_URL: 'mysql+pymysql://root:migration%25test@127.0.0.1:3306/mysql?charset=utf8mb4'

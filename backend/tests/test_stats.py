@@ -39,7 +39,7 @@ def test_activity_ranking_endpoint_returns_84_heatmap_days(client, db_session, a
     db_session.commit()
     db_session.add_all([
         ActivityParticipant(activity_id=activity.id, user_id=normal_user.id, display_nickname=normal_user.nickname, display_avatar_url=normal_user.avatar_url, checked_in_at=now),
-        ActivityParticipant(activity_id=activity.id, user_id=second_user.id, display_nickname=second_user.nickname, display_avatar_url=second_user.avatar_url),
+        ActivityParticipant(activity_id=activity.id, user_id=second_user.id, display_nickname=second_user.nickname, display_avatar_url=second_user.avatar_url, checked_in_at=now),
     ])
     db_session.commit()
 
@@ -47,16 +47,19 @@ def test_activity_ranking_endpoint_returns_84_heatmap_days(client, db_session, a
 
     assert response.status_code == 200
     payload = response.json()
-    assert [item["user_id"] for item in payload] == [normal_user.id]
+    assert len(payload) == 2
+    assert payload[0]["user_id"] == normal_user.id
+    assert payload[1]["user_id"] == second_user.id
     assert payload[0]["avatar_url"] == normal_user.avatar_url
     assert len(payload[0]["heatmap"]) == 84
+    assert len(payload[1]["heatmap"]) == 84
 
-    exhausted_page = client.get(
-        "/api/v1/stats/ranking/activity?offset=1&limit=20",
+    next_page = client.get(
+        "/api/v1/stats/ranking/activity?offset=1&limit=1",
         headers=user_headers,
     )
-    assert exhausted_page.status_code == 200
-    assert exhausted_page.json() == []
+    assert next_page.status_code == 200
+    assert [item["user_id"] for item in next_page.json()] == [payload[1]["user_id"]]
 
     invalid_page = client.get(
         "/api/v1/stats/ranking/activity?offset=0&limit=51",
@@ -94,8 +97,29 @@ def test_combined_ranking_endpoint_is_not_exposed(client, user_headers) -> None:
     assert response.status_code == 404
 
 
-def test_legacy_history_endpoints_remain_available(client) -> None:
+def test_retired_history_endpoints_are_removed(client) -> None:
     paths = client.app.openapi()["paths"]
 
-    assert "/api/v1/stats/history" in paths
-    assert "/api/v1/stats/history-summary" in paths
+    for path in ("/api/v1/stats/history", "/api/v1/stats/history-summary"):
+        assert path not in paths
+        assert client.get(path).status_code == 404
+
+
+def test_all_rankings_use_current_user_profile(db_session, admin_user, normal_user):
+    from app.services.stats_service import get_pigeon_ranking
+    now = datetime.utcnow()
+    activity = _activity(admin_user, name="资料来源", start=now - timedelta(hours=4), end=now - timedelta(hours=1))
+    db_session.add(activity)
+    db_session.flush()
+    db_session.add(ActivityParticipant(
+        activity_id=activity.id, user_id=normal_user.id,
+        display_nickname="历史昵称", display_avatar_url="/media/avatars/old.png",
+        checked_in_at=now,
+    ))
+    normal_user.nickname = "最新昵称"
+    normal_user.avatar_url = "/media/avatars/new.png"
+    db_session.commit()
+    for get_ranking in (get_activity_ranking, get_pigeon_ranking):
+        row = get_ranking(db_session)[0]
+        assert row.nickname == "最新昵称"
+        assert row.avatar_url == "/media/avatars/new.png"

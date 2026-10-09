@@ -6,7 +6,7 @@ const vm = require("node:vm");
 const { createRequire } = require("node:module");
 
 const root = path.join(__dirname, "..");
-const sheets = ["date-time-picker-sheet", "activity-form-sheet", "activity-cover-picker-sheet", "participants-drawer"];
+const sheets = ["date-time-picker-sheet", "activity-cover-picker-sheet", "participants-drawer"];
 const clone = value => JSON.parse(JSON.stringify(value));
 
 function componentHarness(name, embedded = false) {
@@ -192,7 +192,6 @@ function detailHarness() {
 }
 
 for (const [name, visible, rendered] of [
-  ["ActivityForm", "showActivityForm", "activityFormContainerRendered"],
   ["SubItemSignup", "showSubItemSignup", "subItemSignupContainerRendered"],
   ["ProjectMembers", "showProjectMembers", "projectMembersContainerRendered"]
 ]) {
@@ -200,7 +199,7 @@ for (const [name, visible, rendered] of [
     const page = detailHarness();
     const wxml = fs.readFileSync(path.join(root, "pages/activity_detail/activity_detail.wxml"), "utf8");
     assert.ok(wxml.includes(`bind:beforeleave="on${name}BeforeLeave"`));
-    Object.assign(page.data, { [visible]: true, [rendered]: true, activityFormSubmitting: true, signupSubmitting: true });
+    Object.assign(page.data, { [visible]: true, [rendered]: true, signupSubmitting: true });
     page[`on${name}BeforeLeave`]();
     assert.equal(page.data[visible], false);
     page[`on${name}AfterLeave`]();
@@ -209,7 +208,6 @@ for (const [name, visible, rendered] of [
     page[`on${name}AfterLeave`]();
     assert.equal(page.patches.length, count);
     assert.equal(page.data[rendered], false);
-    assert.equal(page.data.activityFormSubmitting, true);
     assert.equal(page.data.signupSubmitting, true);
   });
 
@@ -223,13 +221,3 @@ for (const [name, visible, rendered] of [
     assert.equal(page.data[visible], true);
   });
 }
-
-test("detail editing can reopen after native back without leaving the page", () => {
-  const page = detailHarness();
-  page.openAdminEdit();
-  page.onActivityFormBeforeLeave();
-  page.onActivityFormAfterLeave();
-  page.openAdminEdit();
-  assert.equal(page.data.showActivityForm, true);
-  assert.equal(page.data.activityFormContainerRendered, true);
-});

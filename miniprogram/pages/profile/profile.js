@@ -61,7 +61,6 @@ Page({
     isGuest: true,
     user: {
       nickname: "",
-      userIdShort: "",
       avatarUrl: "",
       subtitle: ""
     },
@@ -107,7 +106,6 @@ Page({
         isGuest: !app.globalData.isAuthenticated,
         user: {
           nickname: profile.nickname || "",
-          userIdShort: (userId || "").slice(0, 8),
           avatarUrl: normalizeAvatarUrl(profile.avatarUrl || ""),
           subtitle: getProfileSubtitle(profile.role || app.globalData.userRole, profile.createdAt)
         }
@@ -128,37 +126,18 @@ Page({
       }
     }
 
-    const shouldAutoLoginAndEdit = !!app.globalData._pendingAutoLoginAndEditProfile;
-    if (shouldAutoLoginAndEdit) {
-      app.globalData._pendingAutoLoginAndEditProfile = false;
-      const hasAccessToken = !!(app.globalData.accessToken || wx.getStorageSync("accessToken"));
-      if (!hasAccessToken) {
-        this.startRegister({ openEditAfterLogin: true });
-        return;
-      }
-      app.globalData._pendingOpenEditProfile = true;
-    }
-
     app.ensureUserReady(() => {
       const currentUser = app.globalData.userProfile || {};
-      const currentUserId = String(app.globalData.userId || "");
       this.setData({
         hasUser: true,
         isGuest: !app.globalData.isAuthenticated,
         user: {
           nickname: currentUser.nickname || "",
-          userIdShort: currentUserId.slice(0, 8),
           avatarUrl: normalizeAvatarUrl(currentUser.avatarUrl || ""),
           subtitle: getProfileSubtitle(currentUser.role || app.globalData.userRole, currentUser.createdAt)
         }
       });
-      if (app.globalData._pendingOpenEditProfile) {
-        app.globalData._pendingOpenEditProfile = false;
-        this.openEditModal({
-          forceProfileForSignup: !!app.globalData._pendingForceProfileForSignup
-        });
-        app.globalData._pendingForceProfileForSignup = false;
-      }
+
     });
   },
 
@@ -187,7 +166,6 @@ Page({
           isGuest: !app.globalData.isAuthenticated,
           user: {
             nickname: user.nickname || "",
-            userIdShort: userId.slice(0, 8),
             avatarUrl: normalizeAvatarUrl(user.avatar_url || ""),
             subtitle: getProfileSubtitle(user.role || app.globalData.userRole, user.created_at)
           }
@@ -366,7 +344,7 @@ Page({
     this.setData({
       hasUser: false,
       isGuest: true,
-      user: { nickname: "", userIdShort: "", avatarUrl: "", subtitle: "" }
+      user: { nickname: "", avatarUrl: "", subtitle: "" }
     });
     wx.showToast({ title: "已退出登录", icon: "success" });
   },
@@ -465,7 +443,6 @@ Page({
           hasUser: true,
           user: {
             nickname: user.nickname || "",
-            userIdShort: String(user.id || "").slice(0, 8),
             avatarUrl: user.avatar_url || "",
             subtitle: getProfileSubtitle(user.role || app.globalData.userRole, user.created_at)
           },

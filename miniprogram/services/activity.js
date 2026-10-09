@@ -1,21 +1,14 @@
 const { request: baseRequest } = require("./request");
 const cacheManager = require("./cacheManager");
-const myActivitiesCache = require("../utils/myActivitiesCache");
-const historyStatsCache = require("../utils/historyStatsCache");
 
 let listActivitiesInFlight = null;
-let listMyActivitiesInFlight = null;
 
 function request(options) {
   return baseRequest({ ...options, apiVersion: 2 });
 }
 
-function invalidateActivityCaches({ clearMyActivities = false } = {}) {
+function invalidateActivityCaches() {
   cacheManager.clearCachedActivityList();
-  historyStatsCache.clear();
-  if (!clearMyActivities) return;
-  const userId = wx.getStorageSync("userId") || "";
-  myActivitiesCache.removeForUser(userId);
 }
 
 function listActivities() {
@@ -29,20 +22,6 @@ function listActivities() {
   return coalesced;
 }
 
-function listMyActivities() {
-  const token = wx.getStorageSync("accessToken") || "";
-  if (listMyActivitiesInFlight && listMyActivitiesInFlight.token === token) {
-    return listMyActivitiesInFlight.promise;
-  }
-
-  const entry = { token, promise: null };
-  const pending = request({ url: "/activities/me/signed-up" });
-  entry.promise = pending.finally(() => {
-    if (listMyActivitiesInFlight === entry) listMyActivitiesInFlight = null;
-  });
-  listMyActivitiesInFlight = entry;
-  return entry.promise;
-}
 
 function listActivityCovers() {
   return request({ url: "/activity-covers" });
@@ -52,9 +31,6 @@ function getActivity(activityId) {
   return request({ url: `/activities/${activityId}` });
 }
 
-function getActivitySharePreview(activityId) {
-  return request({ url: `/activities/${activityId}/share-preview`, timeout: 20000 });
-}
 
 function createActivity(payload) {
   return request({
@@ -84,7 +60,7 @@ function signupActivity(activityId, subItemIds = []) {
     method: "POST",
     data: { sub_item_ids: subItemIds }
   }).then((result) => {
-    invalidateActivityCaches({ clearMyActivities: true });
+    invalidateActivityCaches();
     return result;
   });
 }
@@ -94,7 +70,7 @@ function cancelActivity(activityId) {
     url: `/activities/${activityId}/cancel`,
     method: "POST"
   }).then((result) => {
-    invalidateActivityCaches({ clearMyActivities: true });
+    invalidateActivityCaches();
     return result;
   });
 }
@@ -104,7 +80,7 @@ function removeParticipant(activityId, participantId) {
     url: `/activities/${activityId}/participants/${participantId}`,
     method: "DELETE"
   }).then((result) => {
-    invalidateActivityCaches({ clearMyActivities: true });
+    invalidateActivityCaches();
     return result;
   });
 }
@@ -115,7 +91,7 @@ function checkinActivity(activityId, payload) {
     method: "POST",
     data: payload
   }).then((result) => {
-    invalidateActivityCaches({ clearMyActivities: true });
+    invalidateActivityCaches();
     return result;
   });
 }
@@ -142,10 +118,8 @@ function adminCancelCheckinParticipant(activityId, participantId) {
 
 module.exports = {
   listActivities,
-  listMyActivities,
   listActivityCovers,
   getActivity,
-  getActivitySharePreview,
   createActivity,
   updateActivity,
   cancelActivity,

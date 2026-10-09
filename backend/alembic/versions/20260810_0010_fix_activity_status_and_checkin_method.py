@@ -59,7 +59,11 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_constraint("activity_participants_ibfk_2", "activity_participants", type_="foreignkey")
+    foreign_key = next(
+        fk for fk in sa.inspect(op.get_bind()).get_foreign_keys("activity_participants")
+        if fk["constrained_columns"] == ["user_id"]
+    )
+    op.drop_constraint(foreign_key["name"], "activity_participants", type_="foreignkey")
     op.create_foreign_key(
         "activity_participants_ibfk_2",
         "activity_participants",

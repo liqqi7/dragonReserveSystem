@@ -21,7 +21,14 @@ def test_client_diagnostic_batch_is_accepted(client, user_headers) -> None:
     assert response.json() == {"status": "ok", "stored": True}
 
 
-def test_single_client_diagnostic_log_endpoint_remains_available(client) -> None:
+def test_single_client_diagnostic_log_endpoint_is_removed(client, user_headers) -> None:
     methods = client.app.openapi()["paths"]["/api/v1/diagnostics/client-logs"]
 
-    assert "post" in methods
+    assert "get" in methods
+    assert "post" not in methods
+    response = client.post(
+        "/api/v1/diagnostics/client-logs",
+        headers=user_headers,
+        json={"event": "request_fail"},
+    )
+    assert response.status_code == 405

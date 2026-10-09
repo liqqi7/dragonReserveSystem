@@ -91,7 +91,5 @@ module.exports = {
   buildWeatherCacheKey,
   readActivityWeather,
   writeActivityWeather,
-  clearActivityWeather,
-  resolveActivityWeather,
-  _prune: prune
+  resolveActivityWeather
 };

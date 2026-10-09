@@ -113,8 +113,6 @@ module.exports = {
   getWindowInfoCompat,
   getDeviceInfoCompat,
   getBottomSafeAreaPx,
-  isAndroidDevice,
-  resolveBottomSafeAreaRpx,
   buildSafeAreaDiagnostic,
   getBottomSafeAreaRpx
 };

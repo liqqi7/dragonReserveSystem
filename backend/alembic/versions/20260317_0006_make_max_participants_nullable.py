@@ -25,6 +25,13 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    if op.get_bind().execute(sa.text(
+        "SELECT 1 FROM activities WHERE max_participants IS NULL LIMIT 1"
+    )).first() is not None:
+        raise RuntimeError(
+            "Cannot restore NOT NULL while unlimited-capacity activities exist; "
+            "choose explicit capacities before retrying, or restore the backup."
+        )
     op.alter_column(
         "activities",
         "max_participants",

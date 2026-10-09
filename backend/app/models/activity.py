@@ -18,6 +18,7 @@ class Activity(Base):
     __table_args__ = (
         Index("ix_activities_status", "status"),
         Index("ix_activities_start_time", "start_time"),
+        Index("ix_activities_end_time", "end_time"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

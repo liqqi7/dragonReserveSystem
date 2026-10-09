@@ -101,7 +101,7 @@
                 transition-type="fadeThrough"
                 transition-duration="320"
                 bind:tap="showDetail"
-                data-activity="{{item}}"
+                data-id="{{item._id}}"
               >
                 <!-- 大卡片 -->
                 <view class="large-card large-card--{{item.activityType}}-{{item.activityStyleKey}}">
@@ -250,7 +250,7 @@
               transition-type="fadeThrough"
               transition-duration="320"
               bind:tap="showDetail"
-              data-activity="{{item}}"
+              data-id="{{item._id}}"
             >
               <view class="small-card-content">
                 <view class="small-card">
@@ -394,7 +394,7 @@
               transition-type="fadeThrough"
               transition-duration="320"
               bind:tap="showDetail"
-              data-activity="{{item}}"
+              data-id="{{item._id}}"
             >
               <view class="small-card-content">
                 <view class="small-card">
@@ -493,7 +493,7 @@
               transition-type="fadeThrough"
               transition-duration="320"
               bind:tap="showDetail"
-              data-activity="{{item}}"
+              data-id="{{item._id}}"
             >
               <view class="small-card-content">
                 <view class="small-card">
@@ -571,33 +571,6 @@
   </scroll-view>
 
   <!-- 底部 Tab 由 custom-tab-bar 组件统一渲染，此处无需内联 -->
-
-  <page-container
-    wx:if="{{createFormContainerRendered}}"
-    id="qaActivityCreateContainer"
-    show="{{showCreateForm}}"
-    position="bottom"
-    overlay="{{true}}"
-    round="{{false}}"
-    duration="240"
-    close-on-slide-down="{{false}}"
-    overlay-style="background: rgba(23, 24, 20, 0.4);"
-    custom-style="height: 100%; background: transparent; border-radius: 0; overflow: hidden;"
-    bind:clickoverlay="closeCreateForm"
-    bind:beforeleave="onCreateFormBeforeLeave"
-    bind:afterleave="onCreateFormAfterLeave"
-  >
-    <activity-form-sheet
-      id="qaActivityCreateForm"
-      style="display: block; width: 100%; height: 100%;"
-      visible="{{showCreateForm}}"
-      route-embedded="{{true}}"
-      mode="create"
-      submitting="{{createFormSubmitting}}"
-      bindclose="closeCreateForm"
-      bindsubmit="submitCreateActivity"
-    />
-  </page-container>
 
 </view>
 

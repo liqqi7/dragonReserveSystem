@@ -5,7 +5,7 @@ const { adaptActivity } = require("../../utils/activityEnrich");
 const { getWindowInfoCompat, getBottomSafeAreaRpx } = require("../../utils/safeArea");
 
 function normalizeSubItems(items, quota) {
-  const limit = Math.max(1, Math.min(999, Number(quota) || 12));
+  const limit = Math.max(3, Math.min(999, Number(quota) || 12));
   return (Array.isArray(items) ? items : []).map(item => ({
     ...item,
     max_participants: Math.min(limit, Math.max(1, Number(item.max_participants) || 1))
@@ -29,7 +29,7 @@ Page({
     coverFadePhase: "a",
     coverImageFallbackTried: false,
     participantCount: 0,
-    minParticipants: 1,
+    minParticipants: 3,
     locationDisabled: false,
     coverPickerVisible: false,
     pickerVisible: false,
@@ -80,7 +80,7 @@ Page({
     const participantCount = Array.isArray(activity.participants)
       ? activity.participants.length
       : Math.max(0, Number(activity.current_participants) || 0);
-    const minParticipants = Math.max(1, participantCount);
+    const minParticipants = Math.max(3, participantCount);
     if (form.limitEnabled) form.maxParticipants = Math.max(minParticipants, Number(form.maxParticipants) || minParticipants);
     const cover = activity.activityCover || activity.activity_cover || {};
     const selectedCover = {
@@ -240,9 +240,6 @@ Page({
     });
   },
 
-  toggleSignup() {
-    this.setData({ "form.signupEnabled": !this.data.form.signupEnabled });
-  },
 
   onSubItemsChange(e) {
     const maxParticipants = Number(this.data.form.maxParticipants) || 12;

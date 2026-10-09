@@ -2,18 +2,15 @@ const { rankHomeCardImages, cardVisibilityKey, usesNativeCardGlass, getHomeCardG
 const { prepareHomeImage, invalidateHomeImageCache } = require("../../utils/homeImagePreparation");
 const app = getApp();
 const activityService = require("../../services/activity");
-const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
 const { createTraceId, logInfo, summarizeError } = require("../../services/logger");
-const { enrichSingleActivity } = require("../../utils/activityEnrich");
-const { parseCreatedAtMs, orderParticipantsForRecentAvatarSlice } = require("../../utils/participantSort");
+const { enrichSingleActivity, DEFAULT_AVATAR, DEFAULT_ACTIVITY_TYPE_KEY, DEFAULT_ACTIVITY_TYPE_STYLES, adaptActivity, buildTypeStyleMap, normalizeActivityTypeByMap, resolveStyleByTypeAndKey, normalizeAvatarUrl } = require("../../utils/activityEnrich");
+const { orderParticipantsForRecentAvatarSlice } = require("../../utils/participantSort");
 const cacheManager = require("../../services/cacheManager");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
 const { createHomeCardMediaLoader } = require("../../utils/homeCardMediaLoader");
 const { createHomePresentationDiagnostics } = require("../../utils/homePresentationDiagnostics");
-const calendarWarmup = require("../../utils/calendarWarmup");
 const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
 
-const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 
 const WEEKDAY_LABELS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 
@@ -25,9 +22,6 @@ function getWeekdayLabel(dateTimeString) {
   return WEEKDAY_LABELS[d.getDay()];
 }
 
-const DEFAULT_AVATAR = "/images/default-avatar.svg";
-const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
-const DEFAULT_ACTIVITY_TYPE_KEY = "other";
 const ENDED_ACTIVITY_PAGE_SIZE = 5;
 /** 须与 wxml 中 refresher-threshold 一致 */
 const MAIN_REFRESH_THRESHOLD_PX = 80;
@@ -37,265 +31,10 @@ const CREATED_CARD_ENTRANCE_DURATION_MS = 560;
 // Adjacent-card entrance interval in milliseconds. Console can override per page.
 const HOME_CARD_ENTRANCE_INTERVAL_MS = 200;
 const HOME_CARD_FIRST_ENTRANCE_DELAY_MS = 200;
-const DEFAULT_ACTIVITY_TYPE_STYLES = [
-  {
-    key: "badminton",
-    display_name: "羽毛球",
-    default_style_key: "badminton-default",
-    styles: [
-      {
-        style_key: "badminton-default",
-        style_name: "纯静态图（无头像）",
-        badge_label: "Badminton",
-        show_badge: true,
-        show_avatar_cluster: false,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png",
-        bg_video_url: null
-      }
-    ]
-  },
-  {
-    key: "boardgame",
-    display_name: "桌游",
-    default_style_key: "boardgame-default",
-    styles: [
-      {
-        style_key: "boardgame-default",
-        style_name: "纯静态图（无头像）",
-        badge_label: "Boardgame",
-        show_badge: true,
-        show_avatar_cluster: true,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg",
-        bg_video_url: null
-      }
-    ]
-  },
-  {
-    key: "other",
-    display_name: "其它",
-    default_style_key: "other-video",
-    styles: [
-      {
-        style_key: "other-video",
-        style_name: "纯静态图",
-        badge_label: "",
-        show_badge: false,
-        show_avatar_cluster: false,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-other-v2-lg.jpg",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/card-bg-other-v2-sm.jpg",
-        bg_video_url: null
-      }
-    ]
-  },
-  {
-    key: "eating",
-    display_name: "吃饭",
-    default_style_key: "image-clean",
-    styles: [
-      {
-        style_key: "image-clean",
-        style_name: "静态图无头像",
-        badge_label: "Eating",
-        show_badge: true,
-        show_avatar_cluster: false,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/eating-image-clean-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/eating-image-clean-sm.png",
-        bg_video_url: null
-      }
-    ]
-  },
-  {
-    key: "outing",
-    display_name: "\u5916\u51fa",
-    default_style_key: "outing-tram",
-    styles: [
-      {
-        style_key: "outing-tram",
-        style_name: "\u9759\u6001\u56fe\u65e0\u5934\u50cf",
-        badge_label: "Outing",
-        show_badge: true,
-        show_avatar_cluster: false,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/outing-tram-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/outing-tram-sm.png",
-        bg_video_url: null
-      },
-      {
-        style_key: "outing-cycling",
-        style_name: "\u9759\u6001\u56fe\u65e0\u5934\u50cf2",
-        badge_label: "Outing",
-        show_badge: true,
-        show_avatar_cluster: false,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/outing-cycling-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/outing-cycling-sm.png",
-        bg_video_url: null
-      }
-    ]
-  },
-  {
-    key: "movie",
-    display_name: "电影",
-    default_style_key: "image-clean",
-    styles: [
-      {
-        style_key: "image-clean",
-        style_name: "纯静态图",
-        badge_label: "Movie",
-        show_badge: true,
-        show_avatar_cluster: false,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/movie-image-clean-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/movie-image-clean-sm.png",
-        bg_video_url: null
-      },
-      {
-        style_key: "image-clean-2",
-        style_name: "纯静态图2",
-        badge_label: "Movie",
-        show_badge: true,
-        show_avatar_cluster: false,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/movie-image-clean-2-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/movie-image-clean-2-sm.png",
-        bg_video_url: null
-      },
-      {
-        style_key: "image-clean-3",
-        style_name: "Static image 3",
-        badge_label: "Movie",
-        show_badge: true,
-        show_avatar_cluster: false,
-        large_card_bg_image_url: "https://dragon.liqqihome.top/media/images/movie-image-spiderverse-lg.png",
-        small_card_bg_image_url: "https://dragon.liqqihome.top/media/images/movie-image-spiderverse-sm.png",
-        bg_video_url: null
-      }
-    ]
-  }
-];
-
-function normalizeTypeKey(value) {
-  if (value == null) return "";
-  const t = String(value).trim().toLowerCase();
-  if (!t) return "";
-  if (t === "羽毛球") return "badminton";
-  if (t === "桌游" || t === "board game") return "boardgame";
-  if (t === "其它" || t === "其他") return "other";
-  if (t === "吃饭") return "eating";
-  if (t === "电影") return "movie";
-  if (t === "\u5916\u51fa") return "outing";
-  return t;
-}
-
-function buildTypeStyleMap(typeStyles) {
-  const source = Array.isArray(typeStyles) && typeStyles.length > 0 ? typeStyles : DEFAULT_ACTIVITY_TYPE_STYLES;
-  const map = {};
-  source.forEach((item) => {
-    const key = normalizeTypeKey(item && item.key);
-    if (!key) return;
-    const styles = Array.isArray(item.styles) ? item.styles : [];
-    const styleMap = {};
-    styles.forEach((s) => {
-      const styleKey = String(s.style_key || "").trim();
-      if (!styleKey) return;
-      styleMap[styleKey] = {
-        styleKey,
-        styleName: String(s.style_name || styleKey),
-        badgeLabel: String(s.badge_label || ""),
-        showBadge: s.show_badge !== false,
-        showAvatarCluster: s.show_avatar_cluster !== false,
-        largeCardBgImageUrl: String(s.large_card_bg_image_url || ""),
-        largeCardGlassImageUrl: "",
-        smallCardBgImageUrl: String(s.small_card_bg_image_url || ""),
-        bgVideoUrl: s.bg_video_url ? String(s.bg_video_url) : ""
-      };
-    });
-    const defaultStyleKey = String(item.default_style_key || "").trim();
-    const fallbackStyleKey = defaultStyleKey && styleMap[defaultStyleKey]
-      ? defaultStyleKey
-      : (Object.keys(styleMap)[0] || "");
-    map[key] = {
-      key,
-      displayName: String(item.display_name || key),
-      defaultStyleKey: fallbackStyleKey,
-      styleMap
-    };
-  });
-  if (!map[DEFAULT_ACTIVITY_TYPE_KEY]) {
-    map[DEFAULT_ACTIVITY_TYPE_KEY] = {
-      key: DEFAULT_ACTIVITY_TYPE_KEY,
-      displayName: "其它",
-      defaultStyleKey: "",
-      styleMap: {}
-    };
-  }
-  return map;
-}
-
-function normalizeActivityTypeByMap(rawType, typeStyleMap) {
-  const key = normalizeTypeKey(rawType);
-  if (key && typeStyleMap[key]) return key;
-  return DEFAULT_ACTIVITY_TYPE_KEY;
-}
-
-function resolveStyleByTypeAndKey(typeKey, styleKey, typeStyleMap) {
-  const typeEntry = typeStyleMap[typeKey] || typeStyleMap[DEFAULT_ACTIVITY_TYPE_KEY];
-  if (!typeEntry) return null;
-  const styleMap = typeEntry.styleMap || {};
-  const normalizedStyleKey = String(styleKey || "").trim();
-  if (normalizedStyleKey && styleMap[normalizedStyleKey]) return styleMap[normalizedStyleKey];
-  if (typeEntry.defaultStyleKey && styleMap[typeEntry.defaultStyleKey]) return styleMap[typeEntry.defaultStyleKey];
-  const firstKey = Object.keys(styleMap)[0];
-  return firstKey ? styleMap[firstKey] : null;
-}
-
-function normalizeAvatarUrl(url) {
-  const value = (url && String(url).trim()) || "";
-  if (!value) return DEFAULT_AVATAR;
-
-  const lower = value.toLowerCase();
-  // 测试造数和示例域名经常是占位地址，直接回退默认头像，避免 404
-  if (lower.includes("example.com/")) return DEFAULT_AVATAR;
-  if (value.startsWith("/media/")) {
-    const m = value.match(/test-avatar-(\d{2})\.svg$/i);
-    return m ? `${LOCAL_TEST_AVATAR_PREFIX}/test-avatar-${m[1]}.svg` : DEFAULT_AVATAR;
-  }
-  if (value.startsWith("media/")) {
-    const m = value.match(/test-avatar-(\d{2})\.svg$/i);
-    return m ? `${LOCAL_TEST_AVATAR_PREFIX}/test-avatar-${m[1]}.svg` : DEFAULT_AVATAR;
-  }
-  if (lower.startsWith("http://")) {
-    const resolved = resolveLocalMediaUrl(value);
-    return isLocalTestMediaUrl(value) ? resolved : DEFAULT_AVATAR;
-  }
-
-  return value;
-}
-
-function formatDateTime(value) {
-  if (!value) return "";
-  const date = value instanceof Date ? value : new Date(value);
-  if (isNaN(date.getTime())) return "";
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
-
-function adaptParticipant(participant) {
-  const name = participant.display_nickname || "";
-  return {
-    id: participant.id,
-    name,
-    subItemIds: participant.sub_item_ids || [],
-    userId: participant.user_id != null ? String(participant.user_id) : null,
-    avatarUrl: normalizeAvatarUrl(participant.display_avatar_url),
-    checkedInAt: formatDateTime(participant.checked_in_at),
-    checkinLat: participant.checkin_lat,
-    checkinLng: participant.checkin_lng,
-    signedUpAtMs: parseCreatedAtMs(participant.created_at)
-  };
-}
 
 /** 按当前用户重算 hasSignedUp / hasCheckedIn（修复缓存是在旧登录态下写入导致报名态错误） */
-function reapplyListParticipationFlags(list, myUserId, myNickname) {
+function reapplyListParticipationFlags(list, myUserId) {
   const myIdStr = String(myUserId || "").trim();
-  const nn = String(myNickname || "").trim();
   return (list || []).map((activity) => {
     const rawParticipants = activity.participants || [];
     let hasSignedUp = false;
@@ -303,63 +42,16 @@ function reapplyListParticipationFlags(list, myUserId, myNickname) {
     rawParticipants.forEach((p) => {
       if (typeof p === "object" && p !== null) {
         const uidStr = p.userId != null ? String(p.userId) : "";
-        const name = (p.name || "").trim();
         const checkedIn = !!p.checkedInAt;
         if (myIdStr && uidStr && uidStr === myIdStr) {
           hasSignedUp = true;
           if (checkedIn) hasCheckedIn = true;
-        } else if (nn && name === nn) {
-          hasSignedUp = true;
-          if (checkedIn) hasCheckedIn = true;
         }
-      } else if (typeof p === "string" && nn && p === nn) {
-        hasSignedUp = true;
       }
     });
     return { ...activity, hasSignedUp, hasCheckedIn };
   });
 }
-
-function adaptActivity(item) {
-  const participants = (item.participants || []).map(adaptParticipant);
-  const startTime = formatDateTime(item.start_time);
-  const rawType = item.activity_type;
-  const rawCover = item.activity_cover && typeof item.activity_cover === "object" ? item.activity_cover : null;
-  return {
-    _id: String(item.id),
-    createdBy: item.created_by != null ? String(item.created_by) : "",
-    date: startTime.split(" ")[0] || "",
-    name: item.name,
-    status: item.status || "进行中",
-    remark: item.remark || "",
-    participants,
-    maxParticipants: item.max_participants == null ? null : item.max_participants,
-    startTime,
-    startTimeRaw: item.start_time,
-    endTime: formatDateTime(item.end_time),
-    subItems: (item.sub_items || []).map(project => ({ ...project })),
-    signupDeadline: formatDateTime(item.start_time),
-    locationName: item.location_name || "",
-    locationAddress: item.location_address || "",
-    locationLatitude: item.location_latitude,
-    locationLongitude: item.location_longitude,
-    signupEnabled: item.signup_enabled !== false,
-    activityType: rawType || "other",
-    activityStyleKey: item.activity_style_key || "",
-    activityCoverId: item.activity_cover_id || (rawCover && rawCover.id) || "",
-    activityCover: rawCover ? {
-      id: String(rawCover.id || ""),
-      artistName: String(rawCover.artist_name || ""),
-      artistAvatarUrl: String(rawCover.artist_avatar_url || ""),
-      thumbnailUrl: String(rawCover.thumbnail_url || ""),
-      imageUrl: String(rawCover.image_url || ""),
-      largeCardGlassImageUrl: String(rawCover.large_card_glass_image_url || "")
-    } : null,
-    _rawActivityType: rawType
-  };
-}
-
-
 
 function pickCardMediaMetaFromDataset(dataset, mediaType) {
   const safeDataset = dataset || {};
@@ -382,26 +74,19 @@ Page({
     endedHasMore: false,
     endedLoadingMore: false,
     statusBarHeight: 0,
-    navBarHeight: 0,
     focusedCardIndex: { joined: 0, accepting: 0, notStarted: 0, ended: 0 },
     homeToolIndex: 0,
     mainRefresherTriggered: false,
     mainRefresherHint: "下拉刷新",
     myUserId: "", // 当前用户 openid（用于判断能否删除自己的报名）
-    myNickname: "", // 当前用户昵称（userId 为空时的回退，兼容旧数据）
-    locationDisabled: false,
+    myNickname: "", // 当前用户昵称，用于登录态和缓存刷新元信息
     isAdmin: false,
     isGuest: true,
-    searchKeyword: "",
-    selectedFilter: "我参与的",
     activityTypeStyles: DEFAULT_ACTIVITY_TYPE_STYLES,
     homeListLoading: true,
     skeletonShimmerRunning: false,
     createdCardEntranceId: null,
     createdCardEntranceState: "entered",
-    createFormContainerRendered: false,
-    showCreateForm: false,
-    createFormSubmitting: false,
     bottomSafeAreaRpx: 0
   },
 
@@ -439,11 +124,10 @@ Page({
       const windowInfo = wx.getWindowInfo();
       const statusBarHeight = windowInfo.statusBarHeight || 20;
       this.setData({
-        statusBarHeight,
-        navBarHeight: statusBarHeight + 44
+        statusBarHeight
       });
     } catch (e) {
-      this.setData({ statusBarHeight: 20, navBarHeight: 64 });
+      this.setData({ statusBarHeight: 20 });
     }
 
   },
@@ -460,10 +144,8 @@ Page({
     this._ensureHomePresentationDiagnostics();
     this._loadGeneration = (this._loadGeneration || 0) + 1;
     this.syncGuestState();
-    /** 原生弹层也可能触发 show；一级抽屉仍存续时不得提前恢复 Tab。 */
+    // 新建页导航和冷启动入场结束前保持 Tab 隐藏。
     this._setTabBarHidden(!!(
-      this.data.createFormContainerRendered ||
-      this.data.showCreateForm ||
       app.globalData.pendingOpenCreateActivity ||
       this._coldStartTabEntrancePending
     ));
@@ -480,11 +162,8 @@ Page({
     });
     this._scheduleColdStartCardEntrance();
     this._startSkeletonShimmer();
-    // 独立创建页在首页隐藏时回传活动，返回时不会触发旧抽屉的 afterleave。
-    // 原生抽屉仍存在时继续等待它关闭，其余场景由 onShow 释放新卡片入场。
-    if (!this.data.createFormContainerRendered && !this.data.showCreateForm) {
-      this._revealCreatedCard();
-    }
+    // 独立创建页回传活动，返回首页时释放新卡片入场。
+    this._revealCreatedCard();
   },
 
   hasCreateActivityPermission() {
@@ -508,7 +187,7 @@ Page({
   loadActivityListByCachePolicy() {
     const owner = String(this.data.myUserId || "");
     if (this._homeListOwner !== undefined && this._homeListOwner !== owner) {
-      this._activityList = []; this._allEndedActivities = []; this._filteredList = [];
+      this._activityList = []; this._allEndedActivities = [];
       this._lastRawListSignature = null;
       this._focusedCardActivityIds = {};
       this.setData({ groupedActivities: { joined: [], accepting: [], notStarted: [], ended: [] },
@@ -528,16 +207,9 @@ Page({
     this._finishColdStartCardEntrance();
     this._stopHomeCardMedia({ preserveDownloads: true });
     this._finishCreatedCardEntrance();
-    calendarWarmup.cancelScheduledPrefetch();
-    /**
-     * 页面隐藏时只保留抽屉对 Tab 的隐藏要求；卡片准备状态不影响其他页面的 Tab。
-     */
-    const keepTabBarHidden = !!(
-      this.data.createFormContainerRendered ||
-      this.data.showCreateForm
-    );
+    // 页面隐藏后不让首页入场状态影响其他 Tab。
     const self = this;
-    const flush = () => self._setTabBarHidden(keepTabBarHidden);
+    const flush = () => self._setTabBarHidden(false);
     if (typeof wx !== "undefined" && typeof wx.nextTick === "function") wx.nextTick(flush);
     else flush();
   },
@@ -547,8 +219,6 @@ Page({
     this._finishColdStartCardEntrance();
     this._loadGeneration = (this._loadGeneration || 0) + 1;
     this._stopHomeCardMedia();
-    if (this._createFormCloseTimer) clearTimeout(this._createFormCloseTimer);
-    this._createFormCloseTimer = null;
     if (this._cardEntranceTimer) clearTimeout(this._cardEntranceTimer);
     if (this._cardEntranceFrameTimer) clearTimeout(this._cardEntranceFrameTimer);
     if (this._createdCardEntranceFrameTimer) clearTimeout(this._createdCardEntranceFrameTimer);
@@ -559,7 +229,6 @@ Page({
     this._createdCardEntranceClearTimer = null;
     this._coldStartTabEntrancePending = false;
     if (app && app.globalData) app.globalData.homeTabEntrancePending = false;
-    calendarWarmup.cancelScheduledPrefetch();
     const self = this;
     const flush = () => self._setTabBarHidden(false);
     if (typeof wx !== "undefined" && typeof wx.nextTick === "function") wx.nextTick(flush);
@@ -617,17 +286,6 @@ Page({
     };
   },
 
-  _rememberFocusedActivity(activityId) {
-    if (activityId == null) return;
-    const groups = this.data.groupedActivities || {};
-    Object.keys(groups).some((group) => {
-      const cards = Array.isArray(groups[group]) ? groups[group] : [];
-      const index = cards.findIndex((item) => String(item && item._id) === String(activityId));
-      if (index < 0) return false;
-      this._rememberFocusedCard(group, index, groups);
-      return true;
-    });
-  },
 
   _resolveFocusedCardIndex(groupedActivities) {
     const previous = this.data.focusedCardIndex || {};
@@ -697,7 +355,7 @@ Page({
         if (this._pageVisible === false) return;
         this._coldStartTabEntrancePending = false;
         if (app && app.globalData) app.globalData.homeTabEntrancePending = false;
-        if (!this.data.createFormContainerRendered && !this.data.showCreateForm && !app.globalData.pendingOpenCreateActivity) {
+        if (!app.globalData.pendingOpenCreateActivity) {
           this._setTabBarHidden(false, { animate: true });
         }
       }, waitMs);
@@ -811,23 +469,6 @@ Page({
     });
   },
 
-  _maybePrefetchHomeExtras() {
-    if (!this._homePrefetchPending || this._pageVisible === false ||
-        !this._homeFirstFrameReady || this._homeVisibilityCollecting || this.data.homeListLoading) return;
-    let pending = false;
-    Object.entries(this.data.groupedActivities || {}).forEach(([group, cards]) => {
-      cards.forEach((item, index) => {
-        const visible = this._homeVisibilityKnown
-          ? this._homeVisibleCardKeys.has(cardVisibilityKey(group, item._id))
-          : index === ((this.data.focusedCardIndex || {})[group] || 0);
-        if (visible && !item._homeMediaReady && !item._homeMediaError) pending = true;
-      });
-    });
-    if (pending) return;
-    this._homePrefetchPending = false;
-    calendarWarmup.schedulePrefetchSignedUpList(app);
-  },
-
   _scheduleHomeImagePriorityUpdate() {
     if (this._pageVisible === false) return;
     // A quiet observer batch includes adjacent, partially exposed cards.
@@ -847,7 +488,6 @@ Page({
         this._homeVisibilityInitialTimer = null;
       }
       this._prepareHomeCardImages();
-      this._maybePrefetchHomeExtras();
     }, 32);
   },
 
@@ -865,8 +505,7 @@ Page({
         if (!!item._homeMediaError !== failed) patch[`groupedActivities.${group}[${index}]._homeMediaError`] = failed;
       });
     });
-    if (Object.keys(patch).length) this.setData(patch, () => this._maybePrefetchHomeExtras());
-    else this._maybePrefetchHomeExtras();
+    if (Object.keys(patch).length) this.setData(patch);
   },
 
   onRetryHomeCard(e) {
@@ -1026,7 +665,6 @@ Page({
       }
       const afterReady = () => {
         this._homePresentationDiagnostics?.check();
-        this._maybePrefetchHomeExtras();
       };
       if (Object.keys(patch).length) this.setData(patch, afterReady);
       else afterReady();
@@ -1378,7 +1016,6 @@ Page({
   _commitHomeList(list, callback) {
     this._activityList = list;
     this._homeListOwner = String(this.data.myUserId || "");
-    this._filteredList = this.computeFilteredList(list, this.data.selectedFilter, this.data.searchKeyword);
     const fullGroups = this.computeGroupedActivities(list);
     const visibleCount = Math.max(ENDED_ACTIVITY_PAGE_SIZE, (this.data.groupedActivities.ended || []).length);
     const stream = this.buildEndedStreamState(fullGroups, visibleCount);
@@ -1409,12 +1046,11 @@ Page({
     const list = cached && Array.isArray(cached.list) ? cached.list : [];
     if (!list.length) return false;
     const myUserId = this.data.myUserId || "";
-    const myNickname = (this.data.myNickname || "").trim();
     const cacheUserId = String(cached.userId || "");
     if (cacheUserId && cacheUserId !== String(myUserId)) return false;
     this._homePresentationDiagnostics?.list("cache");
     const now = Date.now();
-    const listWithFlags = reapplyListParticipationFlags(list, myUserId, myNickname).map(item => {
+    const listWithFlags = reapplyListParticipationFlags(list, myUserId).map(item => {
       const activity = { ...item };
       const time = value => new Date(String(value || "").replace(" ", "T") + ":00").getTime();
       if (!["已取消", "已流局"].includes(activity.status)) {
@@ -1458,8 +1094,6 @@ Page({
             this._commitHomeList(list);
             cacheManager.setCachedActivityList(list, this.data.myUserId || "");
           }
-          this._homePrefetchPending = true;
-          this._maybePrefetchHomeExtras();
 
         }
       })
@@ -1484,7 +1118,6 @@ Page({
 
   processActivityList(resData, now) {
     const myUserId = String(this.data.myUserId || "").trim();
-    const myNickname = (this.data.myNickname || "").trim();
     const typeStyleMap = buildTypeStyleMap(this.data.activityTypeStyles);
 
     const list = (resData || []).map(rawItem => {
@@ -1512,7 +1145,7 @@ Page({
         activity.showAvatarCluster = false;
       }
       const signupDeadline = activity.startTime;
-  activity.signupDeadline = signupDeadline;
+      activity.signupDeadline = signupDeadline;
 
       // 计算开始时间与报名截止时间对应的周几标签，用于前端展示
       activity.startWeekdayLabel = getWeekdayLabel(activity.startTime || activity.date);
@@ -1545,7 +1178,6 @@ Page({
       rawParticipants.forEach(p => {
         if (typeof p === "object" && p !== null) {
           const uidStr = p.userId != null ? String(p.userId) : "";
-          const name = (p.name || "").trim();
           const checkedIn = !!p.checkedInAt;
           if (checkedIn) {
             checkinCount += 1;
@@ -1561,20 +1193,12 @@ Page({
             if (checkedIn) {
               hasCheckedIn = true;
             }
-          } else if (myNickname && name === myNickname) {
-            hasSignedUp = true;
-            if (checkedIn) {
-              hasCheckedIn = true;
-            }
           }
         } else if (typeof p === "string") {
           avatarList.push({
             url: DEFAULT_AVATAR,
             isDefault: true
           });
-          if (myNickname && p === myNickname) {
-            hasSignedUp = true;
-          }
         }
       });
       activity.hasSignedUp = hasSignedUp;
@@ -1626,41 +1250,6 @@ Page({
     });
 
     return { list };
-  },
-
-  onSearchInput(e) {
-    this.setData({ searchKeyword: e.detail.value });
-    this.filterActivities();
-  },
-
-  onFilterChange(e) {
-    const filter = e.currentTarget.dataset.filter;
-    this.setData({ selectedFilter: filter });
-    this.filterActivities();
-  },
-
-  computeFilteredList(list, selectedFilter, searchKeyword) {
-    let filtered = list ? list.slice() : [];
-
-    if (selectedFilter === "我参与的") {
-      // 只看当前用户参与过的活动（已通过 hasSignedUp 标记）
-      filtered = filtered.filter(item => item.hasSignedUp);
-    } else if (selectedFilter && selectedFilter !== "全部") {
-      // 其他筛选仍按状态过滤
-      filtered = filtered.filter(item => item.status === selectedFilter);
-    }
-    if (searchKeyword && searchKeyword.trim()) {
-      const keyword = searchKeyword.trim().toLowerCase();
-      filtered = filtered.filter(item =>
-        item.name.toLowerCase().includes(keyword) ||
-        (item.remark && item.remark.toLowerCase().includes(keyword))
-      );
-    }
-    return filtered;
-  },
-
-  filterActivities() {
-    this._filteredList = this.computeFilteredList(this._activityList || [], this.data.selectedFilter, this.data.searchKeyword);
   },
 
   // 四分组计算（全局去重，优先级：我参与的 > 接受报名 > 未开始 > 已结束）
@@ -1728,44 +1317,8 @@ Page({
   _restoreTabBarAfterCreateNavigation() {
     if (this._pageVisible === false) return;
     this._setTabBarHidden(!!(
-      this.data.createFormContainerRendered || this.data.showCreateForm || this._coldStartTabEntrancePending
+      this._coldStartTabEntrancePending
     ));
-  },
-
-  closeCreateForm() {
-    if (this.data.createFormSubmitting) return;
-    this.setData({ showCreateForm: false }, () => this._scheduleCreateFormCloseCompletion());
-  },
-
-  onCreateFormBeforeLeave() {
-    // Native back dismisses the container without updating the bound page data.
-    if (this.data.showCreateForm) {
-      this.setData({ showCreateForm: false }, () => this._scheduleCreateFormCloseCompletion());
-    }
-  },
-
-  _scheduleCreateFormCloseCompletion() {
-    if (this._createFormCloseTimer) clearTimeout(this._createFormCloseTimer);
-    // The homepage uses its own native page-container, not the component's.
-    // Do not rely solely on the native afterleave callback to release the Tab.
-    this._createFormCloseTimer = setTimeout(() => {
-      this._createFormCloseTimer = null;
-      if (this.data.showCreateForm || !this.data.createFormContainerRendered) return;
-      this._homePresentationDiagnostics?.snapshot("create_form_afterleave_missing");
-      this.onCreateFormAfterLeave();
-    }, 400); // Native close duration is 240ms; allow its normal animation first.
-  },
-
-  onCreateFormAfterLeave() {
-    if (!this.data.showCreateForm && this.data.createFormContainerRendered) {
-      if (this._createFormCloseTimer) clearTimeout(this._createFormCloseTimer);
-      this._createFormCloseTimer = null;
-      this.setData({ createFormContainerRendered: false }, () => {
-        if (this._pageVisible === false) return;
-        this._setTabBarHidden(false, { animate: true });
-        this._revealCreatedCard();
-      });
-    }
   },
 
   insertCreatedActivity(rawActivity) {
@@ -1778,11 +1331,6 @@ Page({
       createdActivity,
       ...(this._activityList || []).filter((item) => String(item._id) !== String(createdActivity._id))
     ];
-    const filteredList = this.computeFilteredList(
-      activityList,
-      this.data.selectedFilter,
-      this.data.searchKeyword
-    );
     const fullGroupedActivities = this.computeGroupedActivities(activityList);
     const currentEndedCount = Math.max(
       ENDED_ACTIVITY_PAGE_SIZE,
@@ -1808,7 +1356,6 @@ Page({
 
     return new Promise((resolve) => {
       this._activityList = activityList;
-      this._filteredList = filteredList;
       this._allEndedActivities = endedStream.allEndedActivities;
       this._lastRawListSignature = null;
       this.setData({
@@ -1822,77 +1369,21 @@ Page({
       }, () => {
         this._scheduleColdStartCardEntrance();
         cacheManager.setCachedActivityList(activityList, this.data.myUserId || "");
-        this._homePrefetchPending = true;
-        this._maybePrefetchHomeExtras();
         resolve(true);
       });
     });
   },
 
-  submitCreateActivity(e) {
-    if (this.data.createFormSubmitting) return;
-    const payload = e && e.detail && e.detail.payload;
-    if (!payload) {
-      wx.showToast({ title: "活动信息缺失", icon: "none" });
-      return;
-    }
-    this.setData({ createFormSubmitting: true });
-    wx.showLoading({ title: "创建中...", mask: true });
-    activityService.createActivity(payload)
-      .then((createdActivity) => {
-        wx.hideLoading();
-        wx.showToast({ title: "创建成功", icon: "success" });
-        this.setData({
-          showCreateForm: false,
-          createFormSubmitting: false
-        }, () => this._scheduleCreateFormCloseCompletion());
-        return this.insertCreatedActivity(createdActivity)
-          .then((inserted) => inserted || this.loadActivityList());
-      })
-      .catch((error) => {
-        console.error(error);
-        wx.hideLoading();
-        this.setData({ createFormSubmitting: false });
-        wx.showToast({ title: (error && error.message) || "创建失败", icon: "none" });
-      });
-  },
-
-  // 管理员：从列表卡片取消活动（终态保留在首页历史区域）
-  cancelActivityFromCard(e) {
-    const activity = e.currentTarget.dataset.activity;
-    if (!activity || !activity._id) return;
-    if (activity.status === "已取消") return;
-    wx.showModal({
-      title: "确认取消活动",
-      content: `确定要取消活动"${activity.name}"吗？取消后不可再报名或签到。`,
-      success: (res) => {
-        if (!res.confirm) return;
-        wx.showLoading({ title: "处理中..." });
-        activityService
-          .cancelActivity(activity._id)
-          .then(() => {
-            wx.hideLoading();
-            wx.showToast({ title: "已取消活动", icon: "success" });
-            this.loadActivityList();
-          })
-          .catch((err) => {
-            console.error(err);
-            wx.hideLoading();
-            wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
-          });
-      }
-    });
-  },
-
+  // 从首页卡片进入详情。
   showDetail(e) {
-    const activity = e.currentTarget.dataset.activity;
-    if (!activity || !activity._id) return;
+    const activityId = e.currentTarget.dataset.id;
+    if (activityId == null || activityId === "") return;
     // Preserve the visible carousel positions, not the card tapped at the edge.
     Object.entries(this.data.focusedCardIndex || {}).forEach(([group, index]) => {
       this._rememberFocusedCard(group, index);
     });
     wx.navigateTo({
-      url: `/pages/activity_detail/activity_detail?id=${activity._id}`
+      url: `/pages/activity_detail/activity_detail?id=${encodeURIComponent(String(activityId))}`
     });
   },
 

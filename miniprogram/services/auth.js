@@ -3,6 +3,7 @@ const { createTraceId, logInfo, logError, summarizeError } = require("./logger")
 const userService = require("./user");
 
 const LOGIN_FLOW_TIMEOUT = 20000;
+let latestLoginAttempt = 0;
 
 function withTimeout(promiseFactory, timeout, message, meta = {}) {
   return new Promise((resolve, reject) => {
@@ -24,24 +25,6 @@ function withTimeout(promiseFactory, timeout, message, meta = {}) {
         clearTimeout(timer);
         reject(err);
       });
-  });
-}
-
-function login(payload) {
-  return request({
-    url: "/auth/login",
-    method: "POST",
-    data: payload,
-    auth: false
-  });
-}
-
-function register(payload) {
-  return request({
-    url: "/auth/register",
-    method: "POST",
-    data: payload,
-    auth: false
   });
 }
 
@@ -75,6 +58,8 @@ function fetchLoginCode(flowId) {
 
 function loginWithWechat(app) {
   const flowId = createTraceId("login");
+  const attemptId = ++latestLoginAttempt;
+  const isCurrentAttempt = () => attemptId === latestLoginAttempt;
   const startAt = Date.now();
 
   logInfo("login_flow_start", { flowId });
@@ -83,10 +68,12 @@ function loginWithWechat(app) {
     () => fetchLoginCode(flowId)
       .then((code) => wechatLogin({ code }))
       .then((authRes) => {
+        if (!isCurrentAttempt()) throw { message: "登录结果已过期", code: "STALE_LOGIN_ATTEMPT", flowId };
         wx.setStorageSync("accessToken", authRes.access_token);
         return userService.getMe().then((user) => ({ authRes, user }));
       })
       .then(({ authRes, user }) => {
+        if (!isCurrentAttempt()) throw { message: "登录结果已过期", code: "STALE_LOGIN_ATTEMPT", flowId };
         app.applyCurrentUser(user, authRes.access_token);
         logInfo("login_flow_success", {
           flowId,
@@ -100,7 +87,11 @@ function loginWithWechat(app) {
     "登录超时，请稍后重试",
     { flowId, stage: "login_flow" }
   ).catch((err) => {
-    wx.removeStorageSync("accessToken");
+    if (isCurrentAttempt()) {
+      // Invalidate pending callbacks after timeout/failure so they cannot commit later.
+      latestLoginAttempt += 1;
+      wx.removeStorageSync("accessToken");
+    }
     logError("login_flow_fail", {
       flowId,
       duration: Date.now() - startAt,
@@ -114,8 +105,6 @@ function loginWithWechat(app) {
 }
 
 module.exports = {
-  login,
-  register,
   wechatLogin,
   loginWithWechat
 };

@@ -35,6 +35,7 @@ function harness() {
     setTimeout: c.set, clearTimeout: c.clear,
     require(name) {
       if (name.endsWith("/homeCardImagePriority")) return require("../utils/homeCardImagePriority");
+      if (name.endsWith("/activityEnrich")) return require("../utils/activityEnrich");
       if (name.endsWith("/homeImagePreparation")) return require("../utils/homeImagePreparation");
       if (name.endsWith('/homePresentationDiagnostics')) return {
         createHomePresentationDiagnostics: opts => require('../utils/homePresentationDiagnostics').createHomePresentationDiagnostics({ ...opts, now: c.now, setTimer: c.set, clearTimer: c.clear })
@@ -86,7 +87,7 @@ test('Tab appears after first frame even when the activity request never returns
 test('card navigation does not wait for asynchronous home media readiness', () => {
   const h = harness();
   h.page.showDetail({
-    currentTarget: { dataset: { activity: { _id: 'pending-card', _homeMediaReady: false } } }
+    currentTarget: { dataset: { id: 'pending-card' } }
   });
   assert.equal(h.navigationCalls.length, 1);
   assert.equal(
@@ -158,8 +159,8 @@ test('pagination prepares newly appended cards without resetting existing cards'
   assert.equal(h.page.data.groupedActivities.ended[1]._homeMediaReady, true);
 });
 
-test('Tab remains hidden while create drawer is open, independently of media', () => {
-  const h = harness(); h.page.data.showCreateForm = true; h.page.onReady(); h.c.advance(400);
+test('Tab remains hidden during pending create navigation, independently of media', () => {
+  const h = harness(); h.app.globalData.pendingOpenCreateActivity = true; h.page.onReady(); h.c.advance(400);
   assert.equal(h.tabCalls.length, 0);
   assert.equal(h.page._coldStartTabEntrancePending, false);
 });
@@ -224,56 +225,7 @@ test('late success after timeout reveals its card without needing a native callb
   assert.equal(h.page.data.groupedActivities.ended[0]._homeMediaReady, true);
 });
 
-test('activity form forwards completed close to its parent, but not after reopening', () => {
-  let definition;
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../components/activity-form-sheet/index.js'), 'utf8'), {
-    Component: d => { definition = d; }, require: () => require("../utils/activityForm"),
-  });
-  const events = [];
-  const ctx = { properties: { visible: false }, setData: (patch, cb) => { if (cb) cb(); }, triggerEvent: e => events.push(e) };
-  definition.methods.onContainerAfterLeave.call(ctx);
-  assert.deepEqual(events, ['afterleave']);
-  const h = harness();
-  h.page.data.createFormContainerRendered = true;
-  h.page.data.showCreateForm = false;
-  h.page.onCreateFormAfterLeave();
-  assert.equal(h.page.data.createFormContainerRendered, false);
-  assert.equal(h.tabCalls.at(-1)[0], false);
-  ctx.properties.visible = true;
-  definition.methods.onContainerAfterLeave.call(ctx);
-  assert.equal(events.length, 1);
-});
 
-test('homepage close restores Tab even if native page-container never emits afterleave', () => {
-  const h = harness(); h.page.onReady(); h.setGroups({ ended: [small(1)] });
-  h.page.data.createFormContainerRendered = true; h.page.data.showCreateForm = true;
-  h.page.closeCreateForm(); h.c.advance(399);
-  assert.equal(h.page.data.createFormContainerRendered, true);
-  h.c.advance(1);
-  assert.equal(h.page.data.createFormContainerRendered, false);
-  assert.equal(h.tabCalls.at(-1)[0], false);
-  assert.equal(h.page.data.groupedActivities.ended[0]._homeMediaReady, false);
-  const count = h.tabCalls.length; h.page.onCreateFormAfterLeave();
-  assert.equal(h.tabCalls.length, count);
-});
-test('normal native close cancels watchdog and a reopened form is not dismissed', () => {
-  const h = harness();
-  h.page.data.createFormContainerRendered = true; h.page.data.showCreateForm = true;
-  h.page.closeCreateForm(); h.page.onCreateFormAfterLeave();
-  const count = h.tabCalls.length; h.c.advance(500);
-  assert.equal(h.tabCalls.length, count);
-  h.page.data.createFormContainerRendered = true; h.page.data.showCreateForm = true;
-  h.page.closeCreateForm(); h.page.data.showCreateForm = true; h.c.advance(500);
-  assert.equal(h.page.data.createFormContainerRendered, true);
-  assert.equal(h.tabCalls.length, count);
-});
-test('closing a hidden homepage form does not change another pages Tab', () => {
-  const h = harness(); h.page.data.createFormContainerRendered = true;
-  h.page.data.showCreateForm = true; h.page.closeCreateForm();
-  h.page._pageVisible = false; h.c.advance(500);
-  assert.equal(h.page.data.createFormContainerRendered, false);
-  assert.equal(h.tabCalls.length, 0);
-});
 
 test('visibility observer promotes newly visible queued cards and ignores events after hide', () => {
   const h = harness(), observers = [];
@@ -551,21 +503,6 @@ test('returning from the create page reveals new accepting cards with cached or 
   }
 });
 
-test('page show does not release a created card while the native create drawer is still closing', async () => {
-  const h = harness(); h.page.onReady();
-  h.page.syncGuestState = () => {};
-  h.page.loadActivityListByCachePolicy = () => {};
-  h.page.processActivityList = list => ({ list });
-  h.page.computeGroupedActivities = list => ({ joined: [], accepting: list, notStarted: [], ended: [] });
-  h.page.data.createFormContainerRendered = true;
-  await h.page.insertCreatedActivity(small('created'));
-  h.ready('small-created');
-  h.page.onShow(); h.c.advance(400);
-  assert.equal(h.page.data.createdCardEntranceState, 'pending');
-  h.page.onCreateFormAfterLeave(); h.c.advance(17);
-  assert.equal(h.page.data.createdCardEntranceState, 'entered');
-  h.page.onUnload();
-});
 
 test('native cover failure retries only the broken resource and keeps the other card and Tab ready', () => {
   const h = harness(); h.page.onReady(); h.setGroups({ joined: [big(1), big(2)] });
@@ -755,25 +692,7 @@ test('queued ready frame resolves reordered and replaced cards through rebuilt i
 });
 
 
-test('extras wait for foreground media, not animation or background cards', () => {
-  const h = harness(); h.page.onReady();
-  h.setGroups({ ended: [small(1), small(2)] });
-  h.page._homePrefetchPending = true;
-  h.page._maybePrefetchHomeExtras(); assert.equal(h.prefetchCalls.length, 0);
-  h.ready('small-1'); h.c.advance(17);
-  assert.deepEqual(h.prefetchCalls, [17]);
-  assert.equal(h.page.data.groupedActivities.ended[1]._homeMediaReady, false);
-  h.page._maybePrefetchHomeExtras(); assert.equal(h.prefetchCalls.length, 1);
-});
 
-test('failed foreground card releases extras, while hidden page cannot prefetch', () => {
-  const h = harness(); h.page.onReady(); h.setGroups({ended:[small(1)]});
-  h.page._homePrefetchPending = true;
-  h.page._setHomeImageExhausted('small-1', true);
-  assert.equal(h.prefetchCalls.length, 1);
-  h.page._homePrefetchPending = true; h.page.onHide();
-  h.page._maybePrefetchHomeExtras(); assert.equal(h.prefetchCalls.length, 1);
-});
 
 test('presentation removes full duplicate payloads but keeps counts and render fields', () => {
   const h = harness();
@@ -876,7 +795,6 @@ test('logout clears previous account cards and focus before a pending network re
   assert.equal(h.page._homeListOwner, '');
   assert.equal(h.page._activityList.length, 0);
   assert.equal(h.page._allEndedActivities.length, 0);
-  assert.equal(h.page._filteredList.length, 0);
   assert.equal(h.page._lastRawListSignature, null);
   assert.equal(Object.keys(h.page._focusedCardActivityIds).length, 0);
   assert.equal(h.page.data.groupedActivities.joined.length, 0);
@@ -902,23 +820,7 @@ test('offscreen pending cards keep shimmer active; completion still stops it', (
   h.page.onUnload();
 });
 
-test('search and filters use internal full list without sending it to render data', () => {
-  const h = harness();
-  h.page._activityList = [
-    { _id: '1', name: '羽毛球', remark: '晚上', status: '未开始', hasSignedUp: true },
-    { _id: '2', name: '桌游', remark: '周末聚会', status: '已结束', hasSignedUp: false }
-  ];
-  h.page.onFilterChange({ currentTarget: { dataset: { filter: '全部' } } });
-  h.page.onSearchInput({ detail: { value: ' 周末 ' } });
-  assert.deepEqual(h.page._filteredList.map(x => x._id), ['2']);
-  h.page.onSearchInput({ detail: { value: '' } });
-  h.page.onFilterChange({ currentTarget: { dataset: { filter: '我参与的' } } });
-  assert.deepEqual(h.page._filteredList.map(x => x._id), ['1']);
-  h.page.onFilterChange({ currentTarget: { dataset: { filter: '已结束' } } });
-  assert.deepEqual(h.page._filteredList.map(x => x._id), ['2']);
-  for (const key of ['activityList', 'filteredList', 'allEndedActivities']) assert.equal(Object.hasOwn(h.page.data, key), false);
-  h.page.onUnload();
-});
+
 
 test('ended pagination reaches all internal records without duplication or resetting focus', () => {
   const h = harness();

@@ -29,7 +29,8 @@ def test_create_prepares_card_and_reads_never_generate(client, admin_headers, mo
     response = client.post("/api/v2/activities", headers=admin_headers, json=_payload())
     assert response.status_code == 201, response.text
     body = response.json()
-    image_url = body["share_preview_image_url"]
+    assert body["share_preview_image_url"] is None
+    image_url = client.get(f"/api/v2/activities/{body['id']}").json()["share_preview_image_url"]
     assert image_url.endswith(".png")
     with Image.open(_file(image_url, tmp_path)) as image:
         assert image.size == (550, 440)
@@ -49,7 +50,7 @@ def test_edited_static_fields_change_url_but_other_data_does_not(client, db_sess
     monkeypatch.setattr(preview, "SHARE_PREVIEW_DIR", tmp_path)
     created = client.post("/api/v2/activities", headers=admin_headers, json=_payload()).json()
     activity_id = created["id"]
-    url = created["share_preview_image_url"]
+    url = client.get(f"/api/v2/activities/{activity_id}").json()["share_preview_image_url"]
     for field, value in [
         ("location_name", "新场地"), ("location_address", "新地址"),
         ("end_time", "2027-01-01T20:30:00"), ("start_time", "2027-01-01T19:30:00"),
@@ -57,7 +58,8 @@ def test_edited_static_fields_change_url_but_other_data_does_not(client, db_sess
     ]:
         response = client.patch(f"/api/v2/activities/{activity_id}", headers=admin_headers, json={field: value})
         assert response.status_code == 200, response.text
-        next_url = response.json()["share_preview_image_url"]
+        assert response.json()["share_preview_image_url"] is None
+        next_url = client.get(f"/api/v2/activities/{activity_id}").json()["share_preview_image_url"]
         assert next_url != url and _file(next_url, tmp_path).is_file()
         assert _file(url, tmp_path).is_file()  # old URLs are retained for already-shared cards
         url = next_url
@@ -70,19 +72,19 @@ def test_edited_static_fields_change_url_but_other_data_does_not(client, db_sess
     assert client.get(f"/api/v2/activities/{activity_id}").json()["share_preview_image_url"] == url
 
 
-def test_failed_render_rolls_back_edit_and_retains_previous_card(client, admin_headers, monkeypatch, tmp_path):
+def test_failed_render_preserves_edit_and_previous_card(client, admin_headers, monkeypatch, tmp_path):
     monkeypatch.setattr(preview, "SHARE_PREVIEW_DIR", tmp_path)
     created = client.post("/api/v2/activities", headers=admin_headers, json=_payload()).json()
-    old_url = created["share_preview_image_url"]
+    old_url = client.get(f"/api/v2/activities/{created['id']}").json()["share_preview_image_url"]
     def fail(*args):
         raise RuntimeError("renderer unavailable")
     monkeypatch.setattr(preview, "_render_share_preview", fail)
-    response = client.patch(f"/api/v2/activities/{created['id']}", headers=admin_headers, json={"location_name": "不能保存"})
-    assert response.status_code == 503
-    assert response.json()["code"] == "SHARE_PREVIEW_GENERATION_FAILED"
+    response = client.patch(f"/api/v2/activities/{created['id']}", headers=admin_headers, json={"location_name": "仍然保存"})
+    assert response.status_code == 200
     detail = client.get(f"/api/v2/activities/{created['id']}").json()
-    assert detail["location_name"] == "龙城运动中心"
-    assert detail["share_preview_image_url"] == old_url
+    assert detail["location_name"] == "仍然保存"
+    assert detail["share_preview_image_url"] is None
+    assert client.get(f"/api/v2/activities/{created['id']}/share-preview").json()["status"] == "pending"
     assert _file(old_url, tmp_path).is_file()
 
 
@@ -99,7 +101,7 @@ def test_gif_middle_by_elapsed_duration_and_cross_day(tmp_path, sample_activity,
 
 def test_missing_cover_and_unbackfilled_activity_are_not_lazily_generated(sample_activity, monkeypatch, tmp_path):
     monkeypatch.setattr(preview, "SHARE_PREVIEW_DIR", tmp_path)
-    assert preview.read_activity_share_preview(sample_activity).status == "failed"
+    assert preview.read_activity_share_preview(sample_activity).status == "pending"
     sample_activity.activity_cover_id = "missing-cover"
     with pytest.raises(Exception, match="分享图片生成失败"):
         preview.prepare_activity_share_preview(sample_activity)
@@ -133,7 +135,7 @@ def test_v1_create_also_prepares_share_card(client, db_session, admin_headers, m
     assert client.get(f"/api/v1/activities/{activity.id}/share-preview").json()["status"] == "ready"
 
 
-def test_failed_create_rolls_back_row_and_does_not_publish_partial_file(
+def test_failed_render_does_not_rollback_created_activity(
     client, db_session, admin_headers, monkeypatch, tmp_path,
 ):
     from sqlalchemy import select
@@ -143,9 +145,9 @@ def test_failed_create_rolls_back_row_and_does_not_publish_partial_file(
         raise RuntimeError("renderer unavailable")
     monkeypatch.setattr(preview, "_render_share_preview", fail)
     response = client.post("/api/v2/activities", headers=admin_headers, json=_payload())
-    assert response.status_code == 503
-    assert response.json()["code"] == "SHARE_PREVIEW_GENERATION_FAILED"
-    assert db_session.scalars(select(Activity)).all() == []
+    assert response.status_code == 201
+    assert client.get(f"/api/v2/activities/{response.json()['id']}/share-preview").json()["status"] == "pending"
+    assert len(db_session.scalars(select(Activity)).all()) == 1
     assert list(tmp_path.glob("activity-*.png")) == []
 
 
@@ -157,6 +159,7 @@ def test_backfill_is_dry_run_by_default_and_recovers_missing_reference(
 
     monkeypatch.setattr(preview, "SHARE_PREVIEW_DIR", tmp_path)
     created = client.post("/api/v2/activities", headers=admin_headers, json=_payload()).json()
+    ready = client.get(f"/api/v2/activities/{created['id']}").json()
     activity = db_session.get(Activity, created["id"])
     activity.share_preview_file = None
     db_session.commit()
@@ -168,7 +171,7 @@ def test_backfill_is_dry_run_by_default_and_recovers_missing_reference(
     assert db_session.get(Activity, activity.id).share_preview_file is None
     assert backfill_script.backfill(apply=True) == (1, 0)
     db_session.expire_all()
-    assert db_session.get(Activity, activity.id).share_preview_file == Path(created["share_preview_image_url"]).name
+    assert db_session.get(Activity, activity.id).share_preview_file == Path(ready["share_preview_image_url"]).name
     assert backfill_script.backfill(apply=True) == (1, 0)  # safe retry
 
 
@@ -228,16 +231,14 @@ def test_v1_location_edit_replaces_card_reference(client, db_session, admin_head
     assert (tmp_path / Path(old_url).name).is_file()
 
 
-def test_failed_commit_discards_new_card(client, db_session, admin_headers, monkeypatch, tmp_path):
+def test_failed_activity_commit_never_starts_render(client, db_session, admin_headers, monkeypatch, tmp_path):
     from sqlalchemy import select
 
     monkeypatch.setattr(preview, "SHARE_PREVIEW_DIR", tmp_path)
-    original_commit = db_session.commit
-    def fail_after_render():
-        if db_session.scalars(select(Activity.share_preview_file)).first():
-            raise RuntimeError("database commit failed")
-        original_commit()
-    monkeypatch.setattr(db_session, "commit", fail_after_render)
+    def fail_commit():
+        db_session.rollback()
+        raise RuntimeError("database commit failed")
+    monkeypatch.setattr(db_session, "commit", fail_commit)
     with pytest.raises(RuntimeError, match="database commit failed"):
         client.post("/api/v2/activities", headers=admin_headers, json=_payload())
     assert db_session.scalars(select(Activity)).all() == []
@@ -256,3 +257,13 @@ def test_middle_gif_frame_composites_transparent_area(tmp_path):
     selected = preview._middle_frame(source)
     assert selected.getpixel((0, 10)) == (255, 0, 0, 255)
     assert selected.getpixel((10, 10)) == (0, 128, 0, 255)
+
+
+def test_discard_prepared_preview_defers_cleanup_to_safe_pruner(tmp_path, monkeypatch):
+    monkeypatch.setattr(preview, "SHARE_PREVIEW_DIR", tmp_path)
+    preview_file = tmp_path / ("activity-123-" + "a" * 24 + ".png")
+    preview_file.write_bytes(b"shared immutable artifact")
+
+    preview.discard_prepared_preview(preview_file.name, created=True)
+
+    assert preview_file.exists()

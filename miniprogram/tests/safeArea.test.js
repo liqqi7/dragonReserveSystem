@@ -240,12 +240,11 @@ test("safe area diagnostic exposes raw and resolved runtime values", () => {
   });
 });
 
-test("all four tab pages and the custom tab bar share the same safe-area resolver", () => {
+test("tab pages with bottom content and the custom tab bar share the same safe-area resolver", () => {
   const fs = require("node:fs");
   const path = require("node:path");
   const relativeFiles = [
     "../pages/activity_list/activity_list.js",
-    "../pages/activity_calendar/activity_calendar.js",
     "../pages/history/history.js",
     "../pages/profile/profile.js",
     "../custom-tab-bar/index.js"

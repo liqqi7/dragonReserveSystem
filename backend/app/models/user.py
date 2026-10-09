@@ -15,7 +15,6 @@ class User(Base):
     __tablename__ = "users"
     __table_args__ = (
         Index("ix_users_role", "role"),
-        Index("ix_users_wechat_openid", "wechat_openid"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

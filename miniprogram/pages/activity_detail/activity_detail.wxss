@@ -1312,9 +1312,6 @@ button.back-to-top {
   min-width: 184.62rpx;
 }
 
-.bottom-icon-button-disabled {
-  opacity: 0.45;
-}
 
 .bottom-button-icon {
   width: 38.46rpx;
@@ -1404,12 +1401,6 @@ button.back-to-top {
   color: #191919;
 }
 
-.signup-profile-close-btn {
-  font-size: 48rpx;
-  color: #999;
-  line-height: 1;
-  padding: 0 8rpx;
-}
 
 .signup-profile-modal-body {
   padding: 0 36.92rpx 20rpx;
@@ -1418,21 +1409,6 @@ button.back-to-top {
   height: 560rpx;
   box-sizing: border-box;
   overflow: hidden;
-}
-
-.signup-profile-modal-handle {
-  height: 24rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-}
-
-.signup-profile-modal-handle view {
-  width: 73.08rpx;
-  height: 7.69rpx;
-  border-radius: 3.85rpx;
-  background: #9ca3af;
 }
 
 .signup-profile-hint {

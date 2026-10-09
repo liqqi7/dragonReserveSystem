@@ -333,36 +333,6 @@
   </view>
   </view>
 
-  <page-container
-    wx:if="{{activityFormContainerRendered && canManageActivity && activity && (isAdmin || activity.status !== '已结束')}}"
-    id="qaActivityEditContainer"
-    show="{{showActivityForm}}"
-    position="bottom"
-    overlay="{{true}}"
-    round="{{false}}"
-    duration="240"
-    close-on-slide-down="{{false}}"
-    overlay-style="background: rgba(23, 24, 20, 0.4);"
-    custom-style="height: 100%; background: transparent; border-radius: 0; overflow: hidden;"
-    bind:clickoverlay="closeActivityForm"
-    bind:beforeleave="onActivityFormBeforeLeave" bind:afterleave="onActivityFormAfterLeave"
-  >
-    <activity-form-sheet
-      id="qaActivityFormSheet"
-      style="display: block; width: 100%; height: 100%;"
-      visible="{{showActivityForm}}"
-      route-embedded="{{true}}"
-      mode="edit"
-      activity="{{activity}}"
-      participant-count="{{activityParticipantCount}}"
-      location-disabled="{{locationDisabled}}"
-      submitting="{{activityFormSubmitting}}"
-      bindclose="closeActivityForm"
-      bindsubmit="submitActivityForm"
-      bindcancelactivity="cancelActivityFromForm"
-    />
-  </page-container>
-
   <participants-drawer
     id="qaParticipantsDrawer"
     visible="{{showParticipantsDrawer}}"

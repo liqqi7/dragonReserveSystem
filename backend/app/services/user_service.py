@@ -1,6 +1,7 @@
 """User use cases."""
 
 from sqlalchemy import select
+import hmac
 from sqlalchemy.orm import Session
 from urllib.parse import urlparse
 
@@ -51,9 +52,15 @@ def update_current_user(db: Session, user: User, payload: UpdateCurrentUserReque
 def update_user_role_by_invite_code(db: Session, user: User, invite_code: str) -> User:
     """Promote a user role based on invite code."""
 
-    if invite_code == settings.admin_invite_code:
+    is_admin_code = bool(settings.admin_invite_code) and hmac.compare_digest(
+        invite_code.encode("utf-8"), settings.admin_invite_code.encode("utf-8")
+    )
+    is_user_code = bool(settings.user_invite_code) and hmac.compare_digest(
+        invite_code.encode("utf-8"), settings.user_invite_code.encode("utf-8")
+    )
+    if is_admin_code:
         user.role = "admin"
-    elif invite_code == settings.user_invite_code:
+    elif is_user_code:
         user.role = "user"
     else:
         raise ValidationAppError("Invite code is invalid")

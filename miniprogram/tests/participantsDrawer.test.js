@@ -275,7 +275,6 @@ test("swipe action width and threshold stay in RPX and close other rows", () => 
     actionAreaWidthRpx: 0
   });
   assert.match(js, /actionAreaWidthRpx:\s*0/);
-  assert.match(js, /bodyMaxHeightRpx: 1253\.85/);
   assert.match(js, /fixedChromeRpx = 130\.77/);
   assert.match(js, /clamp\(gesture\.startOffsetX \+ dxRpx, -actionOffsetRpx, 0\)/);
   assert.match(js, /getSwipeSettledState\([\s\S]*?gesture\.startOffsetX,[\s\S]*?endOffsetX,[\s\S]*?this\.data\.actionOffsetRpx/);

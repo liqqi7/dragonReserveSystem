@@ -60,3 +60,8 @@ backend/secrets/
 # Codex local scratch artifacts
 /.codex-tmp/
 /backend/.codex-tmp/
+
+# Local databases may contain user data or credentials.
+*.db
+*.db-*
+*.sqlite*

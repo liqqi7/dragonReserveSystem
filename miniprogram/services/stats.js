@@ -27,17 +27,9 @@ function getPigeonRanking() {
   return coalesced;
 }
 
-function getHistoryStats() {
-  return request({ url: "/stats/history" });
-}
 
-function getHistorySummary() {
-  return request({ url: "/stats/history-summary" });
-}
 
 module.exports = {
   getActivityRanking,
-  getPigeonRanking,
-  getHistoryStats,
-  getHistorySummary
+  getPigeonRanking
 };

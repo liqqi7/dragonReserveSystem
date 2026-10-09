@@ -94,7 +94,6 @@ function buildLocationMapMarkers(latitude, longitude, windowWidthPx) {
 Page({
   data: {
     statusBarHeight: 20,
-    navBarHeight: 64,
     safeBottomRpx: 0,
     bottomBarSafeAreaRpx: 0,
     bottomBarHeightRpx: 107.69,
@@ -122,7 +121,6 @@ Page({
     projectMembersDrawerHeightRpx: 576.92,
     projectMembersDrawerMaxHeightRpx: 1384.62,
     projectMemberTitle: "",
-    participantPreview: [],
     heroCardAvatars: [],
     participantDrawerList: [],
     participantCurrentText: "0",
@@ -155,10 +153,6 @@ Page({
     primaryActionDisabled: true,
     primaryActionType: "none",
     sharePreviewImageUrl: "",
-    activityFormContainerRendered: false,
-    showActivityForm: false,
-    activityFormSubmitting: false,
-    locationDisabled: false,
     activityParticipantCount: 0,
     showSignupProfileModal: false,
     signupProfileNickname: "",
@@ -188,7 +182,6 @@ Page({
       this._backToTopThresholdPx = BACK_TO_TOP_THRESHOLD_RPX * this._windowWidthPx / 750;
       this.setData({
         statusBarHeight,
-        navBarHeight: statusBarHeight + 44,
         safeBottomRpx,
         bottomBarSafeAreaRpx,
         bottomBarHeightRpx,
@@ -559,13 +552,11 @@ Page({
       loadError: "",
       canManageActivity,
       heroCardAvatars,
-      participantPreview: list,
       participantDrawerList,
       participantCurrentText,
       participantMaxText,
       participantHasLimit,
       activityParticipantCount: n,
-      locationDisabled: (activity.checkinCount || 0) > 0,
       activityDateText: formatActivityDate(activity.startTime),
       activityTimeText: formatActivityTime(activity.startTime, activity.endTime),
       heroMetaText: formatHeroMeta(activity),
@@ -860,99 +851,22 @@ Page({
       !this.data.canManageActivity ||
       !activity ||
       !activity._id ||
-      (!this.data.isAdmin && activity.status === "已结束") ||
-      this.data.showActivityForm ||
-      this.data.activityFormSubmitting
+      (!this.data.isAdmin && activity.status === "已结束")
     ) return;
-    if (typeof wx.navigateTo === "function") {
-      const activityId = encodeURIComponent(String(activity._id));
-      wx.navigateTo({
-        url: `/pages/activity_edit/activity_edit?id=${activityId}`,
-        events: {
-          activityUpdated: () => this.refreshDetail({ silent: true })
-        },
-        success: (res) => {
-          if (res && res.eventChannel) res.eventChannel.emit("initActivityEdit", { activity });
-        },
-        fail: (error) => {
-          console.error(error);
-          wx.showToast({ title: "打开编辑页失败，请重试", icon: "none" });
-        }
-      });
-      return;
-    }
-    // Tests and older embedded hosts without navigateTo retain the previous state path.
-    this.setData({
-      activityFormContainerRendered: true,
-      showActivityForm: false,
-      activityFormSubmitting: false,
-      locationDisabled: (activity.checkinCount || 0) > 0
-    }, () => {
-      wx.nextTick(() => this.setData({ showActivityForm: true }));
+    const activityId = encodeURIComponent(String(activity._id));
+    wx.navigateTo({
+      url: `/pages/activity_edit/activity_edit?id=${activityId}`,
+      events: {
+        activityUpdated: () => this.refreshDetail({ silent: true })
+      },
+      success: (res) => {
+        if (res && res.eventChannel) res.eventChannel.emit("initActivityEdit", { activity });
+      },
+      fail: (error) => {
+        console.error(error);
+        wx.showToast({ title: "打开编辑页失败，请重试", icon: "none" });
+      }
     });
-  },
-
-  closeActivityForm() {
-    if (this.data.activityFormSubmitting) return;
-    this.setData({ showActivityForm: false });
-  },
-
-  onActivityFormBeforeLeave() {
-    // Native back has already started closing the sheet, including during a pending request.
-    if (this.data.showActivityForm) this.setData({ showActivityForm: false });
-  },
-
-  onActivityFormAfterLeave() {
-    if (!this.data.showActivityForm && this.data.activityFormContainerRendered) {
-      this.setData({ activityFormContainerRendered: false });
-    }
-  },
-
-  submitActivityForm(e) {
-    if (this.data.activityFormSubmitting) return;
-    const current = this.data.activity;
-    const payload = e && e.detail && e.detail.payload;
-    if (!current || !current._id || !payload) {
-      wx.showToast({ title: "活动信息缺失", icon: "none" });
-      return;
-    }
-    this.setData({ activityFormSubmitting: true });
-    wx.showLoading({ title: "保存中...", mask: true });
-    activityService
-      .updateActivity(current._id, payload)
-      .then(() => {
-        wx.hideLoading();
-        wx.showToast({ title: "更新成功", icon: "success" });
-        this.setData({ showActivityForm: false, activityFormSubmitting: false });
-        return this.refreshDetail({ silent: true });
-      })
-      .catch((err) => {
-        console.error(err);
-        wx.hideLoading();
-        this.setData({ activityFormSubmitting: false });
-        wx.showToast({ title: (err && err.message) || "更新失败", icon: "none" });
-      });
-  },
-
-  cancelActivityFromForm() {
-    const activity = this.data.activity;
-    if (!activity || !activity._id || this.data.activityFormSubmitting) return;
-    this.setData({ activityFormSubmitting: true });
-    wx.showLoading({ title: "处理中...", mask: true });
-    activityService
-      .cancelActivity(activity._id)
-      .then(() => {
-        wx.hideLoading();
-        wx.showToast({ title: "已取消活动", icon: "success" });
-        this.setData({ showActivityForm: false, activityFormSubmitting: false });
-        return this.refreshDetail({ silent: true });
-      })
-      .catch((err) => {
-        console.error(err);
-        wx.hideLoading();
-        this.setData({ activityFormSubmitting: false });
-        wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
-      });
   },
 
   onTapSignup() {

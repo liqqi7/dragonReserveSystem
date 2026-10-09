@@ -228,27 +228,10 @@ App({
 
 
 
-  clearAuthState() {
-
-    this.setAuthState("guest", false);
-
-  },
 
 
 
   logout() {
-
-    try {
-      const uid =
-        String((this.globalData && this.globalData.userId) || "").trim() ||
-        String(wx.getStorageSync("userId") || "").trim();
-      if (uid) {
-        const myActivitiesCache = require("./utils/myActivitiesCache");
-        myActivitiesCache.removeForUser(uid);
-      }
-    } catch (e) {
-      console.error("clear signed-up cache failed", e);
-    }
 
     this.globalData.userRole = null;
 

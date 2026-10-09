@@ -54,7 +54,7 @@ class IntegrationError(AppError):
 
 
 class SharePreviewGenerationError(AppError):
-    """Raised when an activity card cannot be prepared before saving."""
+    """Raised when an activity share card cannot be generated."""
 
     def __init__(self) -> None:
         super().__init__("SHARE_PREVIEW_GENERATION_FAILED", "分享图片生成失败，请稍后重试", 503)

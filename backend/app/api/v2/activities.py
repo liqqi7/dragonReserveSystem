@@ -2,7 +2,7 @@
 
 import mimetypes
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import BackgroundTasks, APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
@@ -53,9 +53,9 @@ from app.services.activity_service import (
     replace_sub_items,
 )
 from app.services.activity_share_preview_service import (
-    discard_prepared_preview, prepare_activity_share_preview, read_activity_share_preview,
+    refresh_activity_share_preview_in_background, read_activity_share_preview,
 )
-from app.services.activity_weather_service import ensure_weather_snapshot, get_activity_weather_snapshot
+from app.services.activity_weather_service import refresh_activity_weather_in_background, ensure_weather_snapshot, get_activity_weather_snapshot
 
 
 router = APIRouter(tags=["activities-v2"])
@@ -160,6 +160,7 @@ def get_activity_v2(
 
 @router.post("/activities", response_model=ActivityV2Response, status_code=status.HTTP_201_CREATED)
 def post_activity_v2(
+    background_tasks: BackgroundTasks,
     payload: ActivityCreateV2Request,
     request: Request,
     db: Session = Depends(get_db),
@@ -186,17 +187,10 @@ def post_activity_v2(
             )
         )
     ensure_weather_snapshot(db, activity)
-    prepared_name, created = "", False
-    try:
-        prepared_name, created = prepare_activity_share_preview(activity)
-        activity.share_preview_file = prepared_name
-        db.commit()
-    except Exception:
-        db.rollback()
-        if prepared_name:
-            discard_prepared_preview(prepared_name, created)
-        raise
-    return _response(get_activity_by_id(db, activity.id), request)
+    db.commit()
+    background_tasks.add_task(refresh_activity_share_preview_in_background, db.get_bind(), activity.id)
+    background_tasks.add_task(refresh_activity_weather_in_background, db.get_bind(), activity.id)
+    return _response(get_activity_by_id(db, activity.id), request, current_user)
 
 
 @router.post("/activities/{activity_id}/cancel", response_model=ActivityV2Response)
@@ -208,7 +202,7 @@ def post_cancel_activity_v2(
 ) -> ActivityV2Response:
     activity = get_activity_by_id(db, activity_id)
     _require_activity_manager(activity, current_user)
-    return _response(cancel_activity(db, activity, actor=current_user), request)
+    return _response(cancel_activity(db, activity, actor=current_user), request, current_user)
 
 
 @router.delete("/activities/{activity_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -283,6 +277,7 @@ def get_activity_share_preview_v2(
 
 @router.patch("/activities/{activity_id}", response_model=ActivityV2Response)
 def patch_activity_v2(
+    background_tasks: BackgroundTasks,
     activity_id: int,
     payload: ActivityUpdateV2Request,
     request: Request,
@@ -291,7 +286,10 @@ def patch_activity_v2(
 ) -> ActivityV2Response:
     activity = get_activity_by_id(db, activity_id)
     _require_activity_manager(activity, current_user)
-    return _response(update_activity(db, activity, payload, actor=current_user), request, current_user)
+    updated = update_activity(db, activity, payload, actor=current_user)
+    background_tasks.add_task(refresh_activity_share_preview_in_background, db.get_bind(), updated.id)
+    background_tasks.add_task(refresh_activity_weather_in_background, db.get_bind(), updated.id)
+    return _response(updated, request, current_user)
 
 
 @router.delete(
@@ -306,10 +304,7 @@ def delete_participant_v2(
 ) -> Response:
     activity = get_activity_by_id(db, activity_id)
     participant = next((item for item in activity.participants if item.id == participant_id), None)
-    if participant is None:
-        # Let the service return the canonical not-found response.
-        remove_participant(db, activity, participant_id, current_user, allow_activity_owner=True)
-    elif participant.user_id != current_user.id:
+    if participant is not None and participant.user_id != current_user.id:
         _require_activity_manager(activity, current_user)
     remove_participant(db, activity, participant_id, current_user, allow_activity_owner=True)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

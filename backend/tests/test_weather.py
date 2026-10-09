@@ -170,8 +170,13 @@ def test_activity_detail_serializes_available_weather_date(client, db_session, a
     assert response.json()["weather"]["temperature"] == 24
 
 
-def test_legacy_weather_endpoint_remains_available(client) -> None:
-    assert "/api/v1/weather/activity" in client.app.openapi()["paths"]
+def test_retired_weather_endpoint_is_removed(client) -> None:
+    assert "/api/v1/weather/activity" not in client.app.openapi()["paths"]
+    response = client.get(
+        "/api/v1/weather/activity",
+        params={"longitude": 116.4, "latitude": 39.9, "date": "2026-09-07"},
+    )
+    assert response.status_code == 404
 
 
 def test_refresh_deduplicates_same_location_and_keeps_weather_when_air_quality_fails(db_session, admin_user) -> None:
@@ -286,3 +291,160 @@ def test_unconfigured_refresh_uses_backoff_without_network(db_session, admin_use
     assert snapshot.status == "service_unconfigured"
     assert snapshot.failure_count == 1
     assert snapshot.next_refresh_at == NOW + timedelta(minutes=15)
+
+
+def test_refresh_discards_result_when_location_changes_during_upstream_request(db_session, admin_user) -> None:
+    activity = make_activity(db_session, admin_user)
+    client = FakeQWeatherClient()
+    original_get_weather = client.get_daily_weather
+
+    def change_location_then_return(*, longitude: float, latitude: float) -> dict:
+        payload = original_get_weather(longitude=longitude, latitude=latitude)
+        activity.location_latitude = 31.2304
+        activity.location_longitude = 121.4737
+        invalidate_weather_snapshot(db_session, activity, now=NOW)
+        db_session.commit()
+        return payload
+
+    client.get_daily_weather = change_location_then_return  # type: ignore[method-assign]
+
+    result = ActivityWeatherRefreshService(db_session, client).refresh_due(now=NOW)
+
+    snapshot = db_session.get(ActivityWeatherSnapshot, activity.id)
+    assert snapshot.location_key == "121.4737:31.2304"
+    assert snapshot.status == "pending"
+    assert snapshot.temperature is None
+    assert snapshot.next_refresh_at == NOW
+    assert result.get("snapshot_success_count", 0) == 0
+
+
+def test_missing_forecast_date_waits_six_hours_before_retry(db_session, admin_user):
+    activity = make_activity(db_session, admin_user, start_time=datetime(2026, 9, 7, 14))
+    fake = FakeQWeatherClient()
+    service = ActivityWeatherRefreshService(db_session, fake)
+    service.refresh_due(now=NOW)
+    db_session.expire_all()
+    snapshot = db_session.get(ActivityWeatherSnapshot, activity.id)
+    assert snapshot.status == "forecast_out_of_range"
+    assert snapshot.next_refresh_at == NOW + timedelta(hours=6)
+    service.refresh_due(now=NOW + timedelta(hours=1))
+    assert len(fake.weather_calls) == 1
+    service.refresh_due(now=NOW + timedelta(hours=6))
+    assert len(fake.weather_calls) == 2
+
+
+
+def test_out_of_range_snapshot_refreshes_when_target_enters_forecast_window(db_session, admin_user):
+    now = datetime(2026, 9, 5, 23)
+    activity = make_activity(db_session, admin_user, start_time=datetime(2026, 10, 5, 14))
+    fake = FakeQWeatherClient()
+    original_get_daily_weather = fake.get_daily_weather
+
+    def target_date_weather(*, longitude: float, latitude: float) -> dict:
+        payload = original_get_daily_weather(longitude=longitude, latitude=latitude)
+        payload["daily"][0]["fxDate"] = "2026-10-05"
+        return payload
+
+    fake.get_daily_weather = target_date_weather  # type: ignore[method-assign]
+    service = ActivityWeatherRefreshService(db_session, fake)
+
+    # More than 29 days away: persist a future eligibility time without calling upstream.
+    service.refresh_due(now=now)
+    db_session.expire_all()
+    snapshot = db_session.get(ActivityWeatherSnapshot, activity.id)
+    assert snapshot.status == "forecast_out_of_range"
+    assert snapshot.next_refresh_at == datetime(2026, 9, 6, 0)
+    assert fake.weather_calls == []
+
+    # A later out-of-range pass must not push the eligibility time forward.
+    service.refresh_due(now=now + timedelta(minutes=30))
+    db_session.expire_all()
+    snapshot = db_session.get(ActivityWeatherSnapshot, activity.id)
+    assert snapshot.status == "forecast_out_of_range"
+    assert snapshot.next_refresh_at == datetime(2026, 9, 6, 0)
+    assert fake.weather_calls == []
+
+    # On the first eligible date, normalize to pending, refresh upstream, and persist it.
+    eligible_now = datetime(2026, 9, 6, 0)
+    service.refresh_due(now=eligible_now)
+    db_session.expire_all()
+    snapshot = db_session.get(ActivityWeatherSnapshot, activity.id)
+    assert len(fake.weather_calls) == 1
+    assert snapshot.status == "available"
+    assert snapshot.target_date.isoformat() == "2026-10-05"
+    assert snapshot.temperature_min == 18
+    assert snapshot.temperature_max == 24
+    assert snapshot.next_refresh_at is not None
+    assert snapshot.next_refresh_at > eligible_now
+    service.refresh_due(now=eligible_now + timedelta(minutes=5))
+    assert len(fake.weather_calls) == 1
+
+
+def test_failed_air_request_keeps_previous_air_quality(db_session, admin_user):
+    activity = make_activity(db_session, admin_user)
+    snapshot = ensure_weather_snapshot(db_session, activity, now=NOW)
+    snapshot.air_quality = "优"
+    db_session.commit()
+    ActivityWeatherRefreshService(db_session, FakeQWeatherClient(fail_air=True)).refresh_due(now=NOW)
+    db_session.expire_all()
+    assert db_session.get(ActivityWeatherSnapshot, activity.id).air_quality == "优"
+
+
+def test_expired_snapshot_has_consistent_unavailable_status(db_session, admin_user):
+    activity = make_activity(db_session, admin_user)
+    snapshot = ensure_weather_snapshot(db_session, activity, now=NOW)
+    snapshot.status = "available"
+    snapshot.last_success_at = NOW - timedelta(days=30)
+    response = snapshot_response(snapshot, now=NOW)
+    assert response["available"] is False
+    assert response["status"] == response["reason"] == "expired"
+
+
+def test_same_day_time_edit_preserves_weather(db_session, admin_user):
+    activity = make_activity(db_session, admin_user)
+    snapshot = ensure_weather_snapshot(db_session, activity, now=NOW)
+    snapshot.status = "available"
+    snapshot.temperature = 24
+    snapshot.last_success_at = NOW
+    snapshot.next_refresh_at = NOW + timedelta(hours=6)
+    db_session.commit()
+    activity.start_time += timedelta(hours=1)
+    invalidate_weather_snapshot(db_session, activity, now=NOW)
+    assert snapshot.status == "available"
+    assert snapshot.temperature == 24
+    assert snapshot.next_refresh_at == NOW + timedelta(hours=6)
+
+
+def test_background_refresh_only_fetches_requested_activity(db_session, admin_user, monkeypatch):
+    first = make_activity(db_session, admin_user)
+    second = make_activity(db_session, admin_user, longitude=121.4737, latitude=31.2304)
+    fake = FakeQWeatherClient()
+    monkeypatch.setattr(activity_weather_service, "QWeatherClient", lambda: fake)
+    activity_weather_service.refresh_activity_weather_in_background(db_session.get_bind(), first.id)
+    db_session.expire_all()
+    assert fake.weather_calls == [(116.4074, 39.9042)]
+    assert db_session.get(ActivityWeatherSnapshot, first.id).status == "available"
+    assert db_session.get(ActivityWeatherSnapshot, second.id) is None
+
+
+def test_create_and_update_schedule_weather_refresh(client, admin_headers, monkeypatch):
+    from app.api.v1 import activities as v1
+    from app.api.v2 import activities as v2
+    calls = []
+    monkeypatch.setattr(v1, "refresh_activity_weather_in_background", lambda bind, activity_id: calls.append(activity_id))
+    monkeypatch.setattr(v2, "refresh_activity_weather_in_background", lambda bind, activity_id: calls.append(activity_id))
+    payload = {
+        "name": "后台天气", "remark": "后台刷新测试",
+        "start_time": "2026-09-05T14:00:00", "end_time": "2026-09-05T16:00:00",
+        "location_latitude": 39.9042, "location_longitude": 116.4074,
+    }
+    for version in ("v1", "v2"):
+        data = dict(payload)
+        if version == "v2":
+            data["activity_cover_id"] = "aleksey-rico-001"
+        created = client.post(f"/api/{version}/activities", headers=admin_headers, json=data)
+        assert created.status_code == 201, created.text
+        activity_id = created.json()["id"]
+        edited = client.patch(f"/api/{version}/activities/{activity_id}", headers=admin_headers, json={"remark": "新备注"})
+        assert edited.status_code == 200, edited.text
+        assert calls[-2:] == [activity_id, activity_id]

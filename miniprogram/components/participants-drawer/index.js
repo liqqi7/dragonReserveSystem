@@ -58,7 +58,6 @@ Component({
     actionOffsetRpx: 0,
     actionAreaWidthRpx: 0,
     maxHeightRpx: 1384.62,
-    bodyMaxHeightRpx: 1253.85,
     participantCountText: "0",
     participantLimitText: "",
     participantHasLimit: false,
@@ -132,12 +131,10 @@ Component({
 
     updateHeightConstraints() {
       const maxHeightRpx = getMaxHeightRpx();
-      const fixedChromeRpx = 130.77;
       const safeBottomRpx = Number(this.properties.safeBottomRpx) || 0;
       const drawerHeightRpx = getDrawerHeightRpx(this.data.rows.length, maxHeightRpx, safeBottomRpx);
       this.setData({
         maxHeightRpx,
-        bodyMaxHeightRpx: Math.max(0, Math.round((maxHeightRpx - fixedChromeRpx - safeBottomRpx) * 100) / 100),
         drawerHeightRpx,
         surfaceSizingStyle: getSurfaceSizingStyle(
           this._useExplicitSurfaceHeight,

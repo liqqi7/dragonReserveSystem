@@ -3,7 +3,7 @@
 `app.json` 当前使用以下 TabBar 图标：
 
 - 首页：`tab-home.jpg`、`tab-home-active.jpg`
-- 日程：`icon-detail-time.png`（选中与未选中共用）
+- 工具：`tab-home.png`、`tab-home-active.png`
 - 排行榜：`tab-ranking.jpg`、`tab-ranking-active.jpg`
 - 我的：`tab-profile.jpg`、`tab-profile-active.jpg`
 

@@ -5,15 +5,14 @@ from __future__ import annotations
 from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from app.models import Activity, ActivityParticipant
+from app.models import Activity, ActivityParticipant, User
 from app.schemas.stats import (
     ActivityHeatmapDayResponse,
     ActivityRankingResponse,
     PigeonRankingResponse,
-    PigeonStatResponse,
 )
 
 # 小程序端对无 Z 后缀的 ISO 时间按设备本地时区解析；国内用户即东八区。
@@ -88,13 +87,14 @@ def _ended_participant_rows(db: Session, now_local_naive: datetime):
     return db.execute(
         select(
             ActivityParticipant.user_id,
-            ActivityParticipant.display_nickname,
-            ActivityParticipant.display_avatar_url,
+            User.nickname,
+            User.avatar_url,
             ActivityParticipant.checked_in_at,
             Activity.start_time,
             Activity.end_time,
         )
         .join(Activity, Activity.id == ActivityParticipant.activity_id)
+        .join(User, User.id == ActivityParticipant.user_id)
         .where(Activity.status.not_in(_EXCLUDED_ACTIVITY_STATUSES))
         .where(or_(Activity.end_time <= now_local_naive, Activity.status == "已结束"))
     ).all()
@@ -149,8 +149,10 @@ def get_activity_ranking(
     db: Session,
     *,
     today: date | None = None,
+    offset: int = 0,
+    limit: int | None = None,
 ) -> list[ActivityRankingResponse]:
-    """Rank checked-in users and build a duration-based 12-week heatmap."""
+    """Rank checked-in users and build heatmaps only for the requested page."""
 
     now_local_naive = _now_local_naive()
     current_day = today or now_local_naive.date()
@@ -179,8 +181,20 @@ def get_activity_ranking(
         ).items():
             daily_hours[activity_date] = daily_hours.get(activity_date, 0.0) + hours
 
+    ranked_members = sorted(
+        member_map.items(),
+        key=lambda item: (
+            int(item[1]["checkin_count"]),
+            sum(1 for hours in item[1]["daily_hours"].values() if hours > 0),
+            -item[0],
+        ),
+        reverse=True,
+    )
+    page_end = None if limit is None else offset + limit
+    page_members = ranked_members[offset:page_end]
+
     result: list[ActivityRankingResponse] = []
-    for user_id, stat in member_map.items():
+    for user_id, stat in page_members:
         daily_hours = stat["daily_hours"]
         heatmap: list[ActivityHeatmapDayResponse] = []
         cursor = window_start
@@ -205,76 +219,4 @@ def get_activity_ranking(
             )
         )
 
-    return sorted(
-        result,
-        key=lambda item: (item.checkin_count, item.attendance_days, -item.user_id),
-        reverse=True,
-    )
-
-
-def get_pigeon_stats(db: Session) -> list[PigeonStatResponse]:
-    """Compute signup/checkin ranking for ended activities."""
-
-    now_local_naive = datetime.now(_APP_LOCAL_TZ).replace(tzinfo=None)
-    rows = db.execute(
-        select(
-            ActivityParticipant.user_id,
-            ActivityParticipant.display_nickname,
-            ActivityParticipant.checked_in_at,
-        )
-        .join(Activity, Activity.id == ActivityParticipant.activity_id)
-        .where(Activity.status.not_in(("已取消", "已流局", "已删除")))
-        .where(or_(Activity.end_time <= now_local_naive, Activity.status == "已结束"))
-    ).all()
-
-    member_map: dict[int, dict[str, int | str]] = {}
-    for user_id, display_nickname, checked_in_at in rows:
-        stat = member_map.setdefault(
-            user_id,
-            {
-                "nickname": display_nickname,
-                "signup_count": 0,
-                "checkin_count": 0,
-            },
-        )
-        stat["signup_count"] += 1
-        if checked_in_at is not None:
-            stat["checkin_count"] += 1
-
-    result = []
-    for user_id, stat in member_map.items():
-        signup_count = int(stat["signup_count"])
-        checkin_count = int(stat["checkin_count"])
-        pigeon_count = signup_count - checkin_count
-        pigeon_rate = round((pigeon_count / signup_count) * 100, 1) if signup_count else 0.0
-        result.append(
-            PigeonStatResponse(
-                user_id=user_id,
-                nickname=str(stat["nickname"]),
-                signup_count=signup_count,
-                checkin_count=checkin_count,
-                pigeon_count=pigeon_count,
-                pigeon_rate=pigeon_rate,
-            )
-        )
-
-    # 排序规则：
-    # 1. 按鸽子率从高到低
-    # 2. 鸽子率相同按报名次数从高到低
-    return sorted(
-        result,
-        key=lambda item: (item.pigeon_rate, item.signup_count),
-        reverse=True,
-    )
-
-
-def get_ended_activity_count(db: Session) -> int:
-    """Return the history-page activity count without fetching the activity list."""
-
-    now_local_naive = datetime.now(_APP_LOCAL_TZ).replace(tzinfo=None)
-    count = db.scalar(
-        select(func.count(Activity.id))
-        .where(Activity.status.not_in(("已取消", "已流局", "已删除")))
-        .where(Activity.end_time <= now_local_naive)
-    )
-    return int(count or 0)
+    return result

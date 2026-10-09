@@ -352,7 +352,8 @@ test("editing opens the dedicated edit page", () => {
   assert.equal(pageJson.usingComponents["date-time-picker-sheet"], undefined);
   assert.match(js, /wx\.navigateTo\(\{[\s\S]*url: `\/pages\/activity_edit\/activity_edit\?id=\$\{activityId\}`/);
   assert.match(js, /activityUpdated:\s*\(\) => this\.refreshDetail\(\{ silent: true \}\)/);
-  assert.match(wxml, /<activity-form-sheet[\s\S]*mode="edit"/);
+  assert.equal(pageJson.usingComponents["activity-form-sheet"], undefined);
+  assert.doesNotMatch(wxml, /<activity-form-sheet/);
   const editPageSource = fs.readFileSync(path.join(__dirname, "../pages/activity_edit/activity_edit.js"), "utf8");
   assert.match(editPageSource, /buildEditForm[\s\S]*activityService\.updateActivity/);
 });
@@ -362,7 +363,6 @@ test("mini-program never exposes physical deletion and non-admins cannot edit en
   assert.doesNotMatch(js, /deleteActivityFromForm|\.deleteActivity\(/);
   assert.doesNotMatch(activityServiceSource, /function deleteActivity|\bdeleteActivity,/);
   assert.match(wxml, /wx:if="{{canManageActivity && \(isAdmin \|\| activity\.status !== '已结束'\)}}"/);
-  assert.match(wxml, /activityFormContainerRendered && canManageActivity && activity && \(isAdmin \|\| activity\.status !== '已结束'\)/);
   assert.match(js, /openAdminEdit\(\)\s*\{[\s\S]*\(!this\.data\.isAdmin && activity\.status === "已结束"\)[\s\S]*return;/);
   assert.match(js, /resolveCanManageActivity\(activity,[\s\S]*?role === "admin"[\s\S]*?role !== "user"[\s\S]*?activity\.createdBy/);
   assert.match(wxml, /can-manage="\{\{canManageActivity\}\}"/);
@@ -373,15 +373,17 @@ test("mini-program never exposes physical deletion and non-admins cannot edit en
   const vm = require("node:vm");
   const makePage = (initialData) => {
     let pageDef = null;
+    const navigations = [];
     const app = { globalData: { userRole: initialData.isAdmin ? "admin" : "user", userId: "u-1" } };
     vm.runInNewContext(js, {
       getApp: () => app,
       Page: (def) => { pageDef = def; },
       require: () => ({}),
-      wx: { getStorageSync: () => "", nextTick: (fn) => fn() }
+      wx: { getStorageSync: () => "", nextTick: (fn) => fn(), navigateTo: options => navigations.push(options) }
     });
     return {
       ...pageDef,
+      navigations,
       data: { ...pageDef.data, ...initialData },
       setData(patch, cb) {
         Object.assign(this.data, patch);
@@ -396,8 +398,8 @@ test("mini-program never exposes physical deletion and non-admins cannot edit en
     activity: { _id: "act-1", status: "已结束" }
   });
   adminOnEnded.openAdminEdit();
-  assert.equal(adminOnEnded.data.activityFormContainerRendered, true);
-  assert.equal(adminOnEnded.data.showActivityForm, true);
+  assert.equal(adminOnEnded.navigations.length, 1);
+  assert.equal(adminOnEnded.navigations[0].url, "/pages/activity_edit/activity_edit?id=act-1");
 
   const userOnEnded = makePage({
     isAdmin: false,
@@ -405,8 +407,7 @@ test("mini-program never exposes physical deletion and non-admins cannot edit en
     activity: { _id: "act-2", status: "已结束" }
   });
   userOnEnded.openAdminEdit();
-  assert.equal(userOnEnded.data.activityFormContainerRendered, false);
-  assert.equal(userOnEnded.data.showActivityForm, false);
+  assert.equal(userOnEnded.navigations.length, 0);
 });
 
 test("activity detail removes the legacy countdown and standalone pigeon sections", () => {
@@ -734,4 +735,43 @@ test("detail login prompt reuses the yellow dialog and resumes signup on confirm
   assert.match(js, /selectComponent\("#signup-login-dialog"\)\.open\(\{[^}]*confirmBehavior: "emit"/s);
   assert.match(js, /onSignupLoginConfirm\(\)\s*\{[\s\S]*?loginWithWechat\(app\)[\s\S]*?this\.directSignup\(this\.data\.activity\)/);
   assert.doesNotMatch(js, /wx\.showModal\(\{\s*title: "提示",\s*content: "当前尚未登录/);
+});
+
+test("signup ownership is matched by user id, never by nickname", () => {
+  const raw = {
+    id: 52,
+    name: "同名测试",
+    status: "未开始",
+    start_time: "2026-10-18T10:00:00",
+    end_time: "2026-10-18T12:00:00",
+    signup_enabled: true,
+    participants: [{ user_id: 11, display_nickname: "同名", created_at: "2026-10-01T10:00:00" }]
+  };
+  const otherUser = enrichSingleActivity(raw, [], "10", "同名", new Date("2026-10-01T11:00:00"));
+  assert.equal(otherUser.hasSignedUp, false);
+  const sameUser = enrichSingleActivity({ ...raw, participants: [{ ...raw.participants[0], user_id: 10 }] }, [], "10", "同名", new Date("2026-10-01T11:00:00"));
+  assert.equal(sameUser.hasSignedUp, true);
+  const noUserId = enrichSingleActivity(raw, [], "", "同名", new Date("2026-10-01T11:00:00"));
+  assert.equal(noUserId.hasSignedUp, false);
+});
+
+test("home cache recomputes both participation flags by user id only", () => {
+  const source = fs.readFileSync(path.join(__dirname, "../pages/activity_list/activity_list.js"), "utf8");
+  const start = source.indexOf("function reapplyListParticipationFlags(");
+  const end = source.indexOf("function pickCardMediaMetaFromDataset(", start);
+  assert.ok(start >= 0 && end > start);
+  const recompute = require("node:vm").runInNewContext(`${source.slice(start, end)}; reapplyListParticipationFlags`);
+  const cached = [{
+    hasSignedUp: true, hasCheckedIn: true,
+    participants: [{ userId: 11, name: "同名", checkedInAt: "2026-10-01T12:00:00" }]
+  }];
+  const other = recompute(cached, "10", "同名")[0];
+  assert.equal(other.hasSignedUp, false);
+  assert.equal(other.hasCheckedIn, false);
+  const self = recompute(cached, "11", "改过昵称")[0];
+  assert.equal(self.hasSignedUp, true);
+  assert.equal(self.hasCheckedIn, true);
+  const legacy = recompute([{ participants: ["同名"] }], "10", "同名")[0];
+  assert.equal(legacy.hasSignedUp, false);
+  assert.equal(legacy.hasCheckedIn, false);
 });

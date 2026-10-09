@@ -1,0 +1,11 @@
+[Unit]
+Description=Prune unreferenced Dragon Reserve activity share previews
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+RuntimeDirectory=dragonreserve-share-preview-prune
+WorkingDirectory=/home/ubuntu/apps/dragonReserveSystem/backend
+EnvironmentFile=/home/ubuntu/apps/dragonReserveSystem/backend/.env
+ExecStart=/usr/bin/flock -n /run/dragonreserve-share-preview-prune/prune.lock /home/ubuntu/apps/dragonReserveSystem/backend/.venv/bin/python -m scripts.prune_activity_share_previews --apply --min-age-days 14

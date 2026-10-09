@@ -1,15 +1,19 @@
 """User routes."""
 
 from pathlib import Path
+from collections import defaultdict, deque
+from threading import Lock
+from time import monotonic
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, File, Request, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.exceptions import ValidationAppError
+from app.core.logging import logger
 from app.models import User
 from app.schemas.user import AvatarUploadResponse, CurrentUserResponse, UpdateCurrentUserRequest, UpdateRoleRequest
 from app.services.user_service import clear_user_role, update_current_user, update_user_role_by_invite_code
@@ -25,6 +29,31 @@ CONTENT_TYPE_EXTENSIONS = {
     "image/gif": ".gif",
 }
 MAX_AVATAR_BYTES = 2 * 1024 * 1024
+_INVITE_WINDOW_SECONDS = 3600
+_INVITE_USER_LIMIT = 5
+_INVITE_IP_LIMIT = 20
+_invite_attempts: dict[str, deque[float]] = defaultdict(deque)
+_invite_attempts_lock = Lock()
+
+
+def _check_invite_rate_limit(user_id: int, client_ip: str) -> None:
+    now = monotonic()
+    keys = (f"user:{user_id}", f"ip:{client_ip}")
+    limits = (_INVITE_USER_LIMIT, _INVITE_IP_LIMIT)
+    with _invite_attempts_lock:
+        # Purge expired buckets as well as timestamps to bound process memory.
+        for key in list(_invite_attempts):
+            attempts = _invite_attempts[key]
+            while attempts and now - attempts[0] >= _INVITE_WINDOW_SECONDS:
+                attempts.popleft()
+            if not attempts:
+                del _invite_attempts[key]
+        for key, limit in zip(keys, limits):
+            attempts = _invite_attempts[key]
+            if len(attempts) >= limit:
+                raise HTTPException(status_code=429, detail="Too many invite attempts; try again later")
+        for key in keys:
+            _invite_attempts[key].append(now)
 
 
 @router.get("/me", response_model=CurrentUserResponse, summary="Get current user")
@@ -81,13 +110,23 @@ async def upload_my_avatar(
 
 @router.post("/me/role", response_model=CurrentUserResponse, summary="Update current user role")
 def post_my_role(
+    request: Request,
     payload: UpdateRoleRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> CurrentUserResponse:
     """Update role from invite code."""
 
-    user = update_user_role_by_invite_code(db, current_user, payload.invite_code)
+    client_ip = request.client.host if request.client else "unknown"
+    try:
+        _check_invite_rate_limit(current_user.id, client_ip)
+        user = update_user_role_by_invite_code(db, current_user, payload.invite_code)
+    except (HTTPException, ValidationAppError) as exc:
+        outcome = "limited" if isinstance(exc, HTTPException) else "invalid"
+        logger.warning("role_invite_request user_id=%s ip=%s outcome=%s", current_user.id, client_ip, outcome)
+        raise
+    # Keep this as a metadata-only audit record; never log the submitted code.
+    logger.info("role_invite_request user_id=%s ip=%s outcome=accepted role=%s", current_user.id, client_ip, user.role)
     return CurrentUserResponse.model_validate(user, from_attributes=True)
 
 

@@ -9,7 +9,7 @@ const serviceSource = read("../services/activity.js");
 
 function createFixture(name) {
   const requests = [], ui = [], events = [], logs = [], locations = [];
-  const invalidated = { list: 0, history: 0, mine: 0 };
+  const invalidated = { list: 0 };
   let pages = [], definition;
   const wx = {
     getStorageSync: () => "user-1",
@@ -32,8 +32,6 @@ function createFixture(name) {
         }
       };
       if (name === "./cacheManager") return { clearCachedActivityList: () => { invalidated.list++; } };
-      if (name === "../utils/historyStatsCache") return { clear: () => { invalidated.history++; } };
-      if (name === "../utils/myActivitiesCache") return { removeForUser: () => { invalidated.mine++; } };
       throw Error(`Unexpected service import: ${name}`);
     }
   });
@@ -87,7 +85,6 @@ function createFixture(name) {
 }
 
 for (const name of ["activity_create", "checkin_map"]) {
-  const mineInvalidations = name === "checkin_map" ? 1 : 0;
 
   test(`${name}: duplicate taps send one request and visible success returns once`, async () => {
     const h = createFixture(name);
@@ -100,7 +97,7 @@ for (const name of ["activity_create", "checkin_map"]) {
     assert.equal(h.ui.filter(call => call.type === "navigateBack").length, 1);
     assert.equal(h.ui.filter(call => call.type === "toast").length, 1);
     assert.equal(h.page.data.submitting, false);
-    assert.deepEqual(h.invalidated, { list: 1, history: 1, mine: mineInvalidations });
+    assert.deepEqual(h.invalidated, { list: 1 });
     h.submit();
     h.page.onShow();
     assert.equal(h.requests.length, 1, "a completed POST must never be resubmitted");
@@ -118,7 +115,7 @@ for (const name of ["activity_create", "checkin_map"]) {
     await pending;
     assert.deepEqual(h.ui, []);
     assert.deepEqual(h.events, []);
-    assert.deepEqual(h.invalidated, { list: 1, history: 1, mine: mineInvalidations });
+    assert.deepEqual(h.invalidated, { list: 1 });
     h.submit();
     assert.equal(h.requests.length, 1);
   });
@@ -132,7 +129,7 @@ for (const name of ["activity_create", "checkin_map"]) {
     h.requests[0].reject({ message: "Network failed" });
     await pending;
     assert.deepEqual(h.ui, []);
-    assert.deepEqual(h.invalidated, { list: 0, history: 0, mine: 0 });
+    assert.deepEqual(h.invalidated, { list: 0 });
   });
 
   test(`${name}: a hidden success waits for its original page to become topmost`, async () => {
@@ -195,7 +192,7 @@ test("creation: navigation performed by an opener listener is not immediately po
   await pending;
   assert.equal(h.ui.filter(call => call.type === "navigateBack").length, 0);
   assert.equal(h.ui.filter(call => call.type === "toast").length, 0);
-  assert.deepEqual(h.invalidated, { list: 1, history: 1, mine: 0 });
+  assert.deepEqual(h.invalidated, { list: 1 });
 });
 
 test("checkin: returning while the request is pending restores its loading indicator once", async () => {

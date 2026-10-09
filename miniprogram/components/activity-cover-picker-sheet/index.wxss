@@ -106,17 +106,7 @@
   gap: 15.38rpx;
 }
 
-.cover-artist-avatar {
-  width: 53.85rpx;
-  height: 53.85rpx;
-  flex: none;
-  position: relative;
-  overflow: hidden;
-  border-radius: 50%;
-  background: #f5f5f5;
-}
 
-.cover-artist-avatar-image { width: 100%; height: 100%; display: block; }
 .cover-preview-avatar-image { width: 100%; height: 100%; display: block; }
 
 .cover-artist-name {
@@ -255,18 +245,6 @@
   animation-duration: 1800ms;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
-}
-
-.cover-skeleton-avatar {
-  width: 53.85rpx;
-  height: 53.85rpx;
-  border-radius: 50%;
-}
-
-.cover-skeleton-name {
-  width: 169.23rpx;
-  height: 26.92rpx;
-  border-radius: 13.46rpx;
 }
 
 .cover-skeleton-track {

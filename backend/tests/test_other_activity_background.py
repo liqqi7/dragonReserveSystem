@@ -18,7 +18,6 @@ def test_other_activity_background_assets_and_configs_stay_in_sync() -> None:
         assert small_image.size == (828, 828)
 
     for relative_path in (
-        "miniprogram/pages/activity_list/activity_list.js",
         "miniprogram/utils/activityEnrich.js",
         "backend/app/services/activity_type_style_service.py",
     ):
@@ -27,11 +26,14 @@ def test_other_activity_background_assets_and_configs_stay_in_sync() -> None:
         assert EXPECTED_SMALL_URL in source
 
     for relative_path in (
-        "miniprogram/pages/activity_list/activity_list.js",
         "miniprogram/utils/activityEnrich.js",
     ):
         source = (PROJECT_ROOT / relative_path).read_text(encoding="utf-8")
         assert "/activities/type-styles/" not in source
+
+    homepage = (PROJECT_ROOT / "miniprogram/pages/activity_list/activity_list.js").read_text(encoding="utf-8")
+    assert "DEFAULT_ACTIVITY_TYPE_STYLES" in homepage
+    assert "../../utils/activityEnrich" in homepage
 
     glass_service = (
         PROJECT_ROOT / "backend/app/services/activity_card_glass_service.py"

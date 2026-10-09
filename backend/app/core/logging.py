@@ -42,12 +42,17 @@ def ensure_trace_id(request: Request) -> str:
     return trace_id
 
 
+def safe_log_path(path: str) -> str:
+    """Escape control chars so untrusted URL paths cannot forge log lines."""
+    return "".join(f"\\x{ord(char):02x}" if ord(char) < 32 or ord(char) == 127 else char for char in path)
+
+
 def request_context(request: Request) -> dict[str, Any]:
     start_time = getattr(request.state, "request_started_at", None)
     duration_ms = round((time.perf_counter() - start_time) * 1000, 2) if start_time else None
     return {
         "method": request.method,
-        "path": request.url.path,
+        "path": safe_log_path(request.url.path),
         "query": str(request.url.query or ""),
         "trace_id": ensure_trace_id(request),
         "duration_ms": duration_ms,

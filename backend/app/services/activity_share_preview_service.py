@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Generate immutable share cards before an activity write is committed."""
+"""Generate immutable share cards after an activity write is committed."""
 
 from dataclasses import dataclass
 from datetime import datetime
@@ -16,6 +16,8 @@ from zoneinfo import ZoneInfo
 
 import cairosvg
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from sqlalchemy import update
+from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.exceptions import SharePreviewGenerationError
@@ -58,10 +60,50 @@ def share_preview_path(file_name: str) -> Path:
 def read_activity_share_preview(activity: Activity) -> SharePreviewResult:
     """Pure read: never creates an image when a preview is absent."""
     file_name = activity.share_preview_file
-    if not file_name or not _FILE_NAME.fullmatch(file_name) or not share_preview_path(file_name).is_file():
+    if not file_name:
+        return SharePreviewResult("pending")
+    try:
+        _, expected_name = _source_and_name(activity)
+    except (ValueError, OSError):
+        return SharePreviewResult("failed")
+    if file_name != expected_name:
+        return SharePreviewResult("pending")
+    if not _FILE_NAME.fullmatch(file_name) or not share_preview_path(file_name).is_file():
         logger.warning("share_preview_missing activity_id=%s file=%s", activity.id, file_name)
         return SharePreviewResult("failed")
     return SharePreviewResult("ready", f"{settings.media_url_prefix}/share-previews/{file_name}")
+
+
+
+_PREVIEW_SOURCE_FIELDS = (
+    "activity_cover_id", "location_name", "location_address", "start_time", "end_time",
+)
+
+
+def refresh_activity_share_preview_in_background(bind, activity_id: int) -> None:
+    """Render a detached snapshot, then publish only if its source is still current."""
+    try:
+        with Session(bind=bind, expire_on_commit=False) as db:
+            activity = db.get(Activity, activity_id)
+            if activity is None:
+                return
+            source_values = {key: getattr(activity, key) for key in _PREVIEW_SOURCE_FIELDS}
+            if read_activity_share_preview(activity).status == "ready":
+                return
+            db.expunge(activity)
+        # The read session is closed: rendering holds no transaction or row lock.
+        file_name, _ = prepare_activity_share_preview(activity)
+        if _source_and_name(activity)[1] != file_name:
+            return  # The cover asset changed during rendering.
+        with Session(bind=bind) as db:
+            db.execute(update(Activity).where(
+                Activity.id == activity_id,
+                *(getattr(Activity, key) == value for key, value in source_values.items()),
+            ).values(share_preview_file=file_name))
+            db.commit()
+        # Immutable cached files are retained even when a newer edit wins.
+    except Exception:
+        logger.exception("share_preview_refresh_failed activity_id=%s", activity_id)
 
 
 def _wall_time(value: datetime) -> datetime:
@@ -129,8 +171,12 @@ def prepare_activity_share_preview(activity: Activity) -> tuple[str, bool]:
 
 
 def discard_prepared_preview(file_name: str, created: bool) -> None:
-    if created:
-        share_preview_path(file_name).unlink(missing_ok=True)
+    """Keep immutable files after rollback; concurrent transactions may already reference them.
+
+    Orphans are reclaimed by the retention-based prune job after checking DB references.
+    Immediate unlink here has a check/delete race with another writer committing the same name.
+    """
+    return None
 
 
 def _middle_frame(source: Path) -> Image.Image:
@@ -181,6 +227,7 @@ def _time_text(activity: Activity) -> str:
     return f"{start:%Y/%m/%d %H:%M}-{suffix}"
 
 
+@lru_cache(maxsize=16)
 def _font(size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.truetype(str(FONT_PATH), size=size)
 
@@ -202,12 +249,12 @@ def _render_share_preview(target: Path, activity: Activity, source: Path) -> Non
     canvas.alpha_composite(background, (x, y))
     strip = canvas.crop((0, INFO_TOP, SHARE_PREVIEW_WIDTH, SHARE_PREVIEW_HEIGHT))
     canvas.alpha_composite(strip.filter(ImageFilter.GaussianBlur(radius=20)), (0, INFO_TOP))
-    gradient = Image.new("RGBA", (SHARE_PREVIEW_WIDTH, INFO_HEIGHT))
-    pixels = gradient.load()
+    gradient_strip = Image.new("RGBA", (1, INFO_HEIGHT))
+    strip_pixels = gradient_strip.load()
     for row in range(INFO_HEIGHT):
         alpha = round((0.20 + 0.10 * row / max(1, INFO_HEIGHT - 1)) * 255)
-        for col in range(SHARE_PREVIEW_WIDTH):
-            pixels[col, row] = (0, 0, 0, alpha)
+        strip_pixels[0, row] = (0, 0, 0, alpha)
+    gradient = gradient_strip.resize((SHARE_PREVIEW_WIDTH, INFO_HEIGHT))
     canvas.alpha_composite(gradient, (0, INFO_TOP))
 
     draw = ImageDraw.Draw(canvas)

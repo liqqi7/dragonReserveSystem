@@ -21,6 +21,27 @@ deploy/     Caddy 和活动状态同步配置
 - 用户删除会级联删除其活动参与记录。
 - 数据库结构变更必须新增 Alembic 迁移并执行 `alembic upgrade head`。
 
+## 数据库迁移验证与恢复
+
+- `.github/workflows/mysql-migrations.yml` 使用独立 MySQL 8.0 服务验证空库到 head、数据迁移、索引升级/回退和关键回退边界；不访问生产数据库。
+- 本地运行：设置 `MIGRATION_TEST_SERVER_URL` 为**专用测试 MySQL 服务**的 URL，再执行 `python -m pytest migration_tests -q`。测试会创建并删除随机命名的 `migration_test_*` 数据库，需要建库权限；不得指向生产服务。URL 中密码的特殊字符应做 URL 编码，例如 `%` 写作 `%25`。
+- MySQL 迁移会话固定使用 `+08:00`，与应用存储的上海本地时间一致。SQLite 单元测试继续使用 `create_all`，不把它作为 MySQL 迁移验证。
+- 上线前备份数据库并确认备份可恢复；执行 `alembic upgrade head` 前先在独立测试库验证当前版本到目标版本。MySQL DDL 不是整体事务，失败后不可假定改表已自动撤销；应检查实际表结构与版本记录后决定修复或恢复，禁止直接 `stamp head` 掩盖失败。
+- 新增 `20261009_0021`：增加活动结束时间索引、删除 openid 普通索引，保留 openid 唯一约束；该迁移可以回退到 `20260924_0020`。
+- 历史迁移 `0009`（删除账单）、`0015`（物理删除活动）、`0019`（合并封面标识）无法无损逆转；跨越这些版本的恢复必须使用迁移前备份，不能只回退代码或运行 downgrade。应先停写，再恢复备份和配套旧代码，并核对版本与数据；恢复到备份时间点会舍弃此后的新增数据，应先评估。
+- 回退 `0006` 前，如仍有不限人数的活动，必须人工确认各活动的明确人数上限；脚本会拒绝回退，不会擅自替用户填值。
+
+## 安装依赖与 CairoSVG
+
+生产依赖与测试依赖分开维护：
+
+```bash
+python -m pip install --require-hashes -r requirements.lock
+python -m pip install --require-hashes -r requirements-dev.lock  # 开发/测试环境
+```
+
+分享图 SVG 渲染依赖 Cairo 系统库。macOS 安装：`brew install cairo`；Ubuntu/Debian 安装：`sudo apt-get install libcairo2`。安装后再安装 Python 依赖中的 `CairoSVG`。
+
 ## Windows 本地测试
 
 ```powershell
@@ -89,7 +110,7 @@ cd backend
 ## 连接生产服务器
 
 ```powershell
-ssh ubuntu@124.156.228.148
+ssh <deploy-user>@<server-host>
 ```
 
 登录后进入项目：

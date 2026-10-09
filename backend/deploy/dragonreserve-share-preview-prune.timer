@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily cleanup of unreferenced activity share previews
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=1h
+Unit=dragonreserve-share-preview-prune.service
+
+[Install]
+WantedBy=timers.target

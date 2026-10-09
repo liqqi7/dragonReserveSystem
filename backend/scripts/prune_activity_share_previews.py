@@ -27,10 +27,19 @@ if __name__ == "__main__":
     cutoff = datetime.now(timezone.utc) - timedelta(days=args.min_age_days)
     candidate = re.compile(r"activity-\d+-[0-9a-f]{24,32}\.png\Z")
     for path in sorted(SHARE_PREVIEW_DIR.glob("activity-*.png")) if SHARE_PREVIEW_DIR.is_dir() else []:
-        if not candidate.fullmatch(path.name) or path.name in referenced:
+        if not candidate.fullmatch(path.name):
             continue
-        if datetime.fromtimestamp(path.stat().st_mtime, timezone.utc) > cutoff:
+        try:
+            if datetime.fromtimestamp(path.stat().st_mtime, timezone.utc) > cutoff:
+                continue
+        except FileNotFoundError:
+            continue
+        # Recheck just before deletion; the initial snapshot is only for fast filtering.
+        if path.name in referenced:
             continue
         print(f"{'REMOVE' if args.apply else 'DRY-RUN'} {path}")
         if args.apply:
-            path.unlink()
+            with SessionLocal() as db:
+                still_referenced = db.scalar(select(Activity.id).where(Activity.share_preview_file == path.name).limit(1))
+            if still_referenced is None:
+                path.unlink(missing_ok=True)

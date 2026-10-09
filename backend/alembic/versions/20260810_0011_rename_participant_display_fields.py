@@ -16,21 +16,23 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.alter_column(
-        "activity_participants",
-        "nickname_snapshot",
-        new_column_name="display_nickname",
-        existing_type=sa.String(length=64),
-        existing_nullable=False,
-    )
-    op.alter_column(
-        "activity_participants",
-        "avatar_url_snapshot",
-        new_column_name="display_avatar_url",
-        existing_type=sa.String(length=512),
-        existing_nullable=False,
-        existing_server_default="",
-    )
+    # 0002 already uses display_* in fresh databases; older installations may
+    # still use *_snapshot. Normalize only the legacy columns, preserving data.
+    columns = {c["name"] for c in sa.inspect(op.get_bind()).get_columns("activity_participants")}
+    for old, new, length in (
+        ("nickname_snapshot", "display_nickname", 64),
+        ("avatar_url_snapshot", "display_avatar_url", 512),
+    ):
+        if old in columns and new in columns:
+            raise RuntimeError(f"Both {old} and {new} exist; reconcile their data before migration.")
+        if old in columns:
+            options = {"existing_server_default": ""} if length == 512 else {}
+            op.alter_column(
+                "activity_participants", old, new_column_name=new,
+                existing_type=sa.String(length=length), existing_nullable=False, **options,
+            )
+        elif new not in columns:
+            raise RuntimeError(f"Missing participant column: {old} or {new}")
 
 
 def downgrade() -> None:

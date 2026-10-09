@@ -1,6 +1,7 @@
 const { roundUpToMinuteStep, formatDate, formatTime } = require("./dateTimePicker");
 
 const DEFAULT_MAX_PARTICIPANTS = 12;
+const MIN_MAX_PARTICIPANTS = 3;
 const MAX_NAME_LENGTH = 10;
 const MAX_REMARK_LENGTH = 200;
 
@@ -58,7 +59,7 @@ function buildEditForm(activity = {}) {
   const end = splitDateTime(activity.endTime, { date: activity.date || start.date, time: "01:00" });
   const maxParticipants = activity.maxParticipants == null
     ? DEFAULT_MAX_PARTICIPANTS
-    : Number(activity.maxParticipants);
+    : Math.max(MIN_MAX_PARTICIPANTS, Number(activity.maxParticipants));
 
   return {
     name: String(activity.name || ""),
@@ -122,8 +123,8 @@ function validateActivityForm(form, options = {}) {
 
   if (form.limitEnabled) {
     const maxParticipants = Number(form.maxParticipants);
-    if (!Number.isInteger(maxParticipants) || maxParticipants < 1) {
-      return { ok: false, message: "人数上限需为 1–999 的整数" };
+    if (!Number.isInteger(maxParticipants) || maxParticipants < MIN_MAX_PARTICIPANTS) {
+      return { ok: false, message: "人数上限需为 3–999 的整数" };
     }
     if (maxParticipants > 999) return { ok: false, message: "人数上限不能超过 999" };
     if (mode === "edit" && maxParticipants < participantCount) {
@@ -168,6 +169,7 @@ function buildActivityPayload(form, options = {}) {
 
 module.exports = {
   DEFAULT_MAX_PARTICIPANTS,
+  MIN_MAX_PARTICIPANTS,
   MAX_NAME_LENGTH,
   MAX_REMARK_LENGTH,
   splitDateTime,

@@ -1,6 +1,6 @@
 """Activity routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import BackgroundTasks, APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
@@ -25,8 +25,8 @@ from app.services.activity_card_glass_service import (
     get_or_create_activity_card_glass,
 )
 from app.services.activity_type_style_service import list_activity_type_styles
-from app.services.activity_weather_service import get_activity_weather_snapshot
-from app.services.activity_share_preview_service import read_activity_share_preview
+from app.services.activity_weather_service import refresh_activity_weather_in_background, get_activity_weather_snapshot
+from app.services.activity_share_preview_service import read_activity_share_preview, refresh_activity_share_preview_in_background
 from app.services.activity_service import (
     admin_cancel_checkin_participant,
     admin_checkin_participant,
@@ -168,6 +168,7 @@ def get_activity_share_preview(
 
 @router.post("", response_model=ActivityResponse, status_code=status.HTTP_201_CREATED, summary="Create activity")
 def post_activity(
+    background_tasks: BackgroundTasks,
     payload: ActivityCreateRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin),
@@ -175,11 +176,14 @@ def post_activity(
     """Create an activity."""
 
     activity = create_activity(db, payload, current_user)
+    background_tasks.add_task(refresh_activity_share_preview_in_background, db.get_bind(), activity.id)
+    background_tasks.add_task(refresh_activity_weather_in_background, db.get_bind(), activity.id)
     return ActivityResponse.model_validate(activity, from_attributes=True)
 
 
 @router.patch("/{activity_id}", response_model=ActivityResponse, summary="Update activity")
 def patch_activity(
+    background_tasks: BackgroundTasks,
     activity_id: int,
     payload: ActivityUpdateRequest,
     db: Session = Depends(get_db),
@@ -189,6 +193,8 @@ def patch_activity(
 
     activity = get_activity_by_id(db, activity_id)
     updated = update_activity(db, activity, payload, actor=current_user)
+    background_tasks.add_task(refresh_activity_share_preview_in_background, db.get_bind(), updated.id)
+    background_tasks.add_task(refresh_activity_weather_in_background, db.get_bind(), updated.id)
     return ActivityResponse.model_validate(updated, from_attributes=True)
 
 

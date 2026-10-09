@@ -8,8 +8,6 @@ const imageDir = path.join(__dirname, "../images");
 const prototypeIcons = {
   "activity-detail-chevron-left.svg": { id: "wdlHP", icon: "chevron-left", width: 18, height: 18, fill: "#FFFFFF", hash: "1a21780209050a1beeded91faea968138f9075c2aa81855b035ba2e08c77eb36" },
   "activity-detail-chevron-right.svg": { id: "gN74I", icon: "chevron-right", width: 14, height: 14, fill: "#9CA3AF", hash: "392ec546fd14836c01db2d56eaf29f064518e39d5b29abbc10c8d30db96e283c" },
-  "activity-detail-chevron-down.svg": { id: "ZwcJG", icon: "chevron-down", width: 14, height: 14, fill: "#FFFFFFCC", hash: "8a8c14dee12978b9ae2b2de0a512339772ca0335525a3da767604d8fa10f1833" },
-  "activity-detail-chevron-up.svg": { id: "AYzHT", icon: "chevron-up", width: 14, height: 14, fill: "#FFFFFFCC", hash: "e2b0efe8d3b459e033f93f95f030cd9bea4463f06ac061ea8182fd093bf3d1e0" },
   "icon-navigation.svg": { id: "n94xE", icon: "navigation", width: 15, height: 15, fill: "#FF9800", hash: "e0e792ec21ece56368dd1ac04854fbc3c2912255e77b4f482c49904acee6a1a8" },
   "weather-partly-cloudy.svg": { id: "F6RJvi", icon: "cloud-sun", width: 24, height: 24, fill: "#FF9800", hash: "ed1d6815d48d406eae51eb9c238278a76a3e645d3679bf84ece1397ae710ba99" },
   "weather-humidity.svg": { id: "tXrji", icon: "droplets", width: 14, height: 14, fill: "#4B5563", hash: "6a5acfd4f91556890dd5e30b401289661223a856b53843f887fb3f877c12d2b6" },

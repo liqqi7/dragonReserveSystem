@@ -15,7 +15,6 @@
 
 ```text
 pages/activity_list/      首页、活动列表和活动编辑
-pages/activity_calendar/  日程
 pages/activity_detail/    活动详情、报名和签到入口
 pages/checkin_map/        地图签到
 pages/history/            历史统计和排行榜

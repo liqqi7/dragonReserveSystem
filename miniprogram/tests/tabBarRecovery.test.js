@@ -85,13 +85,9 @@ test("permission lost before deferred navigation releases the hidden tab", () =>
   assert.equal(h.tab.data.hidden, false);
 });
 
-test("failed navigation does not override an active home entrance or drawer", () => {
+test("failed navigation does not override an active home entrance", () => {
   const h = harness(); h.crossTabCreate();
   h.page._coldStartTabEntrancePending = true;
-  h.navigations[0].fail();
-  assert.equal(h.tab.data.hidden, true);
-  h.page._coldStartTabEntrancePending = false;
-  h.page.data.showCreateForm = true;
   h.navigations[0].fail();
   assert.equal(h.tab.data.hidden, true);
 });
@@ -102,15 +98,4 @@ test("page show clears an interrupted tab entrance even when hidden is already f
   h.component.pageLifetimes.show.call(h.tab);
   assert.equal(h.tab.data.hidden, false);
   assert.equal(h.tab.data.entering, false);
-});
-
-test("native dismissal releases the legacy home drawer and the tab", () => {
-  const h = harness();
-  h.page.data.createFormContainerRendered = true;
-  h.page.data.showCreateForm = true;
-  h.page._setTabBarHidden(true);
-  h.page.onCreateFormBeforeLeave(); h.page.onCreateFormAfterLeave();
-  assert.equal(h.page.data.showCreateForm, false);
-  assert.equal(h.page.data.createFormContainerRendered, false);
-  assert.equal(h.tab.data.hidden, false);
 });

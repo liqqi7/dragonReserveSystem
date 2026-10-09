@@ -38,3 +38,4 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Physical deletions cannot be reconstructed."""
+    raise RuntimeError("Physical deletion is irreversible; restore the pre-migration database backup.")

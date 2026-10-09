@@ -104,7 +104,7 @@ test("returning from activity detail preserves the active card by ID across list
   assert.equal(refreshedOrder.joined, 1);
   // Tapping a neighbouring card must not move the carousel on return.
   page.showDetail.call(context, {
-    currentTarget: { dataset: { activity: { _id: "b", _homeMediaReady: true } } }
+    currentTarget: { dataset: { id: "b" } }
   });
   assert.equal(context._focusedCardActivityIds.joined, "c");
   assert.equal(page._resolveFocusedCardIndex.call(context, context.data.groupedActivities).joined, 2);
@@ -127,11 +127,11 @@ test("home uses independent skeletons and an image-independent Tab entrance", ()
 });
 
 test("a newly created activity is inserted immediately and animates without replaying old cards", () => {
-  assert.match(js, /activityService\.createActivity\(payload\)[\s\S]*?\.then\(\(createdActivity\) =>[\s\S]*?this\.insertCreatedActivity\(createdActivity\)/);
+  assert.match(js, /activityCreated: \(activity\) => this\.insertCreatedActivity\(activity\)/);
   assert.match(js, /insertCreatedActivity\(rawActivity\)[\s\S]*?this\.processActivityList\(\[rawActivity\], new Date\(\)\)/);
   assert.match(js, /insertCreatedActivity\(rawActivity\)[\s\S]*?const activityList = \[[\s\S]*?createdActivity,[\s\S]*?\.filter/);
   assert.match(js, /createdCardEntranceId:\s*createdActivity\._id,[\s\S]*?createdCardEntranceState:\s*"pending"/);
-  assert.match(js, /onCreateFormAfterLeave\(\)[\s\S]*?this\._revealCreatedCard\(\)/);
+  assert.match(js, /onShow\(\)[\s\S]*?this\._revealCreatedCard\(\)/);
   assert.match(js, /_revealCreatedCard\(\)[\s\S]*?_createdCardDrawerDismissed\s*=\s*true[\s\S]*?_tryRevealCreatedCard\(\)/);
   assert.match(js, /_tryRevealCreatedCard\(\)[\s\S]*?!this\._createdCardDrawerDismissed[\s\S]*?!this\._createdCardGlassReady[\s\S]*?createdCardEntranceState:\s*"entered"/);
   assert.match(js, /CREATED_CARD_ENTRANCE_DURATION_MS\s*=\s*560/);
@@ -267,7 +267,7 @@ test("static covers retain pre-rendered glass while GIF covers use the native ba
   assert.ok(glassBottomRule, "glass-bottom rule should exist");
   assert.doesNotMatch(js, /buildCardGlassImageUrl|\/activities\/type-styles\//);
   assert.match(js, /activity\.largeCardGlassImageUrl = selectedStyle/);
-  assert.match(js, /largeCardGlassImageUrl: String\(rawCover\.large_card_glass_image_url \|\| ""\)/);
+  assert.match(fs.readFileSync(path.join(__dirname, "../utils/activityEnrich.js"), "utf8"), /largeCardGlassImageUrl: String\(rawCover\.large_card_glass_image_url \|\| ""\)/);
   assert.match(js, /activity\.largeCardGlassImageUrl = activity\.activityCover\.largeCardGlassImageUrl \|\| ""/);
   assert.match(wxml, /class="glass-bottom \{\{item\._homeNativeGlass \? 'glass-bottom--native' : ''\}\}"/);
   assert.match(wxml, /wx:if="\{\{!item\._homeNativeGlass\}\}" class="glass-static-blur-layer"/);

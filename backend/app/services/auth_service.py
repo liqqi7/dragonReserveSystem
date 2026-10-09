@@ -4,24 +4,16 @@ from __future__ import annotations
 
 import httpx
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
-from app.core.exceptions import AuthenticationError, ConflictError, IntegrationError, ValidationAppError
-from app.core.security import create_access_token, get_password_hash, verify_password
+from app.core.exceptions import AuthenticationError, IntegrationError, ValidationAppError
+from app.core.security import create_access_token
 from app.models import User
-from app.schemas.auth import RegisterRequest, WeChatLoginRequest
+from app.schemas.auth import WeChatLoginRequest
 
 settings = get_settings()
-
-
-def authenticate_user(db: Session, username: str, password: str) -> User:
-    """Authenticate a user by username and password."""
-
-    user = db.scalar(select(User).where(User.username == username))
-    if user is None or not user.password_hash or not verify_password(password, user.password_hash):
-        raise AuthenticationError("Invalid username or password")
-    return user
 
 
 def issue_access_token(user: User) -> dict[str, int | str]:
@@ -33,26 +25,6 @@ def issue_access_token(user: User) -> dict[str, int | str]:
         "token_type": "bearer",
         "expires_in": settings.access_token_expire_minutes * 60,
     }
-
-
-def register_user(db: Session, payload: RegisterRequest) -> User:
-    """Create a local account with guest role by default."""
-
-    existing = db.scalar(select(User).where(User.username == payload.username))
-    if existing is not None:
-        raise ConflictError("Username already exists")
-
-    user = User(
-        username=payload.username,
-        password_hash=get_password_hash(payload.password),
-        nickname=payload.nickname,
-        avatar_url=payload.avatar_url,
-        role="guest",
-    )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
 
 
 def exchange_wechat_code(code: str) -> dict:
@@ -78,7 +50,12 @@ def exchange_wechat_code(code: str) -> dict:
     except httpx.HTTPError as exc:
         raise IntegrationError("Failed to contact WeChat login service") from exc
 
-    payload = response.json()
+    try:
+        payload = response.json()
+    except ValueError as exc:
+        raise IntegrationError("Invalid WeChat login response") from exc
+    if not isinstance(payload, dict):
+        raise IntegrationError("Invalid WeChat login response")
     if payload.get("errcode"):
         raise AuthenticationError(payload.get("errmsg") or "WeChat login failed")
 
@@ -106,7 +83,15 @@ def login_or_register_wechat_user(db: Session, payload: WeChatLoginRequest) -> U
             role="guest",
         )
         db.add(user)
-        db.commit()
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            # Another first login may have inserted the same openid meanwhile.
+            existing = db.scalar(select(User).where(User.wechat_openid == openid))
+            if existing is None:
+                raise
+            return existing
         db.refresh(user)
         return user
 

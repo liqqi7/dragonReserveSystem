@@ -12,7 +12,7 @@ from app.models import Activity, ActivityParticipant, ActivityWeatherSnapshot, U
 
 config = context.config
 settings = get_settings()
-config.set_main_option("sqlalchemy.url", settings.database_url)
+config.set_main_option("sqlalchemy.url", settings.database_url.replace("%", "%%"))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -46,6 +46,10 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+        if connection.dialect.name == "mysql":
+            # Application DATETIME values represent Asia/Shanghai local time.
+            connection.exec_driver_sql("SET SESSION time_zone = '+08:00'")
+            connection.commit()
         context.configure(
             connection=connection,
             target_metadata=target_metadata,

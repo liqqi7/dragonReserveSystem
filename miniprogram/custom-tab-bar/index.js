@@ -237,19 +237,6 @@ Component({
       }
     },
 
-    setGlassTuning({ blurRadiusRpx, blurLayerOpacity, whiteFillOpacity } = {}) {
-      const patch = {};
-      if (Number.isFinite(Number(blurRadiusRpx))) {
-        patch.tabGlassBlurRadiusRpx = Math.max(0, Number(blurRadiusRpx));
-      }
-      if (Number.isFinite(Number(blurLayerOpacity))) {
-        patch.tabGlassBlurOpacity = Math.min(1, Math.max(0, Number(blurLayerOpacity)));
-      }
-      if (Number.isFinite(Number(whiteFillOpacity))) {
-        patch.tabGlassFillOpacity = Math.min(1, Math.max(0, Number(whiteFillOpacity)));
-      }
-      if (Object.keys(patch).length) this.setData(patch);
-    },
 
     setModalMaskVisible(visible, opacity = 0.4) {
       const nextVisible = !!visible;

@@ -139,8 +139,6 @@ module.exports = {
   daysInMonth,
   range,
   buildMinutes,
-  parseDateValue,
-  parseTimeValue,
   roundUpToMinuteStep,
   formatDate,
   formatTime,

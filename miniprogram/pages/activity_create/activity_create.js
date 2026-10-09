@@ -19,7 +19,7 @@ const SUBITEMS_LAYOUT_ANIMATION_MS = 360;
 Page({
   data: {
     step: 1, form: {}, covers: [], columns: [], galleryPages: [], galleryCurrent: 0, categories: CATEGORIES, category: CATEGORIES[0],
-    mode: "create", isEdit: false, editingActivityId: "", loadingEditActivity: false, editLoadError: "", participantCount: 0, minParticipants: 1, locationDisabled: false,
+    mode: "create", isEdit: false, editingActivityId: "", loadingEditActivity: false, editLoadError: "", participantCount: 0, minParticipants: 3, locationDisabled: false,
     loadingCovers: true, coverError: "", coverImageStates: {}, coverImagePaths: {}, coverSkeletonShimmerRunning: false, submitting: false, pickerVisible: false,
     pickerTarget: "start", pickerValue: "", statusBarHeight: 20, footerSafeAreaRpx: 7.69, startDateDisplay: "", endDateDisplay: "",
     leavingStep: 0, leavingScrollTop: 0, stepTransitioning: false, stepTransitionDirection: "forward", remarkComposing: false, subItemsClosing: false,
@@ -62,7 +62,7 @@ Page({
         ? activity.participants.length
         : Math.max(0, Number(activity.current_participants) || 0);
       const form = buildEditForm(activity);
-      const minParticipants = Math.max(1, participantCount);
+      const minParticipants = Math.max(3, participantCount);
       if (form.limitEnabled) form.maxParticipants = Math.max(minParticipants, Number(form.maxParticipants) || minParticipants);
       const selectedCover = (this.data.covers || []).find(item => String(item.id) === String(form.activityCoverId));
       const coverCategory = selectedCover && selectedCover.categories && selectedCover.categories.length
@@ -302,7 +302,7 @@ Page({
     } });
   },
   stepCapacity(e) {
-    const nextMax = Math.max(this.data.minParticipants || 1, Math.min(999, Number(this.data.form.maxParticipants) + Number(e.currentTarget.dataset.delta)));
+    const nextMax = Math.max(this.data.minParticipants || 3, Math.min(999, Number(this.data.form.maxParticipants) + Number(e.currentTarget.dataset.delta)));
     this.setData({
       "form.maxParticipants": nextMax,
       "form.subItems": normalizeSubItems(this.data.form.subItems, nextMax)

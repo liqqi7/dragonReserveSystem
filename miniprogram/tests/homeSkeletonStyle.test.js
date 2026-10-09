@@ -8,7 +8,6 @@ const wxml = fs.readFileSync(path.join(root, 'activity_list.wxml'), 'utf8');
 function rule(name) { return css.match(new RegExp('\\.' + name + ' \\{([^}]+)\\}'))[1]; }
 test('home skeleton matches Pencil bxNIN geometry at 390px design width', () => {
   const expected = {
-    'skeleton-date': [280.77, 38.46, 19.23],
     'skeleton-large': [469.23, 626.92, 46.15],
     'skeleton-small': [307.69, 307.69, 46.15],
     'skeleton-heading': [153.85, 38.46, 19.23],

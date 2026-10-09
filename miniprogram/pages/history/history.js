@@ -89,7 +89,6 @@ Page({
     statusBarHeight: 20,
     activeTab: "activity",
     activityRanking: [],
-    pigeonRanking: [],
     activityLeader: null,
     pigeonLeader: null,
     activityPodium: [],
@@ -140,7 +139,6 @@ Page({
         const pigeonRanking = formatPigeonRanking(pigeonPayload || []);
         this.setData({
           activityRanking,
-          pigeonRanking,
           activityLeader: activityRanking[0] || null,
           pigeonLeader: pigeonRanking[0] || null,
           activityPodium: podiumOrder(activityRanking),

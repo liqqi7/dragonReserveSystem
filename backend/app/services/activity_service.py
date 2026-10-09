@@ -3,11 +3,10 @@
 from datetime import datetime
 import hashlib
 import json
-from zoneinfo import ZoneInfo
 
 from typing import Optional
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.orm.attributes import set_committed_value
 
@@ -16,7 +15,6 @@ from app.core.exceptions import ConflictError, NotFoundError, ValidationAppError
 from app.models import Activity, ActivityParticipant, User
 from app.models.activity import ActivitySubItem, ActivityParticipantSubItem
 from app.services.activity_weather_service import ensure_weather_snapshot, invalidate_weather_snapshot
-from app.services.activity_share_preview_service import prepare_activity_share_preview, discard_prepared_preview
 from app.schemas.activity import (
     ActivityCheckinRequest,
     ActivityCreateRequest,
@@ -30,11 +28,11 @@ from app.services.activity_type_style_service import (
     normalize_activity_type_key,
 )
 from app.utils.geo import haversine_distance_meters
+from app.utils.app_time import APP_TIME_ZONE, to_app_naive
 
 
 settings = get_settings()
 FLOW_CANCEL_MIN_PARTICIPANTS = 2  # 触发流局的最低人数阈值
-APP_TIME_ZONE = ZoneInfo("Asia/Shanghai")
 TERMINAL_ACTIVITY_STATUSES = frozenset({"已结束", "已取消", "已流局"})
 
 
@@ -57,34 +55,64 @@ def get_activity_by_id(db: Session, activity_id: int) -> Activity:
     activity = db.scalar(_get_activity_query().where(Activity.id == activity_id))
     if activity is None:
         raise NotFoundError("Activity not found")
-    if _sync_activity_status(activity, _app_now()):
+    if _persist_activity_status(db, activity, _app_now()):
         db.commit()
         db.refresh(activity)
     return activity
 
 
-def _sync_activity_status(activity: Activity, now: datetime) -> bool:
-    """Compute time-based status for an activity. Returns True if status changed."""
+def _calculate_activity_status(activity: Activity, now: datetime) -> str:
+    """Derive time-based status without dirtying an ORM object."""
     if activity.status in ("已取消", "已流局"):
-        return False
-    if activity.end_time <= now:
+        return activity.status
+    now = to_app_naive(now)
+    start_time = to_app_naive(activity.start_time)
+    end_time = to_app_naive(activity.end_time)
+    if end_time <= now:
         new_status = "已结束"
-    elif activity.start_time <= now:
-        # 仅在活动开始时检查人数，历史独立截止时间不再生效
+    elif start_time <= now:
         participant_count = len(activity.participants)
         if participant_count <= FLOW_CANCEL_MIN_PARTICIPANTS:
             new_status = "已流局"
-        elif activity.start_time <= now:
-            new_status = "进行中"
         else:
-            new_status = "未开始"
-    elif activity.start_time <= now:
-        new_status = "进行中"
+            new_status = "进行中"
     else:
         new_status = "未开始"
-    if activity.status != new_status:
-        activity.status = new_status
+    return new_status
+
+
+
+def _sync_activity_status(activity: Activity, now: datetime) -> bool:
+    """Apply status in memory during creation or a locked edit."""
+    new_status = _calculate_activity_status(activity, now)
+    if activity.status == new_status:
+        return False
+    activity.status = new_status
+    return True
+
+
+def _persist_activity_status(db: Session, activity: Activity, now: datetime) -> bool:
+    """Compare-and-set: stale GET/timer snapshots must not overwrite user edits."""
+    old_status = activity.status
+    new_status = _calculate_activity_status(activity, now)
+    if old_status == new_status:
+        return False
+    result = db.execute(
+        update(Activity)
+        .where(
+            Activity.id == activity.id,
+            Activity.status == old_status,
+            Activity.start_time == activity.start_time,
+            Activity.end_time == activity.end_time,
+        )
+        .values(status=new_status)
+        .execution_options(synchronize_session=False)
+    )
+    if result.rowcount:
+        db.refresh(activity, with_for_update=True)
         return True
+    # A locking/current read avoids the old MySQL REPEATABLE READ snapshot.
+    db.refresh(activity, with_for_update=True)
     return False
 
 
@@ -93,7 +121,7 @@ def list_activities(db: Session) -> list[Activity]:
     stmt = _get_activity_query().order_by(Activity.start_time.desc())
     activities = list(db.scalars(stmt).unique().all())
     now = _app_now()
-    if any([_sync_activity_status(a, now) for a in activities]):
+    if any([_persist_activity_status(db, a, now) for a in activities]):
         db.commit()
     return activities
 
@@ -108,7 +136,7 @@ def list_my_activities(db: Session, user: User) -> list[Activity]:
     )
     activities = list(db.scalars(stmt).unique().all())
     now = _app_now()
-    if any([_sync_activity_status(a, now) for a in activities]):
+    if any([_persist_activity_status(db, a, now) for a in activities]):
         db.commit()
     return activities
 
@@ -201,16 +229,7 @@ def create_activity(db: Session, payload: ActivityCreateRequest, created_by: Use
     db.add(creator_participant)
     ensure_weather_snapshot(db, activity)
 
-    prepared_name, created = "", False
-    try:
-        prepared_name, created = prepare_activity_share_preview(activity)
-        activity.share_preview_file = prepared_name
-        db.commit()
-    except Exception:
-        db.rollback()
-        if prepared_name:
-            discard_prepared_preview(prepared_name, created)
-        raise
+    db.commit()
     db.refresh(activity)
     return get_activity_by_id(db, activity.id)
 
@@ -224,10 +243,10 @@ def update_activity(
     """Update an activity."""
 
     is_admin = bool(actor and getattr(actor, "role", None) == "admin")
+    activity = lock_activity(db, activity)
     if activity.status in TERMINAL_ACTIVITY_STATUSES and not is_admin:
         raise ValidationAppError("Terminal activities cannot be edited")
 
-    activity = lock_activity(db, activity)
     data = payload.model_dump(exclude_unset=True)
     sub_items = data.pop("sub_items", None)
     data.pop("signup_deadline", None)
@@ -269,7 +288,7 @@ def update_activity(
                     activity.activity_type, None
                 )
 
-    if activity.end_time <= activity.start_time:
+    if to_app_naive(activity.end_time) <= to_app_naive(activity.start_time):
         raise ValidationAppError("end_time must be later than start_time")
     activity.signup_deadline = None
 
@@ -278,16 +297,7 @@ def update_activity(
         invalidate_weather_snapshot(db, activity)
 
     db.add(activity)
-    prepared_name, created = "", False
-    try:
-        prepared_name, created = prepare_activity_share_preview(activity)
-        activity.share_preview_file = prepared_name
-        db.commit()
-    except Exception:
-        db.rollback()
-        if prepared_name:
-            discard_prepared_preview(prepared_name, created)
-        raise
+    db.commit()
     db.refresh(activity)
     return get_activity_by_id(db, activity.id)
 
@@ -295,6 +305,7 @@ def update_activity(
 def cancel_activity(db: Session, activity: Activity, actor: User | None = None) -> Activity:
     """Cancel an activity through an explicit state transition."""
 
+    activity = lock_activity(db, activity)
     if activity.status == "已取消":
         raise ValidationAppError("Activity is already cancelled")
 
@@ -371,19 +382,9 @@ def signup_activity(db: Session, activity: Activity, user: User, sub_item_ids: l
     """Register once for the entire activity; selected projects are atomic."""
 
     activity = lock_activity(db, activity)
-    selected = sub_item_ids or []
-    available = {item.id: item for item in activity.sub_items}
-    if len(selected) != len(set(selected)) or any(item_id not in available for item_id in selected):
-        raise ValidationAppError("子项目选择无效")
-    if available and not selected:
-        raise ValidationAppError("请至少选择一个子项目")
-    for item_id in selected:
-        item = available[item_id]
-        if item.current_participants >= item.max_participants:
-            raise ValidationAppError("所选子项目已满员")
-
     if activity.status in TERMINAL_ACTIVITY_STATUSES:
-        raise ValidationAppError("Activity has been cancelled")
+        message = "Activity has been cancelled" if activity.status == "已取消" else f"活动{activity.status}"
+        raise ValidationAppError(message)
 
     if activity.signup_enabled is False:
         raise ValidationAppError("Signup is currently disabled for this activity")
@@ -400,6 +401,17 @@ def signup_activity(db: Session, activity: Activity, user: User, sub_item_ids: l
         participant_count = len(activity.participants)
         if participant_count >= activity.max_participants:
             raise ValidationAppError("报名失败，活动参与人数已达上限")
+
+    selected = sub_item_ids or []
+    available = {item.id: item for item in activity.sub_items}
+    if len(selected) != len(set(selected)) or any(item_id not in available for item_id in selected):
+        raise ValidationAppError("子项目选择无效")
+    if available and not selected:
+        raise ValidationAppError("请至少选择一个子项目")
+    for item_id in selected:
+        item = available[item_id]
+        if item.current_participants >= item.max_participants:
+            raise ValidationAppError("所选子项目已满员")
 
     participant = ActivityParticipant(
         activity_id=activity.id,
@@ -457,8 +469,6 @@ def admin_checkin_participant(
     activity: Activity,
     participant_id: int,
     actor: User,
-    *,
-    allow_activity_owner: bool = False,
 ) -> ActivityParticipant:
     """Admin-only retroactive checkin for a participant.
 
@@ -466,10 +476,11 @@ def admin_checkin_participant(
     after an activity has completed or when on-site checkin failed.
     """
 
-    if actor.role != "admin" and not (allow_activity_owner and activity.created_by == actor.id):
+    if actor.role != "admin":
         raise ValidationAppError("Only admins can perform retroactive checkin")
-    if activity.status == "已取消":
-        raise ValidationAppError("Cannot check in participants for a cancelled activity")
+    activity = lock_activity(db, activity)
+    if activity.status not in {"进行中", "已结束"}:
+        raise ValidationAppError("Retroactive checkin is only allowed for ongoing or ended activities")
 
     participant = db.scalar(
         select(ActivityParticipant).where(
@@ -499,13 +510,12 @@ def admin_cancel_checkin_participant(
     activity: Activity,
     participant_id: int,
     actor: User,
-    *,
-    allow_activity_owner: bool = False,
 ) -> ActivityParticipant:
     """Admin-only cancel checkin for a participant."""
 
-    if actor.role != "admin" and not (allow_activity_owner and activity.created_by == actor.id):
+    if actor.role != "admin":
         raise ValidationAppError("Only admins can cancel checkin")
+    activity = lock_activity(db, activity)
     if activity.status == "已取消":
         raise ValidationAppError("Cannot cancel checkin for a cancelled activity")
 
@@ -540,6 +550,7 @@ def checkin_activity(
 ) -> ActivityParticipant:
     """Check the current user in to an activity."""
 
+    activity = lock_activity(db, activity)
     if activity.status != "进行中":
         raise ValidationAppError("Only ongoing activities can be checked in")
 

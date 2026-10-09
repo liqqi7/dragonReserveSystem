@@ -88,7 +88,6 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.ok(glassBlurRule);
   assert.doesNotMatch(glassBlurRule[1], /opacity:\s*1;/);
   assert.match(js, /const TAB_GLASS_TUNING = Object\.freeze\(\{[\s\S]*?blurRadiusRpx:\s*12,[\s\S]*?blurLayerOpacity:\s*1,[\s\S]*?whiteFillOpacity:\s*0\.4/);
-  assert.match(js, /setGlassTuning\(\{ blurRadiusRpx, blurLayerOpacity, whiteFillOpacity \} = \{\}\)/);
   assert.match(js, /wx\.vibrateShort\(\{ type: "light", fail: fallback \}\)/);
   assert.match(js, /success: vibrateTabSelection/);
   assert.doesNotMatch(wxss, /border:\s*1\.92308rpx solid transparent|background:[^;]*(?:padding-box|border-box|linear-gradient\()/);

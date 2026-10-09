@@ -235,10 +235,8 @@ def test_v2_guest_and_unauthenticated_users_cannot_create(client, db_session) ->
     )
     db_session.add(guest)
     db_session.commit()
-    token = client.post(
-        "/api/v1/auth/login",
-        json={"username": "guest-create", "password": "guest123456"},
-    ).json()["access_token"]
+    from app.core.security import create_access_token
+    token = create_access_token(subject=str(guest.id), role=guest.role)
 
     unauthenticated = client.post("/api/v2/activities", json=_activity_payload("未登录活动"))
     guest_response = client.post(
@@ -283,10 +281,19 @@ def test_v2_owner_can_remove_participants_but_cannot_manage_checkin(
     second_user_headers,
     second_user,
 ) -> None:
+    payload = _activity_payload()
+    start_time = datetime.utcnow() - timedelta(hours=1)
+    payload.update(
+        {
+            "start_time": start_time.isoformat(),
+            "end_time": (start_time + timedelta(hours=2)).isoformat(),
+            "signup_deadline": (start_time - timedelta(hours=1)).isoformat(),
+        }
+    )
     created = client.post(
         "/api/v2/activities",
         headers=user_headers,
-        json=_activity_payload(),
+        json=payload,
     ).json()
     participant = ActivityParticipant(
         activity_id=created["id"],

@@ -16,8 +16,8 @@ from app.services.user_service import get_user_by_id
 logger = logging.getLogger(__name__)
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
-oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/wechat-login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/wechat-login", auto_error=False)
 
 
 def get_current_token_payload(token: str = Depends(oauth2_scheme)) -> TokenPayload:

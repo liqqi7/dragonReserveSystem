@@ -24,6 +24,33 @@ def test_production_accepts_explicit_secure_configuration():
         jwt_secret_key="a-production-secret-that-is-not-a-default",
         user_invite_code="configured-user-code",
         admin_invite_code="configured-admin-code",
+        debug=False,
     )
 
     assert settings.environment == "production"
+
+
+def test_production_rejects_debug_mode():
+    with pytest.raises(ValidationError, match="APP_DEBUG"):
+        Settings(
+            _env_file=None,
+            APP_ENV="production",
+            database_url="mysql+pymysql://service:strong-secret@database/dragon_reserve",
+            jwt_secret_key="a-production-secret-that-is-not-a-default",
+            user_invite_code="configured-user-code",
+            admin_invite_code="configured-admin-code",
+            APP_DEBUG=True,
+        )
+
+
+def test_production_rejects_wildcard_cors_origin():
+    with pytest.raises(ValidationError, match="CORS_WILDCARD"):
+        Settings(
+            _env_file=None,
+            APP_ENV="production",
+            database_url="mysql+pymysql://service:strong-secret@database/dragon_reserve",
+            jwt_secret_key="a-production-secret-that-is-not-a-default",
+            user_invite_code="configured-user-code",
+            admin_invite_code="configured-admin-code",
+            cors_origins=["*"],
+        )

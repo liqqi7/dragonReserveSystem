@@ -8,6 +8,7 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.services.activity_type_style_service import get_allowed_activity_types, normalize_activity_type_key
+from app.utils.app_time import to_app_naive
 
 
 ACTIVITY_STATUSES = {"未开始", "进行中", "已结束", "已取消", "已流局"}
@@ -156,7 +157,7 @@ class ActivityCreateRequest(BaseModel):
     name: str = Field(min_length=1, max_length=MAX_ACTIVITY_NAME_LENGTH)
     status: str = Field(default="未开始", max_length=32)
     remark: str = Field(min_length=1, max_length=MAX_ACTIVITY_REMARK_LENGTH)
-    max_participants: Optional[int] = Field(default=None, ge=1, le=999)
+    max_participants: Optional[int] = Field(default=None, ge=3, le=999)
     start_time: datetime
     end_time: datetime
     signup_deadline: Optional[datetime] = None
@@ -172,6 +173,11 @@ class ActivityCreateRequest(BaseModel):
     @classmethod
     def validate_required_text(cls, value: object, info) -> object:
         return _validate_required_text(value, info.field_name)
+
+    @field_validator("start_time", "end_time", "signup_deadline", mode="after")
+    @classmethod
+    def normalize_timezones(cls, value):
+        return to_app_naive(value)
 
     @field_validator("end_time")
     @classmethod
@@ -203,7 +209,7 @@ class ActivityUpdateRequest(BaseModel):
     name: Optional[str] = Field(default=None, min_length=1, max_length=MAX_ACTIVITY_NAME_LENGTH)
     status: Optional[str] = Field(default=None, max_length=32)
     remark: Optional[str] = Field(default=None, min_length=1, max_length=MAX_ACTIVITY_REMARK_LENGTH)
-    max_participants: Optional[int] = Field(default=None, ge=1, le=999)
+    max_participants: Optional[int] = Field(default=None, ge=3, le=999)
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     signup_deadline: Optional[datetime] = None
@@ -214,6 +220,18 @@ class ActivityUpdateRequest(BaseModel):
     location_address: Optional[str] = Field(default=None, max_length=255)
     location_latitude: Optional[float] = None
     location_longitude: Optional[float] = None
+
+    @field_validator("status", "start_time", "end_time", "signup_enabled", "location_name", "location_address", mode="before")
+    @classmethod
+    def reject_explicit_null(cls, value, info):
+        if value is None:
+            raise ValueError(f"{info.field_name} cannot be cleared")
+        return value
+
+    @field_validator("start_time", "end_time", "signup_deadline", mode="after")
+    @classmethod
+    def normalize_timezones(cls, value):
+        return to_app_naive(value)
 
     @field_validator("name", "remark", mode="before")
     @classmethod
