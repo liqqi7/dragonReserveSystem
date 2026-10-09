@@ -5,6 +5,7 @@ from time import monotonic
 from urllib.parse import urlparse
 import httpx
 from app.core.config import get_settings
+from app.services.boardgame_http import request_options
 from app.services.boardgame_common import fail
 
 _cache = OrderedDict()
@@ -35,7 +36,7 @@ def images(bgg_id):
             response = httpx.get('https://api.geekdo.com/api/images', params={
                 'ajax':1, 'gallery':'game', 'nosession':1, 'objectid':bgg_id,
                 'objecttype':'thing', 'pageid':1, 'showcount':12, 'size':'medium', 'sort':'hot'},
-                timeout=6, follow_redirects=False)
+                timeout=6, follow_redirects=False, **request_options())
             response.raise_for_status()
             if len(response.content) > 1_000_000:
                 raise ValueError('Oversized gallery')

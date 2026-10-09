@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.api.boardgame_deps import enabled
 from app.core.config import get_settings
+from app.services.boardgame_http import client as bgg_client
 from app.core.database import get_db
 from app.models import User
 from app.services import boardgame_sources as sources
@@ -33,7 +34,7 @@ def search(q: str = Query(min_length=1, max_length=255), offset: int = Query(0, 
         with bgg_lock(engine) as acquired:
             if not acquired:
                 fail('bgg_busy', 503, retry_after_seconds=settings.bgg_min_interval_seconds)
-            with httpx.Client(timeout=settings.bgg_timeout_seconds, follow_redirects=False) as client:
+            with bgg_client() as client:
                 with client.stream('GET', settings.bgg_api_base_url.rstrip('/') + '/search',
                     params={'query': q, 'type': 'boardgame,boardgameexpansion'},
                     headers={'Authorization': f'Bearer {settings.bgg_api_token}'}) as response:

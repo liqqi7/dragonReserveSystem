@@ -8,6 +8,7 @@ import time
 import httpx
 from sqlalchemy import select, or_, text
 from app.core.config import get_settings
+from app.services.boardgame_http import client as bgg_client
 from app.core.exceptions import AppError
 from app.models.boardgame import PreviewJob, PreviewItem
 from app.services import boardgame_preview as previews, boardgame_sources as sources
@@ -86,7 +87,7 @@ def retry(db, job, code, delay=0):
 def fetch_http(ids, transport=None):
     settings = get_settings()
     headers = {'Authorization': f'Bearer {settings.bgg_api_token}', 'Accept':'application/xml'}
-    with httpx.Client(transport=transport, timeout=settings.bgg_timeout_seconds, follow_redirects=False) as client:
+    with bgg_client(transport) as client:
         with client.stream('GET', settings.bgg_api_base_url.rstrip('/') + '/thing',
                 params={'id':','.join(map(str, ids)), 'stats':1, 'versions':1}, headers=headers) as response:
             delay = retry_after(response.headers.get('Retry-After'))
