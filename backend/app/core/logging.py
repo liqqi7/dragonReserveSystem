@@ -21,6 +21,11 @@ if not logging.getLogger().handlers:
         format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
     )
 
+# httpx includes full request URLs at INFO level, which can contain credentials
+# when upstream APIs accept secrets as query parameters.
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+
 
 _test_log_file = os.getenv("TEST_REQUEST_LOG_FILE", "").strip()
 if _test_log_file:

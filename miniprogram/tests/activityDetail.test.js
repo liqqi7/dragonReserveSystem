@@ -110,7 +110,8 @@ test("activity remark uses measured one-line overflow and restores the prototype
   assert.match(wxml, /class="remark-toggle-label"/);
   assert.match(wxml, /remark-toggle-text-out-up' : 'remark-toggle-text-active'\}\}">展开<\/text>/);
   assert.match(wxml, /remark-toggle-text-active' : 'remark-toggle-text-out-down'\}\}">收起<\/text>/);
-  assert.match(wxml, /class="hero-remark"[\s\S]*?overflow="ellipsis"[\s\S]*?max-lines="\{\{remarkExpanded \? 999 : 1\}\}"/);
+  assert.match(wxml, /wx:if="\{\{remarkExpanded\}\}"\s+class="hero-remark"/);
+  assert.match(wxml, /wx:else\s+class="hero-remark"\s+overflow="ellipsis"\s+max-lines="1"/);
   assert.match(wxml, /class="remark-chevron-rotator" style="transform: rotate\(\{\{remarkToggleRotationDeg\}\}deg\);"[\s\S]*?<view class="remark-chevron"><\/view>/);
   assert.doesNotMatch(wxml, /class="hero-remark-measure"/);
   assert.match(wxml, /class="hero-remark-full-measure"/);
@@ -125,6 +126,7 @@ test("activity remark uses measured one-line overflow and restores the prototype
   assert.match(js, /textOverflowsOneLine = fullRowHeight > collapsedHeight \+ 0\.5/);
   assert.match(js, /if \(!textOverflowsOneLine\) \{[\s\S]*?remarkExpandable:\s*false/);
   assert.match(js, /availableTextWidth = Math\.max\(0, rowWidth - toggleWidth - 7\.69\)/);
+  assert.match(js, /remarkTextWidthPx: availableTextWidth/);
   assert.doesNotMatch(js, /naturalTextWidth/);
   assert.doesNotMatch(js, /remark\.length\s*>/);
   assert.match(wxss, /\.hero-remark-viewport\s*\{[^}]*overflow:\s*hidden;[^}]*transition:\s*height 260ms/s);
@@ -205,6 +207,7 @@ test("activity remark detects wrapping by height on PC, phone and DevTools", () 
   assert.equal(singleLine.data.remarkExpandable, false);
   assert.equal(singleLine.data.remarkExpanded, false);
   assert.equal(singleLine.data.remarkViewportHeightPx, 20);
+  assert.equal(singleLine.data.remarkTextWidthPx, 250);
   assert.equal(singleLine.fullMeasureCount, 1);
 
   const multiLine = measureRemarkOverflow({

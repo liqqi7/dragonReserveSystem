@@ -132,9 +132,14 @@
               style="height: {{remarkViewportHeightPx > 0 ? remarkViewportHeightPx + 'px' : '38.46rpx'}};"
             >
               <text
+                wx:if="{{remarkExpanded}}"
+                class="hero-remark"
+              >{{activity.remark}}</text>
+              <text
+                wx:else
                 class="hero-remark"
                 overflow="ellipsis"
-                max-lines="{{remarkExpanded ? 999 : 1}}"
+                max-lines="1"
               >{{activity.remark}}</text>
             </view>
             <view wx:if="{{remarkExpandable}}" class="remark-toggle">

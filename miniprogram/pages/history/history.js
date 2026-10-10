@@ -114,7 +114,8 @@ Page({
 
   onShow() {
     patchTabBarIfNeeded(this, {
-      selected: 2
+      selected: 2,
+      hidden: false
     });
     this.loadRankings();
   },

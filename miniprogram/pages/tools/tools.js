@@ -18,7 +18,7 @@ Page({
 
   onShow() {
     this.setData({ bottomSafeAreaRpx: getBottomSafeAreaRpx() });
-    patchTabBarIfNeeded(this, { selected: 1 });
+    patchTabBarIfNeeded(this, { selected: 1, hidden: false });
   },
 
   onBoardGameTap() {

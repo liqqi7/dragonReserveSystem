@@ -96,9 +96,16 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    @property
+    def is_production_runtime(self) -> bool:
+        environment = self.environment.strip().lower()
+        if environment == "test":
+            return False
+        return environment == "production" or not self.database_url.strip().lower().startswith("sqlite:")
+
     @model_validator(mode="after")
     def reject_insecure_production_defaults(self) -> "Settings":
-        if self.environment.strip().lower() != "production":
+        if not self.is_production_runtime:
             return self
         insecure = {
             "DATABASE_URL": self.database_url.startswith("sqlite:") or "password@" in self.database_url,

@@ -64,7 +64,7 @@
 | 服务器代码 | HEAD 是 `1dfcead`（2026-09-13），落后于 origin/main。`git status` 显示所有文件都被修改了（看起来是整棵树都变成了 CRLF），无法用 git 判断线上实际运行的版本 | 新增（部署规范） |
 
 据此调整的优先级：
-- **#3 维持 P0，并且需要立即轮换密钥**：先在微信公众平台重置 AppSecret，再到高德控制台重置 Key，然后清理或销毁 `application.log`。
+- **#3 维持 P0**：历史核查确认请求日志包含密钥。最新处理决定（2026-10-10）：保留现有微信 AppSecret 与高德 Key，本地关闭敏感请求日志后待部署，历史日志清理按 #15 延后。
 - **#4 从 P1 降为 P3**：只修代码中的写法即可，不需要修数据。
 - **#11 维持 P1**：密钥目前是安全的，但校验处于失效状态。一旦以后有人改 `.env` 时漏掉某个值，不会有任何报错。
 - **新增 P1**：logrotate 因为 CRLF 换行而失效（修复方法见文末）。
@@ -86,16 +86,16 @@
 
 状态统一说明：**后续处理**＝用户已确认延后安排；**已认可，待处理**＝用户认可问题，尚未实施；**待确认**＝尚未决定是否处理；**不处理**＝用户已确认保留现状；**已本地修复，待部署**＝本地修改及测试已完成，尚未上线。后续处理不代表已确定排期。
 
-| # | 级别 | 模块 | 问题 | 结论 / 处理状态（更新于 2026-10-09） |
+| # | 级别 | 模块 | 问题 | 结论 / 处理状态（更新于 2026-10-10） |
 |---|---|---|---|---|
-| 3 | P0 | 后端/安全 | httpx 的 INFO 日志把微信 `secret`、高德 `key` 原样写进 application.log | 待确认 |
+| 3 | P0 | 后端/安全 | httpx 的 INFO 日志把微信 `secret`、高德 `key` 原样写进 application.log | 已本地修复，待部署；用户确认保留现有微信 AppSecret 与高德 Key，历史日志清理按 #15 延后 |
 | 7 | P1 | 仓库/隐私 | 公开 GitHub 仓库跟踪含真实 openid 的数据库，另一份数据库含用户资料/密码哈希 | 部分处理：忽略规则和当前数据库文件删除已完成；Git 历史未清理 |
-| 11 | P1 | 后端/安全 | 生产环境可能静默使用开发 JWT 密钥 | 待确认 |
+| 11 | P1 | 后端/安全 | 生产环境可能静默使用开发 JWT 密钥 | 本地已对非 SQLite 数据库强制生产安全校验；待部署并核验线上配置 |
 | 12 | P1 | 前端 | 首页分组漏掉「进行中（未报名）」和「已取消」活动 | 不处理：按用户确认属刻意设计 |
 | 13 | P1 | 前端 | 使用过程中 token 失效后没有重新登录路径 | 后续处理：token 失效后的重新登录 |
 | 14 | P1 | 前端 | 签到页拒绝定位授权后无引导、无重试 | 待确认 |
 | 15 | P1 | 后端/运维 | 诊断日志接口可被匿名或注册用户刷爆磁盘 | 后续处理：单独版本清理历史日志及日志生成逻辑；日志盘点见详细说明 |
-| 35 | P3 | 前端 | 不可达页面/组件、死代码和无用资源 | 部分已处理：删除日历/旧表单弹层、死代码及 46 个图片；复用适配工具、导航卡片只传 ID；其余保留项见详情 |
+| 35 | P3 | 前端 | 不可达页面/组件、死代码和无用资源 | 代码清理完成，用户反馈测试无问题、验收通过，待发布。下方 35.1–35.7 是清理前快照，不是当前待删清单 |
 | 36 | P3 | 仓库 | Finder 重复文件、README 服务器信息 | 部分已处理：删除空重复目录与重复文件、README 地址改占位符、媒体域名统一到环境配置；线上 SSH 配置保留 |
 | 38 | P3 | 后端 | 冗余代码及 v1 遗留清理 | 部分已处理：旧接口及试验资源已清理，脚本已核查，业务时间已统一，分享图校验差异已补测；其余见剩余清单 |
 
@@ -104,6 +104,8 @@
 ## P0：立即处理
 
 ### 3. 微信 AppSecret 和高德 Key 被写进应用日志
+
+- **处理状态（2026-10-10）**：已本地修复，待部署；用户确认保留现有微信 AppSecret 与高德 Key。关闭 httpx/httpcore 的低级别请求日志；模拟微信和高德请求验证凭据不会写入日志，普通业务日志仍保留。历史日志清理按 #15 延后。
 
 - **位置**
   - `/Users/liubingyi/Desktop/Project/dragonReserveSystem/小程序本体/backend/app/core/logging.py:19-23`：root logger 设为 `basicConfig(level=logging.INFO)`。
@@ -121,7 +123,7 @@
      logging.getLogger("httpx").setLevel(logging.WARNING)
      logging.getLogger("httpcore").setLevel(logging.WARNING)
      ```
-  2. 上线后在服务器执行 `grep -c 'secret=' logs/application.log*`，确认历史日志是否已经包含密钥。如果有，**在微信公众平台重置 AppSecret**，同时轮换高德 Key，并清理或加密归档旧日志。
+  2. 部署后验证新的微信/高德请求不再写出密钥。用户已确认保留现有密钥，历史日志清理按 #15 延后。
   3. 以后新增外部调用时，统一走一个封装好的 client：密钥放 Header（如果对方支持），或者用 `event_hooks` 在日志里脱敏。
 
 ---
@@ -163,6 +165,8 @@
   4. 补边界测试：开始时恰好 3 人、容量为 2 且报满、从未同步就已过结束时间。
 
 ### 11. 生产环境可能静默使用开发 JWT 密钥
+
+- **处理状态（2026-10-10）**：已本地修复，待部署。除显式测试环境外，非 SQLite 数据库连接强制执行生产安全校验，即使 APP_ENV 空值或误设为 development 也不能跳过；API 文档路由使用相同判定。
 
 - **位置**
   - `/Users/liubingyi/Desktop/Project/dragonReserveSystem/小程序本体/backend/app/core/config.py:39,85`
@@ -277,7 +281,10 @@
 
 ### 35. 前端冗余代码和无效预取
 
-**处理结论（2026-10-09）：部分已处理。**
+**处理结论（更新于 2026-10-10）：代码清理已完成，用户反馈测试无问题、验收通过，待发布。**
+
+当前没有从本条旧清单确认出的待编码删除项：日历和旧表单弹层、死代码/状态、未使用导出、46 个无引用图片、已确认的死 WXSS 与重复工具均已处理；首页列表比较也已改为结构比较，卡片只保留事件所需数据。原始候选清单保留作审查依据，不能再逐条当作尚未处理。用户于 2026-10-10 反馈测试无问题，本条按用户验收通过记录，剩余为随版本发布；此记录不代表 Codex 自行完成了全设备测试。
+
 - 已删除：日历页及注册、日历预取、专用缓存与测试；旧 `activity-form-sheet` 组件及首页/详情页的弹层状态、回调和模板。独立新建页 `activity_create`、编辑页 `activity_edit` 及现有导航保留。
 - 已清理：首页无 UI 的搜索/筛选、无调用方法、个人页不可达分支、详情/排行榜等仅写不读的状态；未使用的服务方法、缓存文件和工具导出。日志模块仅收窄无外部调用的导出，没有移除日志链路。
 - 已删除 46 个无运行时引用图片（含日历专用图片），保留 `app.json` Tab 图标；清理首页及相关页面/组件的无引用 WXSS，保留动态使用的类。
@@ -551,7 +558,9 @@
 
 **本轮验收（R1～R10）**：新增 7 项小程序测试、9 项后端测试。小程序全量 **556 passed，0 failed，0 skipped**；后端全量含迁移测试 **266 passed，0 failed，5 skipped，71 warnings**（现有 `utcnow` 弃用警告）。5 项真实 MySQL 迁移测试因未配置独立测试服务而跳过，不能视为通过；新增迁移已在外键开启的临时 SQLite 库验证其他表数据、活动保留列、索引、外键不变，另校验 MySQL 三条 DROP COLUMN 的离线 SQL 及拒绝假回退。抽屉/骨架屏 20 条原规则的完整声明逐项对照通过；六个相关 WXSS 文件的 Skyline CLI 检查 **0 errors**，`git diff --check` 通过。未执行真实业务库迁移、资源重建、日志清理、生产操作、提交或部署；未进行开发者工具/真机渲染验收。
 
-收尾仍待：此前前端改动的微信开发者工具/iOS/Android 验收；确认后提交/发布本地改动、配置对外 HTTPS 地址并验收线上接口/图片。服务器上的旧资源和日志本轮未清理，不能将仓库删除等同于线上删除。
+**R10 白话说明**：这次迁移只删除 `activities` 表里已不再使用的 `signup_deadline`（旧报名截止时间）、`activity_type`（旧活动类型）和 `activity_style_key`（旧样式编号）三列。当前系统用活动开始时间作为报名截止边界，用 `activity_cover_id` 选封面，因此新代码不再读取这三列。执行后这三列里原有的值会永久消失；其他活动字段、索引和外键按临时库测试保持不变。要执行它，需先备份并确认备份可恢复，再停写、迁移和验收；目前只完成迁移代码与临时库验证，没有动真实业务库。
+
+收尾仍待：#35 用户已反馈验收通过；其他前端改动按各条记录确认验收范围。确认后提交/发布本地改动、配置对外 HTTPS 地址并验收线上接口/图片。服务器上的旧资源和日志本轮未清理，不能将仓库删除等同于线上删除。
 
 不再列为待办：已删除项目；已确认保留的联调、分享图补全和 Q88 工具；职责不同的分享图事务；头像空值策略、严格/可转换数值校验等差异实现。`finiteNumber` 在 safeArea 中只接受有限 number，在封面预览中允许 `Number()` 转换，不能直接合并；头像归一化的空值返回值也不同。
 
@@ -559,9 +568,9 @@
 
 以下按报告记录列出，不代表本轮已实时核验生产，也不随本轮授权实施：
 
-- **#3，待确认**：敏感 HTTP 日志治理、微信/高德密钥轮换及旧日志处理；历史线上核查已发现泄露，尚未记录闭环。
+- **#3，已本地修复，待部署**：敏感 HTTP 请求日志已关闭并通过测试；用户确认保留现有微信/高德密钥，历史日志清理按 #15 延后。
 - **#7，部分完成**：当前受跟踪数据库已移除并加入忽略规则；Git 历史副本是否清理仍待确认，本轮 `git ls-files` 未发现数据库文件。
-- **#11，待确认**：生产配置校验启用与默认拒绝策略；须核验实际部署配置。
+- **#11，已本地修复，待部署**：非 SQLite 数据库连接强制生产安全校验（显式测试环境除外）；部署时核验实际配置。
 - **#13，已明确延后**：运行中 token 失效后的重新登录路径。
 - **#14，待确认**：签到定位拒绝授权后的设置引导与重试/刷新。
 - **#15，已明确延后**：线上/本地历史日志及产生日志链路的独立版本清理；现有防护不等于清理完成。
@@ -609,16 +618,16 @@
 - **问题**：`journalctl -u logrotate` 每天都报错 `lines must begin with a keyword ... skipping`。`application.log` 从 8 月 10 日到现在一直没有被轮转过，已经到 62 MB。日志里还包含 #3 泄露的密钥。
 - **推荐方案**
   1. `sudo sed -i 's/\r$//' /etc/logrotate.d/dragonreserve-backend`，然后用 `sudo logrotate -d /etc/logrotate.d/dragonreserve-backend` 确认语法检查通过。
-  2. 先轮换 #3 涉及的密钥，再处理旧日志。
+  2. 旧日志处理按 #15 延后，现有微信/高德密钥按用户决定保留。
   3. 查清服务器整棵代码树为什么变成了 CRLF（`git status` 显示全部文件被修改）。很可能是在 Windows 或某个工具里设置了 `core.autocrlf`，或者通过 SFTP 上传时做了换行转换。之后统一用 `git pull`、rsync 或 CI 部署，并在仓库里加 `.gitattributes`（`* text=auto eol=lf`）。
   4. 加 `PermitRootLogin no`（或者 `prohibit-password`），并启用 fail2ban。
 
 ## 建议的修复顺序
 
 1. **今天**
-   - 问题 3：抬高 httpx 的日志级别并重新部署，然后**轮换微信 AppSecret 和高德 Key**（已确认泄露到日志中），最后清理旧日志。
+   - 问题 3：本地已抬高 httpx/httpcore 日志级别，待部署；现有微信/高德密钥保留，旧日志清理按 #15 延后。
    - 问题 37：修复 logrotate 配置的 CRLF。
-   - 问题 11：在 `.env` 中补上 `APP_ENV=production`，重启后确认生产校验能正常通过。
+   - 问题 11：部署本地生产安全校验修复，并确认启动校验通过。
    - 问题 1、2：下线 register 和 login 接口，给角色接口加限流，把邀请码换成更长的随机串。
 2. **本周**
    - 问题 7：清理仓库里的 db 文件，补充 `.gitignore`。
@@ -666,3 +675,163 @@
 - 样式迁移对照：60 条抽屉规则、27 条预览规则的属性一致；展开后的预览 WXML 一致。`git diff --check` 通过，仅有仓库现存 LF/CRLF 转换提示。
 - 未运行微信开发者工具或 iOS/Android 真机渲染验收。静态检查与模拟生命周期测试不等同于原生渲染结论，编辑预填时序及抽屉视觉仍需发布前设备验收。
 - 本轮没有改后端、访问生产服务器、执行数据库迁移、删除线上资源或历史日志。之前工作区改动保留，未创建提交或部署。
+
+---
+
+## 线上全部接口流量复核（2026-10-10 18:01:53，北京时间）
+
+- 通过生产 SSH 只读获取当前运行服务的 OpenAPI，逐项匹配应用 `request_completed` 日志，共 64 个方法/路径组合。未调用业务写接口，未删除或部署。
+- 固定截止：2026-10-10 18:01:53.532534；日志覆盖：2026-08-10 12:50:01 至 2026-10-10 18:00:01，共 97,292 条完成请求记录。近 7 天从 2026-10-03 18:01:53 起，近 30 天从 2026-09-10 18:01:53 起；计数包含成功和失败状态。
+- 计数仅覆盖已写入该应用日志的请求，不包含未到达应用或未形成完成记录的请求；零记录本身不证明接口可以删除。线上实际仍挂载旧接口，与当前本地清理结果不同。
+
+### 关键结论
+
+| 功能或接口 | 判断 |
+|---|---|
+| 日历数据：v2 `GET /activities/me/signed-up` | 近 7 天 280、近 30 天 1,621。用户已决定废弃日历，本地已删除日历及预取；线上旧首页仍预取此接口，流量不能证明有人主动使用日历。新版前端发布后再核实调用消失，作为后端删除条件 |
+| 独立分享图：v2 `GET /activities/{activity_id}/share-preview` | 近 7 天 0、近 30 天 1,486，最后 9 月 25 日。线上旧详情仍存在调用链，本地新版从活动响应取图；核对新版发布后的流量再下线 |
+| 删除整个活动：v1/v2 `DELETE /activities/{activity_id}` | 两个版本在全部可读日志中均为 0；线上操作脚本与定时任务未发现调用，列为清理候选。移除参与者、撤销签到是其他 DELETE 接口，有流量 |
+| 旧 v1 活动组 | 大多数已无近期流量，但 v1 活动列表近 7 天仍有 2 次成功请求（10 月 10 日 00:00:41），来源未确认，不能称整组零流量。其他旧活动读取接口最后主要在 9 月 13 日，独立分享图最后在 9 月 25 日 |
+| 旧账号密码登录、历史统计、天气、单条诊断、client-config | 近 7 天均 0；各自完整记录见下表。密码登录/注册全部可读日志为 0；client-config 近 30 天仍有 9 次。单条诊断与仍在使用的批量诊断分别判断；日志整体清理按用户决定另起版本处理 |
+| 用户资料、角色、管理员签到 | 部分近 7 天为 0，但近 30 天有请求，属于低频正常操作，不能据此删除 |
+| 桌游录入预览重试、库存单条详情 | 全部可读日志为 0；当前分支存在明确调用：重试由用户对失败预览主动操作触发，单条库存详情仅在版本更新冲突（409）后读取以刷新数据。属于低频恢复路径，不能因零流量删除 |
+
+### 64 个接口明细
+
+以下路径均为当前线上 OpenAPI 路径；参数使用模板展示，不输出实际用户或活动 ID。“调用位置”按当前合并分支核对；线上旧版残留、本地已删除的调用会明确标注。
+
+| 方法 | 路径 | 近 7 天 | 近 30 天 | 全部可读日志 | 最后请求（北京时间） | 调用位置 | 触发场景 | 功能说明 |
+|---|---|---:|---:|---:|---|---|---|---|
+| GET | `/api/v1/activities` | 2 | 16 | 3,541 | 2026-10-10 00:00:41 | 当前分支：无旧版调用；线上 v1 残留 | 旧版首页加载活动列表 | 读取活动列表；当前首页通过 v2 同路径接口读取。 |
+| POST | `/api/v1/activities` | 0 | 0 | 12 | 2026-09-07 14:22:03 | 当前分支：无 v1 调用；线上旧版接口 | 旧版用户提交新建活动表单 | 创建活动；当前新建页通过 v2 同路径接口提交。 |
+| GET | `/api/v1/activities/me/signed-up` | 0 | 10 | 2,046 | 2026-09-13 23:50:24 | 当前分支：日历及预取已删除；线上 v1 残留 | 旧版日历或首页预取报名列表 | 读取当前用户报名活动；流量不等于用户主动打开日历。 |
+| GET | `/api/v1/activities/mine` | 0 | 0 | 0 | 无记录 | 当前分支：无 v1 调用；线上旧版接口 | 旧版读取本人创建活动列表 | 读取当前用户创建的活动。 |
+| GET | `/api/v1/activities/style-signature` | 0 | 8 | 1,797 | 2026-09-13 23:50:23 | 当前分支：无 v1 调用；线上旧版接口 | 旧版客户端校验活动样式缓存 | 返回活动样式签名。 |
+| GET | `/api/v1/activities/type-styles` | 0 | 3 | 2,215 | 2026-09-13 23:40:00 | 当前分支：无调用；现行封面走 activity-covers | 旧版新建/编辑页载入类型样式 | 读取旧活动类型的封面样式配置。 |
+| GET | `/api/v1/activities/type-styles/{activity_type}/{style_key}/glass-image` | 0 | 3 | 156 | 2026-09-13 23:40:04 | 当前分支：无调用；现行封面走 activity-covers | 旧版封面加载毛玻璃图 | 读取旧样式对应毛玻璃图片。 |
+| DELETE | `/api/v1/activities/{activity_id}` | 0 | 0 | 0 | 无记录 | 当前分支：无 v1 调用；线上旧版接口 | 旧版授权管理端删除整场活动 | 删除整场活动；零流量不单独证明可删除。 |
+| GET | `/api/v1/activities/{activity_id}` | 0 | 0 | 1,854 | 2026-09-08 10:43:04 | 当前分支：无 v1 调用；线上旧版接口 | 旧版从列表或分享打开活动详情 | 读取单个活动详情。 |
+| PATCH | `/api/v1/activities/{activity_id}` | 0 | 0 | 18 | 2026-09-06 04:52:38 | 当前分支：无 v1 调用；线上旧版接口 | 旧版活动创建者保存编辑 | 更新活动资料。 |
+| POST | `/api/v1/activities/{activity_id}/checkin` | 0 | 0 | 28 | 2026-08-29 15:14:23 | 当前分支：无 v1 调用；线上旧版接口 | 旧版用户提交签到 | 登记活动签到。 |
+| DELETE | `/api/v1/activities/{activity_id}/participants/{participant_id}` | 0 | 0 | 23 | 2026-09-07 14:43:25 | 当前分支：无 v1 调用；线上旧版接口 | 旧版管理员移除参与者 | 删除指定参与者的活动报名。 |
+| DELETE | `/api/v1/activities/{activity_id}/participants/{participant_id}/admin-checkin` | 0 | 0 | 3 | 2026-08-22 18:24:49 | 当前分支：无 v1 调用；线上旧版接口 | 旧版管理员撤销补签 | 撤销指定参与者的管理员签到。 |
+| POST | `/api/v1/activities/{activity_id}/participants/{participant_id}/admin-checkin` | 0 | 0 | 7 | 2026-08-30 12:33:35 | 当前分支：无 v1 调用；线上旧版接口 | 旧版管理员补签参与者 | 创建管理员签到记录。 |
+| GET | `/api/v1/activities/{activity_id}/share-preview` | 0 | 57 | 1,898 | 2026-09-25 15:56:28 | 当前分支：无独立请求；线上旧详情仍可能调用 | 旧版活动详情准备分享卡片 | 读取活动分享预览图；当前详情响应直接带分享图地址。 |
+| DELETE | `/api/v1/activities/{activity_id}/signup` | 0 | 0 | 0 | 无记录 | 当前分支：无 v1 调用；线上旧版接口 | 旧版用户取消报名 | 删除活动报名。 |
+| POST | `/api/v1/activities/{activity_id}/signup` | 0 | 0 | 77 | 2026-09-07 19:38:32 | 当前分支：无 v1 调用；线上旧版接口 | 旧版用户报名活动 | 创建活动报名。 |
+| POST | `/api/v1/auth/login` | 0 | 0 | 0 | 无记录 | 当前分支：无调用（仅保留微信登录） | 旧版账号密码登录 | 账号密码登录接口。 |
+| POST | `/api/v1/auth/register` | 0 | 0 | 0 | 无记录 | 当前分支：无调用（仅保留微信登录） | 旧版账号注册 | 账号密码注册接口。 |
+| POST | `/api/v1/auth/wechat-login` | 22 | 87 | 262 | 2026-10-10 15:43:27 | miniprogram/services/auth.js:32 | 用户通过微信授权登录或重新登录 | 使用 wx.login code 换取应用访问令牌。 |
+| GET | `/api/v1/bgg/search` | 80 | 84 | 84 | 2026-10-10 17:13:36 | miniprogram/pages/boardgame_intake/controller.js:68 | 录入页搜索关键词或翻页 | 代理搜索 BGG 桌游目录。 |
+| POST | `/api/v1/boardgame-intake-previews` | 62 | 62 | 62 | 2026-10-10 17:13:37 | miniprogram/pages/boardgame_intake/controller.js:81 | 选择候选并开始导入解析 | 创建异步桌游资料预览任务。 |
+| GET | `/api/v1/boardgame-intake-previews/{preview_id}` | 86 | 86 | 86 | 2026-10-10 17:13:39 | miniprogram/pages/boardgame_intake/controller.js:109 | 录入处理中轮询预览状态 | 读取解析任务状态及结果。 |
+| GET | `/api/v1/boardgame-intake-previews/{preview_id}/items/{item_id}` | 116 | 116 | 116 | 2026-10-10 17:13:39 | miniprogram/pages/boardgame_intake/controller.js:153 | 查看导入候选详情 | 读取候选资料、版本和拥有者信息。 |
+| POST | `/api/v1/boardgame-intake-previews/{preview_id}/retry` | 0 | 0 | 0 | 无记录 | miniprogram/pages/boardgame_intake/controller.js:116 | 用户对失败的预览主动点击重试 | 按预览版本重新排队处理，属于低频异常恢复入口。 |
+| POST | `/api/v1/boardgame-intakes` | 29 | 32 | 32 | 2026-10-10 17:13:43 | miniprogram/pages/boardgame_intake/controller.js:231 | 用户确认并提交导入结果 | 保存桌游资料及用户持有版本。 |
+| GET | `/api/v1/boardgame-inventory` | 90 | 90 | 90 | 2026-10-10 17:10:12 | miniprogram/pages/boardgame_detail/boardgame_detail.js:62 | 打开详情加载持有版本或翻页 | 分页读取该桌游的用户持有版本。 |
+| GET | `/api/v1/boardgame-inventory/{inventory_id}` | 0 | 0 | 0 | 无记录 | miniprogram/pages/boardgame_detail/boardgame_detail.js:107 | 版本更新冲突（409）后刷新最新记录 | 读取单条库存记录用于冲突恢复。 |
+| PUT | `/api/v1/boardgame-inventory/{inventory_id}/version` | 3 | 3 | 3 | 2026-10-10 00:44:23 | miniprogram/pages/boardgame_detail/boardgame_detail.js:99 | 用户修改自己持有的桌游版本 | 更新库存记录关联的版本。 |
+| GET | `/api/v1/boardgames` | 304 | 324 | 324 | 2026-10-10 17:59:52 | miniprogram/pages/boardgame_library/boardgame_library.js:126 | 打开桌游库、筛选或翻页 | 查询桌游目录列表。 |
+| GET | `/api/v1/boardgames/recent-arrivals` | 202 | 202 | 202 | 2026-10-10 17:59:54 | miniprogram/pages/boardgame_library/boardgame_library.js:77 | 打开桌游库首页 | 读取最近新增桌游。 |
+| GET | `/api/v1/boardgames/{game_id}` | 90 | 90 | 90 | 2026-10-10 17:10:12 | miniprogram/pages/boardgame_detail/boardgame_detail.js:37 | 打开桌游详情 | 读取桌游基础资料。 |
+| GET | `/api/v1/boardgames/{game_id}/images` | 87 | 87 | 87 | 2026-10-10 17:10:12 | miniprogram/pages/boardgame_detail/boardgame_detail.js:52 | 打开详情并加载图片列表 | 读取桌游图片资源。 |
+| GET | `/api/v1/client-config` | 0 | 9 | 1,797 | 2026-09-27 09:35:08 | 当前分支：无调用 | 旧版小程序启动时拉取远端配置 | 下发客户端配置；当前配置由本地版本管理。 |
+| POST | `/api/v1/diagnostics/anonymous-client-logs/batch` | 30 | 279 | 339 | 2026-10-10 15:43:13 | miniprogram/services/diagnosticOutbox.js:114 | 未登录客户端 outbox 批量发送诊断事件 | 接收匿名客户端诊断日志批次。 |
+| GET | `/api/v1/diagnostics/client-logs` | 0 | 0 | 2 | 2026-08-26 23:52:49 | 当前分支：无小程序调用 | 旧诊断工具查询日志 | 查询已存储的客户端诊断日志。 |
+| POST | `/api/v1/diagnostics/client-logs` | 0 | 0 | 14 | 2026-08-21 23:23:14 | 当前分支：无单条上传调用；使用 batch outbox | 旧版客户端逐条上传诊断日志 | 单条日志写入接口；当前客户端使用批量上报。 |
+| POST | `/api/v1/diagnostics/client-logs/batch` | 837 | 4,396 | 10,900 | 2026-10-10 17:59:55 | miniprogram/services/diagnosticOutbox.js:114 | 登录客户端 outbox 批量发送诊断事件 | 接收已登录客户端诊断日志批次。 |
+| GET | `/api/v1/health` | 1,013 | 4,351 | 8,906 | 2026-10-10 18:00:01 | 外部服务探测；非小程序业务页 | 探测后端是否可用 | 返回服务健康状态；请求量包含监控/探测，不代表用户访问。 |
+| GET | `/api/v1/stats/history` | 0 | 0 | 76 | 2026-08-21 23:23:14 | 当前分支：无调用 | 旧统计页面查看历史趋势 | 读取历史统计序列。 |
+| GET | `/api/v1/stats/history-summary` | 0 | 0 | 16 | 2026-08-19 15:07:30 | 当前分支：无调用 | 旧统计页面读取历史汇总 | 读取历史统计摘要。 |
+| GET | `/api/v1/stats/ranking/activity` | 59 | 212 | 956 | 2026-10-10 17:08:18 | miniprogram/services/stats.js:10；排行榜页 | 进入或刷新活动排行榜 | 读取活动排行数据。 |
+| GET | `/api/v1/stats/ranking/pigeon` | 49 | 186 | 718 | 2026-10-10 17:08:18 | miniprogram/services/stats.js:22；排行榜页 | 进入或刷新鸽子排行榜 | 读取鸽子排行数据。 |
+| GET | `/api/v1/users/me` | 355 | 1,768 | 4,401 | 2026-10-10 17:59:49 | miniprogram/services/user.js:5；登录后及 app 会话校验 | 登录完成、应用启动校验或刷新个人信息 | 读取当前用户资料及角色。 |
+| PATCH | `/api/v1/users/me` | 0 | 1 | 6 | 2026-09-11 12:30:34 | miniprogram/services/user.js:9；个人页/活动资料补全 | 用户保存昵称等资料 | 更新当前用户资料。 |
+| POST | `/api/v1/users/me/avatar` | 0 | 1 | 5 | 2026-09-11 12:30:34 | miniprogram/services/user.js:28；个人页/活动资料补全 | 用户选择并确认头像 | 上传头像并更新头像地址。 |
+| DELETE | `/api/v1/users/me/role` | 0 | 4 | 28 | 2026-09-29 18:51:17 | miniprogram/services/user.js:84 | 用户主动退出角色 | 清除当前用户角色。 |
+| POST | `/api/v1/users/me/role` | 0 | 7 | 52 | 2026-09-29 18:51:21 | miniprogram/services/user.js:76 | 用户提交邀请码加入角色 | 设置当前用户角色。 |
+| GET | `/api/v1/weather/activity` | 0 | 0 | 864 | 2026-09-04 18:52:29 | 当前分支：无单独请求；详情响应含天气 | 旧版活动详情单独获取天气 | 读取活动天气；当前天气在活动详情响应中。 |
+| GET | `/api/v2/activities` | 610 | 3,317 | 4,745 | 2026-10-10 17:59:49 | miniprogram/services/activity.js:24；首页活动列表 | 进入或刷新首页活动列表 | 读取活动列表。 |
+| POST | `/api/v2/activities` | 4 | 18 | 22 | 2026-10-10 11:21:27 | miniprogram/services/activity.js:50；新建活动页 | 提交新建活动表单 | 创建活动。 |
+| GET | `/api/v2/activities/me/signed-up` | 280 | 1,621 | 2,261 | 2026-10-10 17:59:50 | 当前分支：日历和预取已删除；仅线上旧版残留 | 线上旧首页预取报名列表，不等于用户打开日历 | 读取当前用户已报名活动。 |
+| DELETE | `/api/v2/activities/{activity_id}` | 0 | 0 | 0 | 无记录 | 当前分支：未发现前端调用 | 若管理端获授权删除整场活动 | 删除整场活动；零流量仍需结合产品需求判断。 |
+| GET | `/api/v2/activities/{activity_id}` | 383 | 2,374 | 3,187 | 2026-10-10 17:47:56 | miniprogram/services/activity.js:45；详情/编辑页 | 打开或刷新活动详情、编辑页预填 | 读取活动详情及关联展示信息。 |
+| PATCH | `/api/v2/activities/{activity_id}` | 3 | 37 | 51 | 2026-10-09 15:11:30 | miniprogram/services/activity.js:61；编辑页 | 活动创建者保存修改 | 更新活动资料。 |
+| POST | `/api/v2/activities/{activity_id}/cancel` | 2 | 14 | 14 | 2026-10-08 15:28:08 | miniprogram/services/activity.js:83；详情/编辑页 | 用户主动取消活动 | 取消活动并更新状态。 |
+| POST | `/api/v2/activities/{activity_id}/checkin` | 6 | 69 | 69 | 2026-10-05 16:37:12 | miniprogram/services/activity.js:103；签到地图/详情 | 用户完成签到 | 登记活动签到信息。 |
+| DELETE | `/api/v2/activities/{activity_id}/participants/{participant_id}` | 6 | 25 | 51 | 2026-10-10 13:44:45 | miniprogram/services/activity.js:93；活动管理 | 创建者/管理员移除参与者 | 移除指定参与者报名。 |
+| DELETE | `/api/v2/activities/{activity_id}/participants/{participant_id}/admin-checkin` | 0 | 3 | 3 | 2026-09-30 23:36:34 | miniprogram/services/activity.js:123；参与者管理 | 管理员撤销补签 | 撤销指定参与者管理员签到。 |
+| POST | `/api/v2/activities/{activity_id}/participants/{participant_id}/admin-checkin` | 0 | 7 | 15 | 2026-09-26 18:05:49 | miniprogram/services/activity.js:113；参与者管理 | 管理员补签参与者 | 创建管理员签到记录。 |
+| GET | `/api/v2/activities/{activity_id}/share-preview` | 0 | 1,486 | 2,275 | 2026-09-25 18:11:56 | 当前分支：无独立请求；新版详情使用响应字段 | 线上旧版详情准备分享内容 | 旧接口单独读取分享图；新版发布后再核实线上流量。 |
+| POST | `/api/v2/activities/{activity_id}/signup` | 16 | 84 | 144 | 2026-10-10 13:44:48 | miniprogram/services/activity.js:72；活动详情 | 用户提交报名 | 创建报名及子项目选择记录。 |
+| GET | `/api/v2/activity-covers` | 13 | 300 | 341 | 2026-10-10 11:19:50 | miniprogram/services/activity.js:40；封面选择组件 | 新建/编辑活动时打开封面选择器 | 读取可供活动选择的封面目录。 |
+| GET | `/api/v2/activity-covers/{cover_id}/glass-image` | 12 | 39 | 1,126 | 2026-10-10 14:55:56 | miniprogram/utils/activityEnrich.js:92；活动卡图片加载器使用返回的 URL | 大卡活动封面加载毛玻璃图时 | 返回预渲染的大卡毛玻璃图片。 |
+
+## #3、#11、#35 本轮核验（2026-10-10）
+
+- #3/#11：本地修复已完成，尚未部署；用户确认保留现有微信 AppSecret 与高德 Key，历史日志清理按 #15 延后。
+- #35：代码清理已完成；用户于 2026-10-10 反馈测试无问题，记为用户验收通过，待发布。未新增批量删除。
+- 后端全量：268 passed，0 failed，73 warnings；小程序全量：597 passed，4 skipped，0 failed。后端使用 DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib 加载本机 Cairo；警告主要为既有依赖与 utcnow 弃用提示。
+- R10：2026-10-10 已通过 SSH 只读核验，可连接服务器且 Alembic 可用。真实 MySQL 当前版本为 `20261007_0021`（线上脚本 `20261007_0021_boardgame_library.py`）；本地删列迁移 `20261010_0022` 依赖 `20261009_0021`，迁移链与线上不一致，且服务器尚无本地 R10 脚本。执行前须核对并对齐迁移链、配套新版后端、备份恢复验证，再安排迁移。未执行真实库迁移、提交或部署，保留工作区已有修改。
+
+## 全量冗余代码与功能复查（2026-10-10）
+
+本轮只做静态代码、引用关系、资源清单和本地存储检查，未删除文件、未修改业务代码、未访问线上流量数据。结论中的“可精简”表示已经有本地证据支持，执行前仍需按项目规则逐项确认删除范围。
+
+### A. 已确认没有当前消费者、可以列入清理
+
+| 编号 | 位置 | 发现 | 建议 | 状态 |
+|---|---|---|---|---|
+| N1 | `backend/app/api/participant_privacy.py` | `filter_participant_locations`、相关 Protocol、TypeVar 和字段常量只有定义，没有导入或调用。该模块仍保留旧的签到位置可见性限制，与当前“所有用户都能看到签到位置”的决定不一致。 | 删除整个未使用模块，不新增权限过滤。 | 待执行 |
+| N2 | `backend/app/core/security.py`、`backend/requirements.txt` | `verify_password` 没有生产调用；`get_password_hash` 仅被测试和测试数据脚本使用。旧密码依赖 `passlib[bcrypt]`、`bcrypt` 与当前仅保留微信登录的链路无关。 | 删除生产密码校验链路和无效依赖；测试 fixture、测试数据改为 `password_hash=None`。`users.username/password_hash` 数据库历史字段另行评估，不在这里直接删列。 | 待执行 |
+| N3 | `miniprogram/pages/activity_list/activity_list.wxss` | 首页残留旧弹层、旧表单、旧按钮、旧元信息和羽毛球/桌游/其他类型背景样式；当前首页 WXML/JS 没有对应 class 使用。 | 删除这组首页死样式和无使用的动画；详情页 `.navbar-title`、共享样式 `.dragon-watermark--fixed` 也没有消费者，可一起精简。保留其他页面同名且仍在使用的样式，以及当前动态拼接的 class。 | 待执行 |
+| N4 | `miniprogram/pages/history/history.js`、`miniprogram/pages/chwazi/chwazi.js`、`miniprogram/components/activity-subitems-editor/index.js` | `history.onAvatarError` 没有 WXML 绑定；`chunkHeatmap` 返回的 `durationHours` 和排行榜视图字段 `riskDescription` 没有消费者；chwazi 的 `innerLeftRpx/innerTopRpx` 及专属常量没有生产消费者；子项目编辑器的两个删除动画时长常量只有测试导出，运行逻辑使用 WXSS 中的固定时长。 | 删除死回调和无消费者字段；chwazi 删除对应无效测量输出及常量；子项目编辑器同步清理无效常量和仅验证它们的测试断言，保留真实动画行为。 | 待执行 |
+| N5 | `miniprogram/images/icon-participants-more.png`、`backend/app/assets/activity-covers/categories/派对/avatar.jpg` | 两个图片文件均未发现代码、清单、测试或原型引用。有效封面资源共 197 张，其中 196 张被 catalog/manifest 引用且全部存在；不能把其他源图、Q88 交付图或原始设计素材误判为冗余。 | 删除前再做一次当前分支引用确认后删除这两张文件。 | 待执行 |
+| N6 | `backend/app/services/activity_share_preview_service.py:170` | `discard_prepared_preview(file_name, created)` 是空操作，唯一调用来自分享图补全脚本的异常路径；当前行为是失败后保留文件，由后续保留期清理，避免并发引用竞争。 | 删除空函数、调用和无效参数传递；保留补全脚本及保留期清理策略，不恢复失败即删除文件。 | 待执行 |
+| N7 | `backend/app/services/activity_card_glass_service.py:143` | 毛玻璃源图加载器仍包含 `httpx` 远程 URL 分支，但当前唯一生产调用链先取得并校验本地封面路径，远程分支没有生产输入。 | 按本地封面文件简化加载逻辑，保留预制毛玻璃图读取和本地生成兜底。 | 待执行 |
+
+### B. 当前前端没有调用，但不能直接判定为线上无用
+
+以下接口目前未在小程序 JS 中找到调用，但可能被后台、脚本、历史客户端或外部调用；本轮没有线上访问日志，因此不执行删除：
+
+- `backend/app/api/v2/activities.py:138`：`GET /api/v2/activities/me/signed-up`，旧日历预热删除后没有当前前端调用。
+- `backend/app/api/v2/activities.py:207`：`DELETE /api/v2/activities/{activity_id}`，当前前端没有删除活动入口，但后端管理能力和测试仍覆盖。
+- `backend/app/api/v2/activities.py:252`：`GET /api/v2/activities/{activity_id}/share-preview`，当前前端直接使用活动响应中的 `share_preview_image_url`，没有单独请求该接口。
+
+处理这三项前，需要先查线上访问记录并确认后台、运维脚本和历史版本没有依赖。不能用之前“v1 活动接口近 7 天无流量”的结论代替 v2 流量核验。
+
+### C. 兼容残留和本地产物
+
+- `backend/app/schemas/auth.py` 的 `WeChatProfilePayload` 及登录请求 `profile` 字段仍是旧客户端兼容字段；服务端忽略它，当前前端只发送 `code`。可在确认不再需要旧客户端兼容后收缩模型，但不是当前必须删除的功能。
+- 项目根 `storage/` 和 `backend/storage/` 共 672 个 PNG，约 236 MiB，其中分享图 650 张、头像 22 张。22 张头像已经确认是测试上传产生的 12 字节假 PNG；分享图集中在活动 ID 1、2，整体疑似本地测试产物，但还没有逐张证明不存在业务用途。建议先确认本地配置和数据库引用，再清理，并把测试默认媒体目录统一到临时目录，避免测试继续增长。
+- `backend/logs/client-diagnostics.log` 仍属于 #15 的延后范围，本轮不清理历史日志或产生日志逻辑。
+
+### 本轮静态核验结果
+
+- 小程序生产 JS 共 52 个文件，全部可从 app 入口、页面声明、组件或自定义 TabBar 到达；未发现缺失 `require`。
+- 10 个页面和 5 个声明组件的 WXML 事件处理函数均能在对应 JS 中找到；未发现可直接判定为整页或整组件死模块的对象。
+- 后端 app、scripts、tests、ops、migration_tests 共 98 个 Python 文件全部通过 AST 解析；对至少 6 行的函数进行 AST 函数体对照，未发现完全相同的实现。
+- 封面目录中的有效资源引用已核对完整；只确认上述 1 张分类头像和 1 张前端图标没有引用。
+- 本轮没有运行全量测试，因为没有改业务代码；静态检查不能替代真机渲染验收，也不能替代线上接口流量确认。
+
+## 线上接口流量复核（2026-10-10）
+
+本次通过 SSH 对生产实例 `ubuntu@124.156.228.148` 做只读核验，没有修改服务器、数据库、日志或部署配置。生产 Caddy 将站点除 `/static/*` 和 `/test-api/*` 外的请求反向代理到后端 `127.0.0.1:8000`；后端 `RequestContextMiddleware` 会为每个进入应用的请求写入 `request_completed`。因此，以下结果来自应用实际收到的请求，不是只看当前小程序源码的推测。
+
+核验日志：`/home/ubuntu/apps/dragonReserveSystem/backend/logs/application.log`。日志从 **2026-08-10 12:50:01** 连续覆盖到 **2026-10-10 18:00:01**，共解析 **97,292** 条 `request_completed`，解析失败 0 条，覆盖期间每天都有记录。统计窗口按北京时间计算：近 7 天为 **2026-10-03 18:01:53 至 2026-10-10 18:01:53**，近 30 天为 **2026-09-10 18:01:53 至 2026-10-10 18:01:53**。
+
+| 接口 | 全部日志窗口 | 近 30 天 | 近 7 天 | 最近请求 | 结论 |
+|---|---:|---:|---:|---|---|
+| `GET /api/v2/activities/me/signed-up` | 2,261 次，全部 200 | 1,621 次 | 280 次 | 2026-10-10 17:59:50 | **仍在使用，保留**。当前线上前端的日历预热也仍调用它。 |
+| `GET /api/v2/activities/{id}/share-preview` | 2,275 次，全部 200 | 1,486 次 | 0 次 | 2026-09-25 18:11:56 | **不能确认废弃，保留**。近 30 天仍有真实流量，当前线上详情页仍保留调用链；近 7 天无流量不足以证明可以删除。 |
+| `DELETE /api/v2/activities/{id}`（删除活动根路由） | 0 次 | 0 次 | 0 次 | 无 | **当前线上无流量，可列为下线候选**。当前小程序没有删除活动入口，生产应用日志覆盖期间也没有请求。 |
+
+补充核验：`DELETE /api/v2/activities/{activity_id}/participants/{participant_id}` 及管理员签到相关 DELETE 子接口仍有线上请求，不能因为删除活动根路由没有流量而删除整个活动 DELETE 路由组。当前日志中 v2 参与者相关 DELETE 有 **54 次**，全部是子路径。
+
+### 流量复核后的调整
+
+- **N/A 原接口清单中的“我的已报名活动”**：从“待流量核验”调整为“确认仍在使用”，不删除。
+- **N/A 原接口清单中的“单独获取分享图”**：从“待流量核验”调整为“近 7 天无流量、近 30 天仍有流量，继续保留并观察”，不删除。当前线上源码仍有 `activity_detail.js -> getActivitySharePreview()` 调用链。
+- **N/A 原接口清单中的“删除活动”**：确认在当前生产日志覆盖窗口内无请求，可进入下线处理，但删除前仍需按代码清理范围移除路由、服务引用和对应测试；不要删除仍有流量的参与者删除接口。
+
+这次核验能证明“当前生产实例在日志覆盖窗口内是否收到请求”。它不能证明未来永远不会有人工脚本或旧客户端调用，因此删除“删除活动”根路由后，应同步确认没有保留中的后台入口或外部客户端；目前仓库和生产部署目录中也没有找到该根路由的前端调用。

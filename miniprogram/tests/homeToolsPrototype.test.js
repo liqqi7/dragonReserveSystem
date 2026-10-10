@@ -39,7 +39,7 @@ test("administrator home tools follow the Pencil module and card content", () =>
 });
 
 test("home tool artwork preserves the referenced prototype originals and uses upload-sized app copies", () => {
-  const prototypeDir = path.join(__dirname, "../../prototype");
+  const prototypeDir = path.join(__dirname, "../../prototype", "图片素材", "原型导入");
   for (const [source, target] of [
     ["image-36.png", "home-tool-chwazi.png"],
     ["image-29.png", "home-tool-boardgames.png"]

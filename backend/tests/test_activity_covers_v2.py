@@ -81,6 +81,9 @@ def test_cover_catalog_exposes_only_selectable_categorized_assets(client) -> Non
     assert first["large_card_glass_image_url"].endswith(
         "/api/v2/activity-covers/aleksey-rico-001/glass-image?v=2"
     )
+    assert all("\\" not in url for artist in artists for artwork in artist["artworks"]
+               for url in (artwork["thumbnail_url"], artwork["image_url"], artwork["large_card_glass_image_url"]))
+    assert all("\\" not in artist["avatar_url"] for artist in artists)
     asset_response = client.get("/activity-cover-assets/aleksey-rico/thumbs/aleksey-rico-001.jpg")
     assert asset_response.status_code == 200
     assert asset_response.headers["content-type"] == "image/jpeg"

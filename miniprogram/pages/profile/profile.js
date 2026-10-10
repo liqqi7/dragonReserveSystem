@@ -77,7 +77,8 @@ Page({
   onShow() {
     this.setData({ bottomSafeAreaRpx: getBottomSafeAreaRpx() });
     patchTabBarIfNeeded(this, {
-      selected: 3
+      selected: 3,
+      hidden: false
     });
     this.syncGuestState();
     if (this.data.showPermissionModal || this.data.showDeletePermissionModal) {

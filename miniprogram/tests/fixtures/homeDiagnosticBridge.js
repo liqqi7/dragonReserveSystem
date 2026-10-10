@@ -4,6 +4,7 @@ const vm = require('node:vm');
 const readline = require('node:readline');
 const { createHomePresentationDiagnostics } = require('../../utils/homePresentationDiagnostics');
 const { createDiagnosticOutbox, STORAGE_KEY } = require('../../services/diagnosticOutbox');
+const { isNormalHomeDiagnostic } = require('../../services/diagnosticPolicy');
 const [mode, storagePath] = process.argv.slice(2);
 let stored = fs.existsSync(storagePath) ? JSON.parse(fs.readFileSync(storagePath, 'utf8')) : [];
 let timers = [], requests = [];
@@ -14,7 +15,7 @@ const wx = {
 };
 const sandbox = { module:{exports:{}}, wx, console:{info(){},error(){}}, setTimeout, clearTimeout,
   getCurrentPages:()=>[{route:'pages/activity_list/activity_list'}],
-  require: name => name === './config' ? {getApiBaseUrl:()=> 'http://127.0.0.1/api/v1'} : {
+  require: name => name === './config' ? {getApiBaseUrl:()=> 'http://127.0.0.1/api/v1'} : name === './diagnosticPolicy' ? {isNormalHomeDiagnostic} : {
     createDiagnosticOutbox: opts => createDiagnosticOutbox({...opts, setTimer:fn=>{timers.push(fn);return timers.length;},clearTimer(){}})
   }
 };

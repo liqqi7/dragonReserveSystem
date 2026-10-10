@@ -24,7 +24,7 @@ settings = get_settings()
 media_root = resolve_media_root()
 media_root.mkdir(parents=True, exist_ok=True)
 
-is_production = settings.environment.strip().lower() == "production"
+is_production = settings.is_production_runtime
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,

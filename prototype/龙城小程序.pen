@@ -1,5 +1,5 @@
 {
-  "version": "2.20",
+  "version": "2.21",
   "children": [
     {
       "type": "frame",
@@ -208,7 +208,7 @@
               "fill": {
                 "type": "image",
                 "enabled": true,
-                "url": "image-28.png",
+                "url": "图片素材/原型导入/image-28.png",
                 "mode": "cover"
               },
               "width": 270,
@@ -246,7 +246,7 @@
               "fill": {
                 "type": "image",
                 "enabled": true,
-                "url": "image-29.png",
+                "url": "图片素材/原型导入/image-29.png",
                 "mode": "cover"
               },
               "width": 270,
@@ -460,7 +460,7 @@
               "fill": {
                 "type": "image",
                 "enabled": true,
-                "url": "image-33.png",
+                "url": "图片素材/原型导入/image-33.png",
                 "mode": "cover"
               },
               "width": 270,
@@ -474,7 +474,7 @@
               "fill": {
                 "type": "image",
                 "enabled": true,
-                "url": "image-36.png",
+                "url": "图片素材/原型导入/image-36.png",
                 "mode": "cover"
               },
               "width": 270,
@@ -28574,7 +28574,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/ardhira-putra-001.jpg",
+                                            "url": "图片素材/activity-cover-assets/ardhira-putra-001.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -28629,7 +28629,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/ardhira-putra-002.jpg",
+                                            "url": "图片素材/activity-cover-assets/ardhira-putra-002.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -28684,7 +28684,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/natasha-spivak-001.jpg",
+                                            "url": "图片素材/activity-cover-assets/natasha-spivak-001.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -28739,7 +28739,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/natasha-spivak-002.jpg",
+                                            "url": "图片素材/activity-cover-assets/natasha-spivak-002.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -28794,7 +28794,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/clemence-thune-001.jpg",
+                                            "url": "图片素材/activity-cover-assets/clemence-thune-001.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -28849,7 +28849,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/coen-pohl-001.jpg",
+                                            "url": "图片素材/activity-cover-assets/coen-pohl-001.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -28963,7 +28963,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/patryk-wojciechowicz-010.jpg",
+                                            "url": "图片素材/activity-cover-assets/patryk-wojciechowicz-010.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29018,7 +29018,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/hiroaki-seto-001.jpg",
+                                            "url": "图片素材/activity-cover-assets/hiroaki-seto-001.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29073,7 +29073,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/gasp-art-001.jpg",
+                                            "url": "图片素材/activity-cover-assets/gasp-art-001.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29128,7 +29128,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/miguel-angel-camprubi-007.jpg",
+                                            "url": "图片素材/activity-cover-assets/miguel-angel-camprubi-007.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29183,7 +29183,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/miguel-angel-camprubi-009.jpg",
+                                            "url": "图片素材/activity-cover-assets/miguel-angel-camprubi-009.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29297,7 +29297,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/patryk-wojciechowicz-006.jpg",
+                                            "url": "图片素材/activity-cover-assets/patryk-wojciechowicz-006.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29352,7 +29352,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/patryk-wojciechowicz-007.jpg",
+                                            "url": "图片素材/activity-cover-assets/patryk-wojciechowicz-007.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29407,7 +29407,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/ardhira-putra-004.jpg",
+                                            "url": "图片素材/activity-cover-assets/ardhira-putra-004.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29462,7 +29462,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/magoyama-008.jpg",
+                                            "url": "图片素材/activity-cover-assets/magoyama-008.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29517,7 +29517,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/venmen-011.jpg",
+                                            "url": "图片素材/activity-cover-assets/venmen-011.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29572,7 +29572,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/tatsuro-kiuchi-001.jpg",
+                                            "url": "图片素材/activity-cover-assets/tatsuro-kiuchi-001.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29627,7 +29627,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/miguel-angel-camprubi-001.jpg",
+                                            "url": "图片素材/activity-cover-assets/miguel-angel-camprubi-001.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29682,7 +29682,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/miguel-angel-camprubi-002.jpg",
+                                            "url": "图片素材/activity-cover-assets/miguel-angel-camprubi-002.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29737,7 +29737,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/miguel-angel-camprubi-008.jpg",
+                                            "url": "图片素材/activity-cover-assets/miguel-angel-camprubi-008.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29792,7 +29792,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/pasoputi-001.jpg",
+                                            "url": "图片素材/activity-cover-assets/pasoputi-001.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29906,7 +29906,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/ardhira-putra-008.jpg",
+                                            "url": "图片素材/activity-cover-assets/ardhira-putra-008.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -29961,7 +29961,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/ilya-shapko-001.jpg",
+                                            "url": "图片素材/activity-cover-assets/ilya-shapko-001.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -30016,7 +30016,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/coen-pohl-003.jpg",
+                                            "url": "图片素材/activity-cover-assets/coen-pohl-003.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -30133,7 +30133,7 @@
                                             {
                                               "type": "image",
                                               "enabled": true,
-                                              "url": "activity-cover-assets/aleksey-rico-001.jpg",
+                                              "url": "图片素材/activity-cover-assets/aleksey-rico-001.jpg",
                                               "mode": "cover"
                                             }
                                           ],
@@ -30215,7 +30215,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/aleksey-rico-002.jpg",
+                                            "url": "图片素材/activity-cover-assets/aleksey-rico-002.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -30270,7 +30270,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/aleksey-rico-003.jpg",
+                                            "url": "图片素材/activity-cover-assets/aleksey-rico-003.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -30325,7 +30325,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/aleksey-rico-006.jpg",
+                                            "url": "图片素材/activity-cover-assets/aleksey-rico-006.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -30380,7 +30380,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/aleksey-rico-009.jpg",
+                                            "url": "图片素材/activity-cover-assets/aleksey-rico-009.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -30435,7 +30435,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/our-own-night-001.jpg",
+                                            "url": "图片素材/activity-cover-assets/our-own-night-001.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -30500,7 +30500,7 @@
                                       "fill": {
                                         "type": "image",
                                         "enabled": true,
-                                        "url": "../backend/app/assets/activity-covers/benjamin-flouw/avatar.jpg",
+                                        "url": "./图片素材/原型导入/benjamin-flouw-avatar.jpg",
                                         "mode": "cover"
                                       },
                                       "width": 28,
@@ -30549,7 +30549,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/miguel-angel-camprubi-004.jpg",
+                                            "url": "图片素材/activity-cover-assets/miguel-angel-camprubi-004.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -30604,7 +30604,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/miguel-angel-camprubi-010.jpg",
+                                            "url": "图片素材/activity-cover-assets/miguel-angel-camprubi-010.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -30718,7 +30718,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/hiroaki-seto-002.jpg",
+                                            "url": "图片素材/activity-cover-assets/hiroaki-seto-002.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -30773,7 +30773,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/miguel-angel-camprubi-005.jpg",
+                                            "url": "图片素材/activity-cover-assets/miguel-angel-camprubi-005.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -30828,7 +30828,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/miguel-angel-camprubi-006.jpg",
+                                            "url": "图片素材/activity-cover-assets/miguel-angel-camprubi-006.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -30883,7 +30883,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/dongkyu-lim-001.jpg",
+                                            "url": "图片素材/activity-cover-assets/dongkyu-lim-001.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -30938,7 +30938,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/meyoco-001.jpg",
+                                            "url": "图片素材/activity-cover-assets/meyoco-001.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -30993,7 +30993,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/coen-pohl-002.jpg",
+                                            "url": "图片素材/activity-cover-assets/coen-pohl-002.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -31107,7 +31107,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/yoneyama-mai-016.jpg",
+                                            "url": "图片素材/activity-cover-assets/yoneyama-mai-016.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -31162,7 +31162,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/lam-002.jpg",
+                                            "url": "图片素材/activity-cover-assets/lam-002.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -31217,7 +31217,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/lam-007.jpg",
+                                            "url": "图片素材/activity-cover-assets/lam-007.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -31272,7 +31272,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/magoyama-001.jpg",
+                                            "url": "图片素材/activity-cover-assets/magoyama-001.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -31327,7 +31327,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/magoyama-003.jpg",
+                                            "url": "图片素材/activity-cover-assets/magoyama-003.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -31382,7 +31382,7 @@
                                           "fill": {
                                             "type": "image",
                                             "enabled": true,
-                                            "url": "activity-cover-assets/magoyama-004.jpg",
+                                            "url": "图片素材/activity-cover-assets/magoyama-004.jpg",
                                             "mode": "cover"
                                           },
                                           "width": 154,
@@ -31590,7 +31590,7 @@
                           "fill": {
                             "type": "image",
                             "enabled": true,
-                            "url": "image-36.png",
+                            "url": "图片素材/原型导入/image-36.png",
                             "mode": "cover"
                           },
                           "width": 132,
@@ -31659,7 +31659,7 @@
                           "fill": {
                             "type": "image",
                             "enabled": true,
-                            "url": "image-29.png",
+                            "url": "图片素材/原型导入/image-29.png",
                             "mode": "cover"
                           },
                           "width": 132,
@@ -57341,7 +57341,7 @@
               "fill": {
                 "type": "image",
                 "enabled": true,
-                "url": "activity-cover-assets/patryk-wojciechowicz-006.jpg",
+                "url": "图片素材/activity-cover-assets/patryk-wojciechowicz-006.jpg",
                 "mode": "contain"
               },
               "width": 390,
@@ -57572,7 +57572,7 @@
               "fill": {
                 "type": "image",
                 "enabled": true,
-                "url": "activity-cover-assets/patryk-wojciechowicz-006.jpg",
+                "url": "图片素材/activity-cover-assets/patryk-wojciechowicz-006.jpg",
                 "mode": "cover"
               },
               "width": 780,
@@ -78415,7 +78415,7 @@
       "fill": {
         "type": "image",
         "enabled": true,
-        "url": "activity-cover-assets/patryk-wojciechowicz-006.jpg",
+        "url": "图片素材/activity-cover-assets/patryk-wojciechowicz-006.jpg",
         "mode": "cover"
       },
       "layout": "none",
@@ -81288,7 +81288,7 @@
       "fill": {
         "type": "image",
         "enabled": true,
-        "url": "image-5.png",
+        "url": "图片素材/原型导入/image-5.png",
         "mode": "cover"
       },
       "width": 646,
@@ -81302,7 +81302,7 @@
       "fill": {
         "type": "image",
         "enabled": true,
-        "url": "image-17.png",
+        "url": "图片素材/原型导入/image-17.png",
         "mode": "cover"
       },
       "width": 300,
@@ -81445,7 +81445,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "image-33.png",
+                        "url": "图片素材/原型导入/image-33.png",
                         "mode": "cover"
                       },
                       "width": 100,
@@ -82013,20 +82013,6 @@
       ]
     },
     {
-      "type": "rectangle",
-      "id": "klGWm",
-      "x": -7061,
-      "y": 6554,
-      "fill": {
-        "type": "image",
-        "enabled": true,
-        "url": "image-37.png",
-        "mode": "cover"
-      },
-      "width": 390,
-      "height": 845
-    },
-    {
       "type": "frame",
       "id": "D3WX9",
       "x": 9187,
@@ -82102,7 +82088,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/magoyama-001.jpg",
+                    "url": "图片素材/activity-cover-assets/magoyama-001.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 24,
@@ -82120,7 +82106,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/coen-pohl-001.jpg",
+                    "url": "图片素材/activity-cover-assets/coen-pohl-001.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 24,
@@ -82166,7 +82152,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/venmen-011.jpg",
+                    "url": "图片素材/activity-cover-assets/venmen-011.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 24,
@@ -82184,7 +82170,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/ardhira-putra-001.jpg",
+                    "url": "图片素材/activity-cover-assets/ardhira-putra-001.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 24,
@@ -82230,7 +82216,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/natasha-spivak-002.jpg",
+                    "url": "图片素材/activity-cover-assets/natasha-spivak-002.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 24,
@@ -82248,7 +82234,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/miguel-angel-camprubi-001.jpg",
+                    "url": "图片素材/activity-cover-assets/miguel-angel-camprubi-001.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 24,
@@ -82294,7 +82280,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/hiroaki-seto-001.jpg",
+                    "url": "图片素材/activity-cover-assets/hiroaki-seto-001.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 24,
@@ -82340,7 +82326,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/yoneyama-mai-016.jpg",
+                    "url": "图片素材/activity-cover-assets/yoneyama-mai-016.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 24,
@@ -85690,7 +85676,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/magoyama-003.jpg",
+                    "url": "图片素材/activity-cover-assets/magoyama-003.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 12,
@@ -85826,7 +85812,8 @@
                           "content": "展开",
                           "lineHeight": 1.2,
                           "fontFamily": "Inter",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -86037,7 +86024,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/ardhira-putra-004.jpg",
+                    "url": "图片素材/activity-cover-assets/ardhira-putra-004.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 12,
@@ -86353,7 +86340,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/ardhira-putra-002.jpg",
+                    "url": "图片素材/activity-cover-assets/ardhira-putra-002.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 12,
@@ -86669,7 +86656,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/coen-pohl-002.jpg",
+                    "url": "图片素材/activity-cover-assets/coen-pohl-002.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 12,
@@ -86985,7 +86972,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/hiroaki-seto-002.jpg",
+                    "url": "图片素材/activity-cover-assets/hiroaki-seto-002.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 12,
@@ -87778,7 +87765,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/magoyama-003.jpg",
+                    "url": "图片素材/activity-cover-assets/magoyama-003.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 12,
@@ -87902,7 +87889,8 @@
                           "content": "收起",
                           "lineHeight": 1.2,
                           "fontFamily": "Inter",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -88103,7 +88091,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/ardhira-putra-002.jpg",
+                    "url": "图片素材/activity-cover-assets/ardhira-putra-002.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 12,
@@ -88409,7 +88397,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "activity-cover-assets/coen-pohl-002.jpg",
+                    "url": "图片素材/activity-cover-assets/coen-pohl-002.jpg",
                     "mode": "cover"
                   },
                   "cornerRadius": 12,
@@ -94669,7 +94657,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "图片素材/image-25.png",
+                    "url": "./图片素材/原型导入/image-25.png",
                     "mode": "fill"
                   },
                   "cornerRadius": 14,
@@ -95806,7 +95794,7 @@
                   "fill": {
                     "type": "image",
                     "enabled": true,
-                    "url": "图片素材/image-25.png",
+                    "url": "./图片素材/原型导入/image-25.png",
                     "mode": "fill"
                   },
                   "cornerRadius": 14,
@@ -104850,7 +104838,7 @@
       "fill": {
         "type": "image",
         "enabled": true,
-        "url": "image.png",
+        "url": "./图片素材/image.png",
         "mode": "fill"
       },
       "width": 390,
@@ -104864,7 +104852,7 @@
       "fill": {
         "type": "image",
         "enabled": true,
-        "url": "image-1.png",
+        "url": "./图片素材/原型导入/image-1.png",
         "mode": "fill"
       },
       "width": 276,
@@ -106061,7 +106049,7 @@
               "fill": {
                 "type": "image",
                 "enabled": true,
-                "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                "url": "./图片素材/bgg-top-50/01-224517.jpg",
                 "mode": "fill"
               },
               "cornerRadius": 8,
@@ -106121,7 +106109,7 @@
               "fill": {
                 "type": "image",
                 "enabled": true,
-                "url": "../../../Downloads/prototype/图片素材/bgg-top-50/02-342942.jpg",
+                "url": "./图片素材/bgg-top-50/02-342942.jpg",
                 "mode": "fill"
               },
               "cornerRadius": 8,
@@ -106181,7 +106169,7 @@
               "fill": {
                 "type": "image",
                 "enabled": true,
-                "url": "../../../Downloads/prototype/图片素材/bgg-top-50/03-161936.jpg",
+                "url": "./图片素材/bgg-top-50/03-161936.jpg",
                 "mode": "fill"
               },
               "cornerRadius": 8,
@@ -106227,7 +106215,7 @@
               "fill": {
                 "type": "image",
                 "enabled": true,
-                "url": "../../../Downloads/prototype/图片素材/bgg-top-50/04-174430.jpg",
+                "url": "./图片素材/bgg-top-50/04-174430.jpg",
                 "mode": "fill"
               },
               "cornerRadius": 8,
@@ -108196,7 +108184,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -108250,7 +108238,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/02-342942.jpg",
+                        "url": "./图片素材/bgg-top-50/02-342942.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -108314,7 +108302,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/03-161936.jpg",
+                        "url": "./图片素材/bgg-top-50/03-161936.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -108367,7 +108355,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 12,
@@ -108627,7 +108615,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/image-17.png",
+                                "url": "./图片素材/image-17.png",
                                 "mode": "fill"
                               },
                               "width": 24,
@@ -108645,7 +108633,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/image-20.png",
+                                "url": "./图片素材/image-20.png",
                                 "mode": "fill"
                               },
                               "width": 24,
@@ -109363,7 +109351,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -109417,7 +109405,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/02-342942.jpg",
+                        "url": "./图片素材/bgg-top-50/02-342942.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -109481,7 +109469,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/03-161936.jpg",
+                        "url": "./图片素材/bgg-top-50/03-161936.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -109534,7 +109522,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 12,
@@ -109794,7 +109782,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/image-17.png",
+                                "url": "./图片素材/image-17.png",
                                 "mode": "fill"
                               },
                               "width": 24,
@@ -109812,7 +109800,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/image-20.png",
+                                "url": "./图片素材/image-20.png",
                                 "mode": "fill"
                               },
                               "width": 24,
@@ -110530,7 +110518,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -110594,7 +110582,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/02-342942.jpg",
+                        "url": "./图片素材/bgg-top-50/02-342942.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -110658,7 +110646,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/03-161936.jpg",
+                        "url": "./图片素材/bgg-top-50/03-161936.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -110711,7 +110699,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 12,
@@ -110971,7 +110959,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/image-17.png",
+                                "url": "./图片素材/image-17.png",
                                 "mode": "fill"
                               },
                               "width": 24,
@@ -110989,7 +110977,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/image-20.png",
+                                "url": "./图片素材/image-20.png",
                                 "mode": "fill"
                               },
                               "width": 24,
@@ -111685,7 +111673,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -111749,7 +111737,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/02-342942.jpg",
+                        "url": "./图片素材/bgg-top-50/02-342942.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -111813,7 +111801,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/03-161936.jpg",
+                        "url": "./图片素材/bgg-top-50/03-161936.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -111866,7 +111854,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 12,
@@ -112126,7 +112114,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/image-17.png",
+                                "url": "./图片素材/image-17.png",
                                 "mode": "fill"
                               },
                               "width": 24,
@@ -112144,7 +112132,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/image-20.png",
+                                "url": "./图片素材/image-20.png",
                                 "mode": "fill"
                               },
                               "width": 24,
@@ -113690,7 +113678,7 @@
                                   "fill": {
                                     "type": "image",
                                     "enabled": true,
-                                    "url": "../../../Downloads/prototype/图片素材/bgg-top-50/04-174430.jpg",
+                                    "url": "./图片素材/bgg-top-50/04-174430.jpg",
                                     "mode": "fill"
                                   },
                                   "cornerRadius": 14,
@@ -113721,7 +113709,7 @@
                                   "fill": {
                                     "type": "image",
                                     "enabled": true,
-                                    "url": "../../../Downloads/prototype/图片素材/bgg-top-50/05-397598.jpg",
+                                    "url": "./图片素材/bgg-top-50/05-397598.jpg",
                                     "mode": "fill"
                                   },
                                   "cornerRadius": 14,
@@ -113752,7 +113740,7 @@
                                   "fill": {
                                     "type": "image",
                                     "enabled": true,
-                                    "url": "../../../Downloads/prototype/图片素材/bgg-top-50/02-342942.jpg",
+                                    "url": "./图片素材/bgg-top-50/02-342942.jpg",
                                     "mode": "fill"
                                   },
                                   "cornerRadius": 14,
@@ -113783,7 +113771,7 @@
                                   "fill": {
                                     "type": "image",
                                     "enabled": true,
-                                    "url": "../../../Downloads/prototype/图片素材/bgg-top-50/03-161936.jpg",
+                                    "url": "./图片素材/bgg-top-50/03-161936.jpg",
                                     "mode": "fill"
                                   },
                                   "cornerRadius": 14,
@@ -113813,7 +113801,7 @@
                                   "fill": {
                                     "type": "image",
                                     "enabled": true,
-                                    "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                                    "url": "./图片素材/bgg-top-50/01-224517.jpg",
                                     "mode": "fill"
                                   },
                                   "cornerRadius": 18,
@@ -114846,7 +114834,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                                "url": "./图片素材/bgg-top-50/01-224517.jpg",
                                 "mode": "fill"
                               },
                               "layout": "vertical",
@@ -115143,7 +115131,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/bgg-top-50/02-342942.jpg",
+                                "url": "./图片素材/bgg-top-50/02-342942.jpg",
                                 "mode": "fill"
                               },
                               "layout": "vertical",
@@ -115450,7 +115438,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/bgg-top-50/03-161936.jpg",
+                                "url": "./图片素材/bgg-top-50/03-161936.jpg",
                                 "mode": "fill"
                               },
                               "layout": "vertical",
@@ -115747,7 +115735,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/bgg-top-50/04-174430.jpg",
+                                "url": "./图片素材/bgg-top-50/04-174430.jpg",
                                 "mode": "fill"
                               },
                               "layout": "vertical",
@@ -116054,7 +116042,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/bgg-top-50/05-397598.jpg",
+                                "url": "./图片素材/bgg-top-50/05-397598.jpg",
                                 "mode": "fill"
                               },
                               "layout": "vertical",
@@ -116351,7 +116339,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/bgg-top-50/06-316554.jpg",
+                                "url": "./图片素材/bgg-top-50/06-316554.jpg",
                                 "mode": "fill"
                               },
                               "layout": "vertical",
@@ -116658,7 +116646,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/bgg-top-50/07-233078.jpg",
+                                "url": "./图片素材/bgg-top-50/07-233078.jpg",
                                 "mode": "fill"
                               },
                               "layout": "vertical",
@@ -116955,7 +116943,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/bgg-top-50/08-115746.jpg",
+                                "url": "./图片素材/bgg-top-50/08-115746.jpg",
                                 "mode": "fill"
                               },
                               "layout": "vertical",
@@ -119231,7 +119219,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -119285,7 +119273,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/02-342942.jpg",
+                        "url": "./图片素材/bgg-top-50/02-342942.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -119349,7 +119337,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/03-161936.jpg",
+                        "url": "./图片素材/bgg-top-50/03-161936.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -119402,7 +119390,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 12,
@@ -119654,7 +119642,7 @@
                           "fill": {
                             "type": "image",
                             "enabled": true,
-                            "url": "../../../Downloads/prototype/图片素材/image-17.png",
+                            "url": "./图片素材/image-17.png",
                             "mode": "fill"
                           },
                           "width": 19.03448275862069,
@@ -119672,7 +119660,7 @@
                           "fill": {
                             "type": "image",
                             "enabled": true,
-                            "url": "../../../Downloads/prototype/图片素材/image-20.png",
+                            "url": "./图片素材/image-20.png",
                             "mode": "fill"
                           },
                           "width": 19.03448275862069,
@@ -119968,7 +119956,7 @@
       "fill": {
         "type": "image",
         "enabled": true,
-        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+        "url": "./图片素材/bgg-top-50/01-224517.jpg",
         "mode": "fill"
       },
       "cornerRadius": 10,
@@ -120417,7 +120405,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -120471,7 +120459,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/02-342942.jpg",
+                        "url": "./图片素材/bgg-top-50/02-342942.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -120535,7 +120523,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/03-161936.jpg",
+                        "url": "./图片素材/bgg-top-50/03-161936.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -120587,7 +120575,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 12,
@@ -121415,7 +121403,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -121469,7 +121457,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/02-342942.jpg",
+                        "url": "./图片素材/bgg-top-50/02-342942.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -121533,7 +121521,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/03-161936.jpg",
+                        "url": "./图片素材/bgg-top-50/03-161936.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -121586,7 +121574,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 12,
@@ -121846,7 +121834,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/image-17.png",
+                                "url": "./图片素材/image-17.png",
                                 "mode": "fill"
                               },
                               "width": 24,
@@ -121864,7 +121852,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/image-20.png",
+                                "url": "./图片素材/image-20.png",
                                 "mode": "fill"
                               },
                               "width": 24,
@@ -122274,7 +122262,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/image-17.png",
+                        "url": "./图片素材/image-17.png",
                         "mode": "fill"
                       },
                       "width": 40,
@@ -122338,7 +122326,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/image-20.png",
+                        "url": "./图片素材/image-20.png",
                         "mode": "fill"
                       },
                       "width": 40,
@@ -122967,7 +122955,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -123021,7 +123009,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/02-342942.jpg",
+                        "url": "./图片素材/bgg-top-50/02-342942.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -123085,7 +123073,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/03-161936.jpg",
+                        "url": "./图片素材/bgg-top-50/03-161936.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -123138,7 +123126,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 12,
@@ -123398,7 +123386,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/image-17.png",
+                                "url": "./图片素材/image-17.png",
                                 "mode": "fill"
                               },
                               "width": 24,
@@ -123416,7 +123404,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/image-20.png",
+                                "url": "./图片素材/image-20.png",
                                 "mode": "fill"
                               },
                               "width": 24,
@@ -123836,7 +123824,7 @@
                           "fill": {
                             "type": "image",
                             "enabled": true,
-                            "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                            "url": "./图片素材/bgg-top-50/01-224517.jpg",
                             "mode": "fill"
                           },
                           "cornerRadius": 8,
@@ -123906,7 +123894,7 @@
                           "fill": {
                             "type": "image",
                             "enabled": true,
-                            "url": "../../../Downloads/prototype/图片素材/bgg-top-50/02-342942.jpg",
+                            "url": "./图片素材/bgg-top-50/02-342942.jpg",
                             "mode": "fill"
                           },
                           "cornerRadius": 8,
@@ -124486,7 +124474,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -124550,7 +124538,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/02-342942.jpg",
+                        "url": "./图片素材/bgg-top-50/02-342942.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -124614,7 +124602,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/03-161936.jpg",
+                        "url": "./图片素材/bgg-top-50/03-161936.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 8,
@@ -124670,7 +124658,7 @@
                       "fill": {
                         "type": "image",
                         "enabled": true,
-                        "url": "../../../Downloads/prototype/图片素材/bgg-top-50/01-224517.jpg",
+                        "url": "./图片素材/bgg-top-50/01-224517.jpg",
                         "mode": "fill"
                       },
                       "cornerRadius": 12,
@@ -124930,7 +124918,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/image-17.png",
+                                "url": "./图片素材/image-17.png",
                                 "mode": "fill"
                               },
                               "width": 24,
@@ -124948,7 +124936,7 @@
                               "fill": {
                                 "type": "image",
                                 "enabled": true,
-                                "url": "../../../Downloads/prototype/图片素材/image-20.png",
+                                "url": "./图片素材/image-20.png",
                                 "mode": "fill"
                               },
                               "width": 24,

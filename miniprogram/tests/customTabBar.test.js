@@ -149,7 +149,7 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.ok(hostRule, "custom tab bar should define a :host rule");
   assert.match(hostRule[1], /background:\s*transparent;/);
   assert.doesNotMatch(hostRule[1], /position:\s*fixed;/);
-  assert.match(wxss, /\.tab-bar-wrap\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?bottom:\s*0;[\s\S]*?left:\s*0;[\s\S]*?z-index:\s*300;[\s\S]*?width:\s*100%;/);
+  assert.match(wxss, /\.tab-bar-wrap\s*\{[\s\S]*?position:\s*absolute;[\s\S]*?bottom:\s*0;[\s\S]*?left:\s*0;[\s\S]*?z-index:\s*300;[\s\S]*?width:\s*100%;/);
   assert.match(wxss, /\.tab-bar-wrap\s*\{[\s\S]*?opacity:\s*0;[\s\S]*?transform:\s*translateY\(100%\);[\s\S]*?transition:\s*transform 240ms cubic-bezier\(0\.2, 0\.8, 0\.2, 1\), opacity 160ms ease-out;[\s\S]*?pointer-events:\s*none;/);
   assert.match(wxss, /\.tab-bar-wrap--visible\s*\{[^}]*opacity:\s*1;[^}]*transform:\s*translateY\(0\);[^}]*pointer-events:\s*auto;/s);
   assert.match(js, /setHidden\(hidden, \{ animate = false \} = \{\}\)/);
@@ -419,6 +419,47 @@ test("four tab routes and selected states stay aligned", () => {
   for (const [, relativeFile, selected] of expected) {
     const pageJs = fs.readFileSync(path.join(__dirname, "../pages", relativeFile), "utf8");
     assert.match(pageJs, new RegExp(`patchTabBarIfNeeded\\(this, \\{[\\s\\S]*?selected: ${selected}`));
+  }
+});
+
+test("secondary tab pages explicitly restore the custom tab bar on show", () => {
+  const toolsJs = fs.readFileSync(path.join(__dirname, "../pages/tools/tools.js"), "utf8");
+  const historyJs = fs.readFileSync(path.join(__dirname, "../pages/history/history.js"), "utf8");
+  const profileJs = fs.readFileSync(path.join(__dirname, "../pages/profile/profile.js"), "utf8");
+
+  assert.match(toolsJs, /patchTabBarIfNeeded\(this,\s*\{\s*selected:\s*1,\s*hidden:\s*false\s*\}\)/);
+  assert.match(historyJs, /patchTabBarIfNeeded\(this,\s*\{\s*selected:\s*2,\s*hidden:\s*false\s*\}\)/);
+  assert.match(profileJs, /patchTabBarIfNeeded\(this,\s*\{\s*selected:\s*3,\s*hidden:\s*false\s*\}\)/);
+});
+
+test("tab bar visibility patches update component and app state", () => {
+  const syncPath = path.join(__dirname, "../utils/tabBarSync.js");
+  const previousGetApp = global.getApp;
+  const app = { globalData: { tabBarSelected: 0, tabBarHidden: true } };
+  const patches = [];
+  const tabBar = {
+    data: { selected: 0, hidden: true },
+    setData(patch) { patches.push(patch); Object.assign(this.data, patch); },
+    setHidden(hidden) {
+      app.globalData.tabBarHidden = !!hidden;
+      this.setData({ hidden: !!hidden });
+    }
+  };
+
+  try {
+    global.getApp = () => app;
+    delete require.cache[require.resolve(syncPath)];
+    const { patchTabBarIfNeeded } = require(syncPath);
+    patchTabBarIfNeeded({ getTabBar: () => tabBar }, { selected: 1, hidden: false });
+
+    assert.equal(tabBar.data.selected, 1);
+    assert.equal(tabBar.data.hidden, false);
+    assert.equal(app.globalData.tabBarSelected, 1);
+    assert.equal(app.globalData.tabBarHidden, false);
+  } finally {
+    delete require.cache[require.resolve(syncPath)];
+    if (previousGetApp === undefined) delete global.getApp;
+    else global.getApp = previousGetApp;
   }
 });
 

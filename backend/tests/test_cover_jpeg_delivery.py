@@ -89,7 +89,7 @@ class JpegDeliveryTests(unittest.TestCase):
                 paths.extend(artwork[key] for key in ('image_path', 'thumbnail_path', 'glass_path') if artwork.get(key))
             for path in paths:
                 with self.subTest(path=path):
-                    self.assertTrue((ROOT / path).is_file())
+                    self.assertTrue((ROOT / path.replace('\\', '/')).is_file())
                     self.assertNotIn('webp-q90-v1', path)
                     self.assertNotIn('jpeg-q92-v1', path)
 

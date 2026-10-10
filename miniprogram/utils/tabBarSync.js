@@ -30,6 +30,17 @@ function patchTabBarIfNeeded(pageCtx, patch) {
   if (patch.isAdmin !== undefined && patch.isAdmin !== cur.isAdmin) {
     next.isAdmin = patch.isAdmin;
   }
+  if (patch.hidden !== undefined) {
+    const hidden = !!patch.hidden;
+    try {
+      if (app && app.globalData) app.globalData.tabBarHidden = hidden;
+    } catch (e) {}
+    if (typeof tb.setHidden === "function") {
+      tb.setHidden(hidden);
+    } else if (hidden !== !!cur.hidden) {
+      next.hidden = hidden;
+    }
+  }
   if (Object.keys(next).length) {
     tb.setData(next);
   }

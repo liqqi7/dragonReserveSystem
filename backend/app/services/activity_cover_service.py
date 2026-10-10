@@ -42,6 +42,7 @@ def _ordered_catalog_artists() -> list[dict[str, Any]]:
 
 
 def _public_url(path: str, base_url: str = "") -> str:
+    path = path.replace("\\", "/")
     cdn = get_settings().activity_cover_cdn_base_url.strip().rstrip("/")
     if cdn:
         parsed = urlsplit(cdn)

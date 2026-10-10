@@ -624,10 +624,12 @@ Page({
           else setTimeout(run, 0);
         };
 
-        // First measure the wrapped text at the complete row width. This is stable on
-        // PC, phone and DevTools, unlike measuring an unconstrained single-line width.
+        const availableTextWidth = Math.max(0, rowWidth - toggleWidth - 7.69);
+
+        // Measure at the width the text actually gets beside the toggle. Measuring at
+        // the full row width can miss remarks that only wrap after the toggle is added.
         this.setData({
-          remarkTextWidthPx: rowWidth,
+          remarkTextWidthPx: availableTextWidth,
           remarkCollapsedHeightPx: collapsedHeight,
           remarkViewportHeightPx: collapsedHeight
         }, () => {
@@ -639,25 +641,23 @@ Page({
                 remarkExpanded: false,
                 remarkToggleRotationDeg: 0,
                 remarkExpandedHeightPx: collapsedHeight,
-                remarkViewportHeightPx: collapsedHeight
+                remarkViewportHeightPx: collapsedHeight,
+                remarkTextWidthPx: rowWidth
               });
               return;
             }
 
-            const availableTextWidth = Math.max(0, rowWidth - toggleWidth - 7.69);
-            this.setData({ remarkTextWidthPx: availableTextWidth }, () => {
-              measureFullHeight((expandedHeight) => {
-                const expandByDefault = !!(
-                  this.data.activity &&
-                  this.data.activity.status === "已结束"
-                );
-                this.setData({
-                  remarkExpandable: true,
-                  remarkExpanded: expandByDefault,
-                  remarkToggleRotationDeg: expandByDefault ? 180 : 0,
-                  remarkExpandedHeightPx: expandedHeight,
-                  remarkViewportHeightPx: expandByDefault ? expandedHeight : collapsedHeight
-                });
+            measureFullHeight((expandedHeight) => {
+              const expandByDefault = !!(
+                this.data.activity &&
+                this.data.activity.status === "已结束"
+              );
+              this.setData({
+                remarkExpandable: true,
+                remarkExpanded: expandByDefault,
+                remarkToggleRotationDeg: expandByDefault ? 180 : 0,
+                remarkExpandedHeightPx: expandedHeight,
+                remarkViewportHeightPx: expandByDefault ? expandedHeight : collapsedHeight
               });
             });
           });
