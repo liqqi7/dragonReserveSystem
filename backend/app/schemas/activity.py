@@ -110,10 +110,3 @@ class ActivityCheckinRequest(BaseModel):
 
     lat: float
     lng: float
-
-
-class ActivitySharePreviewResponse(BaseModel):
-    """Read-only share preview result."""
-
-    status: str
-    image_url: Optional[str] = None

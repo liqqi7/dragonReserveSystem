@@ -20,7 +20,7 @@ function setup() {
     login: options => options.success({ code: 'wechat-code' })
   };
   const userService = { getMe() { const pending = deferred(); users.push(pending); return pending.promise; } };
-  const logger = { resumeDiagnosticUploads() {}, createTraceId: () => 'test', logInfo() {}, logError() {}, summarizeError: () => '' };
+  const logger = { initializeLogging() {}, createTraceId: () => 'test', logPageError() {}, logWarn() {}, logRequestFailure() {}, summarizeError: () => '' };
   const authModule = { exports: {} };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../services/auth.js'), 'utf8'), {
     module: authModule, wx, setTimeout, clearTimeout,

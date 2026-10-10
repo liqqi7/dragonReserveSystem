@@ -111,9 +111,9 @@ def reverse_geocode(*, lat: float, lng: float) -> ReverseGeocodeResult:
         )
         response.raise_for_status()
         return parse_reverse_geocode_payload(response.json())
-    except (httpx.HTTPError, ValueError, TypeError):
+    except (httpx.HTTPError, ValueError, TypeError) as exc:
         logger.warning(
-            "Amap reverse geocode unavailable",
-            extra={"lat": lat, "lng": lng},
+            "amap_reverse_geocode_unavailable error_type=%s",
+            exc.__class__.__name__,
         )
         return ReverseGeocodeResult()

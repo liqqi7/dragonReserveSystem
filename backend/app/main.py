@@ -16,7 +16,6 @@ from app.core.config import get_settings
 from app.core.exceptions import AppError
 from app.core.logging import error_summary, logger, request_context
 from app.middleware import RequestContextMiddleware
-from app.diagnostic_guard import DiagnosticBodyGuard
 from app.image_transfer_diagnostics import ImageTransferDiagnostics
 
 
@@ -43,7 +42,6 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "X-Request-Id"],
 )
 app.add_middleware(ImageTransferDiagnostics)
-app.add_middleware(DiagnosticBodyGuard)
 app.mount(settings.media_url_prefix, StaticFiles(directory=media_root), name="media")
 activity_cover_assets = Path(__file__).resolve().parent / "assets" / "activity-covers"
 app.mount(

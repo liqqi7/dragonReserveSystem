@@ -53,26 +53,24 @@ test('settled is recorded once and cache usage survives background refresh', () 
   assert.equal(h.events.filter(x=>x.reason === 'all_ready_state_committed').length, 1);
   assert.equal(h.events.at(-1).cacheUsed, true);
 });
-test('logger uploads snapshots through existing batch transport with correlation and intact card evidence', () => {
+test('logger sends snapshots only to WeChat realtime with correlation and intact card evidence', () => {
   const vm = require('node:vm'), fs = require('node:fs');
-  const requests = [], realtime = [], timers = [];
-  const sandbox = { module: {exports:{}}, console: {info(){},error(){}}, setTimeout: fn => timers.push(fn), clearTimeout(){},
-    require: name => name === './diagnosticOutbox' ? {
-      createDiagnosticOutbox: opts => require('../services/diagnosticOutbox').createDiagnosticOutbox({ ...opts, setTimer: fn => timers.push(fn), clearTimer(){} })
-    } : name === './diagnosticPolicy' ? require('../services/diagnosticPolicy') : ({getApiBaseUrl: () => 'https://example.test/api/v1'}),
+  const requests = [], realtime = [];
+  const sandbox = { module: {exports:{}}, console: {info(){},error(){},warn(){}},
+    require: () => require('../services/diagnosticPolicy'),
     getCurrentPages: () => [{route:'pages/activity_list/activity_list'}],
-    wx: {getStorageSync: key => key === 'userId' ? '42' : key === 'accessToken' ? 'test-token' : [], setStorageSync(){}, request: req => requests.push(req), getRealtimeLogManager: () => ({info: p=>realtime.push(p)})} };
+    wx: {request: req => requests.push(req), getRealtimeLogManager: () => ({warn: p=>realtime.push(p)})} };
   vm.runInNewContext(fs.readFileSync(require.resolve('../services/logger'), 'utf8'), sandbox);
   const h = setup(); h.recorder.snapshot('native_media_error'); const sample = h.events[0];
   sandbox.module.exports.logInfo('home_presentation_snapshot', sample);
-  timers.forEach(fn=>fn());
-  const body = requests[0].data.events[0];
+  const body = realtime[0];
   assert.equal(body.traceId, 'view-1'); assert.equal(body.event, 'home_presentation_snapshot');
-  assert.equal(body.payload.cards[0].activityId, '42');
-  assert.equal(body.payload.cards[0].ready, false);
-  assert.equal(body.payload.cards[0].focused, true);
-  assert.match(body.payload.cards[0].glass, /pending;native=no_callback/);
+  assert.equal(body.cards[0].activityId, '42');
+  assert.equal(body.cards[0].ready, false);
+  assert.equal(body.cards[0].focused, true);
+  assert.match(body.cards[0].glass, /pending;native=no_callback/);
   assert.equal(realtime.length, 1);
+  assert.equal(requests.length, 0);
   assert.ok(!JSON.stringify(body).includes('secret'));
 });
 test('layout probe captures nodes without equating geometry to visible pixels, and late probes stop on hide', () => {

@@ -463,6 +463,22 @@ test("tab bar visibility patches update component and app state", () => {
   }
 });
 
+test("tab bar sync only updates navigation state and skips unchanged patches", () => {
+  const { patchTabBarIfNeeded } = require("../utils/tabBarSync");
+  const patches = [];
+  const tabBar = {
+    data: { selected: 0, hidden: true },
+    setData(patch) { patches.push(patch); Object.assign(this.data, patch); }
+  };
+  const page = { getTabBar: () => tabBar };
+
+  const patch = patchTabBarIfNeeded(page, { selected: 2, hidden: false, isAdmin: true });
+  assert.deepEqual(patch, { selected: 2, hidden: false });
+  assert.deepEqual(tabBar.data, { selected: 2, hidden: false });
+  assert.deepEqual(patchTabBarIfNeeded(page, { selected: 2, hidden: false }), {});
+  assert.equal(patches.length, 1);
+});
+
 test("all four tab pages rely on the single framework custom-tab-bar implementation", () => {
   const pageNames = ["activity_list", "tools", "history", "profile"];
   const duplicateTabSelector = /\.(?:tab-items-wrap|tab-item|tab-item--active|tab-icon|tab-icon-glyph|tab-label|tab-label--active)\b/;

@@ -40,8 +40,8 @@ test("first time enabling subitems creates two blank items", () => {
   assert.equal(c.result.enabled, true);
   assert.equal(c.result.items.length, 2);
   assert.deepEqual(c.result.items, [
-    { name: "", max_participants: 12 },
-    { name: "", max_participants: 12 }
+    { name: "", max_participants: 12, followsActivityCapacity: true },
+    { name: "", max_participants: 12, followsActivityCapacity: true }
   ]);
 });
 
@@ -50,7 +50,7 @@ test("subitems editor caps projects at four and inserts a default item with anim
   c.add();
   assert.equal(c.result.items.length, 2);
   assert.equal(c.result.items[0].id, 1);
-  assert.deepEqual(c.result.items[1], { name: "", max_participants: 12 });
+  assert.deepEqual(c.result.items[1], { name: "", max_participants: 12, followsActivityCapacity: true });
   assert.equal(c.data.insertingIndex, 1);
   assert.equal(c.data.insertVisible, false);
 
@@ -92,19 +92,106 @@ test("subitem capacity and new-item defaults never exceed the activity quota", (
   c.step({ currentTarget: { dataset: { index: 0, delta: 1 } } });
   assert.equal(c.result.items[0].max_participants, 8);
   c.properties.items = c.result.items;
+  c.result = undefined;
   c.step({ currentTarget: { dataset: { index: 0, delta: 1 } } });
-  assert.equal(c.result.items[0].max_participants, 8);
+  assert.equal(c.result, undefined);
+  assert.equal(c.properties.items[0].max_participants, 8);
 
   const empty = context([], false, 8);
   empty.add();
   assert.equal(empty.result.items[0].max_participants, 8);
 });
 
+test("default subitems use the current activity quota when enabled or added", () => {
+  for (const quota of [3, 16, 20, 999]) {
+    const c = context([], false, quota);
+    c.properties.enabled = false;
+    c.toggle({ detail: { value: true } });
+    assert.deepEqual(c.result.items.map(item => item.max_participants), [quota, quota]);
+    assert.ok(c.result.items.every(item => item.followsActivityCapacity === true));
+    c.syncItems();
+    c.properties.maxParticipants = quota + 1;
+    c.add();
+    assert.equal(c.result.items[2].max_participants, Math.min(999, quota + 1));
+    assert.equal(c.result.items[2].followsActivityCapacity, true);
+    definition.lifetimes.detached.call(c);
+  }
+});
+
+test("only an effective capacity adjustment opts a default subitem out of following", () => {
+  const c = context([{ name: "", max_participants: 16, followsActivityCapacity: true }], false, 16);
+  c.step({ currentTarget: { dataset: { index: 0, delta: 1 } } });
+  assert.equal(c.result, undefined);
+  assert.equal(c.properties.items[0].followsActivityCapacity, true);
+  c.input({ currentTarget: { dataset: { index: 0 } }, detail: { value: "Dinner" } });
+  assert.equal(c.result.items[0].followsActivityCapacity, true);
+  c.syncItems();
+  c.step({ currentTarget: { dataset: { index: 0, delta: -1 } } });
+  assert.equal(c.result.items[0].max_participants, 15);
+  assert.equal(c.result.items[0].followsActivityCapacity, false);
+  c.syncItems();
+  c.step({ currentTarget: { dataset: { index: 0, delta: 1 } } });
+  assert.equal(c.result.items[0].max_participants, 16);
+  assert.equal(c.result.items[0].followsActivityCapacity, false);
+});
+
 test("subitem capacity cannot fall below existing signup count", () => {
   const c = context([{ id: 1, max_participants: 3, current_participants: 3 }]);
   c.step({ currentTarget: { dataset: { index: 0, delta: -1 } } });
-  assert.equal(c.result.items[0].max_participants, 3);
+  assert.equal(c.result, undefined);
   assert.equal(c.properties.items[0].max_participants, 3);
+});
+
+test("subitem disabled bindings and click guards agree at every capacity boundary", () => {
+  const conditions = [...wxml.matchAll(/aria-disabled="\{\{([^}]+)\}\}"/g)]
+    .map(match => new Function("item", "maxParticipants", `return ${match[1]};`));
+  assert.equal(conditions.length, 2);
+  for (const [capacity, signedUp, quota, disabled] of [
+    [1, 0, 16, [true, false]],
+    [8, 8, 16, [true, false]],
+    [16, 0, 16, [false, true]],
+    [16, 16, 16, [true, true]],
+    [4, 0, 16, [false, false]],
+    [999, 0, 999, [false, true]],
+    [1, 0, 3, [true, false]]
+  ]) {
+    for (const [buttonIndex, delta] of [-1, 1].entries()) {
+      const item = { max_participants: capacity, current_participants: signedUp };
+      assert.equal(conditions[buttonIndex](item, quota), disabled[buttonIndex]);
+      const c = context([item], false, quota);
+      c.step({ currentTarget: { dataset: { index: 0, delta } } });
+      if (disabled[buttonIndex]) {
+        assert.equal(c.result, undefined);
+      } else {
+        assert.equal(c.result.items[0].max_participants, capacity + delta);
+      }
+      assert.equal(item.max_participants, capacity);
+    }
+  }
+});
+
+test("subitem buttons become available again when capacity or activity quota changes", () => {
+  const c = context([{ max_participants: 1 }], false, 3);
+  const step = delta => c.step({ currentTarget: { dataset: { index: 0, delta } } });
+  step(-1);
+  assert.equal(c.result, undefined);
+  step(1);
+  assert.equal(c.result.items[0].max_participants, 2);
+  c.syncItems();
+  step(-1);
+  assert.equal(c.result.items[0].max_participants, 1);
+  c.properties.items = [{ max_participants: 16, followsActivityCapacity: true }];
+  c.properties.maxParticipants = 16;
+  c.result = undefined;
+  step(1);
+  assert.equal(c.result, undefined);
+  assert.equal(c.properties.items[0].followsActivityCapacity, true);
+  c.properties.maxParticipants = 17;
+  step(1);
+  assert.equal(c.result.items[0].max_participants, 17);
+  c.syncItems();
+  step(-1);
+  assert.equal(c.result.items[0].max_participants, 16);
 });
 
 test("occupied subitems cannot be removed and signup locks mode changes", () => {
@@ -257,10 +344,14 @@ test("stepper spacing, prototype SVG icons, and dashed add button match the expa
   assert.match(wxss, /\.add \{[^}]*border:0;[^}]*border-radius:30\.77rpx;[^}]*gap:15\.38rpx;[^}]*overflow:visible;/);
   assert.match(wxss, /\.add-border \{[^}]*position:absolute;[^}]*width:100%;[^}]*height:100%;/);
   assert.match(wxml, /src="\/images\/activity-subitem-add-border\.svg"/);
-  assert.match(wxml, /src="\/images\/activity-subitem-minus\.svg"/);
+  assert.match(wxml, /src="\{\{[^}]*'\/images\/icon-minus-disabled\.svg' : '\/images\/icon-minus\.svg'\}\}"/);
+  assert.match(wxml, /<image class="step-icon" src="\{\{[^}]*'\/images\/icon-plus-disabled\.svg' : '\/images\/icon-plus\.svg'\}\}" mode="aspectFit" \/>/);
   assert.equal((wxml.match(/src="\/images\/activity-subitem-plus\.svg"/g) || []).length, 1);
-  assert.match(wxml, /class="step-icon step-plus"/);
-  assert.match(wxss, /\.plus-bar \{[^}]*background:#FF9800;/);
+  assert.doesNotMatch(wxml + wxss, /step-plus|plus-bar/);
+  assert.match(wxss, /\.step \{[^}]*background:#FFFFFF;/);
+  assert.match(wxss, /\.step--disabled \{ pointer-events:none; \}/);
+  assert.ok(wxml.includes("item.max_participants <= 1 || item.max_participants <= item.current_participants ? 'step--disabled' : ''"));
+  assert.ok(wxml.includes("item.max_participants >= maxParticipants || item.max_participants >= 999 ? 'step--disabled' : ''"));
   assert.match(wxml, /src="\/images\/activity-subitem-trash\.svg"/);
   assert.doesNotMatch(wxml, /[−＋]/);
   assert.match(wxml, />添加项目</);

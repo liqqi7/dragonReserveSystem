@@ -9,7 +9,9 @@ function normalizeSubItems(items, quota) {
   const limit = Math.max(MIN_MAX_PARTICIPANTS, Math.min(999, Number(quota) || DEFAULT_MAX_PARTICIPANTS));
   return (Array.isArray(items) ? items : []).map(item => ({
     ...item,
-    max_participants: Math.min(limit, Math.max(1, Number(item.max_participants) || 1))
+    max_participants: item.followsActivityCapacity === true
+      ? limit
+      : Math.min(limit, Math.max(1, Number(item.max_participants) || 1))
   }));
 }
 

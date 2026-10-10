@@ -1,5 +1,5 @@
-const app = getApp();
 const activityService = require("../../services/activity");
+const { logPageError } = require("../../services/logger");
 
 const CHECKIN_RADIUS_M = 1000;
 const CHECKIN_RADIUS_KM = CHECKIN_RADIUS_M / 1000;
@@ -210,7 +210,7 @@ Page({
         this.finishSubmission();
       })
       .catch((err) => {
-        console.error("签到结果处理失败:", err);
+        logPageError("handle_checkin_result", err);
       });
   },
 

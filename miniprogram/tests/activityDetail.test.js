@@ -346,6 +346,16 @@ test("project member drawer reuses the participants drawer shell", () => {
   assert.match(js, /projectMembersDrawerHeightRpx:\s*getProjectMembersDrawerHeightRpx\(projectMembers\.length, this\.data\.safeBottomRpx\)/);
 });
 
+test("project member scrolling fills the drawer rather than clipping at a fixed height", () => {
+  const membersStyle = wxss.match(/\.project-members \{([^}]+)\}/)[1];
+  assert.match(membersStyle, /flex:\s*1;/);
+  assert.match(membersStyle, /(?:^|;)\s*height:\s*0;/);
+  assert.match(membersStyle, /min-height:\s*0;/);
+  assert.doesNotMatch(membersStyle, /max-height:/);
+  assert.match(wxss, /\.project-sheet \{[^}]*height:\s*100%;[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*box-sizing:\s*border-box;/);
+  assert.match(wxml, /<scroll-view type="list" scroll-y class="project-members">/);
+});
+
 test("detail exposes checkin only after the activity enters the ongoing state", () => {
   assert.match(detailSource, /activity\.hasSignedUp && activity\.status === "进行中"/);
   assert.doesNotMatch(detailSource, /isCheckinWindowOpen/);

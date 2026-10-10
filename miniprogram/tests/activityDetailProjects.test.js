@@ -28,6 +28,7 @@ function makePage() {
     getApp: () => app,
     Page: value => { definition = value; },
     require: name => {
+      if (name === "../../services/logger") return { logPageError() {} };
       if (name === "../../services/activity") return {
         signupActivity(activityId, selectedIds) {
           return new Promise((resolve, reject) => {

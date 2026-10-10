@@ -2,7 +2,7 @@ const { rankHomeCardImages, cardVisibilityKey, usesNativeCardGlass, getHomeCardG
 const { prepareHomeImage, invalidateHomeImageCache } = require("../../utils/homeImagePreparation");
 const app = getApp();
 const activityService = require("../../services/activity");
-const { createTraceId, logInfo, summarizeError } = require("../../services/logger");
+const { createTraceId, logInfo, logPageError, summarizeError } = require("../../services/logger");
 const { enrichSingleActivity } = require("../../utils/activityEnrich");
 const cacheManager = require("../../services/cacheManager");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
@@ -154,7 +154,6 @@ Page({
     });
     patchTabBarIfNeeded(this, {
       selected: 0,
-      isAdmin: app.globalData.userRole === "admin",
     });
     this._scheduleColdStartCardEntrance();
     this._startSkeletonShimmer();
@@ -255,11 +254,7 @@ Page({
   },
 
   onHomeBoardGameTap() {
-    wx.showToast({
-      title: "黑黑正在做，别催",
-      icon: "none",
-      duration: 1800
-    });
+    wx.navigateTo({ url: "/pages/boardgame_library/boardgame_library" });
   },
 
   _buildGroupSectionVisibility(groupedActivities) {
@@ -1004,7 +999,7 @@ Page({
         if (this._pageVisible === false || generation !== (this._loadGeneration || 0)) return;
         this._homePresentationDiagnostics?.list("list_failed", summarizeError(err));
         this._homePresentationDiagnostics?.snapshot("list_error");
-        console.error(err);
+        logPageError("load_activity_list", err);
         // The independent Tab entrance also runs when the request never resolves.
         this._scheduleColdStartCardEntrance();
         wx.showToast({ title: "加载失败", icon: "none" });

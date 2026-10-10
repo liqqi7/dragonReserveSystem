@@ -1,10 +1,8 @@
 const { getApiBaseUrl } = require("./config");
 const {
   createTraceId,
-  logInfo,
-  logError,
-  summarizeError,
-  logRequestTransportFail
+  logWarn,
+  logRequestFailure
 } = require("./logger");
 
 const DEFAULT_REQUEST_TIMEOUT = 15000;
@@ -65,8 +63,6 @@ function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQ
     header.Authorization = `Bearer ${token}`;
   }
 
-  logInfo("request_start", { url, method, traceId, timeout });
-
   return new Promise((resolve, reject) => {
     wx.request({
       url: `${resolveApiBaseUrl(apiVersion)}${url}`,
@@ -79,16 +75,8 @@ function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQ
         const responseRequestId = res.header && (res.header["X-Request-Id"] || res.header["x-request-id"]);
 
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          logInfo("request_success", {
-            url,
-            method,
-            traceId,
-            requestId: responseRequestId || traceId,
-            duration,
-            statusCode: res.statusCode
-          });
           if (duration >= SLOW_REQUEST_THRESHOLD_MS) {
-            logInfo("request_slow", {
+            logWarn("request_slow", {
               url,
               method,
               traceId,
@@ -111,15 +99,14 @@ function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQ
           duration,
           api: url
         };
-        logError("request_fail", {
+        logRequestFailure({
           url,
           method,
           traceId,
           requestId: error.requestId,
           duration,
-          statusCode: res.statusCode,
-          summary: summarizeError(error)
-        });
+          statusCode: res.statusCode
+        }, error);
         reject(error);
       },
       fail(err) {
@@ -133,24 +120,7 @@ function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQ
           duration,
           api: url
         };
-        let apiHost = "";
-        try {
-          apiHost = String(getApiBaseUrl() || "")
-            .replace(/^https?:\/\//, "")
-            .split("/")[0];
-        } catch (e) {
-          apiHost = "";
-        }
-        logRequestTransportFail(
-          {
-            url,
-            method,
-            traceId,
-            duration,
-            apiHost
-          },
-          err
-        );
+        logRequestFailure({ url, method, traceId, requestId: traceId, duration, statusCode: 0 }, error, err);
         reject(error);
       }
     });

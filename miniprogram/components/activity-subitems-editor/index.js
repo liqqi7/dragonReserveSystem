@@ -164,8 +164,8 @@ Component({
       const items = this.properties.items.length
         ? this.properties.items
         : [
-          { name: "", max_participants: Math.min(12, quota) },
-          { name: "", max_participants: Math.min(12, quota) }
+          { name: "", max_participants: quota, followsActivityCapacity: true },
+          { name: "", max_participants: quota, followsActivityCapacity: true }
         ];
       if (!enabled && this.properties.enabled) {
         if (this._contentExitTimer) return;
@@ -187,7 +187,7 @@ Component({
       if (items.length >= 4) return;
       const insertingIndex = items.length;
       const quota = getQuota(this.properties.maxParticipants);
-      const nextItems = [...items, { name: "", max_participants: Math.min(12, quota) }];
+      const nextItems = [...items, { name: "", max_participants: quota, followsActivityCapacity: true }];
       this.setData({ insertingIndex, insertVisible: false }, () => {
         this.emit(nextItems);
         clearTimeout(this._insertStartTimer);
@@ -219,11 +219,16 @@ Component({
       const quota = getQuota(this.properties.maxParticipants);
       const currentParticipants = Number(item.current_participants || 0);
       const currentCapacity = Number(item.max_participants);
+      const delta = Number(e.currentTarget.dataset.delta);
+      if (delta < 0 && currentCapacity <= Math.max(1, currentParticipants)) return;
+      if (delta > 0 && currentCapacity >= quota) return;
       item.max_participants = Math.max(
         1,
         Math.min(quota, currentParticipants),
-        Math.min(quota, (Number.isFinite(currentCapacity) ? currentCapacity : 1) + Number(e.currentTarget.dataset.delta))
+        Math.min(quota, (Number.isFinite(currentCapacity) ? currentCapacity : 1) + delta)
       );
+      if (item.max_participants === currentCapacity) return;
+      item.followsActivityCapacity = false;
       this.emit(items);
     },
 

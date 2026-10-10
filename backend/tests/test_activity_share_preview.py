@@ -2,9 +2,11 @@
 
 from datetime import datetime, timedelta
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import pytest
 from PIL import Image, ImageDraw
+from starlette.staticfiles import StaticFiles
 
 from app.models import Activity, ActivityParticipant
 from app.services import activity_share_preview_service as preview
@@ -25,14 +27,17 @@ def _file(url, folder):
 
 
 def test_create_prepares_card_and_reads_never_generate(client, admin_headers, monkeypatch, tmp_path):
-    monkeypatch.setattr(preview, "SHARE_PREVIEW_DIR", tmp_path)
+    folder = tmp_path / "share-previews"
+    monkeypatch.setattr(preview, "SHARE_PREVIEW_DIR", folder)
+    media = next(route for route in client.app.routes if route.name == "media")
+    monkeypatch.setattr(media, "app", StaticFiles(directory=tmp_path))
     response = client.post("/api/v2/activities", headers=admin_headers, json=_payload())
     assert response.status_code == 201, response.text
     body = response.json()
     assert body["share_preview_image_url"] is None
     image_url = client.get(f"/api/v2/activities/{body['id']}").json()["share_preview_image_url"]
     assert image_url.endswith(".png")
-    with Image.open(_file(image_url, tmp_path)) as image:
+    with Image.open(_file(image_url, folder)) as image:
         assert image.size == (550, 440)
         assert image.mode == "RGB"
         cover = Image.open(get_activity_cover_source_path(body["activity_cover_id"])).convert("RGBA")
@@ -42,7 +47,11 @@ def test_create_prepares_card_and_reads_never_generate(client, admin_headers, mo
     monkeypatch.setattr(preview, "_render_share_preview", lambda *args: pytest.fail("GET attempted to render"))
     detail = client.get(f"/api/v2/activities/{body['id']}")
     assert detail.json()["share_preview_image_url"] == image_url
-    assert client.get(f"/api/v2/activities/{body['id']}/share-preview").json()["image_url"] == image_url
+    assert client.get("/api/v2/activities").json()[0]["share_preview_image_url"] == image_url
+    downloaded = client.get(urlsplit(image_url).path)
+    assert downloaded.status_code == 200
+    assert downloaded.headers["content-type"] == "image/png"
+    assert downloaded.content == _file(image_url, folder).read_bytes()
 
 
 def test_edited_static_fields_change_url_but_other_data_does_not(client, db_session, admin_headers, normal_user, monkeypatch, tmp_path):
@@ -83,7 +92,6 @@ def test_failed_render_preserves_edit_and_previous_card(client, admin_headers, m
     detail = client.get(f"/api/v2/activities/{created['id']}").json()
     assert detail["location_name"] == "仍然保存"
     assert detail["share_preview_image_url"] is None
-    assert client.get(f"/api/v2/activities/{created['id']}/share-preview").json()["status"] == "pending"
     assert _file(old_url, tmp_path).is_file()
 
 
@@ -130,7 +138,8 @@ def test_create_persists_selected_cover_and_share_card(client, db_session, admin
     assert activity.share_preview_file
     with Image.open(tmp_path / activity.share_preview_file) as image:
         assert image.format == "PNG" and image.size == (550, 440)
-    assert client.get(f"/api/v2/activities/{activity.id}/share-preview").json()["status"] == "ready"
+    image_url = client.get(f"/api/v2/activities/{activity.id}").json()["share_preview_image_url"]
+    assert Path(image_url).name == activity.share_preview_file
 
 
 def test_failed_render_does_not_rollback_created_activity(
@@ -144,7 +153,7 @@ def test_failed_render_does_not_rollback_created_activity(
     monkeypatch.setattr(preview, "_render_share_preview", fail)
     response = client.post("/api/v2/activities", headers=admin_headers, json=_payload())
     assert response.status_code == 201
-    assert client.get(f"/api/v2/activities/{response.json()['id']}/share-preview").json()["status"] == "pending"
+    assert client.get(f"/api/v2/activities/{response.json()['id']}").json()["share_preview_image_url"] is None
     assert len(db_session.scalars(select(Activity)).all()) == 1
     assert list(tmp_path.glob("activity-*.png")) == []
 
@@ -216,13 +225,13 @@ def test_location_edit_replaces_card_reference(client, db_session, admin_headers
     monkeypatch.setattr(preview, "SHARE_PREVIEW_DIR", tmp_path)
     payload = _payload()
     activity_id = client.post("/api/v2/activities", headers=admin_headers, json=payload).json()["id"]
-    old_url = client.get(f"/api/v2/activities/{activity_id}/share-preview").json()["image_url"]
+    old_url = client.get(f"/api/v2/activities/{activity_id}").json()["share_preview_image_url"]
     response = client.patch(
         f"/api/v2/activities/{activity_id}", headers=admin_headers,
         json={"location_address": "different street"},
     )
     assert response.status_code == 200, response.text
-    new_url = client.get(f"/api/v2/activities/{activity_id}/share-preview").json()["image_url"]
+    new_url = client.get(f"/api/v2/activities/{activity_id}").json()["share_preview_image_url"]
     assert new_url != old_url
     assert (tmp_path / Path(new_url).name).is_file()
     assert (tmp_path / Path(old_url).name).is_file()

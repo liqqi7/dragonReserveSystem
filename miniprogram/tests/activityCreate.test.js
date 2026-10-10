@@ -24,7 +24,7 @@ test("cover category uses 游戏 to match the cover catalog", () => {
 });
 
 test("creation keeps the activity quota at three and caps subitems without raising one-person items", () => {
-  const c = context({ form: { maxParticipants: 3, subItems: [
+  const c = context({ form: { maxParticipants: 4, subItems: [
     { name: "A", max_participants: 8 }, { name: "B", max_participants: 1 }
   ] } });
   c.stepCapacity({ currentTarget: { dataset: { delta: -1 } } });
@@ -33,6 +33,20 @@ test("creation keeps the activity quota at three and caps subitems without raisi
   c.data.form.maxParticipants = 2;
   c.onSubItemsChange({ detail: { enabled: true, items: [{ name: "A", max_participants: 8 }] } });
   assert.equal(c.data["form.subItems"][0].max_participants, 3);
+});
+
+test("activity quota changes update following subitems but preserve custom capacities", () => {
+  const c = context({ form: { maxParticipants: 16, subItems: [
+    { name: "A", max_participants: 16, followsActivityCapacity: true },
+    { name: "B", max_participants: 16, followsActivityCapacity: false },
+    { name: "C", max_participants: 8 }
+  ] } });
+  for (const [delta, expected] of [[1, [17, 16, 8]], [-2, [15, 15, 8]], [1, [16, 15, 8]]]) {
+    c.stepCapacity({ currentTarget: { dataset: { delta } } });
+    assert.deepEqual(c.data["form.subItems"].map(item => item.max_participants), expected);
+    c.data.form.maxParticipants = c.data["form.maxParticipants"];
+    c.data.form.subItems = c.data["form.subItems"];
+  }
 });
 
 test("cover swiper advances exactly four covers per slide", () => {
@@ -359,8 +373,8 @@ test("details step closed state matches the prototype spacing, empty time, and c
   assert.match(wxml, /<text wx:else class="time-placeholder">开始时间<\/text>/);
   assert.match(wxml, /<text wx:else class="time-placeholder">结束时间<\/text>/);
   assert.match(wxml, /<view class="capacity-field"><text class="label">名额上限<\/text><view class="capacity-card">/);
-  assert.match(wxml, /<image class="step-icon" src="\/images\/icon-minus\.svg" mode="aspectFit" \/>/);
-  assert.match(wxml, /<image class="step-icon" src="\/images\/icon-plus\.svg" mode="aspectFit" \/>/);
+  assert.match(wxml, /<image class="step-icon" src="\{\{form\.maxParticipants <= 3 \? '\/images\/icon-minus-disabled\.svg' : '\/images\/icon-minus\.svg'\}\}" mode="aspectFit" \/>/);
+  assert.match(wxml, /<image class="step-icon" src="\{\{form\.maxParticipants >= 999 \? '\/images\/icon-plus-disabled\.svg' : '\/images\/icon-plus\.svg'\}\}" mode="aspectFit" \/>/);
 
   assert.match(wxss, /\.body--step-3\.body--subitems-closed \.heading \{ padding-top:246\.15rpx; \}/);
   assert.match(wxss, /\.body--step-3\.body--subitems-open \.heading \{ padding-top:61\.54rpx; \}/);

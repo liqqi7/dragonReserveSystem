@@ -54,7 +54,6 @@ def main() -> None:
     load_env_file(args.env_file)
 
     from app.core.database import SessionLocal
-    from app.core.security import get_password_hash
     from app.models import Activity, User
     from app.services.activity_service import _app_now
 
@@ -77,7 +76,7 @@ def main() -> None:
             role = "admin" if index <= 2 else ("guest" if index >= 14 else "user")
             user = User(
                 username=f"test_user_{index:02d}",
-                password_hash=get_password_hash("Test123456"),
+                password_hash=None,
                 nickname=f"测试用户{index:02d}",
                 avatar_url=test_avatar_urls[(index - 1) % len(test_avatar_urls)],
                 role=role,

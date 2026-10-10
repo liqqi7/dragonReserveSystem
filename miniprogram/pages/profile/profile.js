@@ -1,6 +1,7 @@
 const app = getApp();
 const authService = require("../../services/auth");
 const userService = require("../../services/user");
+const { logPageError } = require("../../services/logger");
 const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
 const { isTemporaryAvatarUrl } = require("../../utils/profileUtils");
 const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
@@ -159,7 +160,7 @@ Page({
         return user;
       })
       .catch((err) => {
-        console.error("查询用户失败:", err);
+        logPageError("load_profile", err);
         this.setData({
           hasUser: false,
           isGuest: !app.globalData.isAuthenticated
@@ -186,7 +187,7 @@ Page({
         wx.showToast({ title: "登录成功", icon: "success" });
       })
       .catch((err) => {
-        console.error("wechat login error", err);
+        logPageError("wechat_login", err);
         wx.hideLoading();
         wx.showToast({
           title: (err && err.message) || "微信登录失败",
@@ -418,7 +419,7 @@ Page({
         wx.showToast({ title: "保存成功", icon: "success" });
       })
       .catch((err) => {
-        console.error("更新失败", err);
+        logPageError("save_profile", err);
         wx.hideLoading();
         wx.showToast({ title: err.message || "保存失败", icon: "none" });
       });

@@ -4,13 +4,13 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 function setup() {
-  const storage = new Map(), writes = []; let app, resumes = 0;
+  const storage = new Map(), writes = []; let app;
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8'), {
     App: value => { app = value; }, console,
     wx: { getStorageSync: key => storage.get(key), setStorageSync: (key, value) => {storage.set(key,value); writes.push(key);} },
-    require: () => ({ resumeDiagnosticUploads: () => resumes++ })
+    require: () => ({ initializeLogging() {}, logPageError() {} })
   });
-  return {app,storage,writes,resumes:()=>resumes};
+  return {app,storage,writes};
 }
 test('unchanged user validation performs no writes but still updates authentication immediately', () => {
   const h=setup(), user={id:7,role:'user',nickname:'name',avatar_url:'avatar'};
@@ -20,7 +20,6 @@ test('unchanged user validation performs no writes but still updates authenticat
   assert.equal(h.writes.length,0);
   assert.equal(h.app.globalData.isAuthenticated,true);
   assert.equal(h.app.globalData.sessionValidated,true);
-  assert.equal(h.resumes(),2);
   h.app.applyCurrentUser({...user,nickname:'changed'});
   assert.deepEqual(h.writes,['userNickname']);
 });

@@ -1,6 +1,6 @@
 const { getApiBaseUrl } = require("./config");
 const { request } = require("./request");
-const { createTraceId } = require("./logger");
+const { createTraceId, logRequestFailure } = require("./logger");
 
 function getMe() {
   return request({ url: "/users/me" });
@@ -19,6 +19,7 @@ function updateMe(payload) {
 function uploadAvatar(filePath) {
   const token = wx.getStorageSync("accessToken");
   const traceId = createTraceId("upload");
+  const startAt = Date.now();
   const header = {
     "X-Request-Id": traceId
   };
@@ -28,6 +29,12 @@ function uploadAvatar(filePath) {
   }
 
   return new Promise((resolve, reject) => {
+    const rejectUpload = (error) => {
+      logRequestFailure({ url: "/users/me/avatar", method: "POST", traceId,
+        requestId: error.requestId || traceId, statusCode: error.statusCode,
+        duration: Date.now() - startAt }, error);
+      reject(error);
+    };
     wx.uploadFile({
       url: `${getApiBaseUrl()}/users/me/avatar`,
       filePath,
@@ -38,7 +45,7 @@ function uploadAvatar(filePath) {
         try {
           body = JSON.parse(res.data || "{}");
         } catch (err) {
-          reject({
+          rejectUpload({
             message: "头像上传响应解析失败",
             body: res.data,
             traceId,
@@ -52,7 +59,7 @@ function uploadAvatar(filePath) {
           return;
         }
 
-        reject({
+        rejectUpload({
           message: (body && body.message) || "头像上传失败",
           body,
           traceId,
@@ -61,7 +68,7 @@ function uploadAvatar(filePath) {
         });
       },
       fail(err) {
-        reject({
+        rejectUpload({
           message: (err && err.errMsg) || "头像上传失败",
           body: err,
           traceId,

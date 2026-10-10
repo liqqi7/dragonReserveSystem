@@ -1,370 +1,185 @@
-const { getApiBaseUrl } = require("./config");
-const { createDiagnosticOutbox } = require("./diagnosticOutbox");
 const { isNormalHomeDiagnostic } = require("./diagnosticPolicy");
+
+const MAX_RECORD_BYTES = 4096;
+const EVENTS = new Set(["request_fail", "request_slow", "page_error", "home_presentation_snapshot", "home_media_attempt"]);
+const PRIVATE_KEY = /^(?:.*token|authorization|cookie|.*password|.*secret|.*openid|unionid|nickname|avatar.*|phone.*|email|address|latitude|longitude|lat|lng|headers?|body|rawdata|code|invite_?code|file_?path|user_?id|session_?key|api_?key)$/i;
+const reportedErrors = new WeakSet();
+const recentEvents = new Map();
+let realtimeLogger, metadata, initialized = false;
+let networkType = "unknown";
+const sessionId = createTraceId("sess");
 
 function createTraceId(prefix = "trace") {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
 }
 
-let realtimeLogger;
-let realtimeLoggerReady = false;
-let cachedSystemMeta;
-let clientDiagnosticSessionId;
-const backendUploadThrottleMap = new Map();
-const wechatAnalyticsTransportThrottleMap = new Map();
-let diagnosticOutbox;
-
-function resumeDiagnosticUploads() {
-  if (typeof wx === "undefined" || !wx) return;
-  try {
-    if (!diagnosticOutbox) diagnosticOutbox = createDiagnosticOutbox({
-      wxApi: wx, getApiBaseUrl, createId: () => createTraceId("diag"),
-      onFailure: summary => reportRealtime("error", "diagnostic_upload_fail", { summary })
-    });
-    diagnosticOutbox.resume();
-  } catch (_) { /* Diagnostic delivery must not interrupt the app. */ }
-}
-
-function getClientDiagnosticSessionId() {
-  if (!clientDiagnosticSessionId) {
-    clientDiagnosticSessionId = createTraceId("sess");
-  }
-  return clientDiagnosticSessionId;
-}
-
 function summarizeError(err) {
   if (!err) return "unknown error";
-  const msg = err.message || err.errMsg || err.code || "";
-  const parts = [];
-  if (msg) parts.push(String(msg));
-  if (err.errno !== undefined && err.errno !== "") {
-    parts.push(`errno:${err.errno}`);
-  }
-  if (err.statusCode) {
-    parts.push(`status:${err.statusCode}`);
-  }
-  if (parts.length) return parts.join(" ");
-  return err.statusCode || "unknown error";
+  if (typeof err === "string") return err;
+  const parts = [err.message || err.errMsg || err.code || "unknown error"];
+  if (err.errno !== undefined && err.errno !== "") parts.push(`errno:${err.errno}`);
+  if (err.statusCode) parts.push(`status:${err.statusCode}`);
+  return parts.join(" ");
 }
 
-function getRealtimeLogger() {
-  if (realtimeLoggerReady) return realtimeLogger;
-  realtimeLoggerReady = true;
-  try {
-    if (typeof wx !== "undefined" && wx && typeof wx.getRealtimeLogManager === "function") {
-      realtimeLogger = wx.getRealtimeLogManager();
-    }
-  } catch (err) {
-    realtimeLogger = null;
-  }
-  return realtimeLogger;
+function cleanString(value) {
+  return value
+    .replace(/Bearer\s+[^\s,;]+/gi, "Bearer [redacted]")
+    .replace(/\b(token|access_token|openid|unionid|password|secret|code|invite_code)\s*[=:]\s*[^\s,;]+/gi, "$1=[redacted]")
+    .replace(/https?:\/\/[^\s"'<>]+/gi, url => url.split(/[?#]/)[0].replace(/(https?:\/\/)[^/]*@/i, "$1"))
+    .replace(/(^|[\s(])((?:\/|\.\.?\/)[^\s"'<>?#]+)[?#][^\s"'<>]*/g, "$1$2")
+    .slice(0, 300);
 }
 
-function shouldReportRealtime(event) {
-  return (
-    event === "home_presentation_snapshot" ||
-    event === "home_media_attempt" ||
-    event === "request_fail" ||
-    event === "page_error" ||
-    event === "diagnostic_upload_fail"
-  );
-}
-
-function shouldUploadBackend(event) {
-  return (
-    event === "home_presentation_snapshot" ||
-    event === "home_media_attempt" ||
-    event === "request_fail" ||
-    event === "request_slow" ||
-    event === "page_error"
-  );
-}
-
-function getRuntimeEnvironment() {
-  const apiUrl = String(getApiBaseUrl() || "").toLowerCase();
-  return /(?:127\.0\.0\.1|localhost|192\.168\.)/.test(apiUrl) ? "test" : "production";
-}
-
-function normalizeRealtimeValue(value, depth = 0) {
-  if (value == null || typeof value === "boolean" || typeof value === "number") return value;
-  // Preserve payload.cards[].coverPhases/glassPhases numeric fields.
-  // Keep bounded depth, array length and object keys for diagnostic size control.
-  if (depth >= 6) {
-    return typeof value === "string" ? value.slice(0, 160) : String(value);
-  }
-  if (Array.isArray(value)) {
-    return value.slice(0, 8).map((item) => normalizeRealtimeValue(item, depth + 1));
-  }
-  if (typeof value === "object") {
-    const next = {};
-    Object.keys(value).slice(0, 50).forEach((key) => {
-      next[key] = normalizeRealtimeValue(value[key], depth + 1);
-    });
-    return next;
-  }
+function sanitize(value, depth = 0, ancestors = new Set(), key = "") {
+  if (value == null || typeof value === "boolean") return value;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
   if (typeof value === "string") {
-    return value.length > 300 ? `${value.slice(0, 297)}...` : value;
+    return cleanString(/(?:url|path|api)$/i.test(key) ? value.split(/[?#]/)[0] : value);
   }
-  return value;
+  if (typeof value !== "object") return cleanString(String(value));
+  if (depth >= 6) return "[depth limit]";
+  if (ancestors.has(value)) return "[circular]";
+  ancestors.add(value);
+  const result = Array.isArray(value) ? [] : {};
+  const keys = Array.isArray(value) ? Object.keys(value).slice(0, 8) : Object.keys(value).slice(0, 32);
+  for (const childKey of keys) {
+    if (PRIVATE_KEY.test(childKey) || ["__proto__", "constructor", "prototype"].includes(childKey)) continue;
+    try { result[childKey] = sanitize(value[childKey], depth + 1, ancestors, childKey); } catch (_) { /* Ignore unsafe getters. */ }
+  }
+  ancestors.delete(value);
+  return result;
 }
 
-function getCurrentPageRoute() {
+function utf8Bytes(value) {
+  const text = JSON.stringify(value);
+  let size = 0;
+  for (const character of text) {
+    const point = character.codePointAt(0);
+    size += point < 0x80 ? 1 : point < 0x800 ? 2 : point < 0x10000 ? 3 : 4;
+  }
+  return size;
+}
+
+function currentPage() {
   try {
-    if (typeof getCurrentPages !== "function") return "";
-    const pages = getCurrentPages();
-    if (!pages || !pages.length) return "";
-    return pages[pages.length - 1].route || "";
-  } catch (err) {
-    return "";
-  }
+    const pages = typeof getCurrentPages === "function" ? getCurrentPages() : [];
+    return pages[pages.length - 1];
+  } catch (_) { return null; }
 }
 
-function getSystemMeta() {
-  if (cachedSystemMeta) return cachedSystemMeta;
-  try {
-    const device = typeof wx.getDeviceInfo === "function" ? wx.getDeviceInfo() : {};
-    const appInfo = typeof wx.getAppBaseInfo === "function" ? wx.getAppBaseInfo() : {};
-    cachedSystemMeta = {
-      clientVersion: appInfo.version || "",
-      baseLibVersion: appInfo.SDKVersion || "",
-      systemType: device.platform || "",
-      brand: device.brand || "",
-      model: device.model || "",
-      system: device.system || ""
-    };
-  } catch (err) {
-    cachedSystemMeta = {
-      clientVersion: "",
-      baseLibVersion: "",
-      systemType: "",
-      brand: "",
-      model: "",
-      system: ""
-    };
-  }
-  return cachedSystemMeta;
-}
-
-function shouldThrottleBackendUpload(event, payload) {
-  const signature = JSON.stringify({
-    event,
-    traceId: payload && payload.traceId,
-    reason: payload && payload.reason,
-    sequence: payload && payload.sequence,
-    stage: payload && payload.stage,
-    activityId: payload && payload.activityId,
-    mediaType: payload && payload.mediaType,
-    group: payload && payload.group,
-    url: payload && payload.url,
-    summary: payload && payload.summary,
-    duration: payload && payload.duration,
-    pendingImages: payload && payload.pendingImages,
-    pendingVideos: payload && payload.pendingVideos
+function getMetadata() {
+  if (metadata) return metadata;
+  let account = {}, device = {}, base = {};
+  try { account = wx.getAccountInfoSync().miniProgram || {}; } catch (_) {}
+  try { device = wx.getDeviceInfo(); } catch (_) {}
+  try { base = wx.getAppBaseInfo(); } catch (_) {}
+  metadata = sanitize({
+    appVersion: account.version || "", releaseEnv: account.envVersion || "unknown",
+    wechatVersion: base.version || "", baseLibVersion: base.SDKVersion || "",
+    platform: device.platform || "", model: device.model || "", system: device.system || ""
   });
-  const now = Date.now();
-  const prev = backendUploadThrottleMap.get(signature) || 0;
-  if (now - prev < 1500) {
-    return true;
-  }
-  backendUploadThrottleMap.set(signature, now);
-  if (backendUploadThrottleMap.size > 200) {
-    const entries = Array.from(backendUploadThrottleMap.entries()).sort((a, b) => a[1] - b[1]);
-    entries.slice(0, 50).forEach(([key]) => backendUploadThrottleMap.delete(key));
-  }
-  return false;
+  Object.keys(metadata).forEach(key => { metadata[key] = String(metadata[key]).slice(0, 80); });
+  return metadata;
 }
 
-function shouldThrottleWechatAnalyticsTransport(payload) {
-  const signature = JSON.stringify({
-    traceId: payload && payload.traceId,
-    reason: payload && payload.reason,
-    sequence: payload && payload.sequence,
-    stage: payload && payload.stage,
-    apiPath: payload && payload.apiPath,
-    errMsg: payload && payload.errMsg,
-    networkType: payload && payload.networkType
-  });
-  const now = Date.now();
-  const prev = wechatAnalyticsTransportThrottleMap.get(signature) || 0;
-  if (now - prev < 8000) {
-    return true;
+function initializeLogging() {
+  if (initialized || typeof wx === "undefined") return;
+  initialized = true;
+  // Remove only the retired diagnostic queue, never session or media caches.
+  for (const key of ["client-diagnostic-outbox-v1", "client-diagnostic-delivery-metrics-v1"]) {
+    try { wx.removeStorageSync(key); } catch (_) {}
   }
-  wechatAnalyticsTransportThrottleMap.set(signature, now);
-  if (wechatAnalyticsTransportThrottleMap.size > 200) {
-    const entries = Array.from(wechatAnalyticsTransportThrottleMap.entries()).sort((a, b) => a[1] - b[1]);
-    entries.slice(0, 50).forEach(([key]) => wechatAnalyticsTransportThrottleMap.delete(key));
-  }
-  return false;
+  try { wx.getNetworkType({ success: res => { networkType = res.networkType || "unknown"; } }); } catch (_) {}
+  try { wx.onNetworkStatusChange(res => { networkType = res.isConnected ? res.networkType : "none"; }); } catch (_) {}
 }
 
-/**
- * 微信官方自定义分析：wx.request 传输层失败（如 errcode -101）。
- * 需在小程序后台「统计 → 自定义分析」中配置同名事件 network_request_fail 及属性（或按后台要求调整）。
- * 属性值须为字符串。
- */
-function reportTransportFailToWechatAnalytics(payload) {
-  if (typeof wx === "undefined" || typeof wx.reportAnalytics !== "function") return;
-  if (shouldThrottleWechatAnalyticsTransport(payload || {})) return;
-  const p = payload || {};
-  try {
-    wx.reportAnalytics("network_request_fail", {
-      api_path: String(p.apiPath || "").slice(0, 200),
-      method: String(p.method || ""),
-      err_msg: String(p.errMsg || "").slice(0, 200),
-      api_host: String(p.apiHost || "").slice(0, 100),
-      trace_id: String(p.traceId || "").slice(0, 100),
-      network_type: String(p.networkType || "").slice(0, 32),
-      is_weak: p.isWeak ? "1" : "0",
-      err_no: String(p.errNo !== undefined && p.errNo !== null ? p.errNo : "").slice(0, 32)
-    });
-  } catch (err) {
-    // ignore
-  }
-}
-
-/**
- * wx.request 传输层失败时：补全网络类型、机型、会话等后再打日志与自定义分析，便于区分「弱网 / Wi‑Fi / 蜂窝」与机型。
- */
-function logRequestTransportFail(ctx, rawErr) {
-  const errMsg = (rawErr && rawErr.errMsg) || "";
-  const errNo = rawErr && rawErr.errno;
-  const meta = getSystemMeta();
-  const sessionId = getClientDiagnosticSessionId();
-
-  const buildPayload = (networkType, isWeak) => ({
-    url: ctx.url,
-    method: ctx.method,
-    traceId: ctx.traceId,
-    requestId: ctx.traceId,
-    duration: ctx.duration,
-    statusCode: 0,
-    sessionId,
-    networkType: networkType || "",
-    isWeak: !!isWeak,
-    errNo: errNo !== undefined && errNo !== null ? errNo : "",
-    brand: meta.brand,
-    model: meta.model,
-    system: meta.system,
-    summary: summarizeError({ errMsg, errno: errNo, message: errMsg })
-  });
-
-  const emit = (networkType, isWeak) => {
-    const payload = buildPayload(networkType, isWeak);
-    logError("request_fail", payload);
-    reportTransportFailToWechatAnalytics({
-      traceId: ctx.traceId,
-      apiPath: ctx.url,
-      method: ctx.method,
-      apiHost: ctx.apiHost,
-      errMsg,
-      networkType: payload.networkType,
-      isWeak: payload.isWeak,
-      errNo: payload.errNo
-    });
-  };
-
-  let settled = false;
-  const timer = setTimeout(() => {
-    if (settled) return;
-    settled = true;
-    emit("", false);
-  }, 3000);
-
-  try {
-    wx.getNetworkType({
-      success(res) {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        emit(res.networkType, res.isWeak);
-      },
-      fail() {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        emit("", false);
+function buildRecord(level, event, payload, page) {
+  const record = { event, level, timestamp: new Date().toISOString(), sessionId,
+    page: cleanString(String(page && page.route || "")).slice(0, 160), ...getMetadata(),
+    networkType: cleanString(String(networkType)).slice(0, 32) };
+  const safe = sanitize(payload || {});
+  const priority = ["traceId", "requestId", "flowId", "operation", "summary", "reason", "stage", "statusCode", "method", "url", "duration"];
+  const keys = [...new Set([...priority, ...Object.keys(safe)])];
+  // Reserve room for the truncation marker; retain correlation before bulky evidence.
+  for (const key of keys) {
+    if (!Object.prototype.hasOwnProperty.call(safe, key) || Object.prototype.hasOwnProperty.call(record, key)) continue;
+    const candidate = { ...record, [key]: safe[key], truncated: true };
+    if (utf8Bytes(candidate) <= MAX_RECORD_BYTES) {
+      record[key] = safe[key];
+    } else {
+      record.truncated = true;
+      if (Array.isArray(safe[key])) {
+        record[key] = [];
+        for (const item of safe[key]) {
+          record[key].push(item);
+          if (utf8Bytes(record) > MAX_RECORD_BYTES) { record[key].pop(); break; }
+        }
+        if (utf8Bytes(record) > MAX_RECORD_BYTES) delete record[key];
       }
-    });
-  } catch (e) {
-    if (!settled) {
-      settled = true;
-      clearTimeout(timer);
-      emit("", false);
     }
   }
+  return record;
 }
 
-function uploadBackendLog(level, event, payload) {
-  if (!shouldUploadBackend(event)) return;
-  if (typeof wx === "undefined" || !wx || typeof wx.request !== "function") return;
-  let token;
-  try { token = wx.getStorageSync("accessToken"); } catch (_) { return; }
-  if (!token && !['home_presentation_snapshot', 'home_media_attempt'].includes(event)) return;
-  if (shouldThrottleBackendUpload(event, payload || {})) return;
-
-  const systemMeta = getSystemMeta();
-  if (!diagnosticOutbox) resumeDiagnosticUploads();
+function report(level, event, payload) {
+  // Logging failures, including malformed payloads, must never affect business code.
   try {
-    if (diagnosticOutbox) diagnosticOutbox.enqueue({
-      event, level,
-      traceId: (payload && payload.traceId) || "",
-      sessionId: (payload && payload.sessionId) || getClientDiagnosticSessionId(),
-      page: getCurrentPageRoute(),
-      clientVersion: systemMeta.clientVersion,
-      baseLibVersion: systemMeta.baseLibVersion,
-      systemType: systemMeta.systemType,
-      payload: { environment: getRuntimeEnvironment(), ...normalizeRealtimeValue(payload || {}) }
-    });
-  } catch (_) { /* Storage/request failures must not affect page rendering. */ }
+    if (!EVENTS.has(event) || isNormalHomeDiagnostic(event, payload)) return;
+    if (event === "request_slow" || event.startsWith("home_")) level = "warn";
+    const page = currentPage();
+    const record = buildRecord(level, event, payload, page);
+    const signature = JSON.stringify([event, record.page, record.traceId, record.requestId,
+      record.operation, record.reason, record.stage, record.activityId, record.group,
+      record.url, record.summary, record.sequence]);
+    const now = Date.now();
+    if (recentEvents.has(signature) && now - recentEvents.get(signature) < 2000) return;
+    recentEvents.set(signature, now);
+    if (recentEvents.size > 200) recentEvents.delete(recentEvents.keys().next().value);
+    try {
+      if (!realtimeLogger && typeof wx !== "undefined" && typeof wx.getRealtimeLogManager === "function") {
+        realtimeLogger = wx.getRealtimeLogManager();
+      }
+      if (realtimeLogger) {
+        try { realtimeLogger.setFilterMsg(record.page || "app"); realtimeLogger.addFilterMsg(event); } catch (_) {}
+        try { if (page && typeof realtimeLogger.in === "function") realtimeLogger.in(page); } catch (_) {}
+        if (typeof realtimeLogger[level] === "function") realtimeLogger[level](record);
+      }
+    } catch (_) {}
+    if (record.releaseEnv === "develop" || record.platform === "devtools") {
+      if (typeof console[level] === "function") console[level]("[mini]", record);
+    }
+  } catch (_) {}
+}
+
+function isReported(err) {
+  return err && typeof err === "object" && reportedErrors.has(err);
+}
+
+function rememberError(err) {
+  if (err && typeof err === "object") reportedErrors.add(err);
 }
 
 function logPageError(operation, err, context = {}) {
-  const summary = summarizeError(err);
-  logError("page_error", {
-    operation: String(operation || "unknown").slice(0, 100),
-    summary,
-    traceId: (err && err.traceId) || "",
-    ...normalizeRealtimeValue(context)
-  });
-}
-
-function reportRealtime(level, event, payload) {
-  if (isNormalHomeDiagnostic(event, payload)) return;
-  if (!shouldReportRealtime(event)) return;
-  const logger = getRealtimeLogger();
-  if (!logger || typeof logger[level] !== "function") return;
-
   try {
-    logger[level](
-      {
-        event,
-        ...normalizeRealtimeValue(payload || {})
-      },
-      `[mini] ${event}`
-    );
-  } catch (err) {
-    // Swallow realtime logging failures so normal app flow is never affected.
-  }
+    if (isReported(err) || (err && err.code === "STALE_LOGIN_ATTEMPT")) return;
+    rememberError(err);
+    report("error", "page_error", { ...context, operation, summary: summarizeError(err),
+      stack: err && err.stack, traceId: err && err.traceId, requestId: err && err.requestId });
+  } catch (_) {}
 }
 
-function logInfo(event, payload) {
-  if (!isNormalHomeDiagnostic(event, payload)) console.info(`[mini] ${event}`, payload || {});
-  reportRealtime("info", event, payload);
-  uploadBackendLog("info", event, payload);
-}
-
-function logError(event, payload) {
-  console.error(`[mini] ${event}`, payload || {});
-  reportRealtime("error", event, payload);
-  uploadBackendLog("error", event, payload);
+function logRequestFailure(context, error, rawError = error) {
+  try {
+    if (isReported(error)) return;
+    rememberError(error);
+    report("error", "request_fail", { ...context, summary: summarizeError(rawError),
+      errNo: rawError && rawError.errno });
+  } catch (_) {}
 }
 
 module.exports = {
-  resumeDiagnosticUploads,
-  createTraceId,
-  summarizeError,
-  logInfo,
-  logError,
-  logPageError,
-  logRequestTransportFail
+  initializeLogging, createTraceId, summarizeError, logPageError, logRequestFailure,
+  logInfo: (event, payload) => report("info", event, payload),
+  logWarn: (event, payload) => report("warn", event, payload)
 };

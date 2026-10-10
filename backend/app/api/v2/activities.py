@@ -17,11 +17,9 @@ from app.api.deps import (
 from app.core.database import get_db
 from app.core.exceptions import PermissionDeniedError
 from app.core.config import get_settings
-from app.core.logging import logger
 from app.models import Activity, ActivityParticipant, User
 from app.schemas.activity import (
     ActivityCheckinRequest,
-    ActivitySharePreviewResponse,
     ActivitySignupResponse,
     ActivitySignupRequest,
 )
@@ -44,10 +42,8 @@ from app.services.activity_service import (
     admin_checkin_participant,
     cancel_activity,
     checkin_activity,
-    delete_activity,
     get_activity_by_id,
     list_activities,
-    list_my_activities,
     remove_participant,
     signup_activity,
     update_activity,
@@ -135,15 +131,6 @@ def get_activities_v2(
     return [_response(activity, request, _) for activity in list_activities(db)]
 
 
-@router.get("/activities/me/signed-up", response_model=list[ActivityV2Response])
-def get_my_activities_v2(
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-) -> list[ActivityV2Response]:
-    return [_response(activity, request, current_user) for activity in list_my_activities(db, current_user)]
-
-
 @router.get("/activities/{activity_id}", response_model=ActivityDetailV2Response)
 def get_activity_v2(
     activity_id: int,
@@ -204,17 +191,6 @@ def post_cancel_activity_v2(
     return _response(cancel_activity(db, activity, actor=current_user), request, current_user)
 
 
-@router.delete("/activities/{activity_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_activity_v2(
-    activity_id: int,
-    db: Session = Depends(get_db),
-    _: User = Depends(require_admin),
-) -> Response:
-    activity = get_activity_by_id(db, activity_id)
-    delete_activity(db, activity)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
 @router.post("/activities/{activity_id}/signup", response_model=ActivitySignupResponse)
 def post_signup_v2(
     activity_id: int,
@@ -245,32 +221,6 @@ def post_checkin_v2(
         activity_id=activity.id,
         participant_id=participant.id,
         status="checked_in",
-    )
-
-
-@router.get(
-    "/activities/{activity_id}/share-preview",
-    response_model=ActivitySharePreviewResponse,
-)
-def get_activity_share_preview_v2(
-    activity_id: int,
-    request: Request,
-    db: Session = Depends(get_db),
-    _: User | None = Depends(get_optional_current_user),
-) -> ActivitySharePreviewResponse:
-    activity = get_activity_by_id(db, activity_id)
-    try:
-        result = read_activity_share_preview(activity)
-    except Exception as exc:
-        logger.exception(
-            "activity_share_preview_failed activity_id=%s summary=%s",
-            activity_id,
-            str(exc) or exc.__class__.__name__,
-        )
-        return ActivitySharePreviewResponse(status="failed", image_url=None)
-    return ActivitySharePreviewResponse(
-        status=result.status,
-        image_url=_absolute_media_url(request, result.image_url),
     )
 
 

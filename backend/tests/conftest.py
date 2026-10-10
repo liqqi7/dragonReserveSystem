@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session, sessionmaker
 os.environ["APP_ENV"] = "test"
 
 from app.core.database import Base, get_db
-from app.core.security import create_access_token, get_password_hash
+from app.core.security import create_access_token
 from app.main import app
 from app.models import Activity, ActivityParticipant, User
 
@@ -43,7 +43,7 @@ def client(db_session: Session) -> Generator[TestClient, None, None]:
 
 @pytest.fixture()
 def admin_user(db_session: Session) -> User:
-    user = User(username="admin", password_hash=get_password_hash("admin123456"), nickname="Admin", avatar_url="", role="admin")
+    user = User(username="admin", password_hash=None, nickname="Admin", avatar_url="", role="admin")
     db_session.add(user)
     db_session.commit()
     db_session.refresh(user)
@@ -52,7 +52,7 @@ def admin_user(db_session: Session) -> User:
 
 @pytest.fixture()
 def normal_user(db_session: Session) -> User:
-    user = User(username="member", password_hash=get_password_hash("member123456"), nickname="Member", avatar_url="https://example.com/avatar-member.png", role="user")
+    user = User(username="member", password_hash=None, nickname="Member", avatar_url="https://example.com/avatar-member.png", role="user")
     db_session.add(user)
     db_session.commit()
     db_session.refresh(user)
@@ -61,7 +61,7 @@ def normal_user(db_session: Session) -> User:
 
 @pytest.fixture()
 def second_user(db_session: Session) -> User:
-    user = User(username="member2", password_hash=get_password_hash("member223456"), nickname="Member 2", avatar_url="https://example.com/avatar-member2.png", role="user")
+    user = User(username="member2", password_hash=None, nickname="Member 2", avatar_url="https://example.com/avatar-member2.png", role="user")
     db_session.add(user)
     db_session.commit()
     db_session.refresh(user)

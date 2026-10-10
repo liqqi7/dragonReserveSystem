@@ -53,16 +53,14 @@ def get_optional_current_user(
     try:
         payload = decode_access_token(token)
         user_id = int(payload.sub)
-    except Exception as exc:
-        logger.debug("get_optional_current_user: token decode failed – %s", exc)
+    except Exception:
         return None
     try:
         return get_user_by_id(db, user_id)
     except Exception as exc:
         logger.warning(
-            "get_optional_current_user: DB lookup failed for user_id=%s – %s",
-            user_id,
-            exc,
+            "optional_user_lookup_failed error_type=%s",
+            exc.__class__.__name__,
         )
         return None
 

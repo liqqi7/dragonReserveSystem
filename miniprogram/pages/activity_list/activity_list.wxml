@@ -249,19 +249,6 @@
           bindchange="onHomeToolsSwiperChange"
         >
           <swiper-item class="home-tool-slide">
-            <view class="home-tool-card home-tool-card--chwazi" role="button" aria-label="Chwazi" bindtap="onHomeChwaziTap">
-              <view class="home-tool-glow"></view>
-              <view class="home-tool-copy">
-                <text class="home-tool-title">Chwazi</text>
-                <view class="home-tool-description-lines">
-                  <text class="home-tool-description">多人同时触摸屏幕</text>
-                  <text class="home-tool-description">快速选择一人</text>
-                </view>
-              </view>
-              <image class="home-tool-art home-tool-art--chwazi" src="../../images/home-tool-chwazi.png" mode="aspectFill" />
-            </view>
-          </swiper-item>
-          <swiper-item class="home-tool-slide">
             <view class="home-tool-card home-tool-card--boardgames" role="button" aria-label="桌游库" bindtap="onHomeBoardGameTap">
               <view class="home-tool-glow"></view>
               <view class="home-tool-copy">
@@ -272,6 +259,19 @@
                 </view>
               </view>
               <image class="home-tool-art home-tool-art--boardgames" src="../../images/home-tool-boardgames.png" mode="aspectFill" />
+            </view>
+          </swiper-item>
+          <swiper-item class="home-tool-slide">
+            <view class="home-tool-card home-tool-card--chwazi" role="button" aria-label="Chwazi" bindtap="onHomeChwaziTap">
+              <view class="home-tool-glow"></view>
+              <view class="home-tool-copy">
+                <text class="home-tool-title">Chwazi</text>
+                <view class="home-tool-description-lines">
+                  <text class="home-tool-description">多人同时触摸屏幕</text>
+                  <text class="home-tool-description">快速选择一人</text>
+                </view>
+              </view>
+              <image class="home-tool-art home-tool-art--chwazi" src="../../images/home-tool-chwazi.png" mode="aspectFill" />
             </view>
           </swiper-item>
         </swiper>

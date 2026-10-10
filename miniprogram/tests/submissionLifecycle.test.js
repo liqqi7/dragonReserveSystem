@@ -45,6 +45,7 @@ function createFixture(name) {
     clearTimeout,
     require: name => {
       if (name === "../../services/activity") return services.exports;
+      if (name === "../../services/logger") return { logPageError: (...args) => logs.push(args) };
       if (name === "../../utils/activityForm") return {
         validateActivityForm: () => ({ ok: true }),
         buildActivityPayload: value => value

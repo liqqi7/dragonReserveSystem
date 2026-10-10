@@ -1,5 +1,6 @@
 const app = getApp();
 const activityService = require("../../services/activity");
+const { logPageError } = require("../../services/logger");
 const { buildEditForm, validateActivityForm, buildActivityPayload, normalizeSubItems } = require("../../utils/activityForm");
 const { adaptActivity } = require("../../utils/activityEnrich");
 const { getWindowInfoCompat, getBottomSafeAreaRpx } = require("../../utils/safeArea");
@@ -112,7 +113,7 @@ Page({
       })
       .catch(error => {
         if (this._unloaded || this._prefilled) return;
-        console.error(error);
+        logPageError("load_activity_editor", error);
         wx.showToast({ title: "活动信息加载失败，请返回重试", icon: "none" });
       });
   },
@@ -231,7 +232,9 @@ Page({
 
   stepQuota(e) {
     const delta = Number(e.currentTarget.dataset.delta) || 0;
-    const next = Math.max(this.data.minParticipants || 1, Math.min(999, Number(this.data.form.maxParticipants) + delta));
+    const current = Number(this.data.form.maxParticipants);
+    const next = Math.max(this.data.minParticipants || 3, Math.min(999, current + delta));
+    if (next === current) return;
     this.setData({
       "form.maxParticipants": next,
       "form.subItems": normalizeSubItems(this.data.form.subItems, next)
@@ -263,7 +266,7 @@ Page({
       })
       .catch(error => {
         if (this._unloaded) return;
-        console.error(error);
+        logPageError("save_activity_edit", error);
         this.setData({ saving: false });
         wx.showToast({ title: (error && error.message) || "保存失败，请重试", icon: "none" });
       });
@@ -287,7 +290,7 @@ Page({
           })
           .catch(error => {
             if (this._unloaded) return;
-            console.error(error);
+            logPageError("cancel_activity", error);
             this.setData({ saving: false });
             wx.showToast({ title: (error && error.message) || "操作失败", icon: "none" });
           });

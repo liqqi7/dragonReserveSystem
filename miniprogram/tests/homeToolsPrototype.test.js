@@ -20,6 +20,7 @@ test("administrator home tools follow the Pencil module and card content", () =>
   assert.match(toolsMarkup, /<text class="home-tool-title">桌游库<\/text>/);
   assert.match(toolsMarkup, /home-tool-chwazi\.png/);
   assert.match(toolsMarkup, /home-tool-boardgames\.png/);
+  assert.ok(toolsMarkup.indexOf('bindtap="onHomeBoardGameTap"') < toolsMarkup.indexOf('bindtap="onHomeChwaziTap"'));
   assert.doesNotMatch(toolsMarkup, /<scroll-view|scroll-x/);
   // 分页 swiper 保留紧凑卡片视口，并预留字体像素取整余量。
   assert.match(wxss, /\.home-tools-swiper\s*\{[^}]*height:\s*calc\(187\.69rpx \+ 3\.85rpx \+ 23\.08rpx \+ 38\.46rpx\);[^}]*margin-top:\s*23\.08rpx;[^}]*margin-bottom:\s*0;/);
@@ -61,10 +62,32 @@ test("home tool artwork preserves the referenced prototype originals and uses up
   }
 });
 
-test("home tool taps use the existing Chwazi route and tabletop placeholder behavior", () => {
+test("home tool taps navigate to registered Chwazi and boardgame library pages", () => {
+  const vm = require("node:vm");
   const js = fs.readFileSync(path.join(pageDir, "activity_list.js"), "utf8");
-  assert.match(js, /onHomeChwaziTap\(\)\s*\{\s*wx\.navigateTo\(\{\s*url:\s*"\/pages\/chwazi\/chwazi"\s*\}\);/);
-  assert.match(js, /onHomeBoardGameTap\(\)\s*\{\s*wx\.showToast\(\{\s*title:\s*"黑黑正在做，别催"/);
+  const appConfig = JSON.parse(fs.readFileSync(path.join(__dirname, "../app.json"), "utf8"));
+  const wxml = fs.readFileSync(path.join(pageDir, "activity_list.wxml"), "utf8");
+  const destinations = [];
+  let definition;
+  vm.runInNewContext(js, {
+    getApp: () => ({ globalData: {} }),
+    Page: (value) => { definition = value; },
+    require: () => ({}),
+    wx: {
+      navigateTo: ({ url }) => { destinations.push(url); },
+      showToast: () => { assert.fail("home tools should navigate instead of showing a placeholder"); }
+    },
+    console, setTimeout, clearTimeout
+  });
+  for (const [handler, route] of [
+    ["onHomeChwaziTap", "/pages/chwazi/chwazi"],
+    ["onHomeBoardGameTap", "/pages/boardgame_library/boardgame_library"]
+  ]) {
+    assert.ok(wxml.includes(`bindtap="${handler}"`));
+    assert.ok(appConfig.pages.includes(route.slice(1)), `${route} should be registered`);
+    definition[handler]();
+  }
+  assert.deepEqual(destinations, ["/pages/chwazi/chwazi", "/pages/boardgame_library/boardgame_library"]);
 });
 
 

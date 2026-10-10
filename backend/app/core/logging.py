@@ -58,7 +58,6 @@ def request_context(request: Request) -> dict[str, Any]:
     return {
         "method": request.method,
         "path": safe_log_path(request.url.path),
-        "query": str(request.url.query or ""),
         "trace_id": ensure_trace_id(request),
         "duration_ms": duration_ms,
     }

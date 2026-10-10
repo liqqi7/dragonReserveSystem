@@ -1,5 +1,6 @@
 const app = getApp();
 const activityService = require("../../services/activity");
+const { logPageError } = require("../../services/logger");
 const { buildCreateForm, validateActivityForm, buildActivityPayload, normalizeSubItems } = require("../../utils/activityForm");
 const { getWindowInfoCompat, getBottomSafeAreaRpx } = require("../../utils/safeArea");
 const { createHomeCardMediaLoader } = require("../../utils/homeCardMediaLoader");
@@ -239,7 +240,9 @@ Page({
     } });
   },
   stepCapacity(e) {
-    const nextMax = Math.max(3, Math.min(999, Number(this.data.form.maxParticipants) + Number(e.currentTarget.dataset.delta)));
+    const currentMax = Number(this.data.form.maxParticipants);
+    const nextMax = Math.max(3, Math.min(999, currentMax + Number(e.currentTarget.dataset.delta)));
+    if (nextMax === currentMax) return;
     this.setData({
       "form.maxParticipants": nextMax,
       "form.subItems": normalizeSubItems(this.data.form.subItems, nextMax)
@@ -335,7 +338,7 @@ Page({
       this.finishSubmission();
     }).catch(error => {
       // A UI/event listener failure must not turn a successful POST into a retry.
-      console.error("发布结果处理失败:", error);
+      logPageError("handle_activity_publish_result", error);
     });
   },
   finishSubmission() {
@@ -355,7 +358,7 @@ Page({
         channel.emit("activityCreated", result.activity);
       }
     } catch (error) {
-      console.error("通知活动发布结果失败:", error);
+      logPageError("notify_activity_created", error);
     }
     // An opener listener can itself navigate, so check again before popping.
     const currentPages = getCurrentPages();

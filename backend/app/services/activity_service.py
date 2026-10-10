@@ -130,21 +130,6 @@ def list_activities(db: Session) -> list[Activity]:
     return activities
 
 
-def list_my_activities(db: Session, user: User) -> list[Activity]:
-    """List activities joined by the current user, ordered for calendar display."""
-    stmt = (
-        _get_activity_query()
-        .join(ActivityParticipant, ActivityParticipant.activity_id == Activity.id)
-        .where(ActivityParticipant.user_id == user.id)
-        .order_by(Activity.start_time.asc())
-    )
-    activities = list(db.scalars(stmt).unique().all())
-    now = _app_now()
-    if any([_persist_activity_status(db, a, now) for a in activities]):
-        db.commit()
-    return activities
-
-
 def update_activity(
     db: Session,
     activity: Activity,
@@ -202,13 +187,6 @@ def cancel_activity(db: Session, activity: Activity, actor: User | None = None) 
     db.commit()
     db.refresh(activity)
     return get_activity_by_id(db, activity.id)
-
-
-def delete_activity(db: Session, activity: Activity) -> None:
-    """Delete an activity and its participants."""
-
-    db.delete(activity)
-    db.commit()
 
 
 def lock_activity(db: Session, activity: Activity) -> Activity:

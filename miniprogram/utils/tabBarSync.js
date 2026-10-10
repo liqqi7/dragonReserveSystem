@@ -27,9 +27,6 @@ function patchTabBarIfNeeded(pageCtx, patch) {
       }
     } catch (e) {}
   }
-  if (patch.isAdmin !== undefined && patch.isAdmin !== cur.isAdmin) {
-    next.isAdmin = patch.isAdmin;
-  }
   if (patch.hidden !== undefined) {
     const hidden = !!patch.hidden;
     try {

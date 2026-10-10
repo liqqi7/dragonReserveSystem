@@ -302,6 +302,10 @@ page {
   justify-content: center;
 }
 
+.step-button--disabled {
+  pointer-events: none;
+}
+
 .step-button image {
   width: 30.77rpx;
   height: 30.77rpx;

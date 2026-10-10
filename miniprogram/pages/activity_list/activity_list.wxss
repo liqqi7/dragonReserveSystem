@@ -517,45 +517,6 @@ page {
   white-space: nowrap;
 }
 
-/* ── 卡片背景渐变 ── */
-/* 羽毛球 / 桌游：改用设计切图 */
-.large-card.card-bg-badminton {
-  background-color: #f7a37b;
-  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-boardgame-lg.png');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-.small-card.card-bg-badminton {
-  background-color: #f7a37b;
-  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-boardgame-sm.jpg');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-.large-card.card-bg-boardgame {
-  background-color: #1e55c8;
-  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-badminton-lg.png');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-.small-card.card-bg-boardgame {
-  background-color: #1e55c8;
-  background-image: url('https://dragon.liqqihome.top/media/images/card-bg-badminton-sm.png');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-/* 其它：灰紫渐变（fallback，视频加载前显示） */
-.card-bg-other {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
 
 
 .card-image-bg {

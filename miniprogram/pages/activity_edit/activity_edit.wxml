@@ -59,9 +59,9 @@
         <view class="field-block">
           <text class="field-label">名额上限</text>
           <view class="field-card quota-card">
-            <view class="step-button" bindtap="stepQuota" data-delta="-1" aria-role="button" aria-label="减少名额"><image src="/images/icon-minus.svg" mode="aspectFit" /></view>
+            <view class="step-button {{form.maxParticipants <= minParticipants ? 'step-button--disabled' : ''}}" bindtap="stepQuota" data-delta="-1" aria-role="button" aria-label="减少名额" aria-disabled="{{form.maxParticipants <= minParticipants}}"><image src="{{form.maxParticipants <= minParticipants ? '/images/icon-minus-disabled.svg' : '/images/icon-minus.svg'}}" mode="aspectFit" /></view>
             <text class="quota-value">{{form.maxParticipants}} 人</text>
-            <view class="step-button" bindtap="stepQuota" data-delta="1" aria-role="button" aria-label="增加名额"><image src="/images/icon-plus.svg" mode="aspectFit" /></view>
+            <view class="step-button {{form.maxParticipants >= 999 ? 'step-button--disabled' : ''}}" bindtap="stepQuota" data-delta="1" aria-role="button" aria-label="增加名额" aria-disabled="{{form.maxParticipants >= 999}}"><image src="{{form.maxParticipants >= 999 ? '/images/icon-plus-disabled.svg' : '/images/icon-plus.svg'}}" mode="aspectFit" /></view>
           </view>
         </view>
 

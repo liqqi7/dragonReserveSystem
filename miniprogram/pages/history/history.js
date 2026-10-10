@@ -107,8 +107,8 @@ Page({
         statusBarHeight: info.statusBarHeight || 20,
         bottomSafeAreaRpx: getBottomSafeAreaRpx()
       });
-    } catch (error) {
-      console.warn("Failed to read status bar height", error);
+    } catch (_) {
+      // Keep the default safe-area values when device information is unavailable.
     }
   },
 
@@ -191,12 +191,5 @@ Page({
         this.setData({ isLoadingActivityMore: false });
         wx.showToast({ title: (error && error.message) || "加载更多失败", icon: "none" });
       });
-  },
-
-  onAvatarError(event) {
-    const list = event.currentTarget.dataset.list;
-    const index = Number(event.currentTarget.dataset.index);
-    if (!list || Number.isNaN(index)) return;
-    this.setData({ [`${list}[${index}].avatarUrl`]: DEFAULT_AVATAR });
   }
 });

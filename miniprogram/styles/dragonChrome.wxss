@@ -16,7 +16,3 @@
 .dragon-watermark--absolute {
   position: absolute;
 }
-
-.dragon-watermark--fixed {
-  position: fixed;
-}

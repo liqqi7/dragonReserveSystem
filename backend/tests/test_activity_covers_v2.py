@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 
-from app.core.security import get_password_hash
 from app.models import ActivityParticipant, User
 
 
@@ -229,7 +228,7 @@ def test_v2_allows_ordinary_users_to_create_and_records_the_creator(
 def test_v2_guest_and_unauthenticated_users_cannot_create(client, db_session) -> None:
     guest = User(
         username="guest-create",
-        password_hash=get_password_hash("guest123456"),
+        password_hash=None,
         nickname="Guest",
         avatar_url="",
         role="guest",

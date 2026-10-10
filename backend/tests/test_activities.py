@@ -118,7 +118,7 @@ def test_activity_list_allows_guest(client) -> None:
     assert response.status_code == 200
 
 
-def test_admin_can_create_list_get_update_delete_activity(client, admin_headers) -> None:
+def test_admin_can_create_list_get_update_but_not_delete_activity(client, admin_headers) -> None:
     start_time = datetime.utcnow() + timedelta(days=2)
     end_time = start_time + timedelta(hours=2)
 
@@ -172,14 +172,15 @@ def test_admin_can_create_list_get_update_delete_activity(client, admin_headers)
     assert logical_delete_response.status_code == 422
 
     delete_response = client.delete(f"/api/v2/activities/{activity_id}", headers=admin_headers)
-    assert delete_response.status_code == 204
+    assert delete_response.status_code == 405
 
     list_after_delete = client.get("/api/v2/activities", headers=admin_headers)
     assert list_after_delete.status_code == 200
-    assert list_after_delete.json() == []
+    assert [item["id"] for item in list_after_delete.json()] == [activity_id]
+    assert client.get(f"/api/v2/activities/{activity_id}").status_code == 200
 
 
-def test_admin_can_physically_delete_terminal_activities(client, admin_user, admin_headers, db_session) -> None:
+def test_removed_delete_preserves_terminal_activities_and_participants(client, admin_user, admin_headers, db_session) -> None:
     now = datetime.now(APP_TIME_ZONE).replace(tzinfo=None)
     cases = (
         ("删除已取消", "已取消", now + timedelta(days=2), now + timedelta(days=2, hours=1)),
@@ -196,10 +197,10 @@ def test_admin_can_physically_delete_terminal_activities(client, admin_user, adm
         db_session.commit()
         activity_id = activity.id
         delete_response = client.delete(f"/api/v2/activities/{activity_id}", headers=admin_headers)
-        assert delete_response.status_code == 204
-        assert client.get(f"/api/v2/activities/{activity_id}").status_code == 404
-        assert db_session.get(Activity, activity_id) is None
-        assert db_session.query(ActivityParticipant).filter_by(activity_id=activity_id).count() == 0
+        assert delete_response.status_code == 405
+        assert client.get(f"/api/v2/activities/{activity_id}").status_code == 200
+        assert db_session.get(Activity, activity_id) is not None
+        assert db_session.query(ActivityParticipant).filter_by(activity_id=activity_id).count() == 1
 
 def test_activity_name_and_remark_constraints(client, admin_headers) -> None:
     start_time = datetime.utcnow() + timedelta(days=2)
@@ -278,87 +279,6 @@ def test_activity_name_and_remark_constraints(client, admin_headers) -> None:
         json={"max_participants": 20},
     )
     assert partial_update.status_code == 200
-
-
-def test_my_activities_requires_auth(client) -> None:
-    response = client.get("/api/v2/activities/me/signed-up")
-
-    assert response.status_code == 401
-
-
-def test_my_activities_returns_only_current_user_signups_sorted(
-    client,
-    db_session,
-    admin_user,
-    normal_user,
-    second_user,
-    user_headers,
-    second_user_headers,
-) -> None:
-    from app.models import Activity, ActivityParticipant
-
-    now = datetime.utcnow()
-
-    def create_activity(name: str, status: str, start_offset_hours: int) -> Activity:
-        start_time = now + timedelta(hours=start_offset_hours)
-        activity = Activity(
-            name=name,
-            status=status,
-            remark=name,
-            max_participants=None,
-            start_time=start_time,
-            end_time=start_time + timedelta(hours=1),
-            signup_enabled=True,
-            location_name="测试地点",
-            location_address="测试地址",
-            created_by=admin_user.id,
-        )
-        db_session.add(activity)
-        db_session.flush()
-        return activity
-
-    later = create_activity("我的较晚活动", "未开始", 48)
-    earlier = create_activity("我的较早活动", "进行中", 24)
-    ended = create_activity("我的已结束活动", "已结束", 72)
-    cancelled = create_activity("我的已取消活动", "已取消", 96)
-    other_user_activity = create_activity("他人活动", "未开始", 36)
-
-    for activity in [later, earlier, ended, cancelled]:
-        db_session.add(
-            ActivityParticipant(
-                activity_id=activity.id,
-                user_id=normal_user.id,
-                display_nickname=normal_user.nickname,
-                display_avatar_url=normal_user.avatar_url,
-            )
-        )
-    db_session.add(
-        ActivityParticipant(
-            activity_id=other_user_activity.id,
-            user_id=second_user.id,
-            display_nickname=second_user.nickname,
-            display_avatar_url=second_user.avatar_url,
-        )
-    )
-    db_session.commit()
-
-    response = client.get("/api/v2/activities/me/signed-up", headers=user_headers)
-
-    assert response.status_code == 200
-    data = response.json()
-    assert [item["name"] for item in data] == [
-        "我的较早活动",
-        "我的较晚活动",
-        "我的已结束活动",
-        "我的已取消活动",
-    ]
-    assert "他人活动" not in [item["name"] for item in data]
-    assert all(any(p["user_id"] == normal_user.id for p in item["participants"]) for item in data)
-
-    second_response = client.get("/api/v2/activities/me/signed-up", headers=second_user_headers)
-
-    assert second_response.status_code == 200
-    assert [item["name"] for item in second_response.json()] == ["他人活动"]
 
 
 def test_normal_user_can_create_activity(client, user_headers) -> None:

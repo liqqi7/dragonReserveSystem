@@ -1,6 +1,6 @@
 const userService = require("./services/user");
 const authService = require("./services/auth");
-const { logPageError, resumeDiagnosticUploads } = require("./services/logger");
+const { logPageError, initializeLogging } = require("./services/logger");
 
 
 
@@ -53,6 +53,7 @@ App({
 
 
   onLaunch() {
+    initializeLogging();
 
     this.installGlobalErrorLogging();
 
@@ -65,10 +66,6 @@ App({
   },
 
 
-
-  onShow() {
-    resumeDiagnosticUploads();
-  },
 
   restoreSessionFromStorage() {
 
@@ -96,7 +93,7 @@ App({
 
     } catch (e) {
 
-      console.error("恢复用户缓存失败", e);
+      logPageError("restore_user_cache", e);
 
     }
 
@@ -124,7 +121,7 @@ App({
 
     } catch (e) {
 
-      console.error("恢复登录状态失败", e);
+      logPageError("restore_auth_state", e);
 
     }
 
@@ -185,8 +182,6 @@ App({
     if (user.created_at) storeIfChanged("userCreatedAt", user.created_at);
 
     storeIfChanged("userRole", role);
-
-    resumeDiagnosticUploads();
 
     storeIfChanged("isAuthenticated", isAuthenticated);
 
@@ -260,7 +255,7 @@ App({
         });
       }
     } catch (error) {
-      console.error("安装全局错误日志失败", error);
+      logPageError("install_global_error_logging", error);
     }
   },
 

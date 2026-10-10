@@ -1,5 +1,5 @@
 const { request, DEFAULT_REQUEST_TIMEOUT } = require("./request");
-const { createTraceId, logInfo, logError, summarizeError } = require("./logger");
+const { createTraceId, logPageError } = require("./logger");
 const userService = require("./user");
 
 const LOGIN_FLOW_TIMEOUT = 20000;
@@ -64,8 +64,6 @@ function loginWithWechat(app) {
     sessionGeneration === app.globalData._sessionGeneration;
   const startAt = Date.now();
 
-  logInfo("login_flow_start", { flowId });
-
   const login = withTimeout(
     () => fetchLoginCode(flowId)
       .then((code) => {
@@ -80,12 +78,6 @@ function loginWithWechat(app) {
       .then(({ authRes, user }) => {
         if (!isCurrentAttempt()) throw { message: "登录结果已过期", code: "STALE_LOGIN_ATTEMPT", flowId };
         app.applyCurrentUser(user, authRes.access_token);
-        logInfo("login_flow_success", {
-          flowId,
-          duration: Date.now() - startAt,
-          userId: user.id,
-          role: user.role
-        });
         return { authRes, user, flowId };
       }),
     LOGIN_FLOW_TIMEOUT,
@@ -97,11 +89,10 @@ function loginWithWechat(app) {
       latestLoginAttempt += 1;
       wx.removeStorageSync("accessToken");
     }
-    logError("login_flow_fail", {
+    logPageError("wechat_login", err, {
       flowId,
       duration: Date.now() - startAt,
       stage: err && err.stage,
-      summary: summarizeError(err),
       requestId: err && err.requestId,
       traceId: err && err.traceId
     });

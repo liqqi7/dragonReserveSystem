@@ -24,6 +24,7 @@ function createPage(getActivity = async () => null) {
     Page: value => { definition = value; },
     getApp: () => ({ globalData: {} }),
     require: name => {
+      if (name === "../../services/logger") return { logPageError() {} };
       if (name === "../../services/activity") return { getActivity };
       if (name === "../../utils/activityDetail") return activityDetail;
       if (name === "../../utils/activityEnrich") return activityEnrich;

@@ -13,7 +13,7 @@ from app.utils.media import resolve_media_root
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.exceptions import ValidationAppError
-from app.core.logging import logger
+from app.core.logging import ensure_trace_id, logger
 from app.models import User
 from app.schemas.user import AvatarUploadResponse, CurrentUserResponse, UpdateCurrentUserRequest, UpdateRoleRequest
 from app.services.user_service import clear_user_role, update_current_user, update_user_role_by_invite_code
@@ -123,10 +123,10 @@ def post_my_role(
         user = update_user_role_by_invite_code(db, current_user, payload.invite_code)
     except (HTTPException, ValidationAppError) as exc:
         outcome = "limited" if isinstance(exc, HTTPException) else "invalid"
-        logger.warning("role_invite_request user_id=%s ip=%s outcome=%s", current_user.id, client_ip, outcome)
+        logger.warning("role_invite_request user_id=%s trace_id=%s outcome=%s", current_user.id, ensure_trace_id(request), outcome)
         raise
     # Keep this as a metadata-only audit record; never log the submitted code.
-    logger.info("role_invite_request user_id=%s ip=%s outcome=accepted role=%s", current_user.id, client_ip, user.role)
+    logger.info("role_invite_request user_id=%s trace_id=%s outcome=accepted role=%s", current_user.id, ensure_trace_id(request), user.role)
     return CurrentUserResponse.model_validate(user, from_attributes=True)
 
 

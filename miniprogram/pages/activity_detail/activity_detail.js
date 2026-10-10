@@ -1,5 +1,6 @@
 const app = getApp();
 const activityService = require("../../services/activity");
+const { logPageError } = require("../../services/logger");
 const authService = require("../../services/auth");
 const userService = require("../../services/user");
 const {
@@ -354,7 +355,7 @@ Page({
         if (act) this.directSignup(act);
       })
       .catch((err) => {
-        console.error(err);
+        logPageError("save_signup_profile", err);
         wx.hideLoading();
         wx.showToast({ title: (err && err.message) || "保存失败", icon: "none" });
       });
@@ -379,7 +380,7 @@ Page({
       })
       .catch((err) => {
         if (this._detailUnloaded || requestId !== this._detailRequestId) return;
-        console.error(err);
+        logPageError("load_activity_detail", err);
         this.showDetailLoadError(err);
       });
   },
@@ -446,7 +447,7 @@ Page({
       })
       .catch((err) => {
         if (this._detailUnloaded || requestId !== this._detailRequestId) return;
-        console.error(err);
+        logPageError("refresh_activity_detail", err);
         if (this.data.loading) this.showDetailLoadError(err);
         if (!silent) {
           wx.showToast({ title: (err && err.message) || "刷新失败", icon: "none" });
@@ -840,7 +841,7 @@ Page({
         if (res && res.eventChannel) res.eventChannel.emit("initActivityEdit", { activity });
       },
       fail: (error) => {
-        console.error(error);
+        logPageError("open_activity_editor", error);
         wx.showToast({ title: "打开编辑页失败，请重试", icon: "none" });
       }
     });
@@ -1008,7 +1009,7 @@ Page({
         return this.refreshDetail({ silent: true });
       })
       .catch((err) => {
-        console.error(err);
+        logPageError("signup_activity", err);
         wx.hideLoading();
         const msg = (err && err.message) || "";
         if (
@@ -1094,7 +1095,7 @@ Page({
         return this.refreshDetail({ silent: true });
       })
       .catch((err) => {
-        console.error(err);
+        logPageError("remove_activity_participant", err);
         wx.hideLoading();
         wx.showToast({
           title: (err && err.message) || (isSelf ? "取消失败" : "删除失败"),
@@ -1125,7 +1126,7 @@ Page({
             return this.refreshDetail({ silent: true });
           })
           .catch((err) => {
-            console.error(err);
+            logPageError("admin_checkin", err);
             wx.hideLoading();
             wx.showToast({ title: (err && err.message) || "补签失败", icon: "none" });
           });
@@ -1154,7 +1155,7 @@ Page({
             return this.refreshDetail({ silent: true });
           })
           .catch((err) => {
-            console.error(err);
+            logPageError("cancel_admin_checkin", err);
             wx.hideLoading();
             wx.showToast({ title: (err && err.message) || "操作失败", icon: "none" });
           });

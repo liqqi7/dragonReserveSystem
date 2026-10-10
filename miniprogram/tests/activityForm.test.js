@@ -35,6 +35,19 @@ test("shared subitem normalization preserves defaults and capacity boundaries", 
 });
 
 
+test("capacity following stays local to the form and does not reset saved subitems", () => {
+  const form = {
+    ...buildCreateForm(),
+    maxParticipants: 16,
+    subItemsEnabled: true,
+    subItems: normalizeSubItems([{ name: "Dinner", max_participants: 12, followsActivityCapacity: true }], 16)
+  };
+  assert.deepEqual(buildActivityPayload(form).sub_items, [{ name: "Dinner", max_participants: 16 }]);
+  const edited = buildEditForm({ maxParticipants: 16, subItems: [{ id: 7, name: "Dinner", max_participants: 12 }] });
+  assert.deepEqual(normalizeSubItems(edited.subItems, 17), [{ id: 7, name: "Dinner", max_participants: 12 }]);
+  assert.equal(form.subItems[0].followsActivityCapacity, true);
+});
+
 test("new and edited activities use a cover instead of an activity type", () => {
   assert.equal(buildCreateForm(new Date(2026, 7, 17, 10, 0, 0)).activityCoverId, "");
   assert.equal(buildEditForm({ activity_cover_id: "lam-001" }).activityCoverId, "lam-001");
