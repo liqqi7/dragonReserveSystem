@@ -1,6 +1,7 @@
 """Application configuration."""
 
 from functools import lru_cache
+import logging
 import os
 from pathlib import Path
 
@@ -47,6 +48,10 @@ class Settings(BaseSettings):
     jwt_secret_key: str = Field(
         default="dev-only-change-me",
         description="JWT signing secret",
+    )
+    allow_legacy_jwt_secret: bool = Field(
+        default=False,
+        description="Allow an explicitly configured legacy JWT secret to preserve existing sessions",
     )
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24 * 30
@@ -105,9 +110,16 @@ class Settings(BaseSettings):
     def reject_insecure_production_defaults(self) -> "Settings":
         if not self.is_production_runtime:
             return self
+        # This opt-in preserves deployed keys, not missing keys or the built-in default.
+        jwt_secret = self.jwt_secret_key.strip()
+        invalid_jwt_secret = (
+            not jwt_secret
+            or jwt_secret == "dev-only-change-me"
+            or ("change-me" in self.jwt_secret_key and not self.allow_legacy_jwt_secret)
+        )
         insecure = {
             "DATABASE_URL": self.database_url.startswith("sqlite:") or "password@" in self.database_url,
-            "JWT_SECRET_KEY": not self.jwt_secret_key or "change-me" in self.jwt_secret_key,
+            "JWT_SECRET_KEY": invalid_jwt_secret,
             "USER_INVITE_CODE": not self.user_invite_code,
             "ADMIN_INVITE_CODE": not self.admin_invite_code,
             "INVITE_CODES_MUST_DIFFER": self.admin_invite_code == self.user_invite_code,
@@ -127,10 +139,12 @@ def get_settings() -> Settings:
     """Return cached application settings."""
 
     s = Settings()
+    if s.is_production_runtime and s.allow_legacy_jwt_secret and "change-me" in s.jwt_secret_key:
+        logging.getLogger("dragon.reserve").warning(
+            "legacy_jwt_secret_allowed existing_sessions_preserved=true security_risk_accepted=true"
+        )
     env_test = _BACKEND_DIR / ".env.test"
     if env_test.is_file() and env_test.stat().st_size == 0:
-        import logging
-
         logging.getLogger("dragon.reserve").warning(
             "backend/.env.test exists but is empty (0 bytes). Save the file in your editor or WECHAT_* will stay unset."
         )
