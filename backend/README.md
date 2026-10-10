@@ -156,3 +156,20 @@ sudo systemctl status dragonreserve-activity-status-sync.timer
 ## 部署后验证
 
 检查 `https://dragon.liqqihome.top/api/v1/health`，并在小程序中验证登录、活动列表、报名、签到、头像显示和排行榜。管理员账号由既有管理员维护，不在文档或代码中保存默认密码。
+
+## 桌游库预览 worker
+
+桌游库上线使用 `deploy/dragonreserve-boardgame-preview-worker.service` 监管名称搜索预览任务。它与正式 API 使用同一工作目录、虚拟环境和 `.env`，不替换活动状态或天气定时任务。API 重启时，已启动的 worker 也随之重启，避免 API 与 worker 使用不同版本代码。
+
+安装服务前，先备份、核验实际 MySQL 版本与迁移状态，并完成 `20260924_0020` → `20261007_0021`。若已有同名桌游表或数据库版本与预期不符，停止并检查，不直接升级。仅在目标环境启用 `BOARDGAME_ENABLED`、`BOARDGAME_PREVIEW_WORKER_ENABLED`、`BGG_ENABLED` 并配置有效的后端 `BGG_API_TOKEN`；不复制本地 `.env.test`，不覆盖正式 `.env` 或媒体目录。
+
+```bash
+sudo systemd-analyze verify deploy/dragonreserve-boardgame-preview-worker.service
+sudo install -m 0644 deploy/dragonreserve-boardgame-preview-worker.service /etc/systemd/system/dragonreserve-boardgame-preview-worker.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now dragonreserve-boardgame-preview-worker.service
+```
+
+单实例运行该服务。`active` 和轮询接口返回 200 只说明进程或接口可用，仍须通过真实 BGG 名称搜索确认任务从 queued/fetching 到 ready、评分/排名/重度与版本有值，再检查原有登录、活动和排行榜接口。功能开关关闭或 BGG 凭据缺失时，worker 会空转，不能视为搜索验收通过。
+
+回退时停止新 worker、关闭桌游库开关并恢复部署前的应用版本，保留桌游表和已录入数据；不要直接 downgrade `20261007_0021`，它会删除六张新表。小程序上传体验版之前必须配置已验证的公网 HTTPS API；一次性 BGG 馆藏导入独立执行，本次上线不自动导入。

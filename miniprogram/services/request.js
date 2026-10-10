@@ -51,7 +51,7 @@ function toUserMessage(message, code, transport = false) {
   return "操作失败，请稍后重试";
 }
 
-function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQUEST_TIMEOUT, apiVersion }) {
+function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQUEST_TIMEOUT, apiVersion, idempotencyKey }) {
   const traceId = createTraceId("req");
   const startAt = Date.now();
   const header = {
@@ -60,6 +60,7 @@ function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQ
   };
   const token = wx.getStorageSync("accessToken");
 
+  if (idempotencyKey) header["Idempotency-Key"] = idempotencyKey;
   if (auth && token) {
     header.Authorization = `Bearer ${token}`;
   }
@@ -158,6 +159,7 @@ function request({ url, method = "GET", data, auth = true, timeout = DEFAULT_REQ
 
 module.exports = {
   request,
+  resolveApiBaseUrl,
   DEFAULT_REQUEST_TIMEOUT,
   toUserMessage
 };

@@ -1,0 +1,802 @@
+{
+  "2883": {
+    "en": "Connections",
+    "zh": "连线"
+  },
+  "2078": {
+    "en": "Point to Point Movement",
+    "zh": "点对点移动"
+  },
+  "3103": {
+    "en": "Resource Queue",
+    "zh": "资源队列"
+  },
+  "2689": {
+    "en": "Action Queue",
+    "zh": "行动队列"
+  },
+  "2019": {
+    "en": "Team-Based Game",
+    "zh": "团队游戏"
+  },
+  "2960": {
+    "en": "Map Reduction",
+    "zh": "地图缩减"
+  },
+  "2039": {
+    "en": "Line Drawing",
+    "zh": "画线"
+  },
+  "2833": {
+    "en": "Turn Order: Role Order",
+    "zh": "角色顺序"
+  },
+  "2991": {
+    "en": "Speed Matching",
+    "zh": "速度配对"
+  },
+  "2952": {
+    "en": "Impulse Movement",
+    "zh": "脉冲移动"
+  },
+  "3102": {
+    "en": "Questions and Answers",
+    "zh": "问答"
+  },
+  "2824": {
+    "en": "Legacy Game",
+    "zh": "遗产机制"
+  },
+  "2850": {
+    "en": "Events",
+    "zh": "事件"
+  },
+  "2013": {
+    "en": "Commodity Speculation",
+    "zh": "商品投机"
+  },
+  "3002": {
+    "en": "Deduction",
+    "zh": "推理"
+  },
+  "2959": {
+    "en": "Map Addition",
+    "zh": "地图扩展"
+  },
+  "2855": {
+    "en": "Ratio / Combat Results Table",
+    "zh": "比例/战斗结果表"
+  },
+  "2834": {
+    "en": "Action Timer",
+    "zh": "行动计时器"
+  },
+  "3006": {
+    "en": "Predictive Bid",
+    "zh": "预测竞价"
+  },
+  "3100": {
+    "en": "Tags",
+    "zh": "标签"
+  },
+  "2954": {
+    "en": "Relative Movement",
+    "zh": "相对移动"
+  },
+  "2985": {
+    "en": "Turn Order: Random",
+    "zh": "随机顺位"
+  },
+  "2870": {
+    "en": "Re-rolling and Locking",
+    "zh": "重掷与锁定"
+  },
+  "3096": {
+    "en": "Drawing",
+    "zh": "绘图"
+  },
+  "2922": {
+    "en": "Constrained Bidding",
+    "zh": "限制竞价"
+  },
+  "2055": {
+    "en": "Paper-and-Pencil",
+    "zh": "纸笔玩法"
+  },
+  "2889": {
+    "en": "Highest-Lowest Scoring",
+    "zh": "高低分计分"
+  },
+  "2016": {
+    "en": "Secret Unit Deployment",
+    "zh": "秘密部署"
+  },
+  "2919": {
+    "en": "Auction: Turn Order Until Pass",
+    "zh": "传递前竞拍顺位"
+  },
+  "2975": {
+    "en": "Line of Sight",
+    "zh": "视线"
+  },
+  "2913": {
+    "en": "Bribery",
+    "zh": "贿赂"
+  },
+  "2021": {
+    "en": "Area-Impulse",
+    "zh": "区域脉冲"
+  },
+  "2988": {
+    "en": "Stacking and Balancing",
+    "zh": "堆叠与平衡"
+  },
+  "2009": {
+    "en": "Trick-taking",
+    "zh": "吃墩"
+  },
+  "2026": {
+    "en": "Hexagon Grid",
+    "zh": "六角格"
+  },
+  "2987": {
+    "en": "Hidden Victory Points",
+    "zh": "隐藏胜利点"
+  },
+  "2874": {
+    "en": "Victory Points as a Resource",
+    "zh": "胜利点作为资源"
+  },
+  "2909": {
+    "en": "Random Production",
+    "zh": "随机产出"
+  },
+  "2686": {
+    "en": "Take That",
+    "zh": "互坑"
+  },
+  "2070": {
+    "en": "Simulation",
+    "zh": "模拟"
+  },
+  "2047": {
+    "en": "Memory",
+    "zh": "记忆"
+  },
+  "2981": {
+    "en": "Melding and Splaying",
+    "zh": "牌组组合与展开"
+  },
+  "2903": {
+    "en": "Automatic Resource Growth",
+    "zh": "资源自动增长"
+  },
+  "2920": {
+    "en": "Auction: Sealed Bid",
+    "zh": "暗标拍卖"
+  },
+  "2961": {
+    "en": "Map Deformation",
+    "zh": "地图变形"
+  },
+  "2082": {
+    "en": "Worker Placement",
+    "zh": "工放"
+  },
+  "2984": {
+    "en": "Closed Drafting",
+    "zh": "暗轮抽"
+  },
+  "3004": {
+    "en": "Deck Construction",
+    "zh": "牌库构筑"
+  },
+  "3005": {
+    "en": "Slide / Push",
+    "zh": "滑动/推动"
+  },
+  "2851": {
+    "en": "Narrative Choice / Paragraph",
+    "zh": "剧情选择"
+  },
+  "3098": {
+    "en": "Auction Compensation",
+    "zh": "拍卖补偿"
+  },
+  "2012": {
+    "en": "Auction / Bidding",
+    "zh": "拍卖/竞价"
+  },
+  "2846": {
+    "en": "Once-Per-Game Abilities",
+    "zh": "每局一次能力"
+  },
+  "2011": {
+    "en": "Modular Board",
+    "zh": "模块化版图"
+  },
+  "2828": {
+    "en": "Turn Order: Progressive",
+    "zh": "渐进式顺位"
+  },
+  "2876": {
+    "en": "Race",
+    "zh": "竞速"
+  },
+  "2957": {
+    "en": "Bias",
+    "zh": "偏置"
+  },
+  "2028": {
+    "en": "Role Playing",
+    "zh": "角色扮演"
+  },
+  "2079": {
+    "en": "Variable Phase Order",
+    "zh": "阶段顺序变化"
+  },
+  "2865": {
+    "en": "Player Judge",
+    "zh": "玩家裁判"
+  },
+  "2965": {
+    "en": "Multiple Maps",
+    "zh": "多地图"
+  },
+  "3144": {
+    "en": "Lane Battler",
+    "zh": "分路对战"
+  },
+  "2955": {
+    "en": "Mancala",
+    "zh": "播棋"
+  },
+  "2866": {
+    "en": "Targeted Clues",
+    "zh": "定向线索"
+  },
+  "2841": {
+    "en": "Command Cards",
+    "zh": "指令卡"
+  },
+  "2978": {
+    "en": "Grid Coverage",
+    "zh": "网格覆盖"
+  },
+  "2964": {
+    "en": "Pieces as Map",
+    "zh": "棋子构成地图"
+  },
+  "2990": {
+    "en": "Cube Tower",
+    "zh": "骰塔"
+  },
+  "2072": {
+    "en": "Dice Rolling",
+    "zh": "掷骰"
+  },
+  "2001": {
+    "en": "Action Points",
+    "zh": "行动点"
+  },
+  "2902": {
+    "en": "Income",
+    "zh": "收入"
+  },
+  "2008": {
+    "en": "Trading",
+    "zh": "交易"
+  },
+  "2046": {
+    "en": "Area Movement",
+    "zh": "区域移动"
+  },
+  "2057": {
+    "en": "Chit-Pull System",
+    "zh": "抽筹行动"
+  },
+  "2944": {
+    "en": "Three Dimensional Movement",
+    "zh": "三维移动"
+  },
+  "2933": {
+    "en": "Worker Placement, Different Worker Types",
+    "zh": "多类型工放"
+  },
+  "2885": {
+    "en": "Finale Ending",
+    "zh": "终局触发"
+  },
+  "2041": {
+    "en": "Open Drafting",
+    "zh": "明轮抽"
+  },
+  "2864": {
+    "en": "Force Commitment",
+    "zh": "承诺投入"
+  },
+  "2912": {
+    "en": "Contracts",
+    "zh": "契约"
+  },
+  "3101": {
+    "en": "Ordering",
+    "zh": "排序"
+  },
+  "2871": {
+    "en": "Kill Steal",
+    "zh": "抢人头"
+  },
+  "2849": {
+    "en": "Tech Trees / Tech Tracks",
+    "zh": "科技树/科技轨"
+  },
+  "2857": {
+    "en": "Card Play Conflict Resolution",
+    "zh": "出牌冲突结算"
+  },
+  "2926": {
+    "en": "Selection Order Bid",
+    "zh": "竞拍选择顺序"
+  },
+  "2950": {
+    "en": "Different Dice Movement",
+    "zh": "不同骰子决定移动"
+  },
+  "3113": {
+    "en": "Spelling",
+    "zh": "拼字"
+  },
+  "2904": {
+    "en": "Loans",
+    "zh": "贷款"
+  },
+  "2906": {
+    "en": "I Cut, You Choose",
+    "zh": "我切你选"
+  },
+  "2893": {
+    "en": "Communication Limits",
+    "zh": "沟通限制"
+  },
+  "2843": {
+    "en": "Follow",
+    "zh": "跟随"
+  },
+  "3099": {
+    "en": "Multi-Use Cards",
+    "zh": "多用途卡"
+  },
+  "2035": {
+    "en": "Roll / Spin and Move",
+    "zh": "掷骰/转盘移动"
+  },
+  "2999": {
+    "en": "Bingo",
+    "zh": "宾果"
+  },
+  "2819": {
+    "en": "Solo / Solitaire Game",
+    "zh": "单人游戏"
+  },
+  "2948": {
+    "en": "Resource to Move",
+    "zh": "移动消耗资源"
+  },
+  "2916": {
+    "en": "Alliances",
+    "zh": "结盟"
+  },
+  "2020": {
+    "en": "Simultaneous Action Selection",
+    "zh": "同时选行动"
+  },
+  "2676": {
+    "en": "Grid Movement",
+    "zh": "网格移动"
+  },
+  "2017": {
+    "en": "Voting",
+    "zh": "投票"
+  },
+  "2861": {
+    "en": "Static Capture",
+    "zh": "静态吃子"
+  },
+  "2962": {
+    "en": "Move Through Deck",
+    "zh": "穿越牌库"
+  },
+  "2949": {
+    "en": "Measurement Movement",
+    "zh": "测量移动"
+  },
+  "2814": {
+    "en": "Traitor Game",
+    "zh": "内奸机制"
+  },
+  "3104": {
+    "en": "Neighbor Scope",
+    "zh": "邻接范围"
+  },
+  "2844": {
+    "en": "Order Counters",
+    "zh": "顺序标记"
+  },
+  "2004": {
+    "en": "Set Collection",
+    "zh": "套组收集"
+  },
+  "2005": {
+    "en": "Stock Holding",
+    "zh": "股票持有"
+  },
+  "2923": {
+    "en": "Auction: Once Around",
+    "zh": "单轮拍卖"
+  },
+  "2928": {
+    "en": "Closed Economy Auction",
+    "zh": "封闭经济拍卖"
+  },
+  "2831": {
+    "en": "Real-Time",
+    "zh": "实时玩法"
+  },
+  "2023": {
+    "en": "Cooperative Game",
+    "zh": "合作游戏"
+  },
+  "2914": {
+    "en": "Increase Value of Unchosen Resources",
+    "zh": "未选资源升值"
+  },
+  "2924": {
+    "en": "Auction: Dutch",
+    "zh": "荷兰式拍卖"
+  },
+  "2827": {
+    "en": "Turn Order: Auction",
+    "zh": "拍卖决定顺位"
+  },
+  "2027": {
+    "en": "Storytelling",
+    "zh": "叙事"
+  },
+  "2073": {
+    "en": "Acting",
+    "zh": "表演"
+  },
+  "2038": {
+    "en": "Singing",
+    "zh": "歌唱"
+  },
+  "2830": {
+    "en": "Turn Order: Pass Order",
+    "zh": "传递顺序"
+  },
+  "2915": {
+    "en": "Negotiation",
+    "zh": "谈判"
+  },
+  "2685": {
+    "en": "Player Elimination",
+    "zh": "玩家淘汰"
+  },
+  "2947": {
+    "en": "Movement Points",
+    "zh": "移动点数"
+  },
+  "2823": {
+    "en": "Score-and-Reset Game",
+    "zh": "计分后重置"
+  },
+  "2887": {
+    "en": "Catch the Leader",
+    "zh": "追赶领先者"
+  },
+  "2980": {
+    "en": "Ladder Climbing",
+    "zh": "爬梯"
+  },
+  "2927": {
+    "en": "Auction: Multiple Lot",
+    "zh": "多标的拍卖"
+  },
+  "2854": {
+    "en": "Critical Hits and Failures",
+    "zh": "暴击与失误"
+  },
+  "2911": {
+    "en": "Ownership",
+    "zh": "所有权"
+  },
+  "2956": {
+    "en": "Chaining",
+    "zh": "连锁触发"
+  },
+  "2974": {
+    "en": "Zone of Control",
+    "zh": "控制区"
+  },
+  "2826": {
+    "en": "Turn Order: Stat-Based",
+    "zh": "属性决定顺位"
+  },
+  "2918": {
+    "en": "Auction: English",
+    "zh": "英式拍卖"
+  },
+  "2060": {
+    "en": "Pattern Recognition",
+    "zh": "模式识别"
+  },
+  "2856": {
+    "en": "Die Icon Resolution",
+    "zh": "骰面图标结算"
+  },
+  "2882": {
+    "en": "Elapsed Real Time Ending",
+    "zh": "按实际时间结束"
+  },
+  "2892": {
+    "en": "Roles with Asymmetric Information",
+    "zh": "信息不对称角色"
+  },
+  "2820": {
+    "en": "Semi-Cooperative Game",
+    "zh": "半合作"
+  },
+  "2664": {
+    "en": "Deck, Bag, and Pool Building",
+    "zh": "牌库/袋/资源池构筑"
+  },
+  "2910": {
+    "en": "Investment",
+    "zh": "投资"
+  },
+  "2953": {
+    "en": "Programmed Movement",
+    "zh": "预设移动"
+  },
+  "2661": {
+    "en": "Push Your Luck",
+    "zh": "推运气"
+  },
+  "2018": {
+    "en": "Campaign / Battle Card Driven",
+    "zh": "战斗卡驱动"
+  },
+  "2863": {
+    "en": "Minimap Resolution",
+    "zh": "小地图结算"
+  },
+  "2010": {
+    "en": "Crayon Rail System",
+    "zh": "彩笔铁路"
+  },
+  "2888": {
+    "en": "Tug of War",
+    "zh": "拉锯战"
+  },
+  "2958": {
+    "en": "Moving Multiple Units",
+    "zh": "多单位移动"
+  },
+  "2989": {
+    "en": "Physical Removal",
+    "zh": "实体移除"
+  },
+  "3003": {
+    "en": "Induction",
+    "zh": "归纳"
+  },
+  "2935": {
+    "en": "Worker Placement with Dice Workers",
+    "zh": "骰子工放"
+  },
+  "2080": {
+    "en": "Area Majority / Influence",
+    "zh": "区域控制/影响力"
+  },
+  "2043": {
+    "en": "Enclosure",
+    "zh": "围地"
+  },
+  "2002": {
+    "en": "Tile Placement",
+    "zh": "板块拼放"
+  },
+  "2900": {
+    "en": "Market",
+    "zh": "市场"
+  },
+  "2939": {
+    "en": "Track Movement",
+    "zh": "轨道移动"
+  },
+  "3000": {
+    "en": "Hot Potato",
+    "zh": "烫手山芋"
+  },
+  "2837": {
+    "en": "Interrupts",
+    "zh": "打断"
+  },
+  "2901": {
+    "en": "Delayed Purchase",
+    "zh": "延迟购买"
+  },
+  "2821": {
+    "en": "Single Loser Game",
+    "zh": "唯一输家"
+  },
+  "3143": {
+    "en": "Facing",
+    "zh": "朝向"
+  },
+  "2931": {
+    "en": "Auction: Fixed Placement",
+    "zh": "固定位置拍卖"
+  },
+  "2040": {
+    "en": "Hand Management",
+    "zh": "手牌管理"
+  },
+  "2048": {
+    "en": "Pattern Building",
+    "zh": "图案构筑"
+  },
+  "2015": {
+    "en": "Variable Player Powers",
+    "zh": "可变玩家能力"
+  },
+  "2884": {
+    "en": "Sudden Death Ending",
+    "zh": "突然死亡"
+  },
+  "2014": {
+    "en": "Betting and Bluffing",
+    "zh": "下注与诈唬"
+  },
+  "2838": {
+    "en": "Action Drafting",
+    "zh": "行动轮抽"
+  },
+  "2891": {
+    "en": "Hidden Roles",
+    "zh": "隐藏身份"
+  },
+  "2860": {
+    "en": "Flicking",
+    "zh": "弹射"
+  },
+  "3097": {
+    "en": "Bids As Wagers",
+    "zh": "下注式竞价"
+  },
+  "2946": {
+    "en": "Pattern Movement",
+    "zh": "模式移动"
+  },
+  "2930": {
+    "en": "Auction: Dexterity",
+    "zh": "技巧拍卖"
+  },
+  "2829": {
+    "en": "Turn Order: Claim Action",
+    "zh": "抢行动定顺位"
+  },
+  "2840": {
+    "en": "Action / Event",
+    "zh": "行动/事件"
+  },
+  "3007": {
+    "en": "Matching",
+    "zh": "配对"
+  },
+  "2897": {
+    "en": "Variable Set-up",
+    "zh": "可变设置"
+  },
+  "2875": {
+    "en": "End Game Bonuses",
+    "zh": "终局奖励"
+  },
+  "2940": {
+    "en": "Square Grid",
+    "zh": "方格"
+  },
+  "2081": {
+    "en": "Network and Route Building",
+    "zh": "路网构筑"
+  },
+  "2836": {
+    "en": "Lose a Turn",
+    "zh": "跳过一回合"
+  },
+  "2822": {
+    "en": "Scenario / Mission / Campaign Game",
+    "zh": "场景/任务/战役"
+  },
+  "2003": {
+    "en": "Rock-Paper-Scissors",
+    "zh": "猜拳"
+  },
+  "3001": {
+    "en": "Layering",
+    "zh": "分层"
+  },
+  "2853": {
+    "en": "Stat Check Resolution",
+    "zh": "属性检定"
+  },
+  "2007": {
+    "en": "Pick-up and Deliver",
+    "zh": "拾取与运送"
+  },
+  "2963": {
+    "en": "Movement Template",
+    "zh": "移动模板"
+  },
+  "2967": {
+    "en": "Hidden Movement",
+    "zh": "隐藏移动"
+  },
+  "2858": {
+    "en": "Prisoner's Dilemma",
+    "zh": "囚徒困境"
+  },
+  "2847": {
+    "en": "Advantage Token",
+    "zh": "优势标记"
+  },
+  "3141": {
+    "en": "Retirement",
+    "zh": "退役"
+  },
+  "3140": {
+    "en": "Algorithmic Resolution",
+    "zh": "算法结算"
+  },
+  "2813": {
+    "en": "Rondel",
+    "zh": "轮盘"
+  },
+  "3142": {
+    "en": "Visual Restriction",
+    "zh": "视觉限制"
+  },
+  "2839": {
+    "en": "Action Retrieval",
+    "zh": "行动回收"
+  },
+  "3139": {
+    "en": "Expiring Actions",
+    "zh": "行动到期"
+  },
+  "2663": {
+    "en": "Turn Order: Time Track",
+    "zh": "时间轨决定顺位"
+  },
+  "2932": {
+    "en": "Auction: Dutch Priority",
+    "zh": "荷兰优先拍卖"
+  },
+  "2886": {
+    "en": "King of the Hill",
+    "zh": "占山为王"
+  },
+  "2835": {
+    "en": "Passed Action Token",
+    "zh": "弃权标记"
+  },
+  "3138": {
+    "en": "Single Play",
+    "zh": "单次行动"
+  },
+  "3137": {
+    "en": "Handicaps",
+    "zh": "让分机制"
+  }
+}

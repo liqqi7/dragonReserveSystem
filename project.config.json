@@ -27,7 +27,8 @@
       "ignore": [],
       "disablePlugins": [],
       "outputPath": ""
-    }
+    },
+    "useGlassEaselForWxml": true
   },
   "simulatorPluginLibVersion": {},
   "packOptions": {

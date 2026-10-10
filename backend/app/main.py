@@ -69,7 +69,8 @@ def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
     )
     response = JSONResponse(
         status_code=exc.status_code,
-        content={"code": exc.code, "message": exc.message, "request_id": context["trace_id"]},
+        content={"code": exc.code, "message": exc.message, "request_id": context["trace_id"],
+                 **({"details": exc.details} if exc.details else {})},
     )
     response.headers["X-Request-Id"] = context["trace_id"]
     return response

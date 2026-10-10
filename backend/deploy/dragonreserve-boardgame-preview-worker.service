@@ -1,0 +1,20 @@
+[Unit]
+Description=Dragon Reserve Boardgame Preview Worker
+Wants=network-online.target
+After=network-online.target mysql.service dragonreserve-backend.service
+PartOf=dragonreserve-backend.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/apps/dragonReserveSystem/backend
+EnvironmentFile=/home/ubuntu/apps/dragonReserveSystem/backend/.env
+ExecStart=/home/ubuntu/apps/dragonReserveSystem/backend/.venv/bin/python -u scripts/run_boardgame_preview_worker.py
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

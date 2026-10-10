@@ -1,0 +1,20 @@
+function secondary(game) {
+  if (!game) return '';
+  var name = game.display_name || game.name || '';
+  var original = game.original_name || '';
+  if (!original || original === name) return '';
+  // BGG sometimes makes the original title bilingual: 春秋 (Spring and Autumn).
+  // Only remove an exact repeated title and keep the English text in its own line.
+  if (name && original.indexOf(name) === 0) {
+    var tail = original.slice(name.length);
+    // Explicit spaces avoid the native WXS runtime's different regexp escaping.
+    while (tail.charAt(0) === ' ') tail = tail.slice(1);
+    while (tail.charAt(tail.length - 1) === ' ') tail = tail.slice(0, -1);
+    if (tail.length > 2 && tail.charAt(0) === '(' && tail.charAt(tail.length - 1) === ')') {
+      var inside = tail.slice(1, -1);
+      if (getRegExp('^[ -~]+$').test(inside) && getRegExp('[A-Za-z]').test(inside)) return inside;
+    }
+  }
+  return original;
+}
+module.exports = {secondary: secondary};

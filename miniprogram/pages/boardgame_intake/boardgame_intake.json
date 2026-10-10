@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "录入桌游",
+  "navigationStyle": "custom",
+  "renderer": "skyline",
+  "usingComponents": {
+    "boardgame-sheet": "/components/boardgame-sheet/index",
+    "create-access-dialog": "../../components/create-access-dialog/index"
+  },
+  "disableScroll": true,
+  "glassEaselWebview": true
+}
