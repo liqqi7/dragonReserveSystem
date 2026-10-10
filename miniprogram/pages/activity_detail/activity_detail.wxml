@@ -335,7 +335,11 @@
     <view class="signup-profile-modal-bg" bindtap="closeSignupProfileModal"></view>
     <view class="signup-profile-modal-sheet" catchtap="stopPropagation" catchtouchmove="stopPropagation">
       <view class="signup-profile-modal-header">
-        <view class="signup-profile-modal-title-wrap"><image class="signup-profile-modal-title-icon" src="/images/icon-message-square-text.svg" mode="aspectFit" /><text class="signup-profile-modal-title">修改个人资料</text></view>
+        <view class="signup-profile-modal-title-wrap">
+          <image class="signup-profile-modal-title-icon" src="/images/icon-message-square-text.svg" mode="aspectFit" aria-hidden="true" />
+          <text class="signup-profile-modal-title">修改个人资料</text>
+          <view class="signup-profile-modal-title-spacer" aria-hidden="true" />
+        </view>
       </view>
       <view class="signup-profile-modal-body">
         <view class="signup-profile-hint">{{signupProfileHint}}</view>

@@ -80,6 +80,7 @@
         <view class="permission-dialog-title-row">
           <image class="permission-dialog-icon" src="/images/dialog-prompt.svg" mode="aspectFit" aria-hidden="true" />
           <text class="permission-dialog-title">添加权限</text>
+          <view class="permission-dialog-title-spacer" aria-hidden="true" />
         </view>
         <text class="permission-dialog-message">请输入邀请码，验证通过后即可查看相关活动数据。</text>
       </view>
@@ -121,7 +122,8 @@
       <view class="permission-dialog-copy">
         <view class="permission-dialog-title-row">
           <image class="permission-dialog-icon" src="/images/dialog-danger.svg" mode="aspectFit" aria-hidden="true" />
-          <text class="permission-dialog-title">确认删除权限？</text>
+          <text class="permission-dialog-title">确认删除权限</text>
+          <view class="permission-dialog-title-spacer" aria-hidden="true" />
         </view>
         <text class="permission-dialog-message">删除后账号将恢复为游客，无法查看相关活动数据。</text>
       </view>
@@ -136,8 +138,9 @@
   <view wx:if="{{showEditModal}}" class="modal-overlay" bindtap="closeEditModal">
     <view class="modal-content" catchtap="stopTap">
       <view class="modal-header">
-        <image class="modal-title-icon" src="/images/icon-message-square-text.svg" mode="aspectFit" />
-        <text>修改个人资料</text>
+        <image class="modal-title-icon" src="/images/icon-message-square-text.svg" mode="aspectFit" aria-hidden="true" />
+        <text class="modal-title">修改个人资料</text>
+        <view class="modal-title-spacer" aria-hidden="true" />
       </view>
 
       <view class="modal-body">

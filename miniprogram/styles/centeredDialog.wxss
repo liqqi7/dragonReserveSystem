@@ -1,3 +1,5 @@
+@import "./dialogTitle.wxss";
+
 /* Shared aliases keep existing templates and component style isolation intact. */
 .permission-dialog-overlay,
 .create-access-dialog-overlay {
@@ -43,33 +45,6 @@
   align-items: center;
   flex-direction: column;
   gap: 23.07692rpx;
-}
-
-.permission-dialog-title-row,
-.create-access-dialog-title-row {
-  display: flex;
-  max-width: 100%;
-  align-items: center;
-  justify-content: center;
-  gap: 15.38462rpx;
-}
-
-.permission-dialog-icon,
-.create-access-dialog-icon {
-  display: block;
-  width: 34.61538rpx;
-  height: 34.61538rpx;
-  flex: none;
-}
-
-.permission-dialog-title,
-.create-access-dialog-title {
-  display: block;
-  color: #111827;
-  font-size: 30.76923rpx;
-  line-height: 42.30769rpx;
-  font-weight: 700;
-  text-align: center;
 }
 
 .permission-dialog-message,

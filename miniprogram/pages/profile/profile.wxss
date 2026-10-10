@@ -225,23 +225,6 @@ page {
   gap: 30.76923rpx;
 }
 
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15.38462rpx;
-  color: #111827;
-  font-size: 30.76923rpx;
-  font-weight: 700;
-  line-height: 34.61538rpx;
-}
-
-.modal-title-icon {
-  width: 34.61538rpx;
-  height: 34.61538rpx;
-  flex-shrink: 0;
-}
-
 .modal-body {
   display: flex;
   flex-direction: column;

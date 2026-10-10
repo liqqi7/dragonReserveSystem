@@ -1,0 +1,42 @@
+.modal-header,
+.signup-profile-modal-title-wrap,
+.permission-dialog-title-row,
+.create-access-dialog-title-row {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 15.38462rpx;
+}
+
+/* Mirror the icon's width so the text itself stays centered. */
+.modal-title-icon,
+.signup-profile-modal-title-icon,
+.permission-dialog-title-spacer,
+.create-access-dialog-title-spacer,
+.modal-title-spacer,
+.signup-profile-modal-title-spacer,
+.permission-dialog-icon,
+.create-access-dialog-icon {
+  display: block;
+  width: 34.61538rpx;
+  height: 34.61538rpx;
+  flex: none;
+}
+
+.modal-title,
+.signup-profile-modal-title,
+.permission-dialog-title,
+.create-access-dialog-title {
+  display: block;
+  min-width: 0;
+  flex-shrink: 1;
+  color: #111827;
+  font-size: 30.76923rpx;
+  line-height: 34.61538rpx;
+  font-weight: 700;
+  text-align: center;
+  word-break: break-all;
+}

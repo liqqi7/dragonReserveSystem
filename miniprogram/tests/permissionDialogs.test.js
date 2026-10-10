@@ -12,7 +12,7 @@ const js = fs.readFileSync(path.join(pageDir, "profile.js"), "utf8");
 test("permission dialogs use the prototype prompt and danger variants", () => {
   assert.match(wxml, /id="qa-add-permission-dialog"[\s\S]*?dialog-prompt\.svg[\s\S]*?添加权限/);
   assert.match(wxml, /id="qa-add-permission-input"[\s\S]*?bindinput="onPermissionInput"[\s\S]*?bindconfirm="submitPermission"/);
-  assert.match(wxml, /id="qa-delete-permission-dialog"[\s\S]*?dialog-danger\.svg[\s\S]*?确认删除权限？/);
+  assert.match(wxml, /id="qa-delete-permission-dialog"[\s\S]*?dialog-danger\.svg[\s\S]*?<text class="permission-dialog-title">确认删除权限<\/text>/);
   assert.match(wxml, /permission-dialog-button--danger[\s\S]*?确认删除/);
   assert.doesNotMatch(js, /removePermission\(\)\s*\{\s*wx\.showModal/);
 });

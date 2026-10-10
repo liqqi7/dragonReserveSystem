@@ -1,4 +1,5 @@
 @import "../../styles/skeleton-shimmer.wxss";
+@import "../../styles/dialogTitle.wxss";
 page {
   height: 100%;
   overflow: hidden;
@@ -1313,15 +1314,6 @@ button.back-to-top {
   justify-content: center;
 }
 
-.signup-profile-modal-title-wrap { display: flex; align-items: center; justify-content: center; gap: 18rpx; }
-.signup-profile-modal-title-icon { width: 42rpx; height: 42rpx; }
-
-.signup-profile-modal-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #191919;
-}
-
 .signup-profile-modal-body {
   padding: 0 36.92rpx 20rpx;
   /* Skyline 下未指定高度时，作为 flex 子项的 scroll-view 会被压成 0 高度。 */
@@ -1466,9 +1458,6 @@ button.back-to-top {
   height: auto;
   padding: 0;
 }
-.signup-profile-modal-title-wrap { gap: 12.31rpx; }
-.signup-profile-modal-title-icon { width: 36rpx; height: 36rpx; flex: none; }
-.signup-profile-modal-title { font-size: 32rpx; font-weight: 700; color: #111827; }
 .signup-profile-modal-body {
   width: 100%;
   height: auto;
