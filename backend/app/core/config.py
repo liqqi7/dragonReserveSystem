@@ -90,6 +90,16 @@ class Settings(BaseSettings):
     media_root: str = "storage"
     media_url_prefix: str = "/media"
 
+    memory_enabled: bool = False
+    memory_publish_enabled: bool = False
+    memory_storage_root: str = "private-storage/memories"
+    # No production budget is assumed until the operator explicitly configures it.
+    memory_capacity_bytes: int = Field(10_000_000_000, ge=0)
+    memory_min_free_bytes: int = Field(3 * 1024**3, ge=0)
+    memory_media_signing_key: str = ""
+    memory_ffmpeg: str = "ffmpeg"
+    memory_ffprobe: str = "ffprobe"
+
     cors_origins: list[str] = Field(default_factory=list)
 
     model_config = SettingsConfigDict(

@@ -28,6 +28,14 @@
       </view>
 
       <view class="profile-menu">
+        <view wx:if="{{hasUser && isMemoryAdmin}}" class="profile-menu-row" bindtap="openMemoryReview" aria-role="button" aria-label="内容审核">
+          <image class="profile-menu-icon" src="/images/memory-shield.svg" mode="aspectFit" />
+          <view class="profile-review-label">
+            <text class="profile-menu-label">内容审核</text>
+            <text wx:if="{{memoryPendingCount}}" class="profile-review-count">{{memoryPendingCount > 99 ? '99+' : memoryPendingCount}}</text>
+          </view>
+          <image class="profile-menu-chevron" src="/images/profile-icon-chevron-right.svg" mode="aspectFit" />
+        </view>
         <view wx:if="{{!hasUser}}" class="profile-menu-row" bindtap="startRegister" aria-role="button" aria-label="登录账户">
           <image class="profile-menu-icon" src="/images/profile-icon-login.svg" mode="aspectFit" />
           <text class="profile-menu-label">登录账户</text>

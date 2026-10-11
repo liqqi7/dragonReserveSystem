@@ -10,14 +10,14 @@
       </view>
       <text class="tab-label {{selected === 0 ? 'tab-label--active' : ''}}">首页</text>
     </view>
-    <view id="qa-tab-tools" class="tab-item {{selected === 1 ? 'tab-item--active' : ''}}" catchtap="onTabTap" data-index="1" aria-role="tab" aria-selected="{{selected === 1}}">
+    <view id="qa-tab-memory" class="tab-item {{selected === 1 ? 'tab-item--active' : ''}}" catchtap="onTabTap" data-index="1" aria-role="tab" aria-selected="{{selected === 1}}">
       <view class="tab-icon" aria-hidden="true">
-        <image class="tab-icon-glyph {{selected === 1 ? 'tab-icon-glyph--hidden' : ''}}" src="/images/tab-tools-material-rounded.svg" mode="scaleToFill" />
-        <image class="tab-icon-glyph {{selected === 1 ? '' : 'tab-icon-glyph--hidden'}}" src="/images/tab-tools-material-rounded-active.svg" mode="scaleToFill" />
+        <image class="tab-icon-glyph {{selected === 1 ? 'tab-icon-glyph--hidden' : ''}}" src="/images/memory-images.svg" mode="scaleToFill" />
+        <image class="tab-icon-glyph {{selected === 1 ? '' : 'tab-icon-glyph--hidden'}}" src="/images/memory-images-active.svg" mode="scaleToFill" />
       </view>
-      <text class="tab-label {{selected === 1 ? 'tab-label--active' : ''}}">工具</text>
+      <text class="tab-label {{selected === 1 ? 'tab-label--active' : ''}}">记忆</text>
     </view>
-    <view id="qa-tab-create" class="tab-create-item" catchtap="onCreateActivityTap" aria-role="button" aria-label="新建活动">
+    <view id="qa-tab-create" class="tab-create-item" catchtap="onCreateActivityTap" aria-role="button" aria-label="{{selected === 1 ? '投稿记忆' : '新建活动'}}">
       <view class="tab-create-button">
         <image class="tab-create-icon" src="/images/tab-create-plus.svg" mode="aspectFit" />
       </view>

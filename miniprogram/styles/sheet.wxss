@@ -29,7 +29,8 @@
 
 .cover-sheet-header,
 .picker-sheet-header,
-.drawer-header {
+.drawer-header,
+.memory-sheet-title {
   display: flex;
   align-items: center;
   box-sizing: border-box;

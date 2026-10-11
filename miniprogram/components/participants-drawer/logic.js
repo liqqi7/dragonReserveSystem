@@ -3,7 +3,7 @@ const { pad, formatTime } = require("../../utils/dateFormat");
 const {
   getSwipeSettledState: settleSwipe,
   SWIPE_OPEN_THRESHOLD_RATIO,
-  SWIPE_CLOSE_THRESHOLD_RATIO
+  SWIPE_CLOSE_THRESHOLD_RATIO,
 } = require("../../utils/swipe");
 
 const ACTION_WIDTH_RPX = 323.08;
@@ -19,7 +19,10 @@ function getMaxHeightRpx() {
     const width = Number(info && info.windowWidth);
     const height = Number(info && info.windowHeight);
     if (width > 0 && height > 0) {
-      return Math.round(height * DRAWER_MAX_HEIGHT_RATIO * 750 / width * 100) / 100;
+      return (
+        Math.round(((height * DRAWER_MAX_HEIGHT_RATIO * 750) / width) * 100) /
+        100
+      );
     }
   } catch (error) {
     // Use the design fallback when the runtime metrics are unavailable.
@@ -27,7 +30,11 @@ function getMaxHeightRpx() {
   return DEFAULT_MAX_HEIGHT_RPX;
 }
 
-function getSwipeSettledState(startOffsetX, endOffsetX, actionWidthRpx = ACTION_WIDTH_RPX) {
+function getSwipeSettledState(
+  startOffsetX,
+  endOffsetX,
+  actionWidthRpx = ACTION_WIDTH_RPX,
+) {
   return settleSwipe(startOffsetX, endOffsetX, actionWidthRpx);
 }
 
@@ -36,8 +43,14 @@ function getActionMetrics(canManage, isAdmin) {
     return { actionOffsetRpx: 0, actionAreaWidthRpx: 0 };
   }
   return isAdmin
-    ? { actionOffsetRpx: ACTION_WIDTH_RPX, actionAreaWidthRpx: ACTION_AREA_WIDTH_RPX }
-    : { actionOffsetRpx: REMOVE_ACTION_WIDTH_RPX, actionAreaWidthRpx: REMOVE_ACTION_AREA_WIDTH_RPX };
+    ? {
+        actionOffsetRpx: ACTION_WIDTH_RPX,
+        actionAreaWidthRpx: ACTION_AREA_WIDTH_RPX,
+      }
+    : {
+        actionOffsetRpx: REMOVE_ACTION_WIDTH_RPX,
+        actionAreaWidthRpx: REMOVE_ACTION_AREA_WIDTH_RPX,
+      };
 }
 
 function formatCheckinParts(value) {
@@ -47,32 +60,28 @@ function formatCheckinParts(value) {
   if (Number.isNaN(date.getTime())) return { date: "—", time: "—" };
   return {
     date: `${pad(date.getMonth() + 1)}月${pad(date.getDate())}日`,
-    time: `${formatTime(date.getHours(), date.getMinutes())}:${pad(date.getSeconds())}`
+    time: `${formatTime(date.getHours(), date.getMinutes())}:${pad(date.getSeconds())}`,
   };
 }
 
-function hasParticipantLimit(maxParticipants) {
-  if (maxParticipants === null || maxParticipants === undefined || maxParticipants === "") {
-    return false;
-  }
-  // 后端以 null 表示不限人数；0 不是合法人数上限，兼容旧数据时也按不限人数处理。
-  const limit = Number(maxParticipants);
-  return Number.isFinite(limit) && limit > 0;
-}
-
-function buildProgressView(participantCount, checkinCount, maxParticipants) {
+function buildProgressView(participantCount, checkinCount) {
   const participants = Math.max(0, Number(participantCount) || 0);
   const checkedIn = clamp(Number(checkinCount) || 0, 0, participants);
-  const hasLimit = hasParticipantLimit(maxParticipants);
-  const max = hasLimit ? Math.max(0, Number(maxParticipants) || 0) : null;
   const remaining = Math.max(0, participants - checkedIn);
   return {
     participantCountText: String(participants),
-    participantLimitText: hasLimit ? `${max} 人` : "",
-    participantHasLimit: hasLimit,
-    progressPercent: participants > 0 ? Math.round((checkedIn / participants) * 10000) / 100 : 0,
+    checkinCountText: String(checkedIn),
+    progressPercent:
+      participants > 0
+        ? Math.round((checkedIn / participants) * 10000) / 100
+        : 0,
     progressWidth: `${participants > 0 ? (checkedIn / participants) * 100 : 0}%`,
-    progressMessage: participants === 0 ? "暂无成员报名" : (remaining > 0 ? `还有 ${remaining} 人未签到` : "已全部签到")
+    progressMessage:
+      participants === 0
+        ? "暂无成员报名"
+        : remaining > 0
+          ? `还有 ${remaining} 人未签到`
+          : "已全部签到",
   };
 }
 
@@ -90,5 +99,4 @@ module.exports = {
   getActionMetrics,
   formatCheckinParts,
   buildProgressView,
-  hasParticipantLimit
 };

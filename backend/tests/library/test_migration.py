@@ -13,6 +13,8 @@ from app.core.database import Base
 from app.models.boardgame import TABLES
 from app.models.activity import ActivitySubItem
 
+MEMORY_TABLES = {'memories', 'memory_media', 'memory_audit_logs', 'memory_capacity'}
+
 
 def test_upgrade_preserves_main_data_and_downgrade_is_scoped(tmp_path, monkeypatch):
     path = tmp_path / 'migration.db'
@@ -20,7 +22,7 @@ def test_upgrade_preserves_main_data_and_downgrade_is_scoped(tmp_path, monkeypat
     engine = create_engine(url)
     metadata = MetaData()
     for table in Base.metadata.sorted_tables:
-        if table.name not in TABLES:
+        if table.name not in TABLES and table.name not in MEMORY_TABLES:
             table.to_metadata(metadata)
     metadata.create_all(engine)
     main_names = set(inspect(engine).get_table_names())
@@ -33,7 +35,7 @@ def test_upgrade_preserves_main_data_and_downgrade_is_scoped(tmp_path, monkeypat
     config = Config()
     config.set_main_option('sqlalchemy.url', url)
     config.set_main_option('script_location', str(root / 'alembic'))
-    assert ScriptDirectory.from_config(config).get_heads() == ['20261010_0023']
+    assert ScriptDirectory.from_config(config).get_heads() == ['20261011_0024']
     command.stamp(config, '20260924_0020')
     command.upgrade(config, '20261007_0021')
     assert set(inspect(engine).get_table_names()) == main_names | set(TABLES) | {'alembic_version'}
@@ -57,7 +59,7 @@ def test_upgrade_both_branches_to_single_head_preserves_data(tmp_path, monkeypat
     engine = create_engine(url)
     metadata = MetaData()
     for table in Base.metadata.sorted_tables:
-        if table.name not in TABLES:
+        if table.name not in TABLES and table.name not in MEMORY_TABLES:
             table.to_metadata(metadata)
     metadata.create_all(engine)
     try:
@@ -91,7 +93,9 @@ def test_upgrade_both_branches_to_single_head_preserves_data(tmp_path, monkeypat
         assert 'ix_activities_end_time' in {index['name'] for index in inspector.get_indexes('activities')}
         assert 'ix_users_wechat_openid' not in {index['name'] for index in inspector.get_indexes('users')}
         with engine.connect() as conn:
-            assert conn.execute(text('SELECT version_num FROM alembic_version')).scalars().all() == ['20261010_0023']
+            assert conn.execute(text('SELECT version_num FROM alembic_version')).scalars().all() == ['20261011_0024']
+            assert MEMORY_TABLES.issubset(inspector.get_table_names())
+            assert conn.execute(text('SELECT reserved_bytes FROM memory_capacity WHERE id=1')).scalar_one() == 0
             assert conn.execute(text('SELECT share_preview_file FROM activities WHERE id=1')).scalar_one() == 'existing.png'
             assert conn.execute(text('SELECT nickname FROM users WHERE id=1')).scalar_one() == 'existing member'
             assert conn.execute(text('SELECT name FROM activity_sub_items WHERE id=1')).scalar_one() == 'existing sub-item'

@@ -1,0 +1,60 @@
+<import src="memory-controls.wxml" />
+<view class="memory-viewer">
+  <vertical-drag-gesture-handler wx:if="{{memory}}" native-view="swiper" worklet:should-accept-gesture="pagerAllowed" worklet:should-response-on-move="pagerAllowed">
+  <swiper class="viewer-stage" vertical current="{{index}}" circular="{{false}}" disable-touch="{{zoomed || fullScreen || seeking}}" bindchange="change">
+    <swiper-item wx:for="{{memory.media}}" wx:for-index="mediaIndex" wx:key="id" class="viewer-slide">
+      <scale-gesture-handler wx:if="{{item.kind === 'image' && mediaIndex === index && item.url}}" tag="memory-scale" simultaneous-handlers="{{['memory-pan']}}" worklet:ongesture="photoScale">
+        <pan-gesture-handler tag="memory-pan" simultaneous-handlers="{{['memory-scale']}}" worklet:should-accept-gesture="photoPanAllowed" worklet:ongesture="photoPan">
+          <double-tap-gesture-handler worklet:ongesture="photoDoubleTap">
+            <view class="viewer-photo-stage"><image id="memory-photo" class="viewer-photo" src="{{item.url}}" style="width:{{photoWidth}}px;height:{{photoHeight}}px;left:{{photoLeft}}px;top:{{photoTop}}px;" mode="aspectFit" binderror="mediaError" /></view>
+          </double-tap-gesture-handler>
+        </pan-gesture-handler>
+      </scale-gesture-handler>
+      <video wx:elif="{{item.kind === 'video' && mediaIndex === index && item.url}}" id="memory-video" data-id="{{item.id}}" class="viewer-video" src="{{item.url}}" poster="{{item.thumbnail_url}}" controls="{{false}}" muted="{{muted}}" autoplay="{{false}}" object-fit="{{item.width > item.height || fullScreen ? 'contain' : 'cover'}}" show-fullscreen-btn="{{false}}" show-center-play-btn="{{false}}" enable-progress-gesture="{{false}}" vslide-gesture-in-fullscreen="{{false}}" bindplay="videoPlay" bindpause="videoPause" bindended="videoPause" bindtimeupdate="videoTime" bindfullscreenchange="fullScreenChanged" binderror="mediaError">
+        <template wx:if="{{fullScreen}}" is="memory-fullscreen" data="{{playing,seeking,seekGesture,seekForward,currentLabel,durationLabel,controlsVisible,progress,bubbleLeft}}" />
+      </video>
+      <image wx:elif="{{item.thumbnail_url}}" class="viewer-image" src="{{item.thumbnail_url}}" mode="aspectFit" />
+      <view wx:else class="viewer-missing"><text>素材处理未完成或已失败</text></view>
+      <view wx:if="{{item.kind === 'video' && mediaIndex === index && item.url && !fullScreen}}" class="viewer-video-hitbox" bindtap="videoTap">
+        <button size="mini" wx:if="{{!playing && !seeking && !selectionOpen}}" class="viewer-play-button" catchtap="playVideo" aria-label="播放"><image src="/images/memory-play-large.svg" /></button>
+      </view>
+    </swiper-item>
+  </swiper>
+  </vertical-drag-gesture-handler>
+  <view wx:if="{{!fullScreen}}" class="viewer-top-shade" />
+  <view wx:if="{{!fullScreen}}" class="memory-nav viewer-nav" style="top:{{top}}px;"><view class="memory-back" bindtap="back" aria-role="button" aria-label="返回"><image src="/images/memory-back-light.svg" /></view></view>
+  <view wx:if="{{loading}}" class="memory-state"><text>加载中</text></view>
+  <view wx:if="{{error}}" class="viewer-error"><text>{{error}}</text><button bindtap="load">刷新</button></view>
+  <button size="mini" wx:if="{{zoomed && !fullScreen}}" class="viewer-restore" style="bottom:{{bottom + 46.15385}}rpx;" bindtap="restorePhoto"><image src="/images/memory-restore.svg" /><text>还原适宽</text></button>
+  <view wx:if="{{memory && !zoomed && !fullScreen && (current.kind !== 'video' || controlsVisible || !playing || admin)}}" class="viewer-bottom">
+  <view class="viewer-bottom-shade" />
+  <view class="viewer-info {{admin ? 'viewer-info--admin' : ''}}" style="bottom:{{bottom + (admin ? 157.69231 : 15.38462)}}rpx;">
+    <view class="viewer-copy">
+    <view class="viewer-author"><image src="{{memory.author.avatar_url}}" mode="aspectFill" /><text max-lines="1" overflow="ellipsis">{{memory.author.nickname}}</text><view class="viewer-tools"><button size="mini" wx:if="{{!admin}}" class="viewer-share" open-type="share" aria-label="分享记忆"><image src="/images/memory-share.svg" /></button><button size="mini" wx:if="{{current.kind === 'video'}}" class="viewer-enter-fullscreen" bindtap="enterFullScreen" aria-label="横屏播放"><image src="/images/memory-fullscreen.svg" /></button></view></view>
+    <text wx:if="{{memory.caption}}" class="viewer-caption">{{memory.caption}}</text>
+    <view wx:if="{{memory.activity_name}}" class="viewer-meta viewer-meta--activity"><image src="/images/memory-flag.svg" /><text max-lines="2" overflow="ellipsis">{{memory.activity_name}}{{memory.activityTime ? ' ｜ ' + memory.activityTime : ''}}</text></view>
+    <view wx:if="{{!admin && memory.location_name}}" class="viewer-meta"><image src="/images/memory-location.svg" /><text max-lines="2" overflow="ellipsis">{{memory.location_name}}</text></view>
+    </view>
+    <template wx:if="{{current.kind === 'video'}}" is="memory-progress" data="{{progress,seeking,bubbleLeft,currentLabel}}" />
+    <view wx:elif="{{admin}}" class="viewer-image-progress-space" />
+  </view>
+  <view wx:if="{{admin}}" class="viewer-footer" style="bottom:{{bottom + 30.76923}}rpx;">
+    <view wx:if="{{memory.status === 'pending' || memory.status === 'failed'}}" class="memory-actions"><button class="viewer-reject" data-action="reject" bindtap="askReview" disabled="{{busy}}">不通过</button><button wx:if="{{memory.status === 'pending'}}" class="viewer-approve" bindtap="beginReview" disabled="{{busy}}">通过</button></view>
+    <button wx:elif="{{memory.status === 'published'}}" class="memory-danger" data-action="offline" bindtap="askReview" disabled="{{busy}}">下线</button>
+  </view>
+  </view>
+  <view wx:if="{{selectionOpen && admin && memory.status === 'pending'}}" class="memory-sheet-overlay" bindtap="closeSelection">
+    <view class="memory-sheet" catchtap="stopTap" style="padding-bottom:{{bottom}}rpx;">
+      <view class="memory-sheet-drag" bindtap="closeSelection"><view /></view><view class="memory-sheet-title"><text>选择发布内容 · {{selected.length}} 项</text></view>
+      <scroll-view type="list" scroll-y class="memory-sheet-body">
+        <text wx:if="{{memory.location_name}}" class="review-status">位置 · {{memory.location_name}}</text>
+        <view class="review-thumbnails"><button size="mini" wx:for="{{memory.media}}" wx:key="id" class="review-thumb {{item.selected ? 'review-thumb--selected' : ''}} {{busy || !item.selectable ? 'review-thumb--disabled' : ''}}" data-id="{{item.id}}" bindtap="selectMedia" disabled="{{busy || !item.selectable}}" aria-label="选择第 {{index + 1}} 项"><image src="{{item.thumbnail_url}}" mode="aspectFill" /><text>{{index + 1}}</text></button></view>
+        <view wx:for="{{memory.media}}" wx:key="id" class="review-status"><text>{{index + 1}} · {{item.stateLabel || item.state}}</text></view>
+        <checkbox-group bindchange="reviewed"><label class="review-ack"><checkbox value="reviewed" checked="{{reviewed}}" color="#FF9800" /><text>已审核文字、所选图片及视频的完整画面和声音</text></label></checkbox-group>
+      </scroll-view>
+      <view class="review-publish"><button size="mini" class="primary {{busy || !selected.length || !reviewed ? 'primary--disabled' : ''}}" data-action="publish" bindtap="askReview" disabled="{{busy || !selected.length || !reviewed}}">发布 {{selected.length}} 项</button></view>
+    </view>
+  </view>
+</view>
+<create-access-dialog id="memory-confirm" bind:confirm="confirmReview" />
+<create-access-dialog id="session-expired-dialog" />

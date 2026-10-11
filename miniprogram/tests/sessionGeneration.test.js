@@ -37,6 +37,7 @@ function setup() {
     require(name) {
       if (name === './services/user') return userService;
       if (name === './services/auth') return authModule.exports;
+      if (name === './services/sessionEnvironment') return { activateSessionEnvironment() {} };
       if (name === './services/logger') return logger;
       throw new Error(name);
     }

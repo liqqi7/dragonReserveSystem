@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const pageNames = ["activity_list", "tools", "history", "profile"];
+const pageNames = ["activity_list", "memory", "history", "profile"];
 const pageRoot = path.join(__dirname, "../pages");
 
 function readPage(name, extension) {
@@ -38,7 +38,7 @@ test("all four tab pages explicitly use Skyline and local scrolling", () => {
 });
 
 test("newly migrated tab pages avoid WebView-only layout rules", () => {
-  for (const name of ["tools", "history", "profile"]) {
+  for (const name of ["memory", "history", "profile"]) {
     const js = readPage(name, "js");
     const wxss = readPage(name, "wxss");
     assert.doesNotMatch(js, /\bonPageScroll\s*\(/, `${name} must not use page scroll callbacks`);
@@ -67,7 +67,7 @@ test("four tab routes and component indexes are contiguous and exclude calendar"
     appJson.tabBar.list.map((item) => item.pagePath),
     [
       "pages/activity_list/activity_list",
-      "pages/tools/tools",
+      "pages/memory/memory",
       "pages/history/history",
       "pages/profile/profile",
     ]

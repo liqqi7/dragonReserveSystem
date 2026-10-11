@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.exceptions import AuthenticationError, PermissionDeniedError
+from app.core.exceptions import AuthenticationError, NotFoundError, PermissionDeniedError
 from app.core.security import TokenPayload, decode_access_token
 from app.models import User
 from app.services.user_service import get_user_by_id
@@ -39,7 +39,10 @@ def get_current_user(
         user_id = int(payload.sub)
     except ValueError as exc:  # pragma: no cover - token generation owns shape
         raise AuthenticationError("Invalid token subject") from exc
-    return get_user_by_id(db, user_id)
+    try:
+        return get_user_by_id(db, user_id)
+    except NotFoundError as exc:
+        raise AuthenticationError("登录账号在当前环境不存在，请重新登录") from exc
 
 
 def get_optional_current_user(

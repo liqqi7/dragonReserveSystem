@@ -44,6 +44,13 @@ test("未登录状态仅显示登录账户按钮", () => {
   assert.match(wxml, /<view wx:if="{{hasUser}}" class="profile-menu-row" bindtap="logout"/);
 });
 
+test("review count follows its label with the prototype red circular badge", () => {
+  assert.match(wxml, /class="profile-review-label">\s*<text class="profile-menu-label">内容审核<\/text>\s*<text[^>]*class="profile-review-count"/);
+  assert.match(wxss, /\.profile-review-label\s*\{[^}]*gap:\s*23\.07692rpx\s*;/);
+  assert.match(wxss, /\.profile-review-count\s*\{[^}]*height:\s*34\.61538rpx\s*;[^}]*border-radius:\s*17\.30769rpx\s*;[^}]*background:\s*#e5484d\s*;/);
+  assert.match(wxml, /memoryPendingCount > 99 \? '99\+'/);
+});
+
 test("我的页菜单遵循原型文本、字重和仅退出项分隔的布局", () => {
   assert.doesNotMatch(wxml, /class="profile-navbar-title">我的<\/text>/);
   assert.doesNotMatch(wxml, /游客账号|公会 ID|已获取访问权限/);

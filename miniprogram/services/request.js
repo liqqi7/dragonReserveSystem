@@ -33,6 +33,7 @@ const API_ERROR_MESSAGES = {
   "You must sign up before checking in": "请先报名再签到",
   "Participant has already checked in": "你已完成签到",
   "Participant not found": "未找到报名记录",
+  "Invite code is invalid": "邀请码不正确，请检查后重试",
   "User not found": "未找到用户信息，请重新登录"
 };
 

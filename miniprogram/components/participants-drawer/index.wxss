@@ -88,10 +88,6 @@
   font-weight: 500;
 }
 
-.progress-count-unlimited {
-  gap: 0;
-}
-
 .progress-info-row {
   height: 34.62rpx;
   gap: 23.08rpx;

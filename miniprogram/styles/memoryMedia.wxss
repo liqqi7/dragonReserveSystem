@@ -1,0 +1,12 @@
+.memory-play,
+.review-play {
+  position: absolute;
+  top: 15.38462rpx;
+  left: 15.38462rpx;
+  width: 23.07692rpx;
+  height: 23.07692rpx;
+  padding: 11.53846rpx;
+  box-sizing: content-box;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 15.38462rpx;
+}

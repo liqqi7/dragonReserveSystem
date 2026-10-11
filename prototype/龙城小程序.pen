@@ -13393,7 +13393,7 @@
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#0000001A",
+                    "color": "#00000014",
                     "offset": {
                       "x": 0,
                       "y": 6
@@ -13759,7 +13759,7 @@
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#0000001A",
+                    "color": "#00000014",
                     "offset": {
                       "x": 0,
                       "y": 6
@@ -14032,7 +14032,7 @@
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#0000001A",
+                    "color": "#00000014",
                     "offset": {
                       "x": 0,
                       "y": 6
@@ -14399,7 +14399,7 @@
                     "type": "shadow",
                     "shadowType": "outer",
                     "enabled": false,
-                    "color": "#0000001A",
+                    "color": "#00000014",
                     "offset": {
                       "x": 0,
                       "y": 6
@@ -14438,7 +14438,7 @@
                       "effect": {
                         "type": "shadow",
                         "shadowType": "outer",
-                        "color": "#0000001A",
+                        "color": "#00000014",
                         "offset": {
                           "x": 0,
                           "y": 6
@@ -14594,7 +14594,7 @@
                     "type": "shadow",
                     "shadowType": "outer",
                     "enabled": false,
-                    "color": "#0000001A",
+                    "color": "#00000014",
                     "offset": {
                       "x": 0,
                       "y": 6
@@ -14637,7 +14637,7 @@
                       "effect": {
                         "type": "shadow",
                         "shadowType": "outer",
-                        "color": "#0000001A",
+                        "color": "#00000014",
                         "offset": {
                           "x": 0,
                           "y": 6
@@ -14796,7 +14796,7 @@
                     "type": "shadow",
                     "shadowType": "outer",
                     "enabled": false,
-                    "color": "#0000001A",
+                    "color": "#00000014",
                     "offset": {
                       "x": 0,
                       "y": 6
@@ -14817,7 +14817,7 @@
                       "effect": {
                         "type": "shadow",
                         "shadowType": "outer",
-                        "color": "#0000001A",
+                        "color": "#00000014",
                         "offset": {
                           "x": 0,
                           "y": 6
@@ -78446,8 +78446,8 @@
     {
       "type": "frame",
       "id": "I2GgZO",
-      "x": -2513,
-      "y": -221,
+      "x": -1223,
+      "y": 292,
       "name": "活动分享卡片 · 毛玻璃",
       "clip": true,
       "width": 550,
@@ -82464,7 +82464,7 @@
         },
         {
           "type": "frame",
-          "id": "vRBaU",
+          "id": "Kcct6",
           "x": 0,
           "y": 738,
           "name": "底部操作区",
@@ -82535,6 +82535,8 @@
                   "name": "标题行",
                   "width": "fill_container",
                   "height": 24,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
                   "children": [
                     {
                       "type": "text",
@@ -82552,95 +82554,258 @@
                 {
                   "type": "frame",
                   "id": "Ms7Gx",
-                  "name": "上传槽",
+                  "name": "上传内容行 · 左侧滑动与右侧固定添加",
+                  "context": "左侧缩略图横向滑动，裁切边界延伸到屏幕左边缘；右侧添加按钮固定。示例为滑至末尾，初始位置首张图片与标题左对齐。",
                   "width": "fill_container",
+                  "height": 94,
                   "fill": "#FFFFFF00",
                   "cornerRadius": 8,
-                  "gap": 8,
+                  "layout": "none",
                   "children": [
                     {
                       "type": "frame",
-                      "id": "yNXuC",
-                      "name": "已选图片 · 活动现场",
+                      "id": "h5ARv1",
+                      "x": -28,
+                      "y": 0,
+                      "name": "缩略图横向滑动视口",
+                      "context": "相对表单向左延伸28，到达屏幕x=0；只有超出屏幕左边缘的媒体被裁切。右边界位于固定添加按钮前8。",
                       "clip": true,
-                      "width": 94,
+                      "width": 260,
                       "height": 94,
-                      "fill": {
-                        "type": "image",
-                        "enabled": true,
-                        "url": "图片素材/bgg-top-50/02-342942.jpg",
-                        "mode": "cover"
-                      },
-                      "cornerRadius": 12
-                    },
-                    {
-                      "type": "frame",
-                      "id": "FWwZj",
-                      "name": "已选视频 · 对局片段",
-                      "clip": true,
-                      "width": 94,
-                      "height": 94,
-                      "fill": {
-                        "type": "image",
-                        "enabled": true,
-                        "url": "图片素材/bgg-top-50/07-233078.jpg",
-                        "mode": "cover"
-                      },
-                      "cornerRadius": 12,
                       "layout": "none",
                       "children": [
                         {
                           "type": "frame",
-                          "id": "c0zye",
-                          "x": 37,
-                          "y": 37,
-                          "name": "视频播放标识",
-                          "width": 20,
-                          "height": 20,
-                          "fill": "#00000066",
-                          "cornerRadius": 10,
-                          "layout": "vertical",
-                          "justifyContent": "center",
-                          "alignItems": "center",
+                          "id": "SyRfN",
+                          "x": -38,
+                          "y": 0,
+                          "name": "媒体滑动轨道 · 滑至末尾",
+                          "height": 94,
+                          "gap": 8,
                           "children": [
                             {
-                              "type": "icon",
-                              "id": "g3CaX8",
-                              "name": "视频播放图标",
-                              "width": 10,
-                              "height": 10,
-                              "icon": "play",
-                              "library": "lucide",
-                              "fill": "#FFFFFF"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "QHz2a",
-                          "x": 60,
-                          "y": 76,
-                          "name": "视频时长标签",
-                          "height": 12,
-                          "fill": "#00000099",
-                          "cornerRadius": 6,
-                          "padding": [
-                            0,
-                            4
-                          ],
-                          "justifyContent": "center",
-                          "alignItems": "center",
-                          "children": [
+                              "type": "frame",
+                              "id": "yNXuC",
+                              "name": "已选图片 · 活动现场",
+                              "clip": true,
+                              "width": 94,
+                              "height": 94,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "图片素材/bgg-top-50/02-342942.jpg",
+                                "mode": "cover"
+                              },
+                              "cornerRadius": 12,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "K4drs",
+                                  "x": 70,
+                                  "y": 4,
+                                  "name": "图片删除按钮 · 右上角",
+                                  "context": "点击移除当前图片；点击缩略图主体预览",
+                                  "width": 20,
+                                  "height": 20,
+                                  "fill": "#00000066",
+                                  "cornerRadius": 10,
+                                  "stroke": "#00000000",
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "S8hSf",
+                                      "name": "删除图片 · 关闭图标",
+                                      "width": 10,
+                                      "height": 10,
+                                      "icon": "x",
+                                      "library": "lucide",
+                                      "fill": "#FFFFFF"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
                             {
-                              "type": "text",
-                              "id": "kWang",
-                              "name": "视频时长",
-                              "fill": "#FFFFFF",
-                              "content": "0:32",
-                              "lineHeight": 1.2,
-                              "fontFamily": "Noto Sans SC",
-                              "fontSize": 9,
-                              "fontWeight": "normal"
+                              "type": "frame",
+                              "id": "FWwZj",
+                              "name": "已选视频 · 对局片段",
+                              "clip": true,
+                              "width": 94,
+                              "height": 94,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "图片素材/bgg-top-50/07-233078.jpg",
+                                "mode": "cover"
+                              },
+                              "cornerRadius": 12,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "c0zye",
+                                  "x": 37,
+                                  "y": 37,
+                                  "name": "视频播放标识",
+                                  "width": 20,
+                                  "height": 20,
+                                  "fill": "#00000066",
+                                  "cornerRadius": 10,
+                                  "layout": "vertical",
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "g3CaX8",
+                                      "name": "视频播放图标",
+                                      "width": 10,
+                                      "height": 10,
+                                      "icon": "play",
+                                      "library": "lucide",
+                                      "fill": "#FFFFFF"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "QHz2a",
+                                  "x": 60,
+                                  "y": 76,
+                                  "name": "视频时长标签",
+                                  "height": 12,
+                                  "fill": "#00000099",
+                                  "cornerRadius": 6,
+                                  "padding": [
+                                    0,
+                                    4
+                                  ],
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "kWang",
+                                      "name": "视频时长",
+                                      "fill": "#FFFFFF",
+                                      "content": "0:32",
+                                      "lineHeight": 1.2,
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 9,
+                                      "fontWeight": "normal"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "gtFSG",
+                                  "x": 70,
+                                  "y": 4,
+                                  "name": "视频删除按钮 · 右上角",
+                                  "context": "点击移除当前视频；点击缩略图主体预览",
+                                  "width": 20,
+                                  "height": 20,
+                                  "fill": "#00000066",
+                                  "cornerRadius": 10,
+                                  "stroke": "#00000000",
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "aaLog",
+                                      "name": "删除视频 · 关闭图标",
+                                      "width": 10,
+                                      "height": 10,
+                                      "icon": "x",
+                                      "library": "lucide",
+                                      "fill": "#FFFFFF"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "xYx9y",
+                              "name": "图片上传中 · 第三个缩略图",
+                              "clip": true,
+                              "width": 94,
+                              "height": 94,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "图片素材/bgg-top-50/02-342942.jpg",
+                                "mode": "cover"
+                              },
+                              "cornerRadius": 12,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "SzB0f",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "图片上传进度遮罩",
+                                  "width": 94,
+                                  "height": 94,
+                                  "fill": "#00000088",
+                                  "layout": "vertical",
+                                  "gap": 6,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "z4q7w",
+                                      "name": "图片上传进度环 · 45%",
+                                      "width": 26,
+                                      "height": 26,
+                                      "layout": "none",
+                                      "children": [
+                                        {
+                                          "type": "ellipse",
+                                          "id": "xkSru",
+                                          "x": 0,
+                                          "y": 0,
+                                          "name": "上传进度轨道",
+                                          "innerRadius": 0.82,
+                                          "fill": "#FFFFFF40",
+                                          "width": 26,
+                                          "height": 26
+                                        },
+                                        {
+                                          "type": "ellipse",
+                                          "id": "aeh1s",
+                                          "x": 0,
+                                          "y": 0,
+                                          "name": "上传进度 · 45%",
+                                          "innerRadius": 0.82,
+                                          "startAngle": 90,
+                                          "sweepAngle": -162,
+                                          "fill": "#FFFFFF",
+                                          "width": 26,
+                                          "height": 26
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "k7os4i",
+                                      "name": "上传进度文案",
+                                      "fill": "#FFFFFF",
+                                      "content": "上传中 45%",
+                                      "lineHeight": 1.2,
+                                      "fontFamily": "Noto Sans SC",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
                             }
                           ]
                         }
@@ -82649,7 +82814,10 @@
                     {
                       "type": "frame",
                       "id": "pG31n",
-                      "name": "添加更多内容",
+                      "x": 240,
+                      "y": 0,
+                      "name": "添加更多内容 · 右侧固定",
+                      "context": "固定显示于横向滑动区域右侧；点击继续添加图片或视频。",
                       "width": 94,
                       "height": 94,
                       "fill": "#F3F4F6",
@@ -83103,21 +83271,9 @@
               "enabled": false
             },
             "Bqg9n": {
-              "enabled": false
+              "enabled": true
             }
           }
-        },
-        {
-          "type": "icon",
-          "id": "GmDYb",
-          "x": 346,
-          "y": 54,
-          "name": "分享图标",
-          "width": 24,
-          "height": 24,
-          "icon": "share-2",
-          "library": "lucide",
-          "fill": "#FFFFFF"
         },
         {
           "id": "XgdG8",
@@ -83156,32 +83312,61 @@
                   "type": "frame",
                   "id": "OGgkW",
                   "name": "上传人行",
+                  "width": "fill_container",
                   "gap": 10,
+                  "justifyContent": "space_between",
                   "alignItems": "center",
                   "children": [
                     {
-                      "type": "ellipse",
-                      "id": "Pabia",
-                      "name": "上传人头像",
-                      "fill": {
-                        "type": "image",
-                        "enabled": true,
-                        "url": "../backend/app/assets/activity-covers/aleksey-rico/avatar.jpg",
-                        "mode": "cover"
-                      },
-                      "width": 36,
-                      "height": 36
+                      "type": "frame",
+                      "id": "F89LU",
+                      "name": "上传人组",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "Pabia",
+                          "name": "上传人头像",
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "../backend/app/assets/activity-covers/aleksey-rico/avatar.jpg",
+                            "mode": "cover"
+                          },
+                          "width": 36,
+                          "height": 36
+                        },
+                        {
+                          "type": "text",
+                          "id": "t3rNY",
+                          "name": "上传人昵称",
+                          "fill": "#FFFFFF",
+                          "content": "阿灿",
+                          "lineHeight": 1.2,
+                          "fontFamily": "Inter",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        }
+                      ]
                     },
                     {
-                      "type": "text",
-                      "id": "t3rNY",
-                      "name": "上传人昵称",
-                      "fill": "#FFFFFF",
-                      "content": "阿灿",
-                      "lineHeight": 1.2,
-                      "fontFamily": "Inter",
-                      "fontSize": 15,
-                      "fontWeight": "600"
+                      "type": "frame",
+                      "id": "CvVu0",
+                      "name": "预览操作 · 分享",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "GmDYb",
+                          "name": "分享按钮 · 底部信息行",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "share-2",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
                     }
                   ]
                 },
@@ -83269,58 +83454,6 @@
                   ]
                 }
               ]
-            }
-          ]
-        },
-        {
-          "type": "frame",
-          "id": "tHofk",
-          "x": 338,
-          "y": 300,
-          "name": "上一张",
-          "width": 40,
-          "height": 40,
-          "fill": "#00000066",
-          "cornerRadius": 20,
-          "layout": "vertical",
-          "justifyContent": "center",
-          "alignItems": "center",
-          "children": [
-            {
-              "type": "icon",
-              "id": "Wrf9v",
-              "name": "上一张图标",
-              "width": 20,
-              "height": 20,
-              "icon": "chevron-up",
-              "library": "lucide",
-              "fill": "#FFFFFF"
-            }
-          ]
-        },
-        {
-          "type": "frame",
-          "id": "CRKSi",
-          "x": 338,
-          "y": 420,
-          "name": "下一张",
-          "width": 40,
-          "height": 40,
-          "fill": "#00000066",
-          "cornerRadius": 20,
-          "layout": "vertical",
-          "justifyContent": "center",
-          "alignItems": "center",
-          "children": [
-            {
-              "type": "icon",
-              "id": "c2DRQT",
-              "name": "下一张图标",
-              "width": 20,
-              "height": 20,
-              "icon": "chevron-down",
-              "library": "lucide",
-              "fill": "#FFFFFF"
             }
           ]
         }
@@ -83423,21 +83556,9 @@
               "enabled": false
             },
             "Bqg9n": {
-              "enabled": false
+              "enabled": true
             }
           }
-        },
-        {
-          "type": "icon",
-          "id": "BV3ZB",
-          "x": 346,
-          "y": 54,
-          "name": "分享图标",
-          "width": 24,
-          "height": 24,
-          "icon": "share-2",
-          "library": "lucide",
-          "fill": "#FFFFFF"
         },
         {
           "type": "frame",
@@ -83541,14 +83662,33 @@
                       ]
                     },
                     {
-                      "type": "icon",
-                      "id": "tH0hw",
-                      "name": "横屏播放按钮",
-                      "width": 22,
-                      "height": 22,
-                      "icon": "maximize-2",
-                      "library": "lucide",
-                      "fill": "#FFFFFF"
+                      "type": "frame",
+                      "id": "aKOBb",
+                      "name": "预览操作 · 分享与横屏展开",
+                      "gap": 18,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "BV3ZB",
+                          "name": "分享按钮 · 横屏展开左侧",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "share-2",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "tH0hw",
+                          "name": "横屏播放按钮",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "maximize-2",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
                     }
                   ]
                 },
@@ -83776,21 +83916,9 @@
               "enabled": false
             },
             "Bqg9n": {
-              "enabled": false
+              "enabled": true
             }
           }
-        },
-        {
-          "type": "icon",
-          "id": "z5uDGI",
-          "x": 346,
-          "y": 54,
-          "name": "分享图标",
-          "width": 24,
-          "height": 24,
-          "icon": "share-2",
-          "library": "lucide",
-          "fill": "#FFFFFF"
         },
         {
           "id": "surtU",
@@ -83868,14 +83996,33 @@
                       ]
                     },
                     {
-                      "type": "icon",
-                      "id": "oUYuN",
-                      "name": "横屏播放按钮",
-                      "width": 22,
-                      "height": 22,
-                      "icon": "maximize-2",
-                      "library": "lucide",
-                      "fill": "#FFFFFF"
+                      "type": "frame",
+                      "id": "K2QjJF",
+                      "name": "预览操作 · 分享与横屏展开",
+                      "gap": 18,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "z5uDGI",
+                          "name": "分享按钮 · 横屏展开左侧",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "share-2",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "oUYuN",
+                          "name": "横屏播放按钮",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "maximize-2",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
                     }
                   ]
                 },
@@ -84272,21 +84419,9 @@
               "enabled": false
             },
             "Bqg9n": {
-              "enabled": false
+              "enabled": true
             }
           }
-        },
-        {
-          "type": "icon",
-          "id": "VFPCI",
-          "x": 346,
-          "y": 54,
-          "name": "分享图标",
-          "width": 24,
-          "height": 24,
-          "icon": "share-2",
-          "library": "lucide",
-          "fill": "#FFFFFF"
         },
         {
           "id": "oTkqr",
@@ -84325,32 +84460,61 @@
                   "type": "frame",
                   "id": "mVlIu",
                   "name": "上传人行",
+                  "width": "fill_container",
                   "gap": 10,
+                  "justifyContent": "space_between",
                   "alignItems": "center",
                   "children": [
                     {
-                      "type": "ellipse",
-                      "id": "az8oc",
-                      "name": "上传人头像",
-                      "fill": {
-                        "type": "image",
-                        "enabled": true,
-                        "url": "../backend/app/assets/activity-covers/aleksey-rico/avatar.jpg",
-                        "mode": "cover"
-                      },
-                      "width": 36,
-                      "height": 36
+                      "type": "frame",
+                      "id": "Ir1Yp",
+                      "name": "上传人组",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "az8oc",
+                          "name": "上传人头像",
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "../backend/app/assets/activity-covers/aleksey-rico/avatar.jpg",
+                            "mode": "cover"
+                          },
+                          "width": 36,
+                          "height": 36
+                        },
+                        {
+                          "type": "text",
+                          "id": "oYcED",
+                          "name": "上传人昵称",
+                          "fill": "#FFFFFF",
+                          "content": "阿灿",
+                          "lineHeight": 1.2,
+                          "fontFamily": "Inter",
+                          "fontSize": 15,
+                          "fontWeight": "600"
+                        }
+                      ]
                     },
                     {
-                      "type": "text",
-                      "id": "oYcED",
-                      "name": "上传人昵称",
-                      "fill": "#FFFFFF",
-                      "content": "阿灿",
-                      "lineHeight": 1.2,
-                      "fontFamily": "Inter",
-                      "fontSize": 15,
-                      "fontWeight": "600"
+                      "type": "frame",
+                      "id": "B26Ue",
+                      "name": "预览操作 · 分享",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "VFPCI",
+                          "name": "分享按钮 · 底部信息行",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "share-2",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
                     }
                   ]
                 },
@@ -84540,21 +84704,9 @@
               "enabled": false
             },
             "Bqg9n": {
-              "enabled": false
+              "enabled": true
             }
           }
-        },
-        {
-          "type": "icon",
-          "id": "PaXUZ",
-          "x": 346,
-          "y": 54,
-          "name": "分享图标",
-          "width": 24,
-          "height": 24,
-          "icon": "share-2",
-          "library": "lucide",
-          "fill": "#FFFFFF"
         },
         {
           "type": "frame",
@@ -84658,14 +84810,33 @@
                       ]
                     },
                     {
-                      "type": "icon",
-                      "id": "IQ3Qx",
-                      "name": "横屏播放按钮",
-                      "width": 22,
-                      "height": 22,
-                      "icon": "maximize-2",
-                      "library": "lucide",
-                      "fill": "#FFFFFF"
+                      "type": "frame",
+                      "id": "nSS1n",
+                      "name": "预览操作 · 分享与横屏展开",
+                      "gap": 18,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "PaXUZ",
+                          "name": "分享按钮 · 横屏展开左侧",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "share-2",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "IQ3Qx",
+                          "name": "横屏播放按钮",
+                          "width": 22,
+                          "height": 22,
+                          "icon": "maximize-2",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
                     }
                   ]
                 },
@@ -87314,7 +87485,7 @@
     {
       "type": "frame",
       "id": "yxYd9",
-      "x": 5867,
+      "x": 6727,
       "y": 2292,
       "name": "状态 · 内容审核 · 视频预览",
       "clip": true,
@@ -87405,11 +87576,11 @@
           "height": 88,
           "descendants": {
             "Y7vJT3": {
-              "enabled": true,
+              "enabled": false,
               "content": "内容审核"
             },
             "Bqg9n": {
-              "enabled": false
+              "enabled": true
             }
           }
         },
@@ -87735,7 +87906,7 @@
     {
       "type": "frame",
       "id": "ZG2ZJ",
-      "x": 7157,
+      "x": 5867,
       "y": 2292,
       "name": "状态 · 内容审核 · 备注展开",
       "clip": true,
@@ -88729,7 +88900,7 @@
     {
       "type": "frame",
       "id": "Qg9ug",
-      "x": 7587,
+      "x": 6297,
       "y": 2292,
       "name": "状态 · 内容审核 · 空状态",
       "clip": true,
@@ -88917,7 +89088,7 @@
     {
       "type": "frame",
       "id": "xuqNi",
-      "x": 6297,
+      "x": 7157,
       "y": 2292,
       "name": "状态 · 内容审核 · 图片预览",
       "clip": true,
@@ -89008,11 +89179,11 @@
           "height": 88,
           "descendants": {
             "Y7vJT3": {
-              "enabled": true,
+              "enabled": false,
               "content": "内容审核"
             },
             "Bqg9n": {
-              "enabled": false
+              "enabled": true
             }
           }
         },
@@ -89290,21 +89461,9 @@
               "enabled": false
             },
             "Bqg9n": {
-              "enabled": false
+              "enabled": true
             }
           }
-        },
-        {
-          "type": "icon",
-          "id": "Q73xq",
-          "x": 346,
-          "y": 54,
-          "name": "分享图标",
-          "width": 24,
-          "height": 24,
-          "icon": "share-2",
-          "library": "lucide",
-          "fill": "#FFFFFF"
         },
         {
           "id": "WQJ2f",
@@ -89323,38 +89482,49 @@
         },
         {
           "type": "frame",
-          "id": "xpuRe",
+          "id": "kQ9f5",
           "x": 140,
           "y": 750,
-          "name": "还原适宽按钮",
+          "name": "放大预览操作 · 仅还原适宽",
           "width": 110,
           "height": 32,
-          "fill": "#000000B3",
-          "cornerRadius": 16,
-          "gap": 6,
           "justifyContent": "center",
           "alignItems": "center",
           "children": [
             {
-              "type": "icon",
-              "id": "b9ym8V",
-              "name": "还原适宽图标",
-              "width": 16,
-              "height": 16,
-              "icon": "minimize-2",
-              "library": "lucide",
-              "fill": "#FFFFFF"
-            },
-            {
-              "type": "text",
-              "id": "n1pZSP",
-              "name": "还原适宽文案",
-              "fill": "#FFFFFF",
-              "content": "还原适宽",
-              "lineHeight": 1.2,
-              "fontFamily": "Inter",
-              "fontSize": 12,
-              "fontWeight": "normal"
+              "type": "frame",
+              "id": "xpuRe",
+              "name": "还原适宽按钮",
+              "width": 110,
+              "height": 32,
+              "fill": "#000000B3",
+              "cornerRadius": 16,
+              "gap": 6,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "b9ym8V",
+                  "name": "还原适宽图标",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "minimize-2",
+                  "library": "lucide",
+                  "fill": "#FFFFFF"
+                },
+                {
+                  "type": "text",
+                  "id": "n1pZSP",
+                  "name": "还原适宽文案",
+                  "fill": "#FFFFFF",
+                  "content": "还原适宽",
+                  "lineHeight": 1.2,
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
             }
           ]
         }
@@ -89517,189 +89687,8 @@
     },
     {
       "type": "frame",
-      "id": "WE6ae",
-      "x": 8017,
-      "y": 2292,
-      "name": "状态 · 内容审核 · 视频预览 · 横屏播放",
-      "clip": true,
-      "width": 844,
-      "height": 390,
-      "fill": "#000000",
-      "layout": "none",
-      "children": [
-        {
-          "type": "rectangle",
-          "id": "LF6ca",
-          "x": 0,
-          "y": 0,
-          "name": "横屏视频画面",
-          "fill": {
-            "type": "image",
-            "enabled": true,
-            "url": "图片素材/bgg-top-50/07-233078.jpg",
-            "mode": "cover"
-          },
-          "width": 844,
-          "height": 390
-        },
-        {
-          "type": "rectangle",
-          "id": "CyAFi",
-          "x": 0,
-          "y": 0,
-          "name": "顶部渐变蒙层",
-          "fill": {
-            "type": "gradient",
-            "gradientType": "linear",
-            "enabled": true,
-            "rotation": 180,
-            "size": {
-              "height": 1
-            },
-            "colors": [
-              {
-                "color": "#00000073",
-                "position": 0
-              },
-              {
-                "color": "#00000000",
-                "position": 1
-              }
-            ]
-          },
-          "width": 844,
-          "height": 80
-        },
-        {
-          "type": "icon",
-          "id": "DIjPb",
-          "x": 24,
-          "y": 16,
-          "name": "返回按钮",
-          "width": 24,
-          "height": 24,
-          "icon": "chevron-left",
-          "library": "lucide",
-          "fill": "#FFFFFF"
-        },
-        {
-          "type": "frame",
-          "id": "zfzkw",
-          "x": 390,
-          "y": 163,
-          "name": "中央播放按钮",
-          "width": 64,
-          "height": 64,
-          "fill": "#00000059",
-          "cornerRadius": 32,
-          "layout": "vertical",
-          "justifyContent": "center",
-          "alignItems": "center",
-          "children": [
-            {
-              "type": "icon",
-              "id": "JrdUf",
-              "name": "播放图标",
-              "width": 28,
-              "height": 28,
-              "icon": "pause",
-              "library": "lucide",
-              "fill": "#FFFFFF"
-            }
-          ]
-        },
-        {
-          "type": "rectangle",
-          "id": "XuK65",
-          "x": 0,
-          "y": 320,
-          "name": "底部渐变蒙层",
-          "fill": {
-            "type": "gradient",
-            "gradientType": "linear",
-            "enabled": true,
-            "rotation": 180,
-            "size": {
-              "height": 1
-            },
-            "colors": [
-              {
-                "color": "#00000000",
-                "position": 0
-              },
-              {
-                "color": "#000000B3",
-                "position": 1
-              }
-            ]
-          },
-          "width": 844,
-          "height": 70
-        },
-        {
-          "type": "text",
-          "id": "ZXxyD",
-          "x": 24,
-          "y": 358,
-          "name": "当前时间",
-          "fill": "#FFFFFFCC",
-          "content": "0:23",
-          "fontFamily": "Noto Sans SC",
-          "fontSize": 11,
-          "fontWeight": "normal"
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 1.5,
-          "id": "HrGIb",
-          "x": 76,
-          "y": 364,
-          "name": "进度条轨道",
-          "fill": "#FFFFFF33",
-          "width": 660,
-          "height": 3
-        },
-        {
-          "type": "rectangle",
-          "cornerRadius": 1.5,
-          "id": "LvsLE",
-          "x": 76,
-          "y": 364,
-          "name": "进度条已播",
-          "fill": "#FFFFFF",
-          "width": 165,
-          "height": 3
-        },
-        {
-          "type": "text",
-          "id": "AOhSU",
-          "x": 748,
-          "y": 358,
-          "name": "总时长",
-          "fill": "#FFFFFFCC",
-          "content": "1:45",
-          "fontFamily": "Noto Sans SC",
-          "fontSize": 11,
-          "fontWeight": "normal"
-        },
-        {
-          "type": "icon",
-          "id": "b5Trjb",
-          "x": 796,
-          "y": 356,
-          "name": "退出横屏按钮",
-          "width": 22,
-          "height": 22,
-          "icon": "minimize-2",
-          "library": "lucide",
-          "fill": "#FFFFFF"
-        }
-      ]
-    },
-    {
-      "type": "frame",
       "id": "VzzYQ",
-      "x": 6727,
+      "x": 7587,
       "y": 2292,
       "name": "状态 · 内容审核 · 图片预览 · 放大 200%",
       "clip": true,
@@ -89711,17 +89700,18 @@
         {
           "type": "rectangle",
           "id": "R8qCr",
-          "x": 0,
-          "y": 0,
-          "name": "全屏视频画面",
+          "x": -195,
+          "y": -422,
+          "name": "全屏图片 · 放大200% · 居中裁切",
+          "context": "相对于普通适宽预览放大200%，以画面中心为缩放中心，超出屏幕的部分由预览页裁切。",
           "fill": {
             "type": "image",
             "enabled": true,
             "url": "图片素材/bgg-top-50/04-174430.jpg",
             "mode": "contain"
           },
-          "width": 390,
-          "height": 844
+          "width": 780,
+          "height": 1688
         },
         {
           "type": "rectangle",
@@ -89790,11 +89780,11 @@
           "height": 88,
           "descendants": {
             "Y7vJT3": {
-              "enabled": true,
+              "enabled": false,
               "content": "内容审核"
             },
             "Bqg9n": {
-              "enabled": false
+              "enabled": true
             }
           }
         },
@@ -89812,68 +89802,6 @@
               "fill": "#FFFFFF"
             }
           }
-        },
-        {
-          "type": "frame",
-          "id": "G44ZdP",
-          "x": 20,
-          "y": 742,
-          "name": "审批按钮组",
-          "width": 350,
-          "height": 48,
-          "gap": 12,
-          "children": [
-            {
-              "type": "frame",
-              "id": "kfNx8",
-              "name": "不通过按钮",
-              "width": "fill_container",
-              "height": 48,
-              "fill": "#FFFFFF1A",
-              "cornerRadius": 12,
-              "stroke": "#FFFFFF66",
-              "strokeWidth": 1,
-              "layout": "vertical",
-              "justifyContent": "center",
-              "alignItems": "center",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "K7FPg",
-                  "name": "不通过文案",
-                  "fill": "#FFFFFF",
-                  "content": "不通过",
-                  "fontFamily": "Noto Sans SC",
-                  "fontSize": 15,
-                  "fontWeight": "600"
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "L3SHu5",
-              "name": "通过按钮",
-              "width": "fill_container",
-              "height": 48,
-              "fill": "#FF9800",
-              "cornerRadius": 12,
-              "layout": "vertical",
-              "justifyContent": "center",
-              "alignItems": "center",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "W9YqX1",
-                  "name": "通过文案",
-                  "fill": "#FFFFFF",
-                  "content": "通过",
-                  "fontFamily": "Noto Sans SC",
-                  "fontSize": 15,
-                  "fontWeight": "600"
-                }
-              ]
-            }
-          ]
         },
         {
           "type": "frame",
@@ -89980,7 +89908,7 @@
         },
         {
           "type": "frame",
-          "id": "G74Xse",
+          "id": "y6U7a",
           "x": 0,
           "y": 738,
           "name": "底部操作区",
@@ -124169,7 +124097,7 @@
         },
         {
           "type": "frame",
-          "id": "I8U4Q",
+          "id": "JvMb6",
           "x": 0,
           "y": 738,
           "name": "底部操作区",
@@ -124745,6 +124673,905 @@
               }
             }
           ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "pK7XP",
+      "x": 9187,
+      "y": 3700,
+      "name": "探索 · 记忆 Icon · 六款与粗细对照",
+      "clip": true,
+      "width": 820,
+      "fill": "#FFFFFF",
+      "layout": "vertical",
+      "gap": 20,
+      "padding": 32,
+      "children": [
+        {
+          "type": "text",
+          "id": "sXwDf",
+          "name": "对照标题",
+          "fill": "#111827",
+          "content": "记忆 Icon · 形状与粗细",
+          "fontFamily": "Noto Sans SC",
+          "fontSize": 22,
+          "fontWeight": "700"
+        },
+        {
+          "type": "text",
+          "id": "YtvjP",
+          "name": "对照说明",
+          "fill": "#6B7280",
+          "content": "Material Symbols Rounded  /  导航实际尺寸 18px  /  当前使用 01 叠图",
+          "fontFamily": "Noto Sans SC",
+          "fontSize": 12,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "YxK3g",
+          "name": "候选名称行",
+          "width": "fill_container",
+          "gap": 12,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "J8bBS",
+              "name": "行标题占位",
+              "width": 96,
+              "height": 20
+            },
+            {
+              "type": "frame",
+              "id": "tDrIt",
+              "name": "01 叠图标题",
+              "width": "fill_container",
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "fsfke",
+                  "name": "01 叠图名称",
+                  "fill": "#111827",
+                  "content": "01 叠图",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "pIns4",
+              "name": "02 相册标题",
+              "width": "fill_container",
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "xXH1B",
+                  "name": "02 相册名称",
+                  "fill": "#111827",
+                  "content": "02 相册",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "XjBjm",
+              "name": "03 收藏标题",
+              "width": "fill_container",
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "YkrBv",
+                  "name": "03 收藏名称",
+                  "fill": "#111827",
+                  "content": "03 收藏",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "rUo9e",
+              "name": "04 故事标题",
+              "width": "fill_container",
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Zk8de",
+                  "name": "04 故事名称",
+                  "fill": "#111827",
+                  "content": "04 故事",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "TwgtU",
+              "name": "05 相机标题",
+              "width": "fill_container",
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "iIXhZ",
+                  "name": "05 相机名称",
+                  "fill": "#111827",
+                  "content": "05 相机",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "rOE9k",
+              "name": "06 回忆标题",
+              "width": "fill_container",
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "WGvSS",
+                  "name": "06 回忆名称",
+                  "fill": "#111827",
+                  "content": "06 回忆",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "IXScA",
+          "name": "300 · 较细对照行",
+          "width": "fill_container",
+          "height": 58,
+          "fill": "#FFFFFF",
+          "gap": 12,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "u8n3wf",
+              "name": "300 · 较细行标题",
+              "width": 96,
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "SscKb",
+                  "name": "300 · 较细文案",
+                  "fill": "#6B7280",
+                  "content": "300 · 较细",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "U1eNyS",
+              "name": "01 叠图粗细300",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "Q5d7z",
+                  "name": "01 叠图32px预览300",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "photo_library",
+                  "library": "Material Symbols Rounded",
+                  "weight": 300,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "bbUVt",
+              "name": "02 相册粗细300",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "z58z46",
+                  "name": "02 相册32px预览300",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "photo_album",
+                  "library": "Material Symbols Rounded",
+                  "weight": 300,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "N04h6A",
+              "name": "03 收藏粗细300",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "fC026",
+                  "name": "03 收藏32px预览300",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "collections_bookmark",
+                  "library": "Material Symbols Rounded",
+                  "weight": 300,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "MB2EN",
+              "name": "04 故事粗细300",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "R8szsq",
+                  "name": "04 故事32px预览300",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "auto_stories",
+                  "library": "Material Symbols Rounded",
+                  "weight": 300,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "l408y",
+              "name": "05 相机粗细300",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "h7RzzD",
+                  "name": "05 相机32px预览300",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "photo_camera",
+                  "library": "Material Symbols Rounded",
+                  "weight": 300,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "gakYR",
+              "name": "06 回忆粗细300",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "ZnI24",
+                  "name": "06 回忆32px预览300",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "history",
+                  "library": "Material Symbols Rounded",
+                  "weight": 300,
+                  "fill": "#111827"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Mejra",
+          "name": "400 · 标准对照行",
+          "width": "fill_container",
+          "height": 58,
+          "fill": "#F8FAFC",
+          "gap": 12,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "cwRri",
+              "name": "400 · 标准行标题",
+              "width": 96,
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "RiHju",
+                  "name": "400 · 标准文案",
+                  "fill": "#6B7280",
+                  "content": "400 · 标准",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "oHruD",
+              "name": "01 叠图粗细400",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "t9mCy",
+                  "name": "01 叠图32px预览400",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "photo_library",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "mPiG7",
+              "name": "02 相册粗细400",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "B5h07O",
+                  "name": "02 相册32px预览400",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "photo_album",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "cOFCx",
+              "name": "03 收藏粗细400",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "cgrl2",
+                  "name": "03 收藏32px预览400",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "collections_bookmark",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "CHw1l",
+              "name": "04 故事粗细400",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "A12d5T",
+                  "name": "04 故事32px预览400",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "auto_stories",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "pzFhp",
+              "name": "05 相机粗细400",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "eQuPL",
+                  "name": "05 相机32px预览400",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "photo_camera",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ch0Lj",
+              "name": "06 回忆粗细400",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "t4Eil",
+                  "name": "06 回忆32px预览400",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "history",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#111827"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ylX2y",
+          "name": "500 · 较粗对照行",
+          "width": "fill_container",
+          "height": 58,
+          "fill": "#FFFFFF",
+          "gap": 12,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "YFfw2",
+              "name": "500 · 较粗行标题",
+              "width": 96,
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "k3R57P",
+                  "name": "500 · 较粗文案",
+                  "fill": "#6B7280",
+                  "content": "500 · 较粗",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "aG3pD",
+              "name": "01 叠图粗细500",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "wI4g7",
+                  "name": "01 叠图32px预览500",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "photo_library",
+                  "library": "Material Symbols Rounded",
+                  "weight": 500,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "yBNsD",
+              "name": "02 相册粗细500",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "W89ie2",
+                  "name": "02 相册32px预览500",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "photo_album",
+                  "library": "Material Symbols Rounded",
+                  "weight": 500,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "yKq5k",
+              "name": "03 收藏粗细500",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "AC98M",
+                  "name": "03 收藏32px预览500",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "collections_bookmark",
+                  "library": "Material Symbols Rounded",
+                  "weight": 500,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "bJkNB",
+              "name": "04 故事粗细500",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "fp8ZW",
+                  "name": "04 故事32px预览500",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "auto_stories",
+                  "library": "Material Symbols Rounded",
+                  "weight": 500,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "g9kusp",
+              "name": "05 相机粗细500",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "X6Js7V",
+                  "name": "05 相机32px预览500",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "photo_camera",
+                  "library": "Material Symbols Rounded",
+                  "weight": 500,
+                  "fill": "#111827"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "aLxAZ",
+              "name": "06 回忆粗细500",
+              "width": "fill_container",
+              "height": "fill_container",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "EUiHM",
+                  "name": "06 回忆32px预览500",
+                  "width": 32,
+                  "height": 32,
+                  "icon": "history",
+                  "library": "Material Symbols Rounded",
+                  "weight": 500,
+                  "fill": "#111827"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "D8Vc8",
+          "name": "18px实际尺寸 · 默认与选中",
+          "width": "fill_container",
+          "height": 52,
+          "gap": 12,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "MgaeB",
+              "name": "实际尺寸行标题",
+              "width": 96,
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "gkkBo",
+                  "name": "实际尺寸说明",
+                  "fill": "#6B7280",
+                  "content": "18px · 400",
+                  "fontFamily": "Noto Sans SC",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "OfDQE",
+              "name": "01 叠图实际尺寸对照",
+              "width": "fill_container",
+              "height": "fill_container",
+              "gap": 14,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "p2Xuiz",
+                  "name": "01 叠图18px默认",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "photo_library",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#111827"
+                },
+                {
+                  "type": "icon",
+                  "id": "HxRRT",
+                  "name": "01 叠图18px选中",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "photo_library",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#F59E0B"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ty8K2",
+              "name": "02 相册实际尺寸对照",
+              "width": "fill_container",
+              "height": "fill_container",
+              "gap": 14,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "L4f4fV",
+                  "name": "02 相册18px默认",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "photo_album",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#111827"
+                },
+                {
+                  "type": "icon",
+                  "id": "Q3AI3",
+                  "name": "02 相册18px选中",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "photo_album",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#F59E0B"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "rMEoI",
+              "name": "03 收藏实际尺寸对照",
+              "width": "fill_container",
+              "height": "fill_container",
+              "gap": 14,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "Z6o3KU",
+                  "name": "03 收藏18px默认",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "collections_bookmark",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#111827"
+                },
+                {
+                  "type": "icon",
+                  "id": "c5tg3",
+                  "name": "03 收藏18px选中",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "collections_bookmark",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#F59E0B"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "A7hAw",
+              "name": "04 故事实际尺寸对照",
+              "width": "fill_container",
+              "height": "fill_container",
+              "gap": 14,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "IRtp4",
+                  "name": "04 故事18px默认",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "auto_stories",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#111827"
+                },
+                {
+                  "type": "icon",
+                  "id": "OfDlv",
+                  "name": "04 故事18px选中",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "auto_stories",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#F59E0B"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "D95Pdb",
+              "name": "05 相机实际尺寸对照",
+              "width": "fill_container",
+              "height": "fill_container",
+              "gap": 14,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "seQ9C",
+                  "name": "05 相机18px默认",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "photo_camera",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#111827"
+                },
+                {
+                  "type": "icon",
+                  "id": "FbN21",
+                  "name": "05 相机18px选中",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "photo_camera",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#F59E0B"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "a9GHF",
+              "name": "06 回忆实际尺寸对照",
+              "width": "fill_container",
+              "height": "fill_container",
+              "gap": 14,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "TtpQk",
+                  "name": "06 回忆18px默认",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "history",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#111827"
+                },
+                {
+                  "type": "icon",
+                  "id": "FUnTd",
+                  "name": "06 回忆18px选中",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "history",
+                  "library": "Material Symbols Rounded",
+                  "weight": 400,
+                  "fill": "#F59E0B"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "pAMDi",
+          "name": "底部说明",
+          "fill": "#6B7280",
+          "content": "上三行放大看线条，末行按导航尺寸对照默认与选中。",
+          "fontFamily": "Noto Sans SC",
+          "fontSize": 12,
+          "fontWeight": "normal"
         }
       ]
     }

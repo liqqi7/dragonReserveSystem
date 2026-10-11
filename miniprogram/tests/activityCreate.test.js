@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { readWxss } = require("./helpers/wxss");
 
 let definition;
 const previous = { Page: global.Page, getApp: global.getApp, wx: global.wx };
@@ -71,7 +72,7 @@ test("cover swiper change keeps its visible page state in sync", () => {
 test("category tabs use the scroll-view scrollbar API without masking or clipping", () => {
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
-  const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
+  const wxss = readWxss(path.join(pageDir, "activity_create.wxss"));
   assert.match(wxml, /<scroll-view id="categoryScroller" type="list" scroll-x="\{\{true\}\}" enable-flex="\{\{true\}\}" enhanced="\{\{true\}\}" show-scrollbar="\{\{false\}\}" fast-deceleration="\{\{true\}\}" bounces="\{\{false\}\}" min-drag-distance="8" class="categories">/);
   assert.match(wxml, /<view list-item class="category-edge-spacer"><\/view><view wx:for="\{\{categories\}\}"[^>]*list-item[^>]*class="category-slot">/);
   assert.doesNotMatch(wxml, /categories-(?:viewport|scrollbar-mask)/);
@@ -96,24 +97,25 @@ test("category scrollbar is disabled through the Skyline ScrollViewContext", () 
 test("activity creation scrolls overflow above its fixed transparent footer", () => {
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
-  const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
+  const wxss = readWxss(path.join(pageDir, "activity_create.wxss"));
   const json = JSON.parse(fs.readFileSync(path.join(pageDir, "activity_create.json"), "utf8"));
   assert.match(wxml, /<view class="body body--step-\{\{step\}\} body--subitems-\{\{form\.subItemsEnabled \? 'open' : 'closed'\}\} \{\{subItemsClosing \? 'body--subitems-closing' : ''\}\}"/);
   assert.doesNotMatch(wxml, /class="body body--step-\{\{step\}\}"[^>]*scroll-y/);
   assert.match(wxml, /class="step-scroll" type="list" scroll-y="\{\{true\}\}"[^>]*scroll-into-view="create-step-\{\{step\}\}"/);
-  assert.match(wxml, /id="create-step-\{\{step\}\}" style="padding-bottom:\{\{footerSafeAreaRpx \+ \(step > 1 \? 207\.69 : 130\.77\)\}\}rpx;"/);
-  assert.match(wxss, /\.step-scroll \{[^}]*flex:1;[^}]*height:0;[^}]*min-height:0;/);
+  assert.doesNotMatch(wxml, /padding-bottom:\{\{footerSafeAreaRpx \+/);
+  assert.match(wxss, /\.step-scroll,[\s\S]*?\.memory-body\s*\{[^}]*flex:\s*1;[^}]*height:\s*0;[^}]*min-height:\s*0;/);
   assert.equal(json.disableScroll, true);
   assert.match(wxss, /\.body \{[^}]*flex:1;[^}]*min-height:0;[^}]*overflow:visible;/);
   assert.match(wxss, /\.step-stage \{[^}]*overflow:visible;/);
   assert.match(wxss, /\.step-scene \{[^}]*overflow:visible;/);
-  assert.match(wxss, /\.footer \{[^}]*position:absolute;[^}]*left:0;[^}]*right:0;[^}]*bottom:0;[^}]*background:transparent;[^}]*z-index:2;/);
+  assert.match(wxss, /\.wizard \.footer,[\s\S]*?\.memory-footer\s*\{[^}]*position:\s*relative;[^}]*flex-shrink:\s*0;/);
+  assert.match(wxss, /\.footer \{[^}]*background:transparent;[^}]*z-index:2;/);
   assert.doesNotMatch(wxss, /\.footer \{[^}]*background:#FFFFFF;/);
 });
 test("cover page keeps the prototype spacing and full-width action", () => {
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
-  const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
+  const wxss = readWxss(path.join(pageDir, "activity_create.wxss"));
   assert.match(wxss, /\.body--step-1 \.heading \{ padding-top:38\.46rpx; \}/);
   assert.doesNotMatch(wxml, /<button[^>]*class="primary/);
   assert.match(wxml, /<view class="primary [^>]*aria-role="button"[^>]*aria-disabled=/);
@@ -124,14 +126,14 @@ test("cover page keeps the prototype spacing and full-width action", () => {
   assert.doesNotMatch(wxml, /class="wizard"[^>]*padding-bottom/);
   assert.match(wxml, /<view class="footer" style="padding-bottom:\{\{footerSafeAreaRpx\}\}rpx;">/);
   assert.doesNotMatch(wxml, /footer" style="bottom:/);
-  assert.match(wxss, /\.footer \{[^}]*position:absolute;[^}]*left:0;[^}]*right:0;[^}]*bottom:0;[^}]*padding:23\.08rpx 46\.15rpx 0;[^}]*background:transparent;[^}]*z-index:2;/);
+  assert.match(wxss, /\.footer \{[^}]*padding:23\.08rpx 46\.15rpx 0;[^}]*background:transparent;[^}]*z-index:2;/);
   assert.match(wxml, /<view class="gallery-indicator" aria-hidden="true"><view wx:for="\{\{galleryPages\}\}" wx:key="id" wx:for-item="indicatorPage" wx:for-index="indicatorIndex" class="\{\{galleryCurrent === indicatorIndex \? 'gallery-indicator-active' : 'gallery-indicator-dot'\}\}"><\/view><\/view>/);
   assert.match(wxml, /bindchange="onGalleryChange"/);
 });
 test("selected cover keeps the image size and uses an unclipped prototype outline", () => {
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
-  const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
+  const wxss = readWxss(path.join(pageDir, "activity_create.wxss"));
   assert.match(wxml, /<view class="cover-media"><image wx:if="\{\{coverImagePaths\[item\.id\]\}\}" class="cover-image"/);
   assert.match(wxml, /class="cover-outline \{\{form\.activityCoverId === item\.id \? 'cover-outline--selected' : ''\}\}"/);
   assert.match(wxss, /\.cover \{[^}]*width:317\.31rpx;[^}]*height:423\.08rpx;[^}]*overflow:visible;/);
@@ -145,7 +147,7 @@ test("activity cover uses the homepage-quality source with the same shimmer and 
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
   const js = fs.readFileSync(path.join(pageDir, "activity_create.js"), "utf8");
-  const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
+  const wxss = readWxss(path.join(pageDir, "activity_create.wxss"));
   assert.match(wxml, /<image wx:if="\{\{coverImagePaths\[item\.id\]\}\}" class="cover-image" src="\{\{coverImagePaths\[item\.id\]\}\}" mode="aspectFill" fade-in="\{\{true\}\}" bindload="onCoverImageLoad" binderror="onCoverImageError" data-id="\{\{item\.id\}\}" \/>/);
   assert.doesNotMatch(wxml, /<image class="cover-image" src="\{\{item\.thumbnailUrl\}\}"/);
   assert.match(wxml, /class="cover-skeleton \{\{coverImageStates\[item\.id\] === 'loaded' \? 'cover-skeleton--revealed' : ''\}\}"/);
@@ -180,7 +182,7 @@ test("cover image callbacks keep each cover's load state independent", () => {
 test("selection badge and back icon match the prototype geometry", () => {
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
-  const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
+  const wxss = readWxss(path.join(pageDir, "activity_create.wxss"));
   const checkSvg = fs.readFileSync(path.join(__dirname, "../images/activity-create-check.svg"), "utf8");
   const backSvg = fs.readFileSync(path.join(__dirname, "../images/activity-create-chevron-left.svg"), "utf8");
   assert.match(wxml, /<image class="selected-icon" src="\/images\/activity-create-check\.svg" mode="aspectFit" \/>/);
@@ -288,7 +290,7 @@ test("wizard stages keep the outgoing view while the next view enters from the r
 test("wizard markup retains a non-interactive outgoing scene and directional fade transition", () => {
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
-  const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
+  const wxss = readWxss(path.join(pageDir, "activity_create.wxss"));
   assert.match(wxml, /class="back" bindtap="backHome"[^>]*aria-label="返回首页"/);
   assert.match(wxml, /class="previous" bindtap="previousStep"/);
   assert.match(wxml, /wx:if="\{\{leavingStep\}\}" class="step-scene step-scene--leaving step-scene--leaving--\{\{stepTransitionDirection\}\}"/);
@@ -302,12 +304,12 @@ test("footer matches the prototype action stack and keeps only the runtime safe 
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const js = fs.readFileSync(path.join(pageDir, "activity_create.js"), "utf8");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
-  const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
+  const wxss = readWxss(path.join(pageDir, "activity_create.wxss"));
   assert.match(js, /footerSafeAreaRpx: 7\.69/);
   assert.match(js, /footerSafeAreaRpx = Math\.round\(\(getBottomSafeAreaRpx\(\) \+ 7\.69\) \* 100\) \/ 100/);
   assert.match(wxml, /<view class="footer" style="padding-bottom:\{\{footerSafeAreaRpx\}\}rpx;">/);
   assert.doesNotMatch(wxml, /footerBottomPx/);
-  assert.match(wxss, /\.footer \{[^}]*bottom:0;[^}]*padding:23\.08rpx 46\.15rpx 0;/);
+  assert.match(wxss, /\.footer \{[^}]*padding:23\.08rpx 46\.15rpx 0;/);
   assert.match(wxss, /\.primary \{[^}]*height:107\.69rpx;/);
   assert.match(wxss, /\.previous \{[^}]*height:76\.92rpx;/);
 });
@@ -337,7 +339,7 @@ test("basic-information step follows the prototype copy, spacing, and placeholde
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const js = fs.readFileSync(path.join(pageDir, "activity_create.js"), "utf8");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
-  const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
+  const wxss = readWxss(path.join(pageDir, "activity_create.wxss"));
   assert.match(js, /"取个正经名字吧，求求你了"/);
   assert.match(wxml, /placeholder="请输入活动名称" placeholder-style="color:#9CA3AF;font-size:26\.92rpx;font-weight:400;line-height:26\.92rpx;"/);
   assert.match(wxml, /<text wx:if="{{!form\.remark && !remarkComposing}}" class="remark-placeholder">填写活动指引、游玩要求或相关提醒…<\/text>/);
@@ -348,7 +350,7 @@ test("basic-information step follows the prototype copy, spacing, and placeholde
   assert.doesNotMatch(wxml, /placeholder-class/);
   assert.match(wxml, /<text class="location-arrow">›<\/text>/);
   assert.match(wxss, /\.body--step-2 \.heading \{ padding-top:246\.15rpx; \}/);
-  assert.match(wxss, /\.body--step-2 \.fields \{ padding:69\.23rpx 53\.85rpx 38\.46rpx; \}/);
+  assert.match(wxss, /\.body--step-2 \.fields \{ padding:69\.23rpx 53\.85rpx 0; \}/);
   assert.match(wxss, /\.subtitle \{ font-size:26\.92rpx; line-height:1\.4; color:#9CA3AF; font-weight:400; \}/);
   assert.match(wxss, /\.field \{[^}]*font-size:26\.92rpx; line-height:26\.92rpx;/);
   assert.match(wxss, /\.location-value \{ font-size:26\.92rpx; line-height:26\.92rpx; font-weight:400; \}/);
@@ -364,7 +366,7 @@ test("details step closed state matches the prototype spacing, empty time, and c
   const pageDir = path.join(__dirname, "../pages/activity_create");
   const js = fs.readFileSync(path.join(pageDir, "activity_create.js"), "utf8");
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
-  const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
+  const wxss = readWxss(path.join(pageDir, "activity_create.wxss"));
 
   assert.match(js, /const initialForm = \{ \.\.\.buildCreateForm\(\), startDate: "", startTime: "", endDate: "", endTime: "", maxParticipants: 16 \};/);
   assert.match(wxml, /class="fields fields--subitems-\{\{form\.subItemsEnabled \? 'open' : 'closed'\}\} \{\{subItemsClosing \? 'fields--subitems-closing' : ''\}\}"/);
@@ -378,8 +380,8 @@ test("details step closed state matches the prototype spacing, empty time, and c
 
   assert.match(wxss, /\.body--step-3\.body--subitems-closed \.heading \{ padding-top:246\.15rpx; \}/);
   assert.match(wxss, /\.body--step-3\.body--subitems-open \.heading \{ padding-top:61\.54rpx; \}/);
-  assert.match(wxss, /\.body--step-3 \.fields--subitems-closed \{ padding:69\.23rpx 53\.85rpx 38\.46rpx; \}/);
-  assert.match(wxss, /\.body--step-3 \.fields--subitems-open \{ padding:38\.46rpx 53\.85rpx 38\.46rpx; \}/);
+  assert.match(wxss, /\.body--step-3 \.fields--subitems-closed \{ padding:69\.23rpx 53\.85rpx 0; \}/);
+  assert.match(wxss, /\.body--step-3 \.fields--subitems-open \{ padding:38\.46rpx 53\.85rpx 0; \}/);
   assert.match(wxss, /\.time-card \{[^}]*gap:23\.08rpx;/);
   assert.match(wxss, /\.time-placeholder \{ color:#9CA3AF; font-weight:400; \}/);
   assert.match(wxss, /\.capacity-field \{ margin-top:38\.46rpx; \}/);
@@ -395,7 +397,7 @@ test("details step closed state matches the prototype spacing, empty time, and c
 
 test("expanded subitems move the page upward with an ease-in-out transition", () => {
   const pageDir = path.join(__dirname, "../pages/activity_create");
-  const wxss = fs.readFileSync(path.join(pageDir, "activity_create.wxss"), "utf8");
+  const wxss = readWxss(path.join(pageDir, "activity_create.wxss"));
   assert.match(wxss, /\.body--step-3 \.heading \{ transition:padding-top 360ms cubic-bezier\(0\.42,0,0\.58,1\); \}/);
   assert.match(wxss, /\.body--step-3 \.fields \{ transition:padding-top 360ms cubic-bezier\(0\.42,0,0\.58,1\); \}/);
   assert.match(wxss, /\.body--step-3\.body--subitems-closed \.heading \{ padding-top:246\.15rpx; \}/);

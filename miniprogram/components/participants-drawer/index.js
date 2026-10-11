@@ -4,7 +4,7 @@ const {
   getActionMetrics,
   formatCheckinParts,
   buildProgressView,
-  getMaxHeightRpx
+  getMaxHeightRpx,
 } = require("./logic");
 const { getRpxPerPx } = require("../../utils/safeArea");
 
@@ -21,9 +21,8 @@ function getDrawerHeightRpx(rowCount, maxHeightRpx, safeBottomRpx) {
   const count = Math.max(0, Math.floor(Number(rowCount) || 0));
   const safeBottom = Math.max(0, Number(safeBottomRpx) || 0);
   const fixedChromeRpx = 130.77 + 15.38 + 153.85 + 15.38 + 61.54 + 30.77 + safeBottom;
-  const bodyRpx = count > 0
-    ? count * 123.08 + Math.max(0, count - 1) * 7.69
-    : 576.92;
+  const bodyRpx =
+    count > 0 ? count * 123.08 + Math.max(0, count - 1) * 7.69 : 576.92;
   return Math.min(Number(maxHeightRpx) || 1384.62, fixedChromeRpx + bodyRpx);
 }
 
@@ -33,10 +32,9 @@ Component({
     participants: { type: Array, value: [] },
     participantCount: { type: Number, value: 0 },
     checkinCount: { type: Number, value: 0 },
-    maxParticipants: { type: Number, value: null },
     canManage: { type: Boolean, value: false },
     isAdmin: { type: Boolean, value: false },
-    safeBottomRpx: { type: Number, value: 0 }
+    safeBottomRpx: { type: Number, value: 0 },
   },
 
   data: {
@@ -50,10 +48,9 @@ Component({
     actionAreaWidthRpx: 0,
     maxHeightRpx: 1384.62,
     participantCountText: "0",
-    participantLimitText: "",
-    participantHasLimit: false,
+    checkinCountText: "0",
     progressWidth: "0%",
-    progressMessage: "暂无成员报名"
+    progressMessage: "暂无成员报名",
   },
 
   observers: {
@@ -62,7 +59,10 @@ Component({
         this.prepareParticipantsContainer();
       } else {
         this._gesture = null;
-        this.setData({ containerVisible: false, memberListScrollEnabled: true });
+        this.setData({
+          containerVisible: false,
+          memberListScrollEnabled: true,
+        });
       }
     },
     participants(value) {
@@ -71,12 +71,12 @@ Component({
     "canManage, isAdmin"() {
       this.setRows(this.properties.participants || []);
     },
-    "participantCount, checkinCount, maxParticipants"() {
+    "participantCount, checkinCount"() {
       this.setProgress();
     },
     safeBottomRpx() {
       this.updateHeightConstraints();
-    }
+    },
   },
 
   lifetimes: {
@@ -86,7 +86,7 @@ Component({
       this.setRows(this.properties.participants || []);
       this.setProgress();
       if (this.properties.visible) this.prepareParticipantsContainer();
-    }
+    },
   },
 
   methods: {
@@ -107,7 +107,11 @@ Component({
     },
 
     onContainerBeforeLeave() {
-      if (this.properties.visible && this.data.containerVisible && !this._containerCloseNotified) {
+      if (
+        this.properties.visible &&
+        this.data.containerVisible &&
+        !this._containerCloseNotified
+      ) {
         this._containerCloseNotified = true;
         this.triggerEvent("close");
       }
@@ -123,15 +127,19 @@ Component({
     updateHeightConstraints() {
       const maxHeightRpx = getMaxHeightRpx();
       const safeBottomRpx = Number(this.properties.safeBottomRpx) || 0;
-      const drawerHeightRpx = getDrawerHeightRpx(this.data.rows.length, maxHeightRpx, safeBottomRpx);
+      const drawerHeightRpx = getDrawerHeightRpx(
+        this.data.rows.length,
+        maxHeightRpx,
+        safeBottomRpx,
+      );
       this.setData({
         maxHeightRpx,
         drawerHeightRpx,
         surfaceSizingStyle: getSurfaceSizingStyle(
           this._useExplicitSurfaceHeight,
           drawerHeightRpx,
-          maxHeightRpx
-        )
+          maxHeightRpx,
+        ),
       });
     },
 
@@ -139,48 +147,64 @@ Component({
       const progress = buildProgressView(
         this.properties.participantCount,
         this.properties.checkinCount,
-        this.properties.maxParticipants
       );
       this.setData(progress, callback);
     },
 
     setRows(participants, callback) {
-      const actionMetrics = getActionMetrics(this.properties.canManage, this.properties.isAdmin);
-      const rows = (Array.isArray(participants) ? participants : []).map((item, index) => {
-        const row = item && typeof item === "object" ? item : { name: String(item || "未命名") };
-        const checked = !!(row.checkedInAt || row.checkedInAtRaw);
-        const parts = formatCheckinParts(row.checkedInAtRaw || row.checkedInAt);
-        const checkinLocation = checked
-          ? String(row.checkinLocationName || row.checkinAddress || "").trim()
-          : "";
-        return {
-          ...row,
-          rowKey: row.rowKey || (row.id != null && row.id !== "" ? `participant-${row.id}` : `participant-${index}`),
-          name: row.name || "未命名",
-          avatarUrl: row.avatarUrl || "/images/default-avatar.svg",
-          hasCheckedIn: checked,
-          hasCheckinLocation: Boolean(checkinLocation),
-          checkinDateText: checked ? parts.date : "—",
-          checkinTimeText: checked ? parts.time : "—",
-          checkinLocationText: checkinLocation || "—",
-          offsetX: 0
-        };
-      });
+      const actionMetrics = getActionMetrics(
+        this.properties.canManage,
+        this.properties.isAdmin,
+      );
+      const rows = (Array.isArray(participants) ? participants : []).map(
+        (item, index) => {
+          const row =
+            item && typeof item === "object"
+              ? item
+              : { name: String(item || "未命名") };
+          const checked = !!(row.checkedInAt || row.checkedInAtRaw);
+          const parts = formatCheckinParts(
+            row.checkedInAtRaw || row.checkedInAt,
+          );
+          const checkinLocation = checked
+            ? String(row.checkinLocationName || row.checkinAddress || "").trim()
+            : "";
+          return {
+            ...row,
+            rowKey:
+              row.rowKey ||
+              (row.id != null && row.id !== ""
+                ? `participant-${row.id}`
+                : `participant-${index}`),
+            name: row.name || "未命名",
+            avatarUrl: row.avatarUrl || "/images/default-avatar.svg",
+            hasCheckedIn: checked,
+            hasCheckinLocation: Boolean(checkinLocation),
+            checkinDateText: checked ? parts.date : "—",
+            checkinTimeText: checked ? parts.time : "—",
+            checkinLocationText: checkinLocation || "—",
+            offsetX: 0,
+          };
+        },
+      );
       const drawerHeightRpx = getDrawerHeightRpx(
         rows.length,
         this.data.maxHeightRpx,
-        this.properties.safeBottomRpx
+        this.properties.safeBottomRpx,
       );
-      this.setData({
-        rows,
-        ...actionMetrics,
-        drawerHeightRpx,
-        surfaceSizingStyle: getSurfaceSizingStyle(
-          this._useExplicitSurfaceHeight,
+      this.setData(
+        {
+          rows,
+          ...actionMetrics,
           drawerHeightRpx,
-          this.data.maxHeightRpx
-        )
-      }, callback);
+          surfaceSizingStyle: getSurfaceSizingStyle(
+            this._useExplicitSurfaceHeight,
+            drawerHeightRpx,
+            this.data.maxHeightRpx,
+          ),
+        },
+        callback,
+      );
     },
 
     onMaskTap() {
@@ -192,7 +216,8 @@ Component({
     onTouchStart(e) {
       const index = Number(e.currentTarget.dataset.index);
       const touch = e.touches && e.touches[0];
-      if (!Number.isFinite(index) || !touch || !this.properties.canManage) return;
+      if (!Number.isFinite(index) || !touch || !this.properties.canManage)
+        return;
       const row = this.data.rows[index];
       if (!row) return;
       this.closeOpenRows(index);
@@ -201,7 +226,7 @@ Component({
         startX: touch.clientX,
         startY: touch.clientY,
         startOffsetX: row.offsetX || 0,
-        horizontal: null
+        horizontal: null,
       };
     },
 
@@ -211,7 +236,10 @@ Component({
       if (!gesture || !touch || !this.properties.canManage) return;
       const dx = touch.clientX - gesture.startX;
       const dy = touch.clientY - gesture.startY;
-      if (gesture.horizontal === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
+      if (
+        gesture.horizontal === null &&
+        (Math.abs(dx) > 6 || Math.abs(dy) > 6)
+      ) {
         gesture.horizontal = Math.abs(dx) > Math.abs(dy);
       }
       if (!gesture.horizontal) return;
@@ -221,17 +249,22 @@ Component({
       // setData is asynchronous in the Mini Program runtime. Keep the latest
       // gesture offset locally so touchend never snaps from stale row data.
       gesture.currentOffsetX = next;
-      const rows = this.data.rows.map((row, i) => i === gesture.index
-        ? { ...row, offsetX: next }
-        : row);
+      const rows = this.data.rows.map((row, i) =>
+        i === gesture.index ? { ...row, offsetX: next } : row,
+      );
       this.setData({ rows, memberListScrollEnabled: false });
     },
 
     onTouchEnd() {
       const gesture = this._gesture;
       this._gesture = null;
-      if (!gesture || gesture.horizontal !== true || !this.properties.canManage) {
-        if (!this.data.memberListScrollEnabled) this.setData({ memberListScrollEnabled: true });
+      if (
+        !gesture ||
+        gesture.horizontal !== true ||
+        !this.properties.canManage
+      ) {
+        if (!this.data.memberListScrollEnabled)
+          this.setData({ memberListScrollEnabled: true });
         return;
       }
       const row = this.data.rows[gesture.index];
@@ -241,15 +274,15 @@ Component({
       }
       const endOffsetX = Number.isFinite(gesture.currentOffsetX)
         ? gesture.currentOffsetX
-        : (row.offsetX || 0);
+        : row.offsetX || 0;
       const { offsetX } = getSwipeSettledState(
         gesture.startOffsetX,
         endOffsetX,
-        this.data.actionOffsetRpx
+        this.data.actionOffsetRpx,
       );
-      const rows = this.data.rows.map((item, index) => index === gesture.index
-        ? { ...item, offsetX }
-        : item);
+      const rows = this.data.rows.map((item, index) =>
+        index === gesture.index ? { ...item, offsetX } : item,
+      );
       this.setData({ rows, memberListScrollEnabled: true });
     },
 
@@ -258,9 +291,9 @@ Component({
     },
 
     closeOpenRows(exceptIndex) {
-      const rows = this.data.rows.map((row, index) => index === exceptIndex
-        ? row
-        : { ...row, offsetX: 0 });
+      const rows = this.data.rows.map((row, index) =>
+        index === exceptIndex ? row : { ...row, offsetX: 0 },
+      );
       this.setData({ rows });
     },
 
@@ -278,6 +311,6 @@ Component({
       if (this._containerCloseNotified) return;
       this._containerCloseNotified = true;
       this.triggerEvent("close");
-    }
-  }
+    },
+  },
 });

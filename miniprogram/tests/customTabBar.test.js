@@ -10,7 +10,7 @@ const imageDir = path.join(__dirname, "../images");
 
 const iconNames = [
   "tab-home-material-rounded",
-  "tab-tools-material-rounded",
+  "memory-images",
   "tab-leaderboard-material-rounded",
   "tab-person-material-rounded"
 ];
@@ -46,7 +46,7 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.match(wxml, /id="qa-tab-glass-stroke"/);
   assert.match(wxml, /class="tab-glass-stroke"/);
   assert.match(wxml, /src="\/images\/tab-glass-stroke\.svg"/);
-  for (const qaId of ["home", "tools", "ranking", "profile"]) {
+  for (const qaId of ["home", "memory", "ranking", "profile"]) {
     assert.match(wxml, new RegExp(`id="qa-tab-${qaId}"`));
   }
   assert.match(wxml, /id="qa-tab-create"[^>]*catchtap="onCreateActivityTap"/);
@@ -56,7 +56,7 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.doesNotMatch(wxml, />日程<\/text>|qa-tab-calendar|tab-calendar-month/);
   assert.match(wxml, />排行<\/text>/);
   assert.match(wxml, />我的<\/text>/);
-  assert.match(wxml, />工具<\/text>/);
+  assert.match(wxml, />记忆<\/text>/);
   assert.doesNotMatch(wxml, /tab-indicator|tab-bottom-fade|data:image\/svg|lucide/);
   assert.equal((wxml.match(/<view class="tab-icon"/g) || []).length, 4);
   assert.equal((wxml.match(/<image class="tab-icon-glyph /g) || []).length, 8);
@@ -137,7 +137,7 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.doesNotMatch(activeLabelRule[1], /gap:|margin:|padding:|font-size:|font-weight:|line-height:|transform:/);
   assert.doesNotMatch(wxss, /border-radius:\s*999(?:r?px)|tab-indicator/);
 
-  assert.equal((js.match(/"\/pages\//g) || []).length, 4);
+  assert.equal((js.match(/const TAB_URLS = \[([\s\S]*?)\]/)[1].match(/"\/pages\//g) || []).length, 4);
   assert.doesNotMatch(js, /TAB_SWITCH_COMMIT_DELAY_MS|_pendingSwitchIndex/);
   assert.doesNotMatch(syncJs, /indicatorTransitionEnabled/);
   assert.match(listWxml, /height: calc\(100rpx \+ \{\{bottomSafeAreaRpx\}\}rpx\)/);
@@ -202,7 +202,7 @@ test("create access dialog follows the warning-level centered modal spec", () =>
   assert.match(profileJs, /openPermissionModal\(\)\s*\{[\s\S]*?syncProfileTabBarModalMask\(this, true\)/);
   assert.match(profileJs, /closePermissionModal\(\)\s*\{[\s\S]*?syncProfileTabBarModalMask\(this, false\)/);
 
-  for (const pageName of ["activity_list", "tools", "history", "profile"]) {
+  for (const pageName of ["activity_list", "memory", "history", "profile"]) {
     const pageDir = path.join(__dirname, `../pages/${pageName}`);
     const pageJson = fs.readFileSync(path.join(pageDir, `${pageName}.json`), "utf8");
     const pageWxml = fs.readFileSync(path.join(pageDir, `${pageName}.wxml`), "utf8");
@@ -364,6 +364,15 @@ test("tab icons use geometry-locked Pencil SVG pairs without sprite cropping", (
   for (const iconName of iconNames) {
     const inactive = fs.readFileSync(path.join(imageDir, `${iconName}.svg`), "utf8");
     const active = fs.readFileSync(path.join(imageDir, `${iconName}-active.svg`), "utf8");
+    if (iconName === "memory-images") {
+      assert.match(inactive, /data-pencil-id="Z50zWz"/);
+      assert.match(inactive, /viewBox="0 0 14\.000015258789062 14"/);
+      assert.match(inactive, /fill="#111827"/);
+      assert.match(active, /fill="#F59E0B"/);
+      assert.equal(inactive.replaceAll("#111827", "#F59E0B"), active);
+      assert.doesNotMatch(active, /stroke-width/);
+      continue;
+    }
     const inactivePath = inactive.match(/<path transform="translate\(0 960\)" d="([^"]+)"\/>/);
     const activePath = active.match(/<path transform="translate\(0 960\)" d="([^"]+)"\/>/);
 
@@ -405,7 +414,7 @@ test("four tab routes and selected states stay aligned", () => {
   const appJson = JSON.parse(fs.readFileSync(path.join(__dirname, "../app.json"), "utf8"));
   const expected = [
     ["pages/activity_list/activity_list", "activity_list/activity_list.js", 0],
-    ["pages/tools/tools", "tools/tools.js", 1],
+    ["pages/memory/memory", "memory/memory.js", 1],
     ["pages/history/history", "history/history.js", 2],
     ["pages/profile/profile", "profile/profile.js", 3]
   ];
@@ -423,7 +432,7 @@ test("four tab routes and selected states stay aligned", () => {
 });
 
 test("secondary tab pages explicitly restore the custom tab bar on show", () => {
-  const toolsJs = fs.readFileSync(path.join(__dirname, "../pages/tools/tools.js"), "utf8");
+  const toolsJs = fs.readFileSync(path.join(__dirname, "../pages/memory/memory.js"), "utf8");
   const historyJs = fs.readFileSync(path.join(__dirname, "../pages/history/history.js"), "utf8");
   const profileJs = fs.readFileSync(path.join(__dirname, "../pages/profile/profile.js"), "utf8");
 
@@ -480,7 +489,7 @@ test("tab bar sync only updates navigation state and skips unchanged patches", (
 });
 
 test("all four tab pages rely on the single framework custom-tab-bar implementation", () => {
-  const pageNames = ["activity_list", "tools", "history", "profile"];
+  const pageNames = ["activity_list", "memory", "history", "profile"];
   const duplicateTabSelector = /\.(?:tab-items-wrap|tab-item|tab-item--active|tab-icon|tab-icon-glyph|tab-label|tab-label--active)\b/;
 
   for (const pageName of pageNames) {

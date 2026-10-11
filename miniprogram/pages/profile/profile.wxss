@@ -349,3 +349,30 @@ button.avatar-edit-btn {
 .modal-footer .btn::after {
   border: none;
 }
+.profile-review-label {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: row;
+  align-items: center;
+  gap: 23.07692rpx;
+}
+
+.profile-review-label .profile-menu-label {
+  flex: none;
+}
+
+.profile-review-count {
+  box-sizing: border-box;
+  min-width: 34.61538rpx;
+  height: 34.61538rpx;
+  flex: none;
+  padding: 0 7.69231rpx;
+  border-radius: 17.30769rpx;
+  background: #e5484d;
+  color: #ffffff;
+  font-size: 19.23077rpx;
+  font-weight: 600;
+  line-height: 34.61538rpx;
+  text-align: center;
+}

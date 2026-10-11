@@ -1,0 +1,46 @@
+<view class="memory-screen" style="padding-top:{{top}}px;">
+  <view class="memory-nav"><view class="memory-back" bindtap="back" aria-role="button" aria-disabled="{{busy}}" aria-label="返回"><image src="/images/memory-back-dark.svg" /></view></view>
+  <scroll-view class="memory-body" type="list" scroll-y show-scrollbar="{{false}}" bounces="{{false}}">
+    <view class="memory-form">
+      <view class="memory-intro"><text class="title">记忆投稿</text><text class="subtitle">好记忆值得被官方收藏</text></view>
+      <view class="memory-field"><view class="label memory-label"><text>上传内容</text><text wx:if="{{files.length}}" class="upload-hint">左右滑动</text></view>
+        <view wx:if="{{files.length}}" class="upload-grid">
+          <scroll-view class="upload-scroll" type="list" scroll-x enable-flex scroll-into-view="{{mediaScrollTarget}}" scroll-into-view-alignment="end" show-scrollbar="{{false}}" bounces="{{false}}">
+          <view list-item class="upload-leading-space" />
+          <view wx:for="{{files}}" wx:key="id" id="upload-file-{{item.id}}" list-item class="upload-tile" data-index="{{index}}" bindtap="preview" aria-label="{{item.kind === 'video' ? '视频' : '图片'}}，轻点预览">
+            <image wx:if="{{item.thumbnail}}" class="upload-cover" src="{{item.thumbnail}}" mode="aspectFill" data-id="{{item.id}}" data-src="{{item.thumbnail}}" binderror="thumbnailError" />
+            <image wx:if="{{item.kind === 'video'}}" class="upload-play" src="/images/memory-play.svg" />
+            <text wx:if="{{item.kind === 'video'}}" class="upload-duration">{{item.durationLabel}}</text>
+            <view wx:if="{{item.uploadState === 'waiting' || item.uploadState === 'preparing' || item.uploadState === 'uploading' || item.uploadState === 'failed'}}" class="upload-status" data-id="{{item.id}}" catchtap="retryFile" aria-live="polite">
+              <view wx:if="{{item.uploadState === 'uploading'}}" class="upload-progress-ring" style="background-image:conic-gradient(#FFFFFF 0%,#FFFFFF {{item.uploadProgress || 0}}%,#FFFFFF40 {{item.uploadProgress || 0}}%,#FFFFFF40 100%);" />
+              <image wx:elif="{{item.uploadState !== 'failed'}}" class="upload-spinner" src="/images/memory-upload-spinner.svg" />
+              <text>{{item.uploadState === 'uploading' ? '上传中 ' + item.uploadProgress + '%' : (item.uploadState === 'failed' ? '上传失败' : '等待上传')}}</text>
+            </view>
+            <view wx:if="{{!locked && !selecting}}" class="upload-remove" data-id="{{item.id}}" catchtap="remove" aria-role="button" aria-label="{{item.kind === 'video' ? '删除视频' : '删除图片'}}"><image src="/images/memory-upload-remove.svg" /></view>
+          </view>
+          <view wx:if="{{files.length < 10}}" id="upload-add" list-item class="upload-tile upload-add" bindtap="choose" aria-role="button" aria-disabled="{{locked || selecting}}" aria-label="添加内容"><image src="/images/memory-add.svg" /><text>添加</text></view>
+          </scroll-view>
+        </view>
+        <view wx:else class="upload-tile upload-add" bindtap="choose" aria-role="button" aria-disabled="{{locked || selecting}}" aria-label="添加内容"><image src="/images/memory-add.svg" /><text>添加</text></view>
+      </view>
+      <view class="memory-field"><view class="label memory-label"><text>位置</text><text class="memory-optional">非必填</text></view>
+        <view class="field memory-input memory-picker {{!locationName ? 'memory-picker--placeholder' : ''}}" bindtap="chooseLocation" aria-role="button" aria-disabled="{{locked}}"><text max-lines="1" overflow="ellipsis">{{locationName || '选择位置'}}</text><image src="/images/memory-chevron.svg" /></view>
+      </view>
+      <view class="memory-field"><view class="label memory-label"><text>关联活动</text><text class="memory-optional">非必填</text></view>
+        <view class="field memory-input memory-picker {{!activityName ? 'memory-picker--placeholder' : ''}}" bindtap="chooseActivity" aria-role="button" aria-disabled="{{locked}}"><view class="memory-picker-value"><text max-lines="1" overflow="ellipsis">{{activityName || '选择关联活动'}}</text><text wx:if="{{activityTime}}" class="memory-optional">{{activityTime}}</text></view><image src="/images/memory-chevron.svg" /></view>
+      </view>
+      <view class="memory-field"><view class="label memory-label"><text>备注</text><text class="memory-optional">非必填</text></view>
+        <view class="remark"><textarea class="remark-input" value="{{caption}}" bindinput="caption" disabled="{{locked}}" maxlength="-1" placeholder="补充这段记忆的说明…" placeholder-style="color:#9CA3AF;" disable-default-padding="{{true}}" /><text class="counter memory-counter">{{captionCount}}/50</text></view>
+      </view>
+      <text wx:if="{{error}}" class="memory-error">{{error}}</text>
+    </view>
+  </scroll-view>
+  <view class="memory-footer" style="padding-bottom:{{bottom}}rpx;"><view class="primary {{!ready || busy || selecting || !files.length ? 'primary--disabled' : ''}}" aria-role="button" aria-disabled="{{!ready || busy || selecting || !files.length}}" bindtap="confirmUpload"><text>{{busy ? (progress < 99 ? '上传中 ' + progress + '%' : '提交中') : (locked ? '重试提交' : '上传')}}</text></view></view>
+  <view wx:if="{{showActivities}}" class="memory-sheet-overlay" bindtap="closeActivities">
+    <view class="memory-sheet" catchtap="stopTap" style="padding-bottom:{{bottom}}rpx;"><view class="memory-sheet-drag" bindtap="closeActivities"><view /></view><view class="memory-sheet-title"><text>关联活动</text></view>
+      <scroll-view type="list" scroll-y class="memory-sheet-body activity-options"><view class="activity-option" bindtap="selectActivity" data-id="0" aria-role="button">不关联活动</view><view wx:for="{{activities}}" wx:key="id" class="activity-option" bindtap="selectActivity" data-id="{{item.id}}" aria-role="button"><text max-lines="2" overflow="ellipsis">{{item.name}}</text></view></scroll-view>
+    </view>
+  </view>
+</view>
+<create-access-dialog id="memory-confirm" bind:confirm="upload" />
+<create-access-dialog id="session-expired-dialog" />

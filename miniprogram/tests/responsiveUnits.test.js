@@ -63,6 +63,34 @@ test("visual WXSS dimensions use rpx except approved px cases", () => {
       );
       source = source.replace(/(?:top|width|height|font-size|line-height|border-radius):\s*\d+px;|padding:\s*\d+px\s+7\.69231rpx;/g, "");
     }
+    if (relative === path.join("pages", "memory_detail", "memory_detail.wxss")) {
+      // Native video rotates the viewport: fixed controls must not double with landscape rpx.
+      const fullscreenPixels = {
+        ".viewer-fullscreen .viewer-play-button": "width:64px;height:64px;padding:18px;",
+        ".viewer-fullscreen .viewer-play-button image": "width:28px;height:28px;",
+        ".fullscreen-head": "height:80px;padding:6px 14px;",
+        ".memory-viewer button.fullscreen-back,.memory-viewer button.fullscreen-exit": "width:44px;height:44px;padding:10px;",
+        ".fullscreen-back image": "width:24px;height:24px;",
+        ".fullscreen-exit image": "width:22px;height:22px;",
+        ".fullscreen-controls": "height:70px;padding:26px 12px 6px 24px;gap:12px;",
+        ".fullscreen-time": "width:40px;font-size:11px;",
+        ".fullscreen-time--duration": "width:28px;",
+        ".fullscreen-controls .viewer-progress-input": "height:32px;",
+        ".fullscreen-controls .viewer-progress": "height:32px;",
+        ".fullscreen-controls .viewer-progress-track,.fullscreen-controls .viewer-progress-played": "height:3px;",
+        ".fullscreen-controls .viewer-progress-thumb": "width:12px;height:12px;",
+        ".fullscreen-controls .viewer-progress-bubble": "width:64px;height:24px;line-height:24px;bottom:32px;font-size:12px;border-radius:12px;",
+        ".viewer-seek-indicator": "width:220px;height:64px;border-radius:32px;gap:10px;font-size:16px;",
+        ".viewer-seek-indicator image": "width:24px;height:24px;",
+      };
+      source = source.replace(/([^{}]+)\{([^{}]*)\}/g, (rule, selector, body) => {
+        const key = selector.trim().replace(/\s*,\s*/g, ",");
+        if (!fullscreenPixels[key]) return rule;
+        const declarations = body.match(/[\w-]+:\s*[^;{}]*\dpx[^;{}]*;/g) || [];
+        assert.equal(declarations.join("").replace(/:\s*/g, ":"), fullscreenPixels[key], key);
+        return selector + "{" + body.replace(/[\w-]+:\s*[^;{}]*\dpx[^;{}]*;/g, "") + "}";
+      });
+    }
 
     assert.doesNotMatch(
       source,

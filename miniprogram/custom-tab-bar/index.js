@@ -11,7 +11,7 @@ const { getBottomSafeAreaRpx, getWindowInfoCompat } = require("../utils/safeArea
 
 const TAB_URLS = [
   "/pages/activity_list/activity_list",
-  "/pages/tools/tools",
+  "/pages/memory/memory",
   "/pages/history/history",
   "/pages/profile/profile"
 ];
@@ -44,7 +44,8 @@ function canCreateActivity(app) {
   return !!globalData.isAuthenticated && !!token && (role === "user" || role === "admin");
 }
 
-function getCreateAccessDialog(app) {
+function getCreateAccessDialog(app, isMemory = false) {
+  const action = isMemory ? "投稿记忆" : "新建活动";
   const globalData = app && app.globalData ? app.globalData : {};
   const role = String(globalData.userRole || "");
   const token = String(globalData.accessToken || "");
@@ -52,7 +53,7 @@ function getCreateAccessDialog(app) {
     return {
       type: "login",
       title: "尚未登录",
-      message: "登录后才能新建活动。",
+      message: `登录后才能${action}。`,
       confirmText: "去登录"
     };
   }
@@ -60,14 +61,14 @@ function getCreateAccessDialog(app) {
     return {
       type: "permission",
       title: "暂无创建权限",
-      message: "当前账号为游客，请先获取访问权限后再新建活动。",
+      message: `当前账号为游客，请先获取访问权限后再${action}。`,
       confirmText: "去获取权限"
     };
   }
   return {
     type: "permission",
     title: "暂无创建权限",
-    message: "当前账号没有创建活动的权限，请前往「我的」页面查看。",
+    message: `当前账号没有${action}的权限，请前往「我的」页面查看。`,
     confirmText: "去我的"
   };
 }
@@ -256,14 +257,20 @@ Component({
       const app = getApp();
       const pages = typeof getCurrentPages === "function" ? getCurrentPages() : [];
       const currentPage = pages.length ? pages[pages.length - 1] : null;
+      const isMemory = currentPage && currentPage.route === "pages/memory/memory";
       if (!canCreateActivity(app)) {
-        const dialog = getCreateAccessDialog(app);
+        const dialog = getCreateAccessDialog(app, isMemory);
         const dialogComponent = currentPage && typeof currentPage.selectComponent === "function"
           ? currentPage.selectComponent("#create-access-dialog")
           : null;
         if (dialogComponent && typeof dialogComponent.open === "function") {
           dialogComponent.open(dialog);
         }
+        return;
+      }
+
+      if (isMemory) {
+        wx.navigateTo({ url: "/pages/memory_create/memory_create" });
         return;
       }
 

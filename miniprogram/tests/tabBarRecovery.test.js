@@ -7,7 +7,7 @@ const vm = require("node:vm");
 function harness() {
   const app = { globalData: { userRole: "user", isAuthenticated: true, accessToken: "token" } };
   const ticks = [], navigations = [], toasts = [], timers = new Map();
-  let timerId = 0, route = "pages/tools/tools", component, definition;
+  let timerId = 0, route = "pages/history/history", component, definition;
   const wx = {
     nextTick: fn => ticks.push(fn),
     navigateTo: options => navigations.push(options),

@@ -1,0 +1,26 @@
+<template name="memory-progress">
+  <view class="viewer-progress {{seeking ? 'viewer-progress--seeking' : ''}}" catchtap="stopTap">
+    <view class="viewer-progress-track" />
+    <view class="viewer-progress-played" style="width:{{progress}}%;" />
+    <view wx:if="{{seeking}}" class="viewer-progress-thumb" style="left:{{progress}}%;" />
+    <view wx:if="{{seeking}}" class="viewer-progress-bubble" style="left:{{bubbleLeft}}%;"><text>{{currentLabel}}</text></view>
+    <slider class="viewer-progress-input" min="0" max="1000" step="1" value="{{progress * 10}}" block-size="16" bindchanging="seekChanging" bindchange="seekChanged" aria-label="播放进度" />
+  </view>
+</template>
+<template name="memory-fullscreen">
+  <view class="viewer-fullscreen">
+    <horizontal-drag-gesture-handler worklet:ongesture="videoDrag">
+      <view class="viewer-video-hitbox" bindtap="videoTap">
+        <button size="mini" wx:if="{{!playing && !seeking}}" class="viewer-play-button" catchtap="playVideo" aria-label="播放"><image src="/images/memory-play-large.svg" /></button>
+        <view wx:if="{{seekGesture}}" class="viewer-seek-indicator"><image src="{{seekForward ? '/images/memory-fast-forward.svg' : '/images/memory-rewind.svg'}}" /><text>{{currentLabel}} / {{durationLabel}}</text></view>
+      </view>
+    </horizontal-drag-gesture-handler>
+    <view wx:if="{{controlsVisible || !playing || seeking}}" class="fullscreen-head"><button size="mini" class="fullscreen-back" catchtap="exitFullScreen" aria-label="返回竖屏"><image src="/images/memory-fullscreen-back.svg" /></button></view>
+    <view wx:if="{{controlsVisible || !playing || seeking}}" class="fullscreen-controls">
+      <text class="fullscreen-time">{{currentLabel}}</text>
+      <template is="memory-progress" data="{{progress,seeking,bubbleLeft,currentLabel}}" />
+      <text class="fullscreen-time fullscreen-time--duration">{{durationLabel}}</text>
+      <button size="mini" class="fullscreen-exit" catchtap="exitFullScreen" aria-label="退出横屏"><image src="/images/memory-exit-fullscreen.svg" /></button>
+    </view>
+  </view>
+</template>

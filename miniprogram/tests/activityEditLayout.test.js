@@ -2,10 +2,11 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
+const { readWxss } = require("./helpers/wxss");
 
 const page = path.join(__dirname, "../pages/activity_edit");
 const wxml = fs.readFileSync(path.join(page, "activity_edit.wxml"), "utf8");
-const wxss = fs.readFileSync(path.join(page, "activity_edit.wxss"), "utf8");
+const wxss = readWxss(path.join(page, "activity_edit.wxss"));
 const js = fs.readFileSync(path.join(page, "activity_edit.js"), "utf8");
 
 test("edit footer uses the native home indicator exactly once", () => {
@@ -15,10 +16,11 @@ test("edit footer uses the native home indicator exactly once", () => {
   assert.match(js, /Math\.max\(0, getBottomSafeAreaRpx\(\) - 9\.62\)/);
 });
 
-test("edit scrolling content reserves the same footer height on Skyline and WebView", () => {
-  assert.match(wxml, /class="edit-scroll" style="margin-bottom:{{footerSafeAreaRpx \+ 97\.16}}rpx;"/);
-  assert.doesNotMatch(wxml, /<scroll-view[^>]*type="list"/);
-  assert.match(wxss, /\.edit-scroll\s*\{[^}]*height:\s*0;[^}]*flex:\s*1;/s);
+test("edit form uses remaining height without a second footer reservation", () => {
+  assert.match(wxml, /class="edit-scroll" type="list" scroll-y="{{true}}"[^>]*bounces="{{false}}"/);
+  assert.doesNotMatch(wxml, /margin-bottom:{{footerSafeAreaRpx|bottom-spacer/);
+  assert.match(wxss, /\.edit-scroll,[\s\S]*?\.memory-body\s*\{[^}]*flex:\s*1;[^}]*height:\s*0;[^}]*min-height:\s*0;/);
+  assert.match(wxss, /\.edit-page \.footer,[\s\S]*?\.memory-footer\s*\{[^}]*position:\s*relative;[^}]*flex-shrink:\s*0;/);
 });
 
 test("edit time slots match creation and prototype without clipping date-time labels", () => {

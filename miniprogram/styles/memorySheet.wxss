@@ -1,0 +1,46 @@
+@import "./sheet.wxss";
+.memory-sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 100;
+}
+.memory-sheet {
+  width: 100%;
+  height: 60vh;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 46.15385rpx 46.15385rpx 0 0;
+  padding: 0 30.76923rpx 46.15385rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+.memory-sheet-drag {
+  height: 23.07692rpx;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.memory-sheet-drag view {
+  width: 69.23077rpx;
+  height: 7.69231rpx;
+  border-radius: 3.84615rpx;
+  background: #d1d5db;
+}
+.memory-sheet-title {
+  height: 84.61538rpx;
+  flex: none;
+  font-size: 30.76923rpx;
+  font-weight: 600;
+}
+.memory-sheet-body {
+  flex: 1;
+  min-height: 0;
+}

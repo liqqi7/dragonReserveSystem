@@ -2,6 +2,10 @@
   "pages": [
     "pages/activity_list/activity_list",
     "pages/tools/tools",
+    "pages/memory/memory",
+    "pages/memory_create/memory_create",
+    "pages/memory_detail/memory_detail",
+    "pages/memory_review/memory_review",
     "pages/activity_detail/activity_detail",
     "pages/activity_cover_preview/activity_cover_preview",
     "pages/history/history",
@@ -35,8 +39,8 @@
         "selectedIconPath": "images/tab-home-active.jpg"
       },
       {
-        "pagePath": "pages/tools/tools",
-        "text": "Tools",
+        "pagePath": "pages/memory/memory",
+        "text": "Memory",
         "iconPath": "images/tab-home.png",
         "selectedIconPath": "images/tab-home-active.png"
       },

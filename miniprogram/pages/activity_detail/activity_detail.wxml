@@ -321,7 +321,6 @@
     participants="{{participantDrawerList}}"
     participant-count="{{activityParticipantCount}}"
     checkin-count="{{activity.checkinCount || 0}}"
-    max-participants="{{activity.maxParticipants}}"
     can-manage="{{canManageActivity}}"
     is-admin="{{isAdmin}}"
     safe-bottom-rpx="{{safeBottomRpx}}"

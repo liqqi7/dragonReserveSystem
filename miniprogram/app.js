@@ -1,5 +1,6 @@
 const userService = require("./services/user");
 const authService = require("./services/auth");
+const { activateSessionEnvironment } = require("./services/sessionEnvironment");
 const { logPageError, initializeLogging } = require("./services/logger");
 
 
@@ -53,6 +54,7 @@ App({
 
 
   onLaunch() {
+    activateSessionEnvironment();
     initializeLogging();
 
     this.installGlobalErrorLogging();

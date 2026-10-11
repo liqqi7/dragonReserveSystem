@@ -1,0 +1,17 @@
+/* Reserve the action area once; only overflowing form content needs scrolling. */
+.step-scroll,
+.edit-scroll,
+.memory-body {
+  width: 100%;
+  flex: 1;
+  height: 0;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.wizard .footer,
+.edit-page .footer,
+.memory-footer {
+  position: relative;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}

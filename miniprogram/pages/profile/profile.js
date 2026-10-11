@@ -1,6 +1,7 @@
 const app = getApp();
 const authService = require("../../services/auth");
 const userService = require("../../services/user");
+const memoryService = require("../../services/memory");
 const { logPageError } = require("../../services/logger");
 const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/config");
 const { isTemporaryAvatarUrl } = require("../../utils/profileUtils");
@@ -50,6 +51,8 @@ Page({
     statusBarHeight: 0,
     hasUser: false,
     isGuest: true,
+    isMemoryAdmin: false,
+    memoryPendingCount: 0,
     user: {
       nickname: "",
       avatarUrl: "",
@@ -82,6 +85,7 @@ Page({
       hidden: false
     });
     this.syncGuestState();
+    this.refreshMemoryReviewState();
     if (this.data.showPermissionModal || this.data.showDeletePermissionModal) {
       syncProfileTabBarModalMask(this, true);
     }
@@ -125,12 +129,36 @@ Page({
           subtitle: getProfileSubtitle(currentUser.role || app.globalData.userRole, currentUser.createdAt)
         }
       });
-
+      this.refreshMemoryReviewState();
     });
   },
 
   onHide() {
+    this._memoryRequest = (this._memoryRequest || 0) + 1;
     syncProfileTabBarModalMask(this, false);
+  },
+
+  async refreshMemoryReviewState() {
+    const generation = this._memoryRequest = (this._memoryRequest || 0) + 1;
+    const admin = !!app.globalData.accessToken && app.globalData.userRole === "admin";
+    this.setData({ isMemoryAdmin: admin, memoryPendingCount: 0 });
+    if (!admin) return;
+    try {
+      const result = await memoryService.list({ limit: 1 }, true);
+      if (generation === this._memoryRequest && app.globalData.userRole === "admin") {
+        this.setData({ memoryPendingCount: Number(result.pending_count) || 0 });
+      }
+    } catch (error) {
+      if (generation === this._memoryRequest && error && error.body && error.body.code === "MEMORY_DISABLED") {
+        this.setData({ isMemoryAdmin: false });
+      }
+    }
+  },
+
+  openMemoryReview() {
+    if (app.globalData.userRole === "admin") {
+      wx.navigateTo({ url: "/pages/memory_review/memory_review" });
+    }
   },
 
   syncGuestState() {
@@ -148,6 +176,7 @@ Page({
     return userService.getMe()
       .then((user) => {
         app.applyCurrentUser(user);
+        this.refreshMemoryReviewState();
         this.setData({
           hasUser: true,
           isGuest: !app.globalData.isAuthenticated,

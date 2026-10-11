@@ -25,12 +25,11 @@
       <view id="qaParticipantsProgress" class="checkin-progress-card">
         <view class="progress-title-row">
           <text class="progress-title">签到进度</text>
-          <view class="progress-count" wx:if="{{participantHasLimit}}">
-            <text class="progress-count-current">{{participantCountText}}</text>
+          <view class="progress-count">
+            <text class="progress-count-current">{{checkinCountText}}</text>
             <text class="progress-count-separator">/</text>
-            <text class="progress-count-limit">{{participantLimitText}}</text>
+            <text class="progress-count-limit">{{participantCountText}} 人</text>
           </view>
-          <text wx:else class="progress-count progress-count-unlimited">{{participantCountText}} 人</text>
         </view>
         <view class="progress-info-row">
           <text class="progress-message">{{progressMessage}}</text>

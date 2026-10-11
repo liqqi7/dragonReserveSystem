@@ -7,7 +7,7 @@
     <view class="navbar-placeholder"></view>
   </view>
 
-  <scroll-view class="edit-scroll" style="margin-bottom:{{footerSafeAreaRpx + 97.16}}rpx;" scroll-y="{{true}}" show-scrollbar="{{false}}">
+  <scroll-view class="edit-scroll" type="list" scroll-y="{{true}}" show-scrollbar="{{false}}" bounces="{{false}}">
     <view class="edit-content">
       <block wx:if="{{!loading}}">
         <view class="cover-card" bindtap="openCoverPicker" aria-role="button" aria-label="更换活动封面">
@@ -69,7 +69,6 @@
           <activity-subitems-editor enabled="{{form.subItemsEnabled}}" items="{{form.subItems}}" max-participants="{{form.maxParticipants}}" locked="{{participantCount > 0}}" bindchange="onSubItemsChange" />
         </view>
       </block>
-      <view class="bottom-spacer"></view>
     </view>
   </scroll-view>
 

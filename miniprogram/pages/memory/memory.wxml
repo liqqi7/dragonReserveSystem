@@ -1,0 +1,17 @@
+<view class="memory-page" style="padding-top:{{top}}px;">
+  <image class="dragon-watermark dragon-watermark--absolute" src="/images/activity-home-logo.png" mode="aspectFit" aria-hidden="true" />
+  <view class="memory-heading"><text>记忆</text></view>
+  <scroll-view class="memory-scroll" type="custom" scroll-y refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="refresh" bindscrolltolower="more">
+    <grid-view type="masonry" cross-axis-count="2" cross-axis-gap="{{gridGap}}" main-axis-gap="{{gridGap}}" padding="{{gridPadding}}">
+      <view wx:for="{{items}}" wx:key="id" class="memory-cover" style="height:{{item.coverHeight}}px;" data-id="{{item.id}}" bindtap="open" aria-role="button" aria-label="查看记忆">
+        <image class="memory-cover-image" src="{{item.cover}}" mode="aspectFill" />
+        <image wx:if="{{item.videoCover}}" class="memory-play" src="/images/memory-play.svg" mode="aspectFit" />
+      </view>
+    </grid-view>
+    <view wx:if="{{!loading && !items.length && !error}}" class="memory-empty"><text>暂无记忆</text></view>
+    <view wx:if="{{error}}" class="memory-empty"><text>{{error}}</text><button bindtap="retry">重试</button></view>
+    <view wx:if="{{loading}}" class="memory-empty"><text>加载中</text></view>
+  </scroll-view>
+</view>
+<create-access-dialog id="create-access-dialog" />
+<create-access-dialog id="session-expired-dialog" />
