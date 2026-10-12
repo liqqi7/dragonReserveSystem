@@ -63,6 +63,84 @@ def test_feature_disabled(client, user_headers, monkeypatch):
     assert client.get("/api/v1/memories").status_code == 503
 
 
+def test_individual_review_list_exposes_every_file(client, user_headers, admin_headers, db_session):
+    memory, items = prepared(client, user_headers, db_session, count=3)
+    items[2].kind, items[2].duration = "video", 12
+    db_session.commit()
+    result = client.get("/api/v1/admin/memories?individual=true&status=pending", headers=admin_headers)
+    assert result.status_code == 200
+    body = result.json()
+    assert body["pending_count"] == 3
+    assert [item["id"] for item in body["items"][0]["media"]] == [item.id for item in items]
+    assert body["items"][0]["id"] == memory.id
+
+
+def test_individual_publish_reject_cleanup_leave_siblings_untouched(client, user_headers, admin_headers, db_session):
+    memory, items = prepared(client, user_headers, db_session, count=2)
+    path = f"/api/v1/admin/memories/{memory.id}"
+    body = {"individual": True, "action": "publish", "expected_revision": memory.revision,
+            "selected_media_ids": [items[0].id], "manually_reviewed": True}
+    result = client.post(path + "/review", headers=admin_headers, json=body)
+    assert result.status_code == 200, result.text
+    pending = client.get("/api/v1/admin/memories?individual=true", headers=admin_headers).json()
+    assert pending["pending_count"] == 1
+    assert [item["id"] for item in pending["items"][0]["media"]] == [items[1].id]
+    public = client.get(f"/api/v1/memories/{memory.id}").json()
+    assert [item["id"] for item in public["media"]] == [items[0].id]
+    assert client.get(f"/api/v1/memory-media/{items[1].id}").status_code == 404
+    preview = client.get(path + f"/cleanup?media_id={items[1].id}", headers=admin_headers).json()
+    assert preview["allowed"] is False
+    result = client.post(path + "/review", headers=admin_headers, json={**body, "action": "reject",
+        "expected_revision": result.json()["revision"], "selected_media_ids": [items[1].id]})
+    assert result.status_code == 200, result.text
+    rejected = client.get("/api/v1/admin/memories?individual=true&status=rejected", headers=admin_headers).json()
+    assert [item["id"] for item in rejected["items"][0]["media"]] == [items[1].id]
+    preview = client.get(path + f"/cleanup?media_id={items[1].id}", headers=admin_headers).json()
+    assert preview["allowed"] and preview["bytes"] == items[1].reserved_bytes
+    sibling_file = memory_media.private_path(memory_service.storage_root(), items[0].display_key)
+    cleanup = {"media_id": items[1].id, "expected_revision": preview["revision"], "confirmed": True}
+    assert client.post(path + "/cleanup", headers=admin_headers, json=cleanup).status_code == 200
+    assert client.post(path + "/cleanup", headers=admin_headers, json=cleanup).status_code == 200
+    assert sibling_file.exists()
+    assert db_session.get(MemoryCapacity, 1).reserved_bytes == items[0].reserved_bytes
+    assert client.get(f"/api/v1/memory-media/{items[0].id}").status_code == 200
+    assert client.get("/api/v1/admin/memories?individual=true&status=rejected", headers=admin_headers).json()["items"] == []
+
+
+def test_individual_second_publish_and_offline_preserve_other_public_file(client, user_headers, admin_headers, db_session):
+    memory, items = prepared(client, user_headers, db_session, count=2)
+    path = f"/api/v1/admin/memories/{memory.id}/review"
+    revision = memory.revision
+    for item in items:
+        result = client.post(path, headers=admin_headers, json={"individual": True, "action": "publish",
+            "expected_revision": revision, "selected_media_ids": [item.id], "manually_reviewed": True})
+        assert result.status_code == 200, result.text
+        revision = result.json()["revision"]
+    assert client.get(f"/api/v1/memories/{memory.id}").json()["media_count"] == 2
+    result = client.post(path, headers=admin_headers, json={"individual": True, "action": "offline",
+        "expected_revision": revision, "selected_media_ids": [items[0].id]})
+    assert result.status_code == 200, result.text
+    assert result.json()["status"] == "published"
+    public = client.get(f"/api/v1/memories/{memory.id}").json()
+    assert [item["id"] for item in public["media"]] == [items[1].id]
+    offline = client.get("/api/v1/admin/memories?individual=true&status=offline", headers=admin_headers).json()
+    assert [item["id"] for item in offline["items"][0]["media"]] == [items[0].id]
+    assert client.get(f"/api/v1/memory-media/{items[0].id}").status_code == 404
+
+
+@pytest.mark.parametrize("change", [{"selected_media_ids": []}, {"selected_media_ids": [99999]},
+    {"selected_media_ids": [1, 2]}, {"manually_reviewed": False}, {"expected_revision": 999}])
+def test_individual_review_keeps_selection_and_manual_guards(client, user_headers, admin_headers, db_session, change):
+    memory, items = prepared(client, user_headers, db_session, count=2)
+    body = {"individual": True, "action": "publish", "expected_revision": memory.revision,
+            "selected_media_ids": [items[0].id], "manually_reviewed": True, **change}
+    path = f"/api/v1/admin/memories/{memory.id}/review"
+    assert client.post(path, headers=user_headers, json=body).status_code == 403
+    assert client.post(path, headers=admin_headers, json=body).status_code == 409
+    db_session.refresh(items[0])
+    assert items[0].publication_status == "unreviewed"
+
+
 def test_anonymous_and_guest_cannot_submit(client, normal_user, user_headers, db_session):
     payload = {"client_submission_id": "submission-123", "media": [{"kind": "image", "size": 100}]}
     assert client.post("/api/v1/memory-drafts", json=payload).status_code == 401

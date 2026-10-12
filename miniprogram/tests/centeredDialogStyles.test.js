@@ -51,7 +51,9 @@ test("danger colors, mask variants and permission-only controls remain intact", 
   assert.match(profile, /\.permission-dialog-button--danger\s*\{\s*color:\s*#ffffff;/);
   assert.match(profile, /\.permission-dialog-button--disabled\s*\{\s*opacity:\s*0\.45;/);
   assert.match(profile, /\.permission-dialog-input\s*\{[^}]*height:\s*84\.61538rpx;[^}]*background:\s*#f5f5f5;/);
-  assert.match(profile, /\.permission-dialog-input-placeholder\s*\{\s*color:\s*#9ca3af;\s*font-weight:\s*400;/);
+  assert.match(source("pages/profile/profile.wxml"), /placeholder="请输入邀请码"\s+placeholder-style="color:#9CA3AF;font-weight:400;"/);
+  assert.doesNotMatch(source("pages/profile/profile.wxml"), /placeholder-class=/);
+  assert.doesNotMatch(profile, /permission-dialog-input-placeholder/);
   assert.match(dialog, /\.create-access-dialog-overlay--prototype\s*\{\s*background:\s*rgba\(0, 0, 0, 0\.5\);/);
   assert.match(dialog, /\.create-access-dialog-overlay--strong\s*\{\s*background:\s*rgba\(0, 0, 0, 0\.6\);/);
   assert.doesNotMatch(shared, /permission-dialog-input|permission-dialog-button--disabled|overlay--prototype|overlay--strong/);

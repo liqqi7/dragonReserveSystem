@@ -1,8 +1,8 @@
 <import src="memory-controls.wxml" />
 <view class="memory-viewer">
   <vertical-drag-gesture-handler wx:if="{{memory}}" native-view="swiper" worklet:should-accept-gesture="pagerAllowed" worklet:should-response-on-move="pagerAllowed">
-  <swiper class="viewer-stage" vertical current="{{index}}" circular="{{false}}" disable-touch="{{zoomed || fullScreen || seeking}}" bindchange="change">
-    <swiper-item wx:for="{{memory.media}}" wx:for-index="mediaIndex" wx:key="id" class="viewer-slide">
+  <swiper class="viewer-stage" vertical current="{{index}}" circular="{{false}}" disable-touch="{{zoomed || fullScreen || seeking || selectionOpen || busy}}" bindchange="change">
+    <swiper-item wx:for="{{viewerMedia}}" wx:for-index="mediaIndex" wx:key="id" class="viewer-slide">
       <scale-gesture-handler wx:if="{{item.kind === 'image' && mediaIndex === index && item.url}}" tag="memory-scale" simultaneous-handlers="{{['memory-pan']}}" worklet:ongesture="photoScale">
         <pan-gesture-handler tag="memory-pan" simultaneous-handlers="{{['memory-scale']}}" worklet:should-accept-gesture="photoPanAllowed" worklet:ongesture="photoPan">
           <double-tap-gesture-handler worklet:ongesture="photoDoubleTap">
@@ -10,7 +10,7 @@
           </double-tap-gesture-handler>
         </pan-gesture-handler>
       </scale-gesture-handler>
-      <video wx:elif="{{item.kind === 'video' && mediaIndex === index && item.url}}" id="memory-video" data-id="{{item.id}}" class="viewer-video" src="{{item.url}}" poster="{{item.thumbnail_url}}" controls="{{false}}" muted="{{muted}}" autoplay="{{false}}" object-fit="{{item.width > item.height || fullScreen ? 'contain' : 'cover'}}" show-fullscreen-btn="{{false}}" show-center-play-btn="{{false}}" enable-progress-gesture="{{false}}" vslide-gesture-in-fullscreen="{{false}}" bindplay="videoPlay" bindpause="videoPause" bindended="videoPause" bindtimeupdate="videoTime" bindfullscreenchange="fullScreenChanged" binderror="mediaError">
+      <video wx:elif="{{item.kind === 'video' && mediaIndex === index && item.url}}" id="memory-video" data-id="{{item.id}}" class="viewer-video" src="{{videoSource || item.url}}" poster="{{item.thumbnail_url}}" controls="{{false}}" muted="{{muted}}" autoplay="{{visible}}" object-fit="{{item.width > item.height || fullScreen ? 'contain' : 'cover'}}" show-fullscreen-btn="{{false}}" show-center-play-btn="{{false}}" enable-progress-gesture="{{false}}" vslide-gesture-in-fullscreen="{{false}}" bindplay="videoPlay" bindpause="videoPause" bindended="videoPause" bindtimeupdate="videoTime" bindfullscreenchange="fullScreenChanged" binderror="mediaError">
         <template wx:if="{{fullScreen}}" is="memory-fullscreen" data="{{playing,seeking,seekGesture,seekForward,currentLabel,durationLabel,controlsVisible,progress,bubbleLeft}}" />
       </video>
       <image wx:elif="{{item.thumbnail_url}}" class="viewer-image" src="{{item.thumbnail_url}}" mode="aspectFit" />

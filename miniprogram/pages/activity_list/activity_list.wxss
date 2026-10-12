@@ -726,7 +726,7 @@ page {
 .home-card-retry--large { height: 626.92rpx; }
 .home-card-retry--small { height: 307.69rpx; }
 
-/* 管理员首页「小工具」：与活动卡片一致的分页 swiper，卡片仍按内容撑高。
+/* 首页「小工具」：与活动卡片一致的分页 swiper，卡片仍按内容撑高。
  * 固定视口保留 2px 文本取整余量，防止卡片底边被裁切。 */
 .home-tools-swiper {
   height: calc(187.69rpx + 3.85rpx + 23.08rpx + 38.46rpx);

@@ -144,7 +144,7 @@ Page({
     this.setData({ isMemoryAdmin: admin, memoryPendingCount: 0 });
     if (!admin) return;
     try {
-      const result = await memoryService.list({ limit: 1 }, true);
+      const result = await memoryService.list({ limit: 1, individual: true }, true);
       if (generation === this._memoryRequest && app.globalData.userRole === "admin") {
         this.setData({ memoryPendingCount: Number(result.pending_count) || 0 });
       }

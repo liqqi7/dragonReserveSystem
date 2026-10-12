@@ -32,8 +32,10 @@ class MemoryReviewRequest(BaseModel):
     expected_revision: int = Field(gt=0)
     selected_media_ids: list[int] = Field(default_factory=list, max_length=10)
     manually_reviewed: bool = False
+    individual: bool = False
 
 
 class MemoryCleanupRequest(BaseModel):
     expected_revision: int = Field(gt=0)
     confirmed: bool = False
+    media_id: int | None = Field(default=None, gt=0)

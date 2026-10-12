@@ -101,7 +101,7 @@ function presentation(memory) {
     mediaLabel:
       memory.video_count > 0
         ? durationLabel(memory.total_duration)
-        : `图片 · ${memory.image_count == null ? memory.media_count : memory.image_count} 张`,
+        : "图片",
     cover: first.thumbnail_url || "",
     videoCover: first.kind === "video",
     coverRatio:
@@ -115,6 +115,30 @@ function presentation(memory) {
         "/images/default-avatar.svg",
     },
   };
+}
+
+function mediaReviewStatus(item, parentStatus) {
+  if (parentStatus === "draft" || parentStatus === "processing") return parentStatus;
+  if (item.publication_status === "published") return "published";
+  if (item.publication_status === "offline") return "offline";
+  if (item.publication_status === "excluded") return "rejected";
+  return item.state === "ready" ? "pending" : "failed";
+}
+
+function reviewCards(submission) {
+  return (submission.media || []).map((item) => presentation({
+    ...submission,
+    id: item.id,
+    memory_id: submission.id,
+    media_id: item.id,
+    status: mediaReviewStatus(item, submission.status),
+    media: [item],
+    media_count: 1,
+    image_count: item.kind === "image" ? 1 : 0,
+    video_count: item.kind === "video" ? 1 : 0,
+    total_original_bytes: item.original_bytes,
+    total_duration: item.duration || 0,
+  }));
 }
 
 function validateFile(file) {
@@ -277,6 +301,8 @@ module.exports = {
   list,
   detail,
   presentation,
+  reviewCards,
+  mediaReviewStatus,
   mediaUrl,
   validateFile,
   readOriginal,

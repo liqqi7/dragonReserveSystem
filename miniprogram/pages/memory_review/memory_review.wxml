@@ -4,10 +4,15 @@
   <scroll-view class="review-scroll" type="list" scroll-y bindscrolltolower="more">
     <view class="review-list">
     <view wx:for="{{items}}" wx:key="id" class="review-item">
-      <view class="review-preview" data-id="{{item.id}}" bindtap="open"><image wx:if="{{item.cover}}" class="review-cover" src="{{item.cover}}" mode="aspectFill" /><image wx:if="{{item.videoCover}}" class="review-play" src="/images/memory-play.svg" /><text wx:if="{{item.media_count > 1}}" class="review-count">1/{{item.media_count}}</text></view>
+      <view class="review-preview" data-id="{{item.id}}" bindtap="open"><image wx:if="{{item.cover}}" class="review-cover" src="{{item.cover}}" mode="aspectFill" /><image wx:if="{{item.videoCover}}" class="review-play" src="/images/memory-play.svg" /></view>
       <view class="review-copy">
         <view class="review-author"><image src="{{item.author.avatar_url}}" mode="aspectFill" /><text class="review-nickname" max-lines="1" overflow="ellipsis">{{item.author.nickname}}</text><text class="review-created">{{item.createdLabel}}</text></view>
-        <view wx:if="{{item.caption}}" class="review-caption-row"><text wx:if="{{item.expanded}}" class="review-caption">{{item.caption}}</text><text wx:else class="review-caption" max-lines="1" overflow="ellipsis">{{item.caption}}</text><button class="review-expand" data-id="{{item.id}}" bindtap="toggleCaption">{{item.expanded ? '收起' : '展开'}}</button></view>
+        <view wx:if="{{item.caption}}" class="review-caption-row">
+          <text wx:if="{{!item.captionMeasured}}" class="review-caption review-caption-measure" data-id="{{item.id}}" aria-hidden="true">{{item.caption}}</text>
+          <text wx:if="{{item.expanded}}" class="review-caption">{{item.caption}}</text>
+          <text wx:else class="review-caption review-caption-preview" data-id="{{item.id}}" max-lines="1" overflow="ellipsis">{{item.caption}}</text>
+          <view wx:if="{{item.captionExpandable}}" class="review-expand" data-id="{{item.id}}" bindtap="toggleCaption" aria-role="button" aria-label="{{item.expanded ? '收起备注' : '展开备注'}}"><text>{{item.expanded ? '收起' : '展开'}}</text></view>
+        </view>
         <view class="review-meta"><view><image src="{{item.video_count > 0 ? '/images/memory-review-timer.svg' : '/images/memory-review-image.svg'}}" /><text>{{item.mediaLabel}}</text></view><view wx:if="{{item.sizeLabel}}"><image src="/images/memory-review-size.svg" /><text>{{item.sizeLabel}}</text></view><view wx:if="{{item.activity_name}}" class="review-activity"><image src="/images/memory-review-activity.svg" /><text max-lines="1" overflow="ellipsis">{{item.activity_name}}</text></view></view>
       </view>
       <view class="memory-actions review-actions"><button wx:if="{{status === 'pending'}}" class="review-reject" data-id="{{item.id}}" bindtap="askReject" disabled="{{busy}}">不通过</button><button class="{{status === 'pending' ? 'review-approve' : 'memory-neutral'}}" data-id="{{item.id}}" bindtap="open">{{status === 'pending' ? '通过' : '查看内容'}}</button><button wx:if="{{status === 'rejected' || status === 'offline' || status === 'failed' || status === 'draft'}}" class="memory-neutral" data-id="{{item.id}}" bindtap="askCleanup" disabled="{{busy}}">清理素材</button></view>

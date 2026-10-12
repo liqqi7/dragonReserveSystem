@@ -77,8 +77,12 @@ def cancel(memory_id: int, db: Session = Depends(get_db), actor: User = Depends(
     return service.cleanup(db, memory_id, actor, memory.revision, cancel=True)
 
 
-def list_page(db, status, limit, cursor, actor=None):
+def list_page(db, status, limit, cursor, actor=None, individual=False):
     stmt = select(Memory).where(Memory.status == status)
+    if actor and individual:
+        matching = service.review_media_filter(status)
+        stmt = select(Memory).where(select(MemoryMedia.id).where(
+            MemoryMedia.memory_id == Memory.id, matching).exists())
     column = Memory.published_at if not actor else Memory.created_at
     if cursor:
         try:
@@ -93,9 +97,19 @@ def list_page(db, status, limit, cursor, actor=None):
         last = rows[limit - 1]
         date = last.published_at if not actor else last.created_at
         next_cursor = base64.urlsafe_b64encode(json.dumps([date.isoformat(), last.id]).encode()).decode().rstrip("=")
-    result = {"items": [service.serialize(db, row, actor, summary=True) for row in rows[:limit]], "cursor": next_cursor}
+    result = {"items": [service.serialize(db, row, actor, summary=not individual) for row in rows[:limit]], "cursor": next_cursor}
+    if actor and individual:
+        matching_ids = set(db.scalars(select(MemoryMedia.id).join(Memory).where(
+            MemoryMedia.memory_id.in_([row.id for row in rows[:limit]]), matching)))
+        for item in result["items"]:
+            item["media"] = [value for value in item["media"] if value["id"] in matching_ids]
+            item["media_count"] = len(item["media"])
     if actor:
-        result["pending_count"] = db.scalar(select(func.count()).select_from(Memory).where(Memory.status == "pending"))
+        if individual:
+            result["pending_count"] = db.scalar(select(func.count()).select_from(MemoryMedia).join(Memory)
+                .where(service.review_media_filter("pending")))
+        else:
+            result["pending_count"] = db.scalar(select(func.count()).select_from(Memory).where(Memory.status == "pending"))
     return result
 
 
@@ -116,8 +130,9 @@ def detail(memory_id: int, db: Session = Depends(get_db)):
 @router.get("/admin/memories")
 def admin_memories(status: Literal["pending", "processing", "published", "rejected", "offline", "failed", "draft"] = "pending",
                    limit: int = Query(20, ge=1, le=50), cursor: str | None = Query(None, max_length=512),
+                   individual: bool = False,
                    db: Session = Depends(get_db), actor: User = Depends(require_admin)):
-    return list_page(db, status, limit, cursor, actor)
+    return list_page(db, status, limit, cursor, actor, individual)
 
 
 @router.get("/admin/memories/{memory_id}")
@@ -131,15 +146,16 @@ def review(memory_id: int, payload: MemoryReviewRequest, db: Session = Depends(g
 
 
 @router.get("/admin/memories/{memory_id}/cleanup")
-def cleanup_preview(memory_id: int, db: Session = Depends(get_db), actor: User = Depends(require_admin)):
-    return service.cleanup_preview(db, memory_id)
+def cleanup_preview(memory_id: int, media_id: int | None = Query(None, gt=0),
+                    db: Session = Depends(get_db), actor: User = Depends(require_admin)):
+    return service.cleanup_preview(db, memory_id, media_id)
 
 
 @router.post("/admin/memories/{memory_id}/cleanup")
 def cleanup(memory_id: int, payload: MemoryCleanupRequest, db: Session = Depends(get_db), actor: User = Depends(require_admin)):
     if not payload.confirmed:
         raise ConflictError("请先确认清理清单")
-    return service.cleanup(db, memory_id, actor, payload.expected_revision)
+    return service.cleanup(db, memory_id, actor, payload.expected_revision, media_id=payload.media_id)
 
 
 @router.get("/memory-media/{media_id}")

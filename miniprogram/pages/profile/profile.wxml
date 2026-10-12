@@ -98,7 +98,7 @@
         password
         maxlength="64"
         placeholder="请输入邀请码"
-        placeholder-class="permission-dialog-input-placeholder"
+        placeholder-style="color:#9CA3AF;font-weight:400;"
         value="{{permissionInput}}"
         bindinput="onPermissionInput"
         confirm-type="done"

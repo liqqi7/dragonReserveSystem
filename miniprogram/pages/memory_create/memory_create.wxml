@@ -3,16 +3,16 @@
   <scroll-view class="memory-body" type="list" scroll-y show-scrollbar="{{false}}" bounces="{{false}}">
     <view class="memory-form">
       <view class="memory-intro"><text class="title">记忆投稿</text><text class="subtitle">好记忆值得被官方收藏</text></view>
-      <view class="memory-field"><view class="label memory-label"><text>上传内容</text><text wx:if="{{files.length}}" class="upload-hint">左右滑动</text></view>
+      <view class="memory-field"><view class="label memory-label"><text>上传内容</text></view>
         <view wx:if="{{files.length}}" class="upload-grid">
-          <scroll-view class="upload-scroll" type="list" scroll-x enable-flex scroll-into-view="{{mediaScrollTarget}}" scroll-into-view-alignment="end" show-scrollbar="{{false}}" bounces="{{false}}">
+          <scroll-view class="upload-scroll" type="list" scroll-x enable-flex id="mediaScroller" enhanced="{{true}}" scroll-into-view="{{mediaScrollTarget}}" scroll-into-view-alignment="end" show-scrollbar="{{false}}" bounces="{{false}}">
           <view list-item class="upload-leading-space" />
           <view wx:for="{{files}}" wx:key="id" id="upload-file-{{item.id}}" list-item class="upload-tile" data-index="{{index}}" bindtap="preview" aria-label="{{item.kind === 'video' ? '视频' : '图片'}}，轻点预览">
             <image wx:if="{{item.thumbnail}}" class="upload-cover" src="{{item.thumbnail}}" mode="aspectFill" data-id="{{item.id}}" data-src="{{item.thumbnail}}" binderror="thumbnailError" />
             <image wx:if="{{item.kind === 'video'}}" class="upload-play" src="/images/memory-play.svg" />
             <text wx:if="{{item.kind === 'video'}}" class="upload-duration">{{item.durationLabel}}</text>
             <view wx:if="{{item.uploadState === 'waiting' || item.uploadState === 'preparing' || item.uploadState === 'uploading' || item.uploadState === 'failed'}}" class="upload-status" data-id="{{item.id}}" catchtap="retryFile" aria-live="polite">
-              <view wx:if="{{item.uploadState === 'uploading'}}" class="upload-progress-ring" style="background-image:conic-gradient(#FFFFFF 0%,#FFFFFF {{item.uploadProgress || 0}}%,#FFFFFF40 {{item.uploadProgress || 0}}%,#FFFFFF40 100%);" />
+              <image wx:if="{{item.uploadState === 'uploading'}}" class="upload-progress-ring" src="{{item.progressImage}}" aria-label="上传进度 {{item.uploadProgress || 0}}%" />
               <image wx:elif="{{item.uploadState !== 'failed'}}" class="upload-spinner" src="/images/memory-upload-spinner.svg" />
               <text>{{item.uploadState === 'uploading' ? '上传中 ' + item.uploadProgress + '%' : (item.uploadState === 'failed' ? '上传失败' : '等待上传')}}</text>
             </view>

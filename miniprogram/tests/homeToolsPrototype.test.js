@@ -6,15 +6,16 @@ const path = require("node:path");
 const pageDir = path.join(__dirname, "../pages/activity_list");
 const imageDir = path.join(__dirname, "../images");
 
-test("administrator home tools follow the Pencil module and card content", () => {
+test("home tools are visible for every role and follow the Pencil module and card content", () => {
   const wxml = fs.readFileSync(path.join(pageDir, "activity_list.wxml"), "utf8");
   const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");
   const acceptanceEnd = wxml.indexOf("<!-- ── 未开始 ── -->");
-  const toolsStart = wxml.indexOf("<!-- ── 小工具（管理员首页原型） ── -->");
+  const toolsStart = wxml.indexOf("<!-- ── 小工具 ── -->");
   assert.ok(toolsStart > wxml.indexOf("<!-- ── 接受报名 ── -->"));
   assert.ok(toolsStart < acceptanceEnd);
   const toolsMarkup = wxml.slice(toolsStart, acceptanceEnd);
-  assert.match(toolsMarkup, /wx:if="\{\{isAdmin\}\}"/);
+  assert.match(toolsMarkup, /<view class="group-section home-tools-section">/);
+  assert.doesNotMatch(toolsMarkup, /wx:(?:if|elif|else)|hidden=|isAdmin/);
   assert.match(toolsMarkup, /<text class="group-title">小工具<\/text>/);
   assert.match(toolsMarkup, /<text class="home-tool-title">Chwazi<\/text>/);
   assert.match(toolsMarkup, /<text class="home-tool-title">桌游库<\/text>/);
@@ -62,15 +63,16 @@ test("home tool artwork preserves the referenced prototype originals and uses up
   }
 });
 
-test("home tool taps navigate to registered Chwazi and boardgame library pages", () => {
+test("home tool taps navigate to registered pages for guests, members and administrators", () => {
   const vm = require("node:vm");
   const js = fs.readFileSync(path.join(pageDir, "activity_list.js"), "utf8");
   const appConfig = JSON.parse(fs.readFileSync(path.join(__dirname, "../app.json"), "utf8"));
   const wxml = fs.readFileSync(path.join(pageDir, "activity_list.wxml"), "utf8");
   const destinations = [];
+  const app = { globalData: {} };
   let definition;
   vm.runInNewContext(js, {
-    getApp: () => ({ globalData: {} }),
+    getApp: () => app,
     Page: (value) => { definition = value; },
     require: () => ({}),
     wx: {
@@ -79,15 +81,24 @@ test("home tool taps navigate to registered Chwazi and boardgame library pages",
     },
     console, setTimeout, clearTimeout
   });
-  for (const [handler, route] of [
-    ["onHomeChwaziTap", "/pages/chwazi/chwazi"],
-    ["onHomeBoardGameTap", "/pages/boardgame_library/boardgame_library"]
-  ]) {
-    assert.ok(wxml.includes(`bindtap="${handler}"`));
-    assert.ok(appConfig.pages.includes(route.slice(1)), `${route} should be registered`);
-    definition[handler]();
+  for (const role of ["guest", "user", "admin"]) {
+    Object.assign(app.globalData, {
+      userRole: role, isAuthenticated: role !== "guest",
+      accessToken: role === "guest" ? "" : "test-token"
+    });
+    const context = { data: { isAdmin: role === "admin" } };
+    for (const [handler, route] of [
+      ["onHomeChwaziTap", "/pages/chwazi/chwazi"],
+      ["onHomeBoardGameTap", "/pages/boardgame_library/boardgame_library"]
+    ]) {
+      assert.ok(wxml.includes(`bindtap="${handler}"`));
+      assert.ok(appConfig.pages.includes(route.slice(1)), `${route} should be registered`);
+      definition[handler].call(context);
+    }
   }
-  assert.deepEqual(destinations, ["/pages/chwazi/chwazi", "/pages/boardgame_library/boardgame_library"]);
+  assert.deepEqual(destinations, Array(3).fill([
+    "/pages/chwazi/chwazi", "/pages/boardgame_library/boardgame_library"
+  ]).flat());
 });
 
 

@@ -8,7 +8,7 @@ import shutil
 import time
 from uuid import uuid4
 
-from sqlalchemy import func, select, update
+from sqlalchemy import and_, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -320,6 +320,63 @@ def serialize(db, memory, actor=None, summary=False):
     return result
 
 
+def review_media_filter(status):
+    active = MemoryMedia.state.notin_(["removed", "cleaned"])
+    reviewable = Memory.status.in_(["pending", "published", "rejected", "offline", "failed"])
+    if status == "pending":
+        condition = and_(reviewable, MemoryMedia.state == "ready", MemoryMedia.publication_status == "unreviewed")
+    elif status == "published":
+        condition = and_(Memory.status == "published", MemoryMedia.state == "ready", MemoryMedia.publication_status == "published")
+    elif status == "rejected":
+        condition = and_(reviewable, MemoryMedia.publication_status == "excluded")
+    elif status == "offline":
+        condition = and_(reviewable, MemoryMedia.publication_status == "offline")
+    elif status == "failed":
+        condition = and_(reviewable, MemoryMedia.state == "failed", MemoryMedia.publication_status == "unreviewed")
+    else:
+        condition = Memory.status == status
+    return and_(active, condition)
+
+
+def sync_review_status(memory, items):
+    active = [item for item in items if item.state not in {"removed", "cleaned"}]
+    if any(item.publication_status == "published" for item in active):
+        memory.status = "published"
+        if not memory.published_at:
+            memory.published_at = app_now()
+    elif any(item.publication_status == "unreviewed" and item.state == "ready" for item in active):
+        memory.status = "pending"
+    elif any(item.publication_status == "unreviewed" for item in active):
+        memory.status = "failed"
+    elif any(item.publication_status == "offline" for item in active):
+        memory.status = "offline"
+    else:
+        memory.status = "rejected" if active else "cleaned"
+
+
+def review_individual(memory, items, payload):
+    selected = set(payload.selected_media_ids)
+    chosen = [item for item in items if item.id in selected and item.state not in {"removed", "cleaned"}]
+    if len(payload.selected_media_ids) != 1 or len(chosen) != 1 or memory.status not in {"pending", "published", "rejected", "offline", "failed"}:
+        raise ConflictError("请选择一份有效的审核内容")
+    item = chosen[0]
+    if payload.action == "publish":
+        if item.state != "ready" or item.publication_status != "unreviewed":
+            raise ConflictError("当前素材不能发布，请刷新")
+        if not payload.manually_reviewed:
+            raise ConflictError("请确认已完成人工审核，包括文字、图片及视频画面和声音")
+        item.publication_status = "published"
+    elif payload.action == "reject":
+        if item.publication_status != "unreviewed" or item.state not in {"ready", "failed"}:
+            raise ConflictError("当前素材不能拒绝，请刷新")
+        item.publication_status = "excluded"
+    else:
+        if item.publication_status != "published":
+            raise ConflictError("当前素材未发布")
+        item.publication_status = "offline"
+    sync_review_status(memory, items)
+
+
 def review(db, memory_id, actor, payload):
     if not get_settings().memory_publish_enabled and payload.action == "publish":
         raise AppError("MEMORY_PUBLISH_DISABLED", "记忆发布尚未开放", 503)
@@ -328,7 +385,11 @@ def review(db, memory_id, actor, payload):
         raise ConflictError("审核内容已变化，请刷新")
     items = assets(db, memory.id)
     selected = set(payload.selected_media_ids)
-    if payload.action == "publish":
+    if payload.individual:
+        if not db.get(User, memory.user_id):
+            raise ConflictError("投稿人资料已变化，请重新检查")
+        review_individual(memory, items, payload)
+    elif payload.action == "publish":
         if memory.status != "pending" or not selected or len(selected) != len(payload.selected_media_ids):
             raise ConflictError("请选择待审核投稿中的有效内容")
         chosen = [item for item in items if item.id in selected]
@@ -361,16 +422,47 @@ def review(db, memory_id, actor, payload):
     return {"id": memory.id, "status": memory.status, "revision": memory.revision}
 
 
-def cleanup_preview(db, memory_id):
+def cleanup_preview(db, memory_id, media_id=None):
     memory = get_memory(db, memory_id)
+    if media_id is not None:
+        item = next((item for item in assets(db, memory.id) if item.id == media_id), None)
+        if not item:
+            raise NotFoundError("素材不存在")
+        allowed = item.state == "cleaned" or (
+            memory.status not in {"draft", "processing", "cancelled", "cleaned"} and
+            (item.publication_status in {"excluded", "offline"} or item.state == "failed")) or (
+            memory.status == "draft" and memory.expires_at <= app_now())
+        return {"id": memory.id, "media_id": item.id, "status": memory.status,
+                "revision": memory.revision, "allowed": allowed, "bytes": item.reserved_bytes}
     allowed = memory.status in {"rejected", "offline", "failed", "cleaned", "cancelled"} or (
         memory.status == "draft" and memory.expires_at <= app_now())
     return {"id": memory.id, "status": memory.status, "revision": memory.revision, "allowed": allowed,
             "bytes": sum(item.reserved_bytes for item in assets(db, memory.id))}
 
 
-def cleanup(db, memory_id, actor, revision, cancel=False):
+def cleanup(db, memory_id, actor, revision, cancel=False, media_id=None):
     memory = get_memory(db, memory_id, True)
+    if media_id is not None:
+        preview = cleanup_preview(db, memory_id, media_id)
+        item = next(item for item in assets(db, memory_id) if item.id == media_id)
+        if item.state == "cleaned":
+            return {"id": memory.id, "media_id": item.id, "status": memory.status, "revision": memory.revision}
+        if memory.revision != revision or not preview["allowed"]:
+            raise ConflictError("素材已变化或当前不能清理，请刷新后确认")
+        directory = media.private_path(storage_root(), f"{memory.id}/{item.id}")
+        if directory.exists():
+            shutil.rmtree(directory)
+        release(db, item.reserved_bytes)
+        item.reserved_bytes = 0
+        item.original_key = item.display_key = item.thumbnail_key = ""
+        item.state, item.publication_status = "cleaned", "excluded"
+        remaining = assets(db, memory.id)
+        if memory.status != "draft" or all(value.state == "cleaned" for value in remaining):
+            sync_review_status(memory, remaining)
+        memory.revision += 1
+        audit(db, memory, actor.id, "cleanup", [item.id])
+        db.commit()
+        return {"id": memory.id, "media_id": item.id, "status": memory.status, "revision": memory.revision}
     terminal = "cancelled" if cancel else "cleaned"
     if memory.status == terminal and (not cancel or memory.user_id == actor.id):
         return {"id": memory.id, "status": memory.status, "revision": memory.revision}

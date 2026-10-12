@@ -10,6 +10,192 @@ const source = (file) =>
   fs.readFileSync(path.join(__dirname, "..", file), "utf8");
 const tick = () => new Promise((resolve) => setImmediate(resolve));
 
+test("review cards represent one image or video with independent metadata", () => {
+  const cards = service().reviewCards({id: 7, status: "pending", caption: "同一次投稿", revision: 3,
+    author: {nickname: "投稿人"}, total_original_bytes: 99999999, total_duration: 45,
+    media: [{id: 20, kind: "image", state: "ready", publication_status: "unreviewed",
+      original_bytes: 1024 ** 2, thumbnail_url: "/photo.jpg"},
+    {id: 21, kind: "video", state: "ready", publication_status: "unreviewed", duration: 8,
+      original_bytes: 2 * 1024 ** 2, thumbnail_url: "/video.jpg"}]});
+  assert.deepEqual(Array.from(cards, item => item.id), [20, 21]);
+  assert.ok(cards.every(item => item.memory_id === 7 && item.media_count === 1 && item.caption === "同一次投稿"));
+  assert.equal(cards[0].cover, "https://test.invalid/photo.jpg");
+  assert.equal(cards[0].videoCover, false);
+  assert.equal(cards[0].sizeLabel, "1.0 MB");
+  assert.equal(cards[0].mediaLabel, "图片");
+  assert.equal(cards[1].videoCover, true);
+  assert.equal(cards[1].sizeLabel, "2.0 MB");
+  assert.equal(cards[1].mediaLabel, "0:08");
+  assert.doesNotMatch(source("pages/memory_review/memory_review.wxml"), /review-count|1\/\{\{item.media_count/);
+});
+
+test("review list flattens batches, deduplicates media IDs and opens the selected file", async () => {
+  const api = service();
+  let query, url;
+  api.list = async values => {
+    query = values;
+    return {items: [{id: 7, status: "pending", revision: 3, media: [
+      {id: 20, kind: "image", state: "ready", publication_status: "unreviewed"},
+      {id: 21, kind: "video", state: "ready", publication_status: "unreviewed"}]}], cursor: "next"};
+  };
+  const {instance} = page("memory_review", api, {navigateTo(options) {url = options.url;}});
+  await instance.load(true);
+  await instance.load(false);
+  assert.equal(query.individual, true);
+  assert.deepEqual(Array.from(instance.data.items, item => item.id), [20, 21]);
+  instance.open({currentTarget: {dataset: {id: 21}}});
+  assert.equal(url, "/pages/memory_detail/memory_detail?id=7&admin=1&media_id=21");
+});
+
+test("individual detail scopes preview and review to one file in a partially published submission", async () => {
+  const api = service();
+  let sent;
+  api.detail = async () => ({id: 7, status: "published", revision: 4, media: [
+    {id: 20, kind: "image", state: "ready", publication_status: "published"},
+    {id: 21, kind: "video", state: "ready", publication_status: "unreviewed", duration: 8}]});
+  api.list = async () => ({items: [{id: 7, status: "published", revision: 4, media: [
+    {id: 21, kind: "video", state: "ready", publication_status: "unreviewed", duration: 8}]}], cursor: null});
+  api.send = async (url, method, body) => {sent = {url, body};};
+  const {instance} = page("memory_detail", api);
+  instance.onLoad({id: "7", admin: "1", media_id: "21"});
+  await instance.load();
+  assert.equal(instance.data.memory.status, "pending");
+  assert.equal(instance.data.memory.media.length, 1);
+  assert.equal(instance.data.current.id, 21);
+  instance.beginReview();
+  assert.deepEqual(Array.from(instance.data.selected), [21]);
+  instance.reviewed({detail: {value: ["reviewed"]}});
+  instance._action = "publish";
+  await instance.confirmReview();
+  assert.equal(sent.url, "/admin/memories/7/review");
+  assert.equal(sent.body.individual, true);
+  assert.deepEqual(Array.from(sent.body.selected_media_ids), [21]);
+  assert.equal(sent.body.manually_reviewed, true);
+});
+
+test("pending viewer pages across submissions but reviews only the visible file", async () => {
+  const api = service();
+  const first = {id: 7, status: "pending", caption: "first", revision: 3, author: {nickname: "A"},
+    media: [{id: 20, kind: "image", state: "ready", publication_status: "unreviewed"}]};
+  const second = {id: 8, status: "pending", caption: "second", revision: 6, author: {nickname: "B"},
+    media: [{id: 21, kind: "video", state: "ready", publication_status: "unreviewed", duration: 8}]};
+  const third = {id: 9, status: "pending", revision: 2,
+    media: [{id: 22, kind: "image", state: "ready", publication_status: "unreviewed"}]};
+  const calls = [];
+  let next;
+  api.detail = async () => structuredClone(second);
+  api.list = async values => {
+    calls.push(values);
+    return values.cursor ? new Promise(resolve => {next = resolve;}) : {items: [first, second], cursor: "next"};
+  };
+  let sent;
+  api.send = async (url, method, body) => {sent = {url, body};};
+  const {instance} = page("memory_detail", api);
+  instance.onLoad({id: "8", admin: "1", media_id: "21"});
+  await instance.load();
+  assert.equal(instance.data.index, 1);
+  assert.deepEqual(Array.from(instance.data.viewerMedia, item => item.id), [20, 21]);
+  instance.moreReviewContent();
+  assert.equal(calls.length, 2, "only one prefetch at a time");
+  next({items: [second, third], cursor: null});
+  await tick();
+  assert.deepEqual(Array.from(instance.data.viewerMedia, item => item.id), [20, 21, 22]);
+  instance.setData({selected: [21], reviewed: true, error: "old error", playing: true});
+  instance.change({detail: {current: 0}});
+  assert.equal(instance.data.memory.id, 7);
+  assert.equal(instance.data.memory.author.nickname, "A");
+  assert.equal(instance.data.memory.caption, "first");
+  assert.equal(instance.data.current.id, 20);
+  assert.equal(instance.data.playing, false);
+  assert.equal(instance.data.reviewed, false);
+  assert.equal(instance.data.selected.length, 0);
+  assert.equal(instance.data.error, "");
+  instance.beginReview();
+  instance.change({detail: {current: 1}});
+  assert.equal(instance.data.index, 0, "review sheet locks paging");
+  instance.reviewed({detail: {value: ["reviewed"]}});
+  instance._action = "publish";
+  await instance.confirmReview();
+  assert.equal(sent.url, "/admin/memories/7/review");
+  assert.equal(sent.body.expected_revision, 3);
+  assert.deepEqual(Array.from(sent.body.selected_media_ids), [20]);
+  assert.equal(sent.body.individual, true);
+});
+
+test("pending queue fetches earlier pages to locate an entry and discards late prefetch after unloading", async () => {
+  const api = service();
+  const submission = {id: 8, status: "pending", revision: 3,
+    media: [{id: 21, kind: "image", state: "ready", publication_status: "unreviewed"}]};
+  api.detail = async () => structuredClone(submission);
+  let calls = 0, finish;
+  api.list = async () => {
+    calls++;
+    if (calls === 1) return {items: [], cursor: "p2"};
+    if (calls === 2) return {items: [submission], cursor: "p3"};
+    return new Promise(resolve => {finish = resolve;});
+  };
+  const {instance} = page("memory_detail", api);
+  instance.onLoad({id: "8", admin: "1", media_id: "21"});
+  await instance.load();
+  assert.equal(calls, 3);
+  assert.equal(instance.data.current.id, 21);
+  instance.onUnload();
+  finish({items: [{...submission, id: 9, media: [{...submission.media[0], id: 22}]}], cursor: null});
+  await tick();
+  assert.equal(instance.data.viewerMedia.length, 1);
+});
+
+test("stale video errors do not overwrite the newly visible file", () => {
+  const {instance} = viewer("video");
+  instance.mediaError({currentTarget: {dataset: {id: 99}}, detail: {errMsg: "old failure"}});
+  assert.equal(instance.data.error, "");
+  instance.mediaError({currentTarget: {dataset: {id: instance.data.current.id}}, detail: {errMsg: "decode failed", errCode: 3}});
+  assert.equal(instance.data.error, "媒体加载失败，请刷新重试");
+  assert.equal(instance.data.playing, false);
+});
+
+test("viewer preloads a video arriving on the next queue page and cleans it on hide", async () => {
+  const api = service();
+  const first = {id: 7, status: "pending", revision: 3,
+    media: [{id: 20, kind: "image", state: "ready", publication_status: "unreviewed", url: "/photo.jpg"}]};
+  const second = {id: 8, status: "pending", revision: 1,
+    media: [{id: 21, kind: "video", state: "ready", publication_status: "unreviewed", url: "/clip.mp4"}]};
+  let next, download, removed;
+  api.detail = async () => structuredClone(first);
+  api.list = async values => values.cursor ? new Promise(resolve => {next = resolve;}) : {items: [first], cursor: "p2"};
+  const {instance} = page("memory_detail", api, {
+    downloadFile(options) {download = options; return {abort() {}};},
+    getFileSystemManager: () => ({unlink: ({filePath}) => {removed = filePath;}}),
+  });
+  instance.onLoad({id: "7", admin: "1", media_id: "20"});
+  instance.onShow();
+  await tick();
+  assert.equal(download, undefined);
+  next({items: [second], cursor: null});
+  await tick();
+  assert.match(download.url, /clip\.mp4$/);
+  download.success({statusCode: 200, tempFilePath: "cached-video"});
+  download.complete();
+  instance.change({detail: {current: 1}});
+  assert.equal(instance.data.videoSource, "cached-video");
+  assert.equal(instance.data.muted, false);
+  instance.setData({playing: true});
+  instance.onHide();
+  assert.equal(instance.data.visible, false);
+  assert.equal(instance.data.playing, false);
+  assert.equal(removed, "cached-video");
+  instance.videoPlay({currentTarget: {dataset: {id: 21}}});
+  assert.equal(instance.data.playing, false);
+});
+
+test("submission upload label matches the prototype without a swipe hint", () => {
+  const markup = source("pages/memory_create/memory_create.wxml");
+  assert.match(markup, /<view class="label memory-label"><text>上传内容<\/text><\/view>/);
+  assert.doesNotMatch(markup, /左右滑动|upload-hint/);
+  assert.doesNotMatch(source("pages/memory_create/memory_create.wxss"), /\.upload-hint\b/);
+  assert.match(markup, /class="upload-scroll" type="list" scroll-x enable-flex/);
+});
+
 test("memory icons preserve the exact Pencil-exported paths and source nodes", () => {
   const shapes = {
     "review-timer": [
@@ -184,9 +370,8 @@ test("upload progress follows the percentage instead of rotating a fixed arc", (
   const markup = source("pages/memory_create/memory_create.wxml");
   const styles = source("pages/memory_create/memory_create.wxss");
   assert.match(markup, /wx:if="{{item.uploadState === 'uploading'}}" class="upload-progress-ring"/);
-  assert.match(markup, /conic-gradient\(#FFFFFF 0%,#FFFFFF {{item.uploadProgress \|\| 0}}%/);
-  assert.match(styles, /\.upload-progress-ring\s*\{[^}]*mask-image: url\("\/images\/memory-upload-progress-mask.svg"\)/s);
-  assert.doesNotMatch(styles.match(/\.upload-progress-ring\s*\{([^}]*)\}/)[1], /animation/);
+  assert.match(markup, /class="upload-progress-ring" src="{{item.progressImage}}"/);
+  assert.doesNotMatch(markup + styles, /conic-gradient|mask-image/);
 });
 
 test("Skyline viewer bottom overlay anchors to the viewport without blocking media gestures", () => {
@@ -390,6 +575,7 @@ function page(name, memory, wx = {}, thumbnails = {}) {
   const api = {
     getWindowInfo: () => ({ statusBarHeight: 20, windowWidth: 390 }),
     getStorageSync: () => "token",
+    arrayBufferToBase64: (value) => Buffer.from(value).toString("base64"),
     showToast() {},
     navigateBack() {},
     worklet: {
@@ -416,6 +602,16 @@ function page(name, memory, wx = {}, thumbnails = {}) {
       timers.delete(id);
     },
     require(name) {
+      if (name.endsWith("/memoryVideoPreload")) {
+        const module = {exports: {}};
+        vm.runInNewContext(source("services/memoryVideoPreload.js"), {module, wx: api});
+        return module.exports;
+      }
+      if (name.endsWith("/memoryUploadProgress")) {
+        const module = { exports: {} };
+        vm.runInNewContext(source("utils/memoryUploadProgress.js"), { module, wx: api });
+        return module.exports;
+      }
       if (name.endsWith("/videoThumbnail"))
         return {
           createVideoThumbnail: () => ({
@@ -459,6 +655,9 @@ function page(name, memory, wx = {}, thumbnails = {}) {
       if (callback) callback();
     },
     selectComponent: () => ({ open() {} }),
+    createSelectorQuery() {
+      return { select() { return this; }, node() { return this; }, exec(callback) { callback([]); } };
+    },
   };
   if (name === "memory_create") instance.data.ready = true;
   return { instance, app, wx: api, timers };
@@ -726,6 +925,40 @@ test("cancelled and empty media selections do not reposition the existing strip"
   assert.equal(instance.data.mediaScrollTarget, "");
   assert.equal(instance.data.selecting, false);
   assert.equal(instance.data.files.length, 1);
+});
+
+test("media scrollbar uses the Skyline context after mounting and ignores late callbacks", async () => {
+  let options, callback, queries = 0;
+  const { instance } = page("memory_create", { readOriginal: async (file) => file }, {
+    chooseMedia: (value) => { options = value; },
+  });
+  instance.createSelectorQuery = () => ({
+    select(selector) {
+      assert.equal(selector, "#mediaScroller");
+      assert.ok(instance.data.files.length, "configure only after the list mounts");
+      queries++;
+      return this;
+    },
+    node() { return this; },
+    exec(done) { callback = done; },
+  });
+  instance.choose();
+  await options.success({ tempFiles: [{ kind: "image", size: 100 }] });
+  assert.equal(queries, 1);
+  const scroller = { showScrollbar: true, scrollEnabled: true };
+  callback([{ node: scroller }]);
+  assert.equal(scroller.showScrollbar, false);
+  assert.equal(scroller.scrollEnabled, true);
+  callback([]);
+  scroller.showScrollbar = true;
+  instance.onUnload();
+  callback([{ node: scroller }]);
+  instance.configureMediaScroller();
+  assert.equal(scroller.showScrollbar, true);
+  assert.equal(queries, 1);
+  const markup = source("pages/memory_create/memory_create.wxml");
+  assert.match(markup, /id="mediaScroller" enhanced="{{true}}"/);
+  assert.doesNotMatch(source("pages/memory_create/memory_create.wxss"), /scrollbar-mask|::-webkit-scrollbar/);
 });
 
 test("a media strip render acknowledgement cannot scroll an unloaded page", async () => {
@@ -1123,10 +1356,13 @@ test("short landscape photos cannot pan into blank space vertically", () => {
   assert.equal(instance._x.value, 195);
 });
 
-test("video entry is paused and muted; only explicit play enables sound", () => {
+test("active video autoplays with sound only while its page is visible", () => {
   const { instance, calls } = viewer("video");
   assert.equal(instance.data.playing, false);
-  assert.equal(instance.data.muted, true);
+  assert.equal(instance.data.muted, false);
+  const markup = source("pages/memory_detail/memory_detail.wxml");
+  assert.match(markup, /autoplay="\{\{visible\}\}"/);
+  assert.match(markup, /mediaIndex === index/);
   assert.equal(calls.length, 0);
   instance.playVideo();
   assert.equal(instance.data.muted, false);
@@ -1142,6 +1378,10 @@ test("video entry is paused and muted; only explicit play enables sound", () => 
   });
   assert.equal(instance.data.progress, 50);
   assert.equal(instance.data.currentLabel, "0:15");
+  instance.onHide();
+  assert.equal(calls.at(-1).name, "pause");
+  instance.videoPlay({currentTarget: {dataset: {id: 10}}});
+  assert.equal(instance.data.playing, false);
 });
 
 test("slider seeking pauses then resumes only a video that was playing", () => {
@@ -1338,6 +1578,19 @@ test("view controls preserve submission disabled guards without native button su
   assert.equal(confirmations, 1);
 });
 
+test("submission explanation keeps the complete copy and lets Skyline wrap naturally", () => {
+  const { instance } = page("memory_create", service());
+  let options;
+  instance.selectComponent = () => ({ open(value) { options = value; } });
+  instance.setData({ ready: true, files: [{ id: "explanation" }] });
+  instance.confirmUpload();
+  assert.equal(options.message,
+    "您上传的图片与视频将投稿至管理员，不会直接展示在小程序中。若内容合适，管理员将代为发布。");
+  assert.doesNotMatch(options.message, /[\r\n]/);
+  assert.equal(options.prototypeStyle, true);
+  assert.equal(options.confirmBehavior, "emit");
+});
+
 test("thumbnail delete buttons remove only their stable file ID and respect upload locking", () => {
   const { instance } = page("memory_create", service());
   const first = { id: "first", kind: "image" };
@@ -1502,7 +1755,7 @@ test("admin summaries display aggregate sizes and durations rather than the firs
   assert.equal(
     service().presentation({ media_count: 6, image_count: 6, video_count: 0 })
       .mediaLabel,
-    "图片 · 6 张",
+    "图片",
   );
 });
 
@@ -1512,6 +1765,7 @@ test("review list retains all status filters and rejection requires explicit con
   const { instance } = page(
     "memory_review",
     {
+      ...service(),
       list: async () => ({ items: [], cursor: null }),
       send: async (...args) => calls.push(args),
     },
@@ -1534,7 +1788,7 @@ test("review list retains all status filters and rejection requires explicit con
   });
   instance.setData({
     status: "pending",
-    items: [{ id: 8, revision: 3, caption: "备注" }],
+    items: [{ id: 8, memory_id: 7, media_id: 8, revision: 3, caption: "备注", captionExpandable: true }],
   });
   instance.toggleCaption({ currentTarget: { dataset: { id: 8 } } });
   assert.equal(instance.data.items[0].expanded, true);
@@ -1542,9 +1796,61 @@ test("review list retains all status filters and rejection requires explicit con
   assert.equal(confirmation.title, "确认不通过");
   assert.equal(calls.length, 0);
   await instance.confirmAction();
-  assert.equal(calls[0][0], "/admin/memories/8/review");
+  assert.equal(calls[0][0], "/admin/memories/7/review");
   assert.equal(calls[0][2].expected_revision, 3);
   assert.equal(calls[0][2].action, "reject");
+  assert.equal(calls[0][2].individual, true);
+  assert.deepEqual(Array.from(calls[0][2].selected_media_ids), [8]);
+});
+
+test("review captions only expand when native layout exceeds one line", () => {
+  let heights = [16.8, 33.6, 33.6];
+  let callback;
+  const {instance} = page("memory_review", service(), {
+    createSelectorQuery() {
+      return {
+        selectAll() {return this;},
+        boundingClientRect() {return this;},
+        exec(value) {callback = value;},
+      };
+    },
+  });
+  instance._generation = 1;
+  instance.setData({items: [
+    {id: 1, caption: "123"},
+    {id: 2, caption: "Long caption which wraps on this device"},
+    {id: 3, caption: "第一行\n第二行"},
+  ]});
+  const finish = () => callback([
+    heights.map((height, index) => ({dataset: {id: index + 1}, height})),
+    heights.map((_, index) => ({dataset: {id: index + 1}, height: 16.8})),
+  ]);
+  instance.measureCaptions(1);
+  finish();
+  assert.deepEqual(Array.from(instance.data.items, item => item.captionExpandable), [false, true, true]);
+  instance.toggleCaption({currentTarget: {dataset: {id: 1}}});
+  assert.equal(instance.data.items[0].expanded, undefined);
+  instance.toggleCaption({currentTarget: {dataset: {id: 2}}});
+  assert.equal(instance.data.items[1].expanded, true);
+  instance.toggleCaption({currentTarget: {dataset: {id: 2}}});
+  assert.equal(instance.data.items[1].expanded, false);
+  heights = [16.8, 16.8, 33.6];
+  instance.onResize();
+  finish();
+  assert.deepEqual(Array.from(instance.data.items, item => item.captionExpandable), [false, false, true]);
+  instance.onResize();
+  instance.onHide();
+  finish();
+  assert.ok(instance.data.items.every(item => !item.captionMeasured));
+});
+
+test("review expand control does not reserve the native button default width", () => {
+  const markup = source("pages/memory_review/memory_review.wxml");
+  assert.match(markup, /<view wx:if="\{\{item.captionExpandable\}\}" class="review-expand"[^>]*bindtap="toggleCaption"[^>]*aria-role="button"/);
+  assert.doesNotMatch(markup, /<button[^>]*class="review-expand"/);
+  const styles = source("pages/memory_review/memory_review.wxss");
+  assert.match(styles, /\.review-expand\s*\{[^}]*min-width:\s*0;\s*width:\s*auto;/);
+  assert.match(styles, /\.review-expand\s*\{[^}]*align-self:\s*flex-end;/);
 });
 
 test("prototype approve opens a separate selection sheet without bypassing manual review", () => {

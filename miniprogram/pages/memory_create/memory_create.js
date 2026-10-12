@@ -7,6 +7,7 @@ const {
 } = require("../../services/videoThumbnail");
 const { logPageError } = require("../../services/logger");
 const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
+const { uploadProgressImage } = require("../../utils/memoryUploadProgress");
 
 Page({
   data: {
@@ -56,6 +57,14 @@ Page({
   },
   onShow() {
     if (!this.data.ready) this.validateAccess();
+  },
+  configureMediaScroller() {
+    if (this._unloaded) return;
+    this.createSelectorQuery().select("#mediaScroller").node().exec((result) => {
+      if (this._unloaded) return;
+      const scroller = result && result[0] && result[0].node;
+      if (scroller) scroller.showScrollbar = false;
+    });
   },
   uploader() {
     if (!this._uploader) this._uploader = new MemoryPreupload(this._submissionId, {
@@ -125,7 +134,7 @@ Page({
                   selectedFiles.length < memory.MAX_FILES
                     ? "upload-add"
                     : `upload-file-${selectedFiles[selectedFiles.length - 1].id}`,
-              });
+              }, () => this.configureMediaScroller());
               this.prepareThumbnails();
               this.uploader().setFiles(selectedFiles);
             });
@@ -207,6 +216,9 @@ Page({
   },
   updateThumbnail(id, patch) {
     if (this._unloaded) return;
+    if (patch.uploadState === "uploading") {
+      patch = { ...patch, progressImage: uploadProgressImage(patch.uploadProgress) };
+    }
     this.setData({
       files: this.data.files.map((file) =>
         file.id === id ? { ...file, ...patch } : file,
@@ -327,7 +339,7 @@ Page({
     this.selectComponent("#memory-confirm").open({
       title: "投稿说明",
       message:
-        "您上传的图片与视频将投稿至管理员，不会直接展示在小程序中。\n若内容合适，管理员将代为发布。",
+        "您上传的图片与视频将投稿至管理员，不会直接展示在小程序中。若内容合适，管理员将代为发布。",
       cancelText: "取消",
       confirmText: "确认投稿",
       prototypeStyle: true,
