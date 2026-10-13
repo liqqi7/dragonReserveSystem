@@ -232,8 +232,8 @@
         </swiper>
       </view>
 
-      <!-- ── 小工具（管理员首页原型） ── -->
-      <view wx:if="{{isAdmin}}" class="group-section home-tools-section">
+      <!-- ── 小工具 ── -->
+      <view class="group-section home-tools-section">
         <view class="group-header">
           <text class="group-title">小工具</text>
         </view>

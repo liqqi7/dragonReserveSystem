@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.core.database import Base, get_db
 from app.core.config import get_settings
 from app.core.exceptions import AppError
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_optional_current_user
 from app.models import User
 
 
@@ -37,6 +37,9 @@ def library(tmp_path, monkeypatch):
         spec.loader.exec_module(module)
         app.include_router(module.router, prefix='/api/v1')
     app.dependency_overrides[get_current_user] = lambda: actor
+    def optional_actor():
+        return app.dependency_overrides.get(get_current_user, lambda: actor)()
+    app.dependency_overrides[get_optional_current_user] = optional_actor
     app.dependency_overrides[get_db] = lambda: db
     @app.exception_handler(AppError)
     async def error_handler(request, error):

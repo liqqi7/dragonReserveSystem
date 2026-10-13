@@ -3,7 +3,7 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_optional_current_user
 from app.api.boardgame_deps import enabled, body_limit, write_db
 from app.core.database import get_db
 from app.models import User
@@ -30,8 +30,7 @@ def games(q: str = Query('', max_length=255), player_count: int | None = Query(N
           min_complexity: Decimal | None = Query(None, ge=1, le=5),
           max_complexity: Decimal | None = Query(None, ge=1, le=5),
           limit: int = Query(20, ge=1, le=100), cursor: str | None = None,
-          db: Session = Depends(get_db), actor: User = Depends(get_current_user)):
-    member(actor)
+          db: Session = Depends(get_db), actor: User | None = Depends(get_optional_current_user)):
     if min_complexity is not None and max_complexity is not None and min_complexity > max_complexity:
         fail('invalid_range')
     has_inventory = select(Inventory.id).where(Inventory.game_id == BoardGame.id,
@@ -55,8 +54,7 @@ def games(q: str = Query('', max_length=255), player_count: int | None = Query(N
 
 @router.get('/boardgames/recent-arrivals')
 def recent_arrivals(limit: int = Query(50, ge=1, le=50), db: Session = Depends(get_db),
-                    actor: User = Depends(get_current_user)):
-    member(actor)
+                    actor: User | None = Depends(get_optional_current_user)):
     latest = select(Inventory.game_id, func.max(Inventory.created_at).label('entered_at')).where(
         Inventory.archived_at.is_(None),
         Inventory.status != 'retired').group_by(Inventory.game_id).subquery()
@@ -66,16 +64,17 @@ def recent_arrivals(limit: int = Query(50, ge=1, le=50), db: Session = Depends(g
 
 
 @router.get('/boardgames/{game_id}')
-def game_detail(game_id: int, db: Session = Depends(get_db), actor: User = Depends(get_current_user)):
-    member(actor)
+def game_detail(game_id: int, db: Session = Depends(get_db), actor: User | None = Depends(get_optional_current_user)):
     game = catalog.game(db, game_id, actor)
+    if (game.archived_at or game.merged_into_id) and actor is None:
+        fail('not_found', 404)
     result = catalog.game_detail(db, game, actor)
     active = (Inventory.game_id == game_id, Inventory.archived_at.is_(None), Inventory.status != 'retired')
     result['owner_count'] = db.scalar(select(func.count(func.distinct(Inventory.owner_user_id))).where(*active))
     if not result['owner_count']:
         fail('not_found', 404)
     result['my_versions'] = [catalog.inventory_detail(db, box, actor) for box in db.scalars(
-        select(Inventory).where(*active, Inventory.owner_user_id == actor.id).order_by(Inventory.id.desc()))]
+        select(Inventory).where(*active, Inventory.owner_user_id == actor.id).order_by(Inventory.id.desc()))] if actor and actor.role in ('user', 'admin') else []
     return result
 
 
@@ -107,8 +106,9 @@ def change_version(inventory_id: int, payload: InventoryVersionChange,
 
 
 @router.get('/boardgames/{game_id}/images')
-def game_images(game_id: int, db: Session = Depends(get_db), actor: User = Depends(get_current_user)):
-    member(actor)
+def game_images(game_id: int, db: Session = Depends(get_db), actor: User | None = Depends(get_optional_current_user)):
     game = catalog.game(db, game_id, actor)
+    if (game.archived_at or game.merged_into_id) and actor is None:
+        fail('not_found', 404)
     from app.services.boardgame_images import images
     return images(game.bgg_id)

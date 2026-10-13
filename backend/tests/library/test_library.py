@@ -3,9 +3,10 @@ from uuid import uuid4
 import httpx
 import pytest
 from sqlalchemy import select, func, inspect
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_optional_current_user
 from app.core.config import get_settings
 from app.core.exceptions import AppError
+from app.models import User
 from app.models.boardgame import BoardGame, Inventory, PreviewJob, PreviewItem, TABLES
 from app.services import boardgame_preview, boardgame_worker, boardgame_catalog, boardgame_sources
 from app.services.boardgame_common import now
@@ -146,6 +147,50 @@ def test_detail_for_nonowner_and_inactive_library_entries(library):
     assert client.get(path).status_code == 404
     assert client.get('/api/v1/boardgames').json()['items'] == []
     assert client.get(f"/api/v1/boardgame-inventory?game_id={result['game_id']}").json()['items'] == []
+
+
+def test_public_browsing_is_anonymous_but_inventory_and_intake_remain_member_only(library):
+    client, db, actor, other, factory, app = library
+    result = post(client, '/boardgame-intakes', payload(ready(library))).json()
+    game_id = result['game_id']
+    app.dependency_overrides[get_optional_current_user] = lambda: None
+
+    assert client.get('/api/v1/boardgames').status_code == 200
+    assert client.get('/api/v1/boardgames/recent-arrivals').status_code == 200
+    detail = client.get(f'/api/v1/boardgames/{game_id}')
+    assert detail.status_code == 200
+    assert detail.json()['my_versions'] == []
+    assert detail.json()['owner_count'] == 1
+    assert client.get(f'/api/v1/boardgames/{game_id}/images').status_code == 200
+    app.dependency_overrides.pop(get_optional_current_user)
+    assert client.get('/api/v1/boardgames', headers={'Authorization':'Bearer expired-token'}).status_code == 200
+    app.dependency_overrides[get_optional_current_user] = lambda: None
+    guest = User(nickname='访客', avatar_url='', role='guest')
+    app.dependency_overrides[get_current_user] = lambda: guest
+    assert client.get(f'/api/v1/boardgame-inventory?game_id={game_id}').status_code == 403
+    assert client.get(f"/api/v1/boardgame-inventory/{result['inventory'][0]['id']}").status_code == 403
+    assert client.put(f"/api/v1/boardgame-inventory/{result['inventory'][0]['id']}/version",
+                      json={'expected_revision': 1, 'bgg_version_id': 102}).status_code == 403
+    assert post(client, '/boardgame-intake-previews', {'bgg_ids':[224517]}).status_code == 403
+
+    app.dependency_overrides[get_optional_current_user] = lambda: other
+    assert client.get(f'/api/v1/boardgames/{game_id}').json()['my_versions'] == []
+    app.dependency_overrides[get_optional_current_user] = lambda: actor
+    assert client.get(f'/api/v1/boardgames/{game_id}').json()['my_versions'][0]['owner']['id'] == actor.id
+
+
+def test_anonymous_users_cannot_read_hidden_or_archived_games(library):
+    client, db, actor, other, factory, app = library
+    result = post(client, '/boardgame-intakes', payload(ready(library))).json()
+    game = db.get(BoardGame, result['game_id'])
+    game.is_visible = False
+    db.commit()
+    app.dependency_overrides[get_optional_current_user] = lambda: None
+    assert client.get(f'/api/v1/boardgames/{game.id}').status_code == 404
+    game.is_visible = True
+    game.archived_at = now()
+    db.commit()
+    assert client.get(f'/api/v1/boardgames/{game.id}').status_code == 404
 
 
 @pytest.mark.parametrize('status', [202,429,500,401])

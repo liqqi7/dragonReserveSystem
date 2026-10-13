@@ -6,15 +6,15 @@ const path = require("node:path");
 const pageDir = path.join(__dirname, "../pages/activity_list");
 const imageDir = path.join(__dirname, "../images");
 
-test("administrator home tools follow the Pencil module and card content", () => {
+test("home tools are visible to non-admin users and follow the Pencil module", () => {
   const wxml = fs.readFileSync(path.join(pageDir, "activity_list.wxml"), "utf8");
   const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");
   const acceptanceEnd = wxml.indexOf("<!-- ── 未开始 ── -->");
-  const toolsStart = wxml.indexOf("<!-- ── 小工具（管理员首页原型） ── -->");
+  const toolsStart = wxml.indexOf("<!-- ── 小工具 ── -->");
   assert.ok(toolsStart > wxml.indexOf("<!-- ── 接受报名 ── -->"));
   assert.ok(toolsStart < acceptanceEnd);
   const toolsMarkup = wxml.slice(toolsStart, acceptanceEnd);
-  assert.match(toolsMarkup, /wx:if="\{\{isAdmin\}\}"/);
+  assert.doesNotMatch(toolsMarkup, /wx:if="\{\{isAdmin\}\}"/);
   assert.match(toolsMarkup, /<text class="group-title">小工具<\/text>/);
   assert.match(toolsMarkup, /<text class="home-tool-title">Chwazi<\/text>/);
   assert.match(toolsMarkup, /<text class="home-tool-title">桌游库<\/text>/);

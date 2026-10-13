@@ -4,6 +4,14 @@ Page({
   ...base,
   data: {...base.data, stage:'intro', cameraOpen:false, versionsOpen:false, ownersOpen:false, statusBarHeight:0, navHeight:44},
   onLoad(options = {}) {
+    const role = String(wx.getStorageSync('userRole') || '');
+    const hasSession = !!wx.getStorageSync('accessToken');
+    if (!hasSession || !['user', 'admin'].includes(role)) {
+      const app = getApp();
+      app.globalData.pendingCreateAccessAction = hasSession ? 'permission' : 'login';
+      wx.switchTab({url:'/pages/profile/profile'});
+      return;
+    }
     base.onLoad.call(this, options);
     try {
       const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();

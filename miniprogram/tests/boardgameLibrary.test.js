@@ -5,15 +5,16 @@ const path = require('node:path');
 const vm = require('node:vm');
 const root = path.join(__dirname, '..');
 
-function page(name, api) {
+function page(name, api, role='user') {
   let definition;
-  const storage = {userId:7};
+  const storage = {userId:7,userRole:role,accessToken:'test-token',isAuthenticated:role!=='guest'};
+  const app = {globalData:{}};
   const wx = {getStorageSync:k=>storage[k],setStorageSync:(k,v)=>storage[k]=v,removeStorageSync:k=>delete storage[k],
     getWindowInfo:()=>({statusBarHeight:44}),getMenuButtonBoundingClientRect:()=>({top:48,height:32}),
-    showToast:o=>{wx.toast=o;},navigateTo:o=>{wx.navigation=o;}};
+    showToast:o=>{wx.toast=o;},navigateTo:o=>{wx.navigation=o;},switchTab:o=>{wx.tabNavigation=o;}};
   const load = file => {
     const module={exports:{}};
-    const context={module,exports:module.exports,Page:d=>{definition=d;},wx,
+    const context={module,exports:module.exports,Page:d=>{definition=d;},wx,getApp:()=>app,
       require:p=>p.includes('services/boardgames')?api:p==='./controller'?load(path.join(path.dirname(file),'controller.js')):{},
       setTimeout:()=>1,clearTimeout:()=>{},getCurrentPages:()=>[{},{}]};
     vm.runInNewContext(fs.readFileSync(file,'utf8'),context,{filename:file});return module.exports;
@@ -26,7 +27,7 @@ function page(name, api) {
     }
   }};
   instance.onLoad({id:'1'});
-  return {instance,wx,storage};
+  return {instance,wx,storage,app};
 }
 const item={bgg_id:224517,item_id:1,revision:1,name:'伯明翰',detail_state:'ready',bgg_rating:'8.56',bgg_rank:1,complexity:'3.87'};
 const edition={bgg_version_id:101,name:'Chinese edition',display_name:'中文版',language_label:'中文',year_published:2020};
@@ -92,6 +93,23 @@ test('details do not depend on gallery availability or any excluded endpoint',as
   assert.equal(p.data.myVersions[0].id,2);assert.equal(p.data.ownerCount,25);
   assert.ok(calls.every(url=>['/boardgames/1','/boardgames/1/images','/boardgame-inventory'].includes(url)));
   resolveGallery({items:[]});await Promise.resolve();
+});
+test('guest detail loads public game data without requesting owner identities',async()=>{
+  const calls=[];const api={get:async url=>{calls.push(url);return url.endsWith('/images')?{items:[]}:
+    {name:'伯明翰',owner_count:3,my_versions:[],version_options:[edition]};},message:()=> 'failed'};
+  const {instance:p}=page('boardgame_detail',api,'guest');await p.load();await Promise.resolve();
+  assert.equal(p.data.game.name,'伯明翰');assert.equal(p.data.myVersions.length,0);
+  assert.equal(p.data.ownerAccess,false);assert.ok(!calls.includes('/boardgame-inventory'));
+});
+test('guest intake action opens profile access flow instead of intake',()=>{
+  const {instance:p,wx,app}=page('boardgame_library',{},'guest');p.openEntry();
+  assert.equal(wx.navigation,undefined);assert.equal(wx.tabNavigation.url,'/pages/profile/profile');
+  assert.equal(app.globalData.pendingCreateAccessAction,'permission');
+});
+test('direct guest navigation to intake is redirected to the profile permission flow',()=>{
+  const {wx,app}=page('boardgame_intake',{},'guest');
+  assert.equal(wx.tabNavigation.url,'/pages/profile/profile');
+  assert.equal(app.globalData.pendingCreateAccessAction,'permission');
 });
 test('detail edition change uses ownership record and current revision',async()=>{
   let sent;const api={get:async()=>({items:[]}),send:async(url,method,data)=>{sent={url,method,data};return {id:2,revision:5,bgg_version_id:102};},message:()=> 'failed'};
