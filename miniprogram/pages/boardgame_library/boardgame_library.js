@@ -158,6 +158,15 @@ Page({
   },
 
   openEntry() {
+    const role = String(wx.getStorageSync('userRole') || '');
+    const hasSession = !!wx.getStorageSync('accessToken');
+    if (!hasSession || !['user', 'admin'].includes(role)) {
+      const app = getApp();
+      const type = hasSession ? 'permission' : 'login';
+      app.globalData.pendingCreateAccessAction = type;
+      wx.switchTab({url:'/pages/profile/profile'});
+      return;
+    }
     wx.navigateTo({ url: '/pages/boardgame_intake/boardgame_intake' });
   },
 

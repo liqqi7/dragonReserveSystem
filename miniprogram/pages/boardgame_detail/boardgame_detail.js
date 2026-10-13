@@ -13,10 +13,13 @@ Page({
   data:{id:null,game:null,inventory:[],myVersions:[],versionOptions:[],ownerRows:[],ownerPreview:[],ownerCount:0,
     detailImages:[],detailGalleryPosition:'',galleryLoading:false,galleryError:'',inventoryCursor:null,
     loading:false,error:'',statusBarHeight:0,navHeight:44,inventoryOpen:false,ownerOpen:false,
-    selectedVersionId:null,currentVersionId:null,saving:false,formError:'',ownerError:'',ownersLoading:false,descriptionOpen:false},
+    selectedVersionId:null,currentVersionId:null,saving:false,formError:'',ownerError:'',ownersLoading:false,descriptionOpen:false,ownerAccess:false},
   onLoad(options) {
     this._account = String(wx.getStorageSync('userId'));
     this._generation = 0;
+    const role = String(wx.getStorageSync('userRole') || '');
+    this._member = !!wx.getStorageSync('isAuthenticated') && ['user','admin'].includes(role);
+    this.setData({ownerAccess:this._member});
     this.setData({id:Number(options.id)});
     try {
       const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
@@ -41,7 +44,7 @@ Page({
         myVersions:boxes(game.my_versions || []), versionOptions:(game.version_options || []).map(versionView),
         inventory:[],ownerRows:[],ownerPreview:[],inventoryCursor:null,ownerCount:Number(game.owner_count) || 0});
       // Optional photos and owners never delay the saved game data.
-      this.loadOwners(false, generation);
+      if (this._member) this.loadOwners(false, generation);
       this.loadGallery(generation);
     } catch (error) { if (this.current(generation)) this.setData({game:null,myVersions:[],inventory:[],ownerRows:[],ownerPreview:[],ownerCount:0,error:api.message(error)}); }
     finally { if (this.current(generation)) this.setData({loading:false}); }
@@ -78,7 +81,15 @@ Page({
   previewImage(e) { const i=Number(e.currentTarget.dataset.index); const urls=this.data.detailImages.map(item=>item.full_url || item.url); wx.previewImage({current:urls[i],urls}); },
   imageError() { this.setData({'game.cover_url':null}); },
   toggleDescription() { this.setData({descriptionOpen:!this.data.descriptionOpen}); },
-  openOwner() { this.setData({ownerOpen:true}); },
+  openOwner() {
+    if (!this._member) {
+      const app = getApp();
+      app.globalData.pendingCreateAccessAction = wx.getStorageSync('accessToken') ? 'permission' : 'login';
+      wx.switchTab({url:'/pages/profile/profile'});
+      return;
+    }
+    this.setData({ownerOpen:true});
+  },
   closeOwner() { this.setData({ownerOpen:false}); },
   openBox() {
     const box=this.data.myVersions[0];
