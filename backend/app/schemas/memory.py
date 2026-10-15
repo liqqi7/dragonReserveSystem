@@ -28,7 +28,7 @@ class MemoryDraftRequest(MemoryMetadata):
 
 
 class MemoryReviewRequest(BaseModel):
-    action: Literal["publish", "reject", "offline"]
+    action: Literal["publish", "reject", "offline", "retry", "republish", "reopen"]
     expected_revision: int = Field(gt=0)
     selected_media_ids: list[int] = Field(default_factory=list, max_length=10)
     manually_reviewed: bool = False

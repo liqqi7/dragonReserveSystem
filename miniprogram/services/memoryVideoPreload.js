@@ -1,55 +1,42 @@
-function createVideoPreloader() {
-  const files = new Map();
-  let pending, disposed = false;
-  const remove = (path) => {
-    if (!path || !wx.getFileSystemManager) return;
-    wx.getFileSystemManager().unlink({filePath: path, fail() {}});
-  };
-  const cancel = () => {
-    const job = pending;
-    pending = null;
-    if (job && job.task) job.task.abort();
-  };
+const {createMediaSession} = require("./memoryMediaSession");
+
+function createVideoPreloader(sharedSession) {
+  const session = sharedSession || createMediaSession();
+  const owner = {};
+  let window = [], foreground = null, disposed = false;
+  const sync = allowed => session.replace(owner, window.map((item, index) => item && item.kind === "video" && item.url ? ({
+    url: item.url, kind: "video", priority: foreground === item.url ? -1 : index ? index * 10 + 1 : 0,
+    protected: index === 0 || foreground === item.url, foreground: foreground === item.url,
+    load: index !== 0 || foreground === item.url,
+  }) : null).filter(Boolean), allowed);
   return {
-    source(item) {
-      const file = item && files.get(item.id);
-      return file && file.url === item.url ? file.path : (item && item.url) || "";
+    source(item) {return item && (session.source(item.url) || item.url) || "";},
+    ensure(item) {
+      if (disposed) return Promise.reject(Object.assign(new Error("视频加载已取消"), {cancelled: true}));
+      if (session.source(item.url)) return Promise.resolve(session.source(item.url));
+      foreground = item.url;
+      if (!window.some(value => value && value.url === item.url)) window.unshift(item);
+      session.clearError(item.url);
+      const promise = session.wait(item.url);
+      sync();
+      return promise;
     },
-    update(current, next) {
+    invalidate(item) {
+      if (!item) return;
+      if (foreground === item.url) {foreground = null; sync();}
+      session.invalidate(item.url);
+    },
+    update(current, next, previous, allowPrefetch = true) {
       if (disposed) return;
-      const keep = new Set([current, next].filter(Boolean).map((item) => item.id));
-      for (const [id, file] of files) {
-        if (!keep.has(id)) {remove(file.path); files.delete(id);}
-      }
-      if (pending && (!next || pending.id !== next.id || pending.url !== next.url)) cancel();
-      if (!next || next.kind !== "video" || !next.url || !wx.downloadFile || pending) return;
-      const file = files.get(next.id);
-      if (file && file.url === next.url) return;
-      if (file) {remove(file.path); files.delete(next.id);}
-      const job = {id: next.id, url: next.url};
-      pending = job;
-      try {
-        job.task = wx.downloadFile({
-          url: next.url,
-          success(result) {
-            if (disposed || pending !== job || result.statusCode !== 200) {
-              remove(result.tempFilePath);
-              return;
-            }
-            if (result.tempFilePath) files.set(job.id, {url: job.url, path: result.tempFilePath});
-          },
-          fail() {},
-          complete() {if (pending === job) pending = null;},
-        });
-      } catch (_) {if (pending === job) pending = null;}
+      if (foreground && foreground !== current?.url) foreground = null;
+      window = [current, next, previous];
+      sync(allowPrefetch);
     },
     dispose() {
-      disposed = true;
-      cancel();
-      for (const file of files.values()) remove(file.path);
-      files.clear();
+      if (disposed) return;
+      disposed = true; session.replace(owner, []);
+      if (!sharedSession) session.dispose();
     },
   };
 }
-
 module.exports = {createVideoPreloader};

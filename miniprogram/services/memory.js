@@ -1,11 +1,24 @@
 const { request, resolveApiBaseUrl, toUserMessage } = require("./request");
 const { createTraceId, logRequestFailure, logPageError } = require("./logger");
 const { parseLocalDateTime } = require("../utils/activityDetail");
-const { formatTime } = require("../utils/dateFormat");
+const { pad, formatTime } = require("../utils/dateFormat");
 
 const IMAGE_MAX_BYTES = 20 * 1024 * 1024;
 const VIDEO_MAX_BYTES = 20 * 1024 * 1024;
 const MAX_FILES = 10;
+const REVIEW_STATUSES = [
+  {id: "pending", name: "待审核"},
+  {id: "processing", name: "压缩中"},
+  {id: "failed", name: "压缩失败"},
+  {id: "published", name: "已上架"},
+  {id: "offline", name: "已下架"},
+  {id: "rejected", name: "未通过"},
+];
+
+function statusLabel(status) {
+  const entry = REVIEW_STATUSES.find(item => item.id === status);
+  return entry ? entry.name : "";
+}
 
 function durationLabel(seconds) {
   const value = Math.max(0, Math.floor(Number(seconds) || 0));
@@ -15,7 +28,7 @@ function durationLabel(seconds) {
 function activityTime(value) {
   const date = parseLocalDateTime(value);
   if (!date) return "";
-  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${formatTime(date.getHours(), date.getMinutes())}`;
+  return `${date.getFullYear()}/${pad(date.getMonth() + 1)}/${pad(date.getDate())} ${formatTime(date.getHours(), date.getMinutes())}`;
 }
 
 function createdLabel(value, now = new Date()) {
@@ -78,19 +91,13 @@ function presentation(memory) {
     ...item,
     url: mediaUrl(item.url),
     thumbnail_url: mediaUrl(item.thumbnail_url),
-    selectable: item.state === "ready",
-    stateLabel:
-      {
-        ready: "待人工审核",
-        waiting: "待上传",
-        uploaded: "待处理",
-        working: "处理中",
-        failed: "处理失败",
-      }[item.state] || "",
+    selectable: item.state === "ready" && (!item.publication_status || item.publication_status === "unreviewed"),
+    stateLabel: memory.status ? statusLabel(mediaReviewStatus(item, memory.status)) : "",
   }));
   const first = media[0] || {};
   return {
     ...memory,
+    statusLabel: statusLabel(memory.status),
     media,
     activityTime: activityTime(memory.activity_start_time),
     createdLabel: createdLabel(memory.created_at),
@@ -118,20 +125,21 @@ function presentation(memory) {
 }
 
 function mediaReviewStatus(item, parentStatus) {
-  if (parentStatus === "draft" || parentStatus === "processing") return parentStatus;
+  if (parentStatus === "draft") return "draft";
   if (item.publication_status === "published") return "published";
   if (item.publication_status === "offline") return "offline";
   if (item.publication_status === "excluded") return "rejected";
+  if (item.state === "uploaded" || item.state === "working") return "processing";
   return item.state === "ready" ? "pending" : "failed";
 }
 
-function reviewCards(submission) {
+function mediaCards(submission) {
   return (submission.media || []).map((item) => presentation({
     ...submission,
     id: item.id,
     memory_id: submission.id,
     media_id: item.id,
-    status: mediaReviewStatus(item, submission.status),
+    status: submission.status ? mediaReviewStatus(item, submission.status) : undefined,
     media: [item],
     media_count: 1,
     image_count: item.kind === "image" ? 1 : 0,
@@ -297,11 +305,14 @@ function upload(id, slot, file, onProgress) {
 }
 
 module.exports = {
+  REVIEW_STATUSES,
+  statusLabel,
   send,
   list,
   detail,
   presentation,
-  reviewCards,
+  mediaCards,
+  reviewCards: mediaCards,
   mediaReviewStatus,
   mediaUrl,
   validateFile,

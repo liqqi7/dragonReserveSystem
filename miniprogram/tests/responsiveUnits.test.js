@@ -33,6 +33,13 @@ test("visual WXSS dimensions use rpx except approved px cases", () => {
     if (relative === path.join("pages", "activity_detail", "activity_detail.wxss")) {
       source = source.replace(/radial-gradient\(circle\s+420px\s+at/g, "radial-gradient(circle at");
     }
+    if (relative === path.join("pages", "memory_review", "memory_review.wxss")) {
+      // The review title stays 20px on wider iPhones instead of scaling with rpx.
+      source = source.replace(/(\.review-filter text\s*\{)([^{}]*)(\})/g, (_, selector, body, end) => {
+        assert.deepEqual(body.match(/[\w-]+:\s*[^;{}]*\dpx[^;{}]*;/g), ["font-size: 20px;"]);
+        return selector + body.replace(/font-size:\s*20px;/, "") + end;
+      });
+    }
     if (relative === path.join("custom-tab-bar", "index.wxss")) {
       const fixedTabPixelValues = source.match(/(?:top|width|height|font-size|line-height|border-radius):\s*\d+px;|padding:\s*\d+px\s+7\.69231rpx;/g) || [];
       assert.deepEqual(

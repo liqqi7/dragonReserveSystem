@@ -75,6 +75,326 @@ def test_individual_review_list_exposes_every_file(client, user_headers, admin_h
     assert body["items"][0]["id"] == memory.id
 
 
+def individual_action(client, headers, memory, item, action, **extra):
+    return client.post(f"/api/v1/admin/memories/{memory.id}/review", headers=headers, json={
+        "individual": True, "action": action, "expected_revision": memory.revision,
+        "selected_media_ids": [item.id], "manually_reviewed": action == "publish", **extra})
+
+
+def test_public_individual_feed_exposes_all_published_files_but_no_private_siblings(
+        client, user_headers, admin_headers, db_session):
+    memory, items = prepared(client, user_headers, db_session, count=4)
+    items[1].kind, items[1].duration = "video", 8
+    db_session.commit()
+    for item in items[:2]:
+        assert individual_action(client, admin_headers, memory, item, "publish").status_code == 200
+    assert individual_action(client, admin_headers, memory, items[2], "reject").status_code == 200
+    legacy = client.get("/api/v1/memories").json()
+    assert len(legacy["items"][0]["media"]) == 1
+    response = client.get("/api/v1/memories?individual=true&limit=1")
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["items"]) == 1
+    exposed = body["items"][0]
+    assert exposed["media_count"] == 2
+    assert [item["id"] for item in exposed["media"]] == [item.id for item in items[:2]]
+    assert {item["kind"] for item in exposed["media"]} == {"image", "video"}
+    for item in exposed["media"]:
+        assert item["url"] and item["thumbnail_url"]
+        assert not {"state", "publication_status", "original_bytes"} & item.keys()
+        assert "actor=" not in item["url"] and "signature=" not in item["url"]
+    assert "status_counts" not in body and "revision" not in exposed
+    for item in items[2:]:
+        assert client.get(f"/api/v1/memory-media/{item.id}").status_code == 404
+    assert individual_action(client, admin_headers, memory, items[1], "offline").status_code == 200
+    remaining = client.get("/api/v1/memories?individual=true").json()
+    assert [item["id"] for item in remaining["items"][0]["media"]] == [items[0].id]
+
+
+def test_failed_compression_keeps_original_and_manual_retry_reaches_review(client, user_headers, admin_headers,
+                                                                          db_session, monkeypatch):
+    draft, _ = make_draft(client, user_headers)
+    assert send_file(client, user_headers, draft).status_code == 200
+    assert client.post(f"/api/v1/memory-drafts/{draft['id']}/submit", headers=user_headers).status_code == 200
+    memory = db_session.get(Memory, draft["id"])
+    item = memory_service.assets(db_session, memory.id)[0]
+    original = memory_media.private_path(memory_service.storage_root(), item.original_key)
+    reservation = item.reserved_bytes
+    def broken(*args):
+        raise RuntimeError("测试压缩失败")
+    with monkeypatch.context() as patch:
+        patch.setattr(memory_media, "compress_image", broken)
+        for _ in range(3):
+            assert memory_worker.process_one(db_session)
+    assert item.state == "failed" and item.attempts == 3
+    assert original.exists() and memory.status == "failed"
+    assert individual_action(client, admin_headers, memory, item, "publish").status_code == 409
+    assert individual_action(client, admin_headers, memory, item, "reject").status_code == 409
+    assert individual_action(client, user_headers, memory, item, "retry").status_code == 403
+    assert individual_action(client, admin_headers, memory, item, "retry", expected_revision=999).status_code == 409
+    assert individual_action(client, admin_headers, memory, item, "retry", individual=False).status_code == 409
+    result = individual_action(client, admin_headers, memory, item, "retry")
+    assert result.status_code == 200, result.text
+    assert memory.status == "processing" and item.state == "uploaded" and item.attempts == 0
+    assert item.reserved_bytes == reservation == db_session.get(MemoryCapacity, 1).reserved_bytes
+    assert individual_action(client, admin_headers, memory, item, "retry").status_code == 409
+    assert client.get("/api/v1/admin/memories?individual=true&status=pending", headers=admin_headers).json()["items"] == []
+    assert memory_worker.process_one(db_session)
+    assert item.state == "ready" and memory.status == "pending"
+    assert not original.exists() and item.original_key == ""
+    assert memory_media.private_path(memory_service.storage_root(), item.display_key).is_file()
+    assert memory_media.private_path(memory_service.storage_root(), item.thumbnail_key).is_file()
+    assert db_session.get(MemoryCapacity, 1).reserved_bytes == item.reserved_bytes < reservation
+
+
+def test_retry_mixed_submission_preserves_public_and_cleaned_siblings(client, user_headers, admin_headers,
+                                                                    db_session, monkeypatch):
+    draft, _ = make_draft(client, user_headers, [picture()] * 3)
+    for slot in range(3):
+        assert send_file(client, user_headers, draft, slot).status_code == 200
+    assert client.post(f"/api/v1/memory-drafts/{draft['id']}/submit", headers=user_headers).status_code == 200
+    memory = db_session.get(Memory, draft["id"])
+    items = memory_service.assets(db_session, memory.id)
+    assert memory_worker.process_one(db_session)
+    assert individual_action(client, admin_headers, memory, items[0], "publish").status_code == 200
+    def broken(*args):
+        raise RuntimeError("测试压缩失败")
+    with monkeypatch.context() as patch:
+        patch.setattr(memory_media, "compress_image", broken)
+        for _ in range(3):
+            assert memory_worker.process_one(db_session)
+    assert memory_worker.process_one(db_session)
+    assert individual_action(client, admin_headers, memory, items[2], "reject").status_code == 200
+    assert client.post(f"/api/v1/admin/memories/{memory.id}/cleanup", headers=admin_headers, json={
+        "expected_revision": memory.revision, "media_id": items[2].id, "confirmed": True}).status_code == 200
+    public_url = f"/api/v1/memory-media/{items[0].id}"
+    public_bytes = client.get(public_url).content
+    ledger = db_session.get(MemoryCapacity, 1).reserved_bytes
+    assert individual_action(client, admin_headers, memory, items[1], "retry").status_code == 200
+    assert memory.status == "published"
+    processing = client.get("/api/v1/admin/memories?individual=true&status=processing", headers=admin_headers).json()
+    assert [item["id"] for item in processing["items"][0]["media"]] == [items[1].id]
+    assert db_session.get(MemoryCapacity, 1).reserved_bytes == ledger
+    assert client.get(public_url).content == public_bytes
+    assert memory_worker.process_one(db_session)
+    assert memory.status == "published" and items[1].state == "ready"
+    assert items[2].state == "cleaned"
+    pending = client.get("/api/v1/admin/memories?individual=true&status=pending", headers=admin_headers).json()
+    assert [item["id"] for item in pending["items"][0]["media"]] == [items[1].id]
+    assert client.get(public_url).content == public_bytes
+    assert db_session.get(MemoryCapacity, 1).reserved_bytes == sum(item.reserved_bytes for item in items)
+
+
+@pytest.mark.parametrize("count", [1, 2])
+def test_republish_restores_only_offline_file_and_delete_removes_actual_files(client, user_headers, admin_headers,
+                                                                            db_session, monkeypatch, count):
+    memory, items = prepared(client, user_headers, db_session, count=count)
+    for item in items:
+        assert individual_action(client, admin_headers, memory, item, "publish").status_code == 200
+    item = items[0]
+    paths = [memory_media.private_path(memory_service.storage_root(), key)
+             for key in (item.display_key, item.thumbnail_key)]
+    file_bytes = [path.read_bytes() for path in paths]
+    ledger = db_session.get(MemoryCapacity, 1).reserved_bytes
+    assert individual_action(client, admin_headers, memory, item, "offline").status_code == 200
+    assert client.get(f"/api/v1/memory-media/{item.id}").status_code == 404
+    assert individual_action(client, user_headers, memory, item, "republish").status_code == 403
+    assert individual_action(client, admin_headers, memory, item, "republish", expected_revision=999).status_code == 409
+    monkeypatch.setattr(get_settings(), "memory_publish_enabled", False)
+    assert individual_action(client, admin_headers, memory, item, "republish").status_code == 503
+    monkeypatch.setattr(get_settings(), "memory_publish_enabled", True)
+    result = individual_action(client, admin_headers, memory, item, "republish")
+    assert result.status_code == 200, result.text
+    assert item.publication_status == "published" and memory.status == "published"
+    assert [path.read_bytes() for path in paths] == file_bytes
+    assert db_session.get(MemoryCapacity, 1).reserved_bytes == ledger
+    assert client.get(f"/api/v1/memories/{memory.id}").json()["media_count"] == count
+    assert individual_action(client, admin_headers, memory, item, "republish").status_code == 409
+    assert individual_action(client, admin_headers, memory, item, "offline").status_code == 200
+    cleanup = f"/api/v1/admin/memories/{memory.id}/cleanup"
+    body = {"expected_revision": memory.revision, "media_id": item.id, "confirmed": False}
+    assert client.post(cleanup, headers=admin_headers, json=body).status_code == 409
+    assert all(path.exists() for path in paths)
+    assert client.post(cleanup, headers=admin_headers, json={**body, "confirmed": True}).status_code == 200
+    assert not any(path.exists() for path in paths)
+    assert item.original_key == item.display_key == item.thumbnail_key == ""
+    assert item.state == "cleaned" and item.reserved_bytes == 0
+    assert db_session.get(MemoryCapacity, 1).reserved_bytes == sum(value.reserved_bytes for value in items)
+    assert individual_action(client, admin_headers, memory, item, "republish").status_code == 409
+
+
+def test_recovery_refuses_missing_files(client, user_headers, admin_headers, db_session):
+    memory, items = prepared(client, user_headers, db_session)
+    item = items[0]
+    item.state, item.attempts, memory.status = "failed", 3, "failed"
+    db_session.commit()
+    assert individual_action(client, admin_headers, memory, item, "retry").status_code == 409
+    assert item.state == "failed" and item.attempts == 3
+    item.state, item.publication_status, memory.status = "ready", "offline", "offline"
+    db_session.commit()
+    memory_media.private_path(memory_service.storage_root(), item.thumbnail_key).unlink()
+    assert individual_action(client, admin_headers, memory, item, "republish").status_code == 409
+    assert item.publication_status == "offline"
+
+
+def test_retry_can_fail_again_and_confirmed_delete_releases_original(client, user_headers, admin_headers,
+                                                                    db_session, monkeypatch):
+    draft, _ = make_draft(client, user_headers)
+    assert send_file(client, user_headers, draft).status_code == 200
+    assert client.post(f"/api/v1/memory-drafts/{draft['id']}/submit", headers=user_headers).status_code == 200
+    memory = db_session.get(Memory, draft["id"])
+    item = memory_service.assets(db_session, memory.id)[0]
+    original = memory_media.private_path(memory_service.storage_root(), item.original_key)
+    def broken(*args):
+        raise RuntimeError("测试再次压缩失败")
+    monkeypatch.setattr(memory_media, "compress_image", broken)
+    for _ in range(3):
+        assert memory_worker.process_one(db_session)
+    assert individual_action(client, admin_headers, memory, item, "retry").status_code == 200
+    for _ in range(3):
+        assert memory_worker.process_one(db_session)
+    assert item.state == "failed" and item.attempts == 3 and original.exists()
+    assert client.post(f"/api/v1/admin/memories/{memory.id}/cleanup", headers=admin_headers, json={
+        "expected_revision": memory.revision, "media_id": item.id, "confirmed": True}).status_code == 200
+    assert not original.exists() and item.state == "cleaned"
+    assert db_session.get(MemoryCapacity, 1).reserved_bytes == 0
+
+
+def test_worker_recovers_original_disposal_in_a_published_submission(client, user_headers, admin_headers,
+                                                                   db_session, monkeypatch):
+    draft, _ = make_draft(client, user_headers)
+    assert send_file(client, user_headers, draft).status_code == 200
+    assert client.post(f"/api/v1/memory-drafts/{draft['id']}/submit", headers=user_headers).status_code == 200
+    memory = db_session.get(Memory, draft["id"])
+    item = memory_service.assets(db_session, memory.id)[0]
+    original = memory_media.private_path(memory_service.storage_root(), item.original_key)
+    unlink = Path.unlink
+    def interrupted(path, *args, **kwargs):
+        if path == original:
+            raise OSError("测试中断原件删除")
+        return unlink(path, *args, **kwargs)
+    with monkeypatch.context() as patch:
+        patch.setattr(Path, "unlink", interrupted)
+        with pytest.raises(OSError):
+            memory_worker.process_one(db_session)
+    db_session.rollback()
+    assert item.state == "ready" and item.original_key and original.exists()
+    assert individual_action(client, admin_headers, memory, item, "publish").status_code == 200
+    revision = memory.revision
+    assert memory.status == "published"
+    assert not memory_worker.process_one(db_session)
+    assert not original.exists() and item.original_key == ""
+    assert memory.status == "published" and memory.revision > revision
+    assert db_session.get(MemoryCapacity, 1).reserved_bytes == item.reserved_bytes
+    revision = memory.revision
+    assert not memory_worker.process_one(db_session)
+    assert memory.revision == revision
+
+
+def test_six_admin_filters_use_resource_states_not_parent_state(client, user_headers, admin_headers, db_session):
+    memory, items = prepared(client, user_headers, db_session, count=6)
+    items[0].state = "working"
+    items[1].state = "failed"
+    items[3].publication_status = "published"
+    items[4].publication_status = "offline"
+    items[5].publication_status = "excluded"
+    memory.status = "published"
+    db_session.commit()
+    for status, item in zip(("processing", "failed", "pending", "published", "offline", "rejected"), items):
+        result = client.get(f"/api/v1/admin/memories?individual=true&status={status}", headers=admin_headers)
+        assert result.status_code == 200
+        assert [value["id"] for value in result.json()["items"][0]["media"]] == [item.id]
+    assert client.get("/api/v1/admin/memories?status=draft", headers=admin_headers).status_code == 422
+
+
+def test_status_counts_are_global_resources_not_paginated_submissions(client, user_headers, admin_headers, db_session):
+    memory, items = prepared(client, user_headers, db_session, count=6)
+    items[0].state = "working"
+    items[1].state = "failed"
+    items[3].publication_status = "published"
+    items[4].publication_status = "offline"
+    items[5].publication_status = "excluded"
+    memory.status = "published"
+    other = Memory(user_id=memory.user_id, client_submission_id="count-second", status="pending",
+                   expires_at=memory.expires_at, author_nickname=memory.author_nickname)
+    db_session.add(other)
+    db_session.flush()
+    db_session.add(MemoryMedia(memory_id=other.id, sort=0, kind="image", state="ready",
+                               declared_bytes=0, reserved_bytes=0))
+    for slot, state in [(6, "cleaned"), (7, "removed")]:
+        db_session.add(MemoryMedia(memory_id=memory.id, sort=slot, kind="image", state=state,
+                                  publication_status="excluded", declared_bytes=0, reserved_bytes=0))
+    db_session.commit()
+    make_draft(client, user_headers, client_submission_id="counts-unsubmitted")
+    expected = dict(processing=1, failed=1, pending=2, published=1, offline=1, rejected=1)
+    body = client.get("/api/v1/admin/memories?individual=true&status=pending&limit=1", headers=admin_headers).json()
+    assert body["cursor"] and len(body["items"]) == 1
+    assert body["status_counts"] == expected and body["pending_count"] == 2
+    next_page = client.get(f"/api/v1/admin/memories?individual=true&status=pending&limit=1&cursor={body['cursor']}",
+                           headers=admin_headers).json()
+    assert next_page["status_counts"] == expected
+    url = "/api/v1/admin/memories/counts"
+    assert client.get(url, headers=admin_headers).json() == {"status_counts": expected}
+    assert client.get(url, headers=user_headers).status_code == 403
+    assert client.get(url).status_code == 401
+    public = client.get("/api/v1/memories").json()
+    assert "status_counts" not in public and "pending_count" not in public
+
+
+def test_empty_status_counts_include_six_zeroes(client, admin_headers):
+    result = client.get("/api/v1/admin/memories/counts", headers=admin_headers)
+    assert result.status_code == 200
+    assert result.json()["status_counts"] == dict.fromkeys(memory_service.SUBMITTED_STATUSES, 0)
+
+
+@pytest.mark.parametrize("count", [1, 2])
+def test_rejected_resource_returns_to_review_without_publishing_or_changing_siblings(client, user_headers,
+                                                                                     admin_headers, db_session, count):
+    memory, items = prepared(client, user_headers, db_session, count=count)
+    item = items[0]
+    assert individual_action(client, admin_headers, memory, item, "reject").status_code == 200
+    if count == 2:
+        assert individual_action(client, admin_headers, memory, items[1], "publish").status_code == 200
+    paths = [memory_media.private_path(memory_service.storage_root(), key) for key in (item.display_key, item.thumbnail_key)]
+    content = [path.read_bytes() for path in paths]
+    capacity = db_session.get(MemoryCapacity, 1).reserved_bytes
+    assert individual_action(client, user_headers, memory, item, "reopen").status_code == 403
+    assert individual_action(client, admin_headers, memory, item, "reopen", expected_revision=999).status_code == 409
+    assert individual_action(client, admin_headers, memory, item, "reopen", individual=False).status_code == 409
+    result = individual_action(client, admin_headers, memory, item, "reopen")
+    assert result.status_code == 200, result.text
+    assert item.publication_status == "unreviewed" and item.state == "ready"
+    assert memory.status == ("published" if count == 2 else "pending")
+    assert [path.read_bytes() for path in paths] == content
+    assert db_session.get(MemoryCapacity, 1).reserved_bytes == capacity
+    counts = client.get("/api/v1/admin/memories/counts", headers=admin_headers).json()["status_counts"]
+    assert counts["pending"] == 1 and counts["rejected"] == 0 and counts["published"] == count - 1
+    assert client.get(f"/api/v1/memory-media/{item.id}").status_code == 404
+    if count == 2:
+        public = client.get(f"/api/v1/memories/{memory.id}").json()
+        assert [value["id"] for value in public["media"]] == [items[1].id]
+    assert individual_action(client, admin_headers, memory, item, "reopen").status_code == 409
+    assert individual_action(client, admin_headers, memory, item, "publish", manually_reviewed=False).status_code == 409
+    assert individual_action(client, admin_headers, memory, item, "reject").status_code == 200
+    assert client.post(f"/api/v1/admin/memories/{memory.id}/cleanup", headers=admin_headers, json={
+        "expected_revision": memory.revision, "media_id": item.id, "confirmed": True}).status_code == 200
+    assert individual_action(client, admin_headers, memory, item, "reopen").status_code == 409
+
+
+@pytest.mark.parametrize("change", ["failed", "missing"])
+def test_reopen_requires_processed_files(client, user_headers, admin_headers, db_session, change):
+    memory, items = prepared(client, user_headers, db_session)
+    item = items[0]
+    assert individual_action(client, admin_headers, memory, item, "reject").status_code == 200
+    if change == "failed":
+        item.state = "failed"
+        db_session.commit()
+    else:
+        memory_media.private_path(memory_service.storage_root(), item.display_key).unlink()
+    assert individual_action(client, admin_headers, memory, item, "reopen").status_code == 409
+    assert item.publication_status == "excluded"
+
+
 def test_individual_publish_reject_cleanup_leave_siblings_untouched(client, user_headers, admin_headers, db_session):
     memory, items = prepared(client, user_headers, db_session, count=2)
     path = f"/api/v1/admin/memories/{memory.id}"

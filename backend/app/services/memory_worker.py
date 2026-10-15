@@ -4,7 +4,7 @@ from datetime import timedelta
 import logging
 import shutil
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 
 from app.core.config import get_settings
 from app.models.memory import Memory, MemoryMedia
@@ -17,14 +17,18 @@ logger = logging.getLogger("dragon.reserve")
 def process_one(db):
     service.enabled()
     now = app_now()
-    item = db.scalar(select(MemoryMedia).join(Memory).where(Memory.status == "processing",
+    item = db.scalar(select(MemoryMedia).join(Memory).where(Memory.status.in_(service.SUBMITTED_STATUSES),
+        MemoryMedia.publication_status == "unreviewed",
         (MemoryMedia.state == "uploaded") | ((MemoryMedia.state == "working") & (MemoryMedia.lease_until < now)))
         .order_by(MemoryMedia.id).limit(1).with_for_update(skip_locked=True))
     if not item:
         db.rollback()
         active = select(MemoryMedia.id).where(MemoryMedia.memory_id == Memory.id,
             MemoryMedia.state.in_(["uploaded", "working"])).exists()
-        pending = db.scalar(select(Memory.id).where(Memory.status == "processing", ~active)
+        unfinished_disposal = select(MemoryMedia.id).where(MemoryMedia.memory_id == Memory.id,
+            MemoryMedia.state == "ready", MemoryMedia.original_key != "").exists()
+        pending = db.scalar(select(Memory.id).where(Memory.status.in_(service.SUBMITTED_STATUSES), ~active,
+                            or_(Memory.status == "processing", unfinished_disposal))
                             .order_by(Memory.id).limit(1))
         if pending:
             settle(db, pending)
@@ -76,7 +80,7 @@ def process_one(db):
 
 def settle(db, memory_id):
     memory = service.get_memory(db, memory_id, True)
-    if memory.status != "processing":
+    if memory.status not in service.SUBMITTED_STATUSES:
         db.rollback()
         return
     items = service.assets(db, memory_id)
@@ -93,7 +97,7 @@ def settle(db, memory_id):
             actual = display.stat().st_size + thumbnail.stat().st_size
             service.release(db, item.reserved_bytes - actual)
             item.reserved_bytes, item.original_key = actual, ""
-    if all(item.state in {"ready", "failed"} for item in items):
-        memory.status = "pending" if any(item.state == "ready" for item in items) else "failed"
+    if all(item.state in {"ready", "failed", "cleaned"} for item in items):
+        service.sync_review_status(memory, items)
         memory.revision += 1
     db.commit()

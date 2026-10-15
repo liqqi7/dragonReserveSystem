@@ -5,6 +5,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 const crypto = require("node:crypto");
 const { readWxss } = require("./helpers/wxss");
+const {loadMediaModules} = require("./helpers/memoryMedia");
 
 const source = (file) =>
   fs.readFileSync(path.join(__dirname, "..", file), "utf8");
@@ -95,16 +96,21 @@ test("pending viewer pages across submissions but reviews only the visible file"
   await instance.load();
   assert.equal(instance.data.index, 1);
   assert.deepEqual(Array.from(instance.data.viewerMedia, item => item.id), [20, 21]);
+  assert.deepEqual(Array.from(instance.data.viewerInfo, item => item.author.nickname), ["A", "B"]);
+  assert.deepEqual(Array.from(instance.data.viewerInfo, item => item.caption), ["first", "second"]);
   instance.moreReviewContent();
   assert.equal(calls.length, 2, "only one prefetch at a time");
   next({items: [second, third], cursor: null});
   await tick();
   assert.deepEqual(Array.from(instance.data.viewerMedia, item => item.id), [20, 21, 22]);
+  assert.equal(instance.data.viewerInfo.length, 3);
+  assert.equal(instance.data.viewerInfo[2].caption, "");
   instance.setData({selected: [21], reviewed: true, error: "old error", playing: true});
   instance.change({detail: {current: 0}});
   assert.equal(instance.data.memory.id, 7);
   assert.equal(instance.data.memory.author.nickname, "A");
   assert.equal(instance.data.memory.caption, "first");
+  assert.equal(instance.data.viewerInfo[1].caption, "second", "neighbour metadata does not change with the active page");
   assert.equal(instance.data.current.id, 20);
   assert.equal(instance.data.playing, false);
   assert.equal(instance.data.reviewed, false);
@@ -160,30 +166,36 @@ test("viewer preloads a video arriving on the next queue page and cleans it on h
     media: [{id: 20, kind: "image", state: "ready", publication_status: "unreviewed", url: "/photo.jpg"}]};
   const second = {id: 8, status: "pending", revision: 1,
     media: [{id: 21, kind: "video", state: "ready", publication_status: "unreviewed", url: "/clip.mp4"}]};
-  let next, download, removed;
+  let next, download;
+  const removed=[];
   api.detail = async () => structuredClone(first);
   api.list = async values => values.cursor ? new Promise(resolve => {next = resolve;}) : {items: [first], cursor: "p2"};
   const {instance} = page("memory_detail", api, {
     downloadFile(options) {download = options; return {abort() {}};},
-    getFileSystemManager: () => ({unlink: ({filePath}) => {removed = filePath;}}),
+    createVideoContext:()=>({play(){},pause(){}}),
+    getFileSystemManager: () => ({unlink: ({filePath,success}) => {removed.push(filePath); success();},
+      getFileInfo: options => options.success({size: 1024})}),
   });
   instance.onLoad({id: "7", admin: "1", media_id: "20"});
   instance.onShow();
   await tick();
-  assert.equal(download, undefined);
+  assert.match(download.url, /photo\.jpg$/);
+  download.success({statusCode:200,tempFilePath:"cached-photo"});
   next({items: [second], cursor: null});
   await tick();
   assert.match(download.url, /clip\.mp4$/);
   download.success({statusCode: 200, tempFilePath: "cached-video"});
-  download.complete();
   instance.change({detail: {current: 1}});
+  await tick();
   assert.equal(instance.data.videoSource, "cached-video");
   assert.equal(instance.data.muted, false);
+  assert.equal(instance.data.error, "");
+  assert.equal(removed.includes("cached-video"),false,"the active player must keep its temporary file until unmounted");
   instance.setData({playing: true});
   instance.onHide();
   assert.equal(instance.data.visible, false);
   assert.equal(instance.data.playing, false);
-  assert.equal(removed, "cached-video");
+  assert.deepEqual(new Set(removed),new Set(["cached-photo","cached-video"]));
   instance.videoPlay({currentTarget: {dataset: {id: 21}}});
   assert.equal(instance.data.playing, false);
 });
@@ -341,7 +353,7 @@ test("translucent prototype SVGs use portable SVG opacity without changing their
 });
 
 test("custom viewer buttons opt out of native default widths and keep selected styling", () => {
-  const markup = source("pages/memory_detail/memory_detail.wxml");
+  const markup = source("pages/memory_detail/memory_detail.wxml") + source("pages/memory_detail/memory-controls.wxml");
   for (const name of ['viewer-share', 'viewer-enter-fullscreen', 'viewer-restore', 'viewer-play-button', 'review-thumb', 'primary']) {
     assert.match(markup, new RegExp(`<button size="mini"[^>]*class="${name}(?: |")`), name);
   }
@@ -578,12 +590,18 @@ function page(name, memory, wx = {}, thumbnails = {}) {
     arrayBufferToBase64: (value) => Buffer.from(value).toString("base64"),
     showToast() {},
     navigateBack() {},
+    request: options => {options.success({statusCode:200,header:{'Content-Length':'1024'}}); return {abort(){}};},
+    getFileSystemManager: () => ({getFileInfo: options => options.success({size:1024}),
+      unlink: options => {if (options.success) options.success();}}),
     worklet: {
       shared: (value) => ({ value }),
       runOnJS: (callback) => callback,
     },
     ...wx,
   };
+  const originalFileSystem = api.getFileSystemManager;
+  api.getFileSystemManager = () => ({getFileInfo: options => options.success({size:1024}), ...originalFileSystem()});
+  const mediaModules = loadMediaModules(api);
   const timers = new Map();
   let timerId = 0;
   vm.runInNewContext(source(`pages/${name}/${name}.js`), {
@@ -603,9 +621,11 @@ function page(name, memory, wx = {}, thumbnails = {}) {
     },
     require(name) {
       if (name.endsWith("/memoryVideoPreload")) {
-        const module = {exports: {}};
-        vm.runInNewContext(source("services/memoryVideoPreload.js"), {module, wx: api});
-        return module.exports;
+        return mediaModules.videos;
+      }
+      if (name.endsWith("/memoryMediaSession")) return mediaModules.session;
+      if (name.endsWith("/memoryImages")) {
+        return mediaModules.images;
       }
       if (name.endsWith("/memoryUploadProgress")) {
         const module = { exports: {} };
@@ -1178,11 +1198,11 @@ test("manual review confirmation is required and resets when selection changes",
 
 test("memory feed deduplicates cursor results and ignores late results after unloading", async () => {
   const responses = [
-    { items: [{ id: 1, media: [] }], cursor: "next" },
+    { items: [{ id: 10, media: [{id: 1, kind: "image"}] }], cursor: "next" },
     {
       items: [
-        { id: 1, media: [] },
-        { id: 2, media: [] },
+        { id: 10, media: [{id: 1, kind: "image"}] },
+        { id: 20, media: [{id: 2, kind: "video"}] },
       ],
       cursor: null,
     },
@@ -1211,6 +1231,48 @@ test("memory feed deduplicates cursor results and ignores late results after unl
     Array.from(instance.data.items, (item) => item.id),
     [1, 2],
   );
+});
+
+test("public feed displays every published file as its own card and opens the corresponding file", async () => {
+  let query, target;
+  const api = {...service(), list: async values => {
+    query = values;
+    return {items: [{id: 70, media: [1,2,3,4,5].map(id => ({id, kind: id === 3 ? "video" : "image",
+      thumbnail_url: `/cover-${id}.jpg`, width: 200, height: 300}))},
+    {id: 80, media: [6,7].map(id => ({id, kind: "image", thumbnail_url: `/cover-${id}.jpg`}))}], cursor: null};
+  }};
+  const {instance} = page("memory", api, {navigateTo: options => {target = options.url;}});
+  instance.onLoad(); instance.onShow(); await tick();
+  assert.equal(query.individual, true);
+  assert.equal(instance.data.items.length, 7);
+  assert.deepEqual(Array.from(instance.data.items, item => item.id), [1,2,3,4,5,6,7]);
+  assert.equal(instance.data.items[2].videoCover, true);
+  assert.equal(instance.data.items[2].cover, "https://test.invalid/cover-3.jpg");
+  instance.open({currentTarget: {dataset: {id: 3}}});
+  assert.equal(target, "/pages/memory_detail/memory_detail?id=70&media_id=3");
+  instance.open({currentTarget: {dataset: {id: 7}}});
+  assert.equal(target, "/pages/memory_detail/memory_detail?id=80&media_id=7");
+});
+
+test("public detail and sharing start with the selected published file and reject unavailable targets", async () => {
+  const api = {...service(), detail: async () => ({id: 70, media: [
+    {id: 1, kind: "image"}, {id: 2, kind: "image"}, {id: 3, kind: "image"},
+  ]})};
+  const {instance} = page("memory_detail", api);
+  instance.onLoad({id: "70", media_id: "3"});
+  await instance.load();
+  assert.equal(instance.data.index, 2);
+  assert.equal(instance.data.current.id, 3);
+  assert.equal(instance.data.viewerMedia.length, 3);
+  assert.equal(instance.data.admin, false);
+  assert.equal(instance.onShareAppMessage().path, "/pages/memory_detail/memory_detail?id=70&media_id=3");
+  instance.change({detail: {current: 1}});
+  await instance.load();
+  assert.equal(instance.data.current.id, 2, "refresh must not jump back to the initial file");
+  const missing = page("memory_detail", api).instance;
+  missing.onLoad({id: "70", media_id: "99"}); await missing.load();
+  assert.match(missing.data.error, /已下架/);
+  assert.equal(missing.data.current, null);
 });
 
 test("only the memory tab routes plus to submission; guests see submission-specific copy", () => {
@@ -1336,6 +1398,12 @@ test("double tap toggles 200 percent zoom; near-fit cancelled pinch releases pag
   const { instance } = viewer();
   instance.photoDoubleTap({ state: 3, absoluteX: 195, absoluteY: 422 });
   assert.equal(instance._scale.value, 2);
+  instance.photoDoubleTap({state: 3, absoluteX: 100, absoluteY: 300});
+  assert.equal(instance._scale.value, 1);
+  assert.equal(instance._x.value, 0);
+  assert.equal(instance._y.value, 0);
+  assert.equal(instance.data.zoomed, false);
+  instance.photoDoubleTap({state: 3, absoluteX: 195, absoluteY: 422});
   instance.back();
   assert.equal(instance.data.zoomed, false);
   instance.photoScale({ state: 1, focalX: 195, focalY: 422 });
@@ -1343,6 +1411,103 @@ test("double tap toggles 200 percent zoom; near-fit cancelled pinch releases pag
   instance.photoScale({ state: 4 });
   assert.equal(instance._scale.value, 1);
   assert.equal(instance.pagerAllowed(), true);
+});
+
+test("PC photo double clicks enlarge and restore with an actual inline image transform", () => {
+  const {instance} = viewer();
+  instance.renderer = "webview";
+  const tap = (time, x = 195, y = 422) => instance.photoTap({timeStamp: time,
+    currentTarget: {dataset: {id: 10}}, detail: {x, y}});
+  tap(100);
+  assert.equal(instance.data.zoomed, false, "single clicks do not zoom");
+  tap(200);
+  assert.equal(instance.data.zoomed, true);
+  assert.equal(instance._scale.value, 2);
+  assert.equal(instance.data.photoTransformStyle, "transform:translate(0px, 0px) scale(2);");
+  assert.equal(instance.pagerAllowed(), false);
+  tap(500); tap(600);
+  assert.equal(instance.data.zoomed, false);
+  assert.equal(instance.data.photoTransformStyle, "");
+  assert.equal(instance._scale.value, 1);
+  assert.equal(instance.pagerAllowed(), true);
+  tap(1000, 50, 300); tap(1100, 50, 300);
+  assert.ok(instance._x.value > 0);
+  instance.restorePhoto();
+  assert.equal(instance.data.photoTransformStyle, "");
+  assert.equal(instance._photoTap, null);
+  instance.onUnload();
+});
+
+test("photo taps cannot pair across time, distant positions, pages or a hidden viewer", () => {
+  const {instance} = viewer();
+  instance.renderer = "webview";
+  const tap = (time, x = 195, id = 10) => instance.photoTap({timeStamp: time,
+    currentTarget: {dataset: {id}}, changedTouches: [{clientX: x, clientY: 422}]});
+  tap(100); tap(500);
+  assert.equal(instance.data.zoomed, false);
+  tap(600, 300);
+  assert.equal(instance.data.zoomed, false);
+  tap(700, 300, 99);
+  assert.equal(instance.data.zoomed, false);
+  instance.data.memory.media.push({id: 11, kind: "image", width: 500, height: 3000});
+  instance.change({detail: {current: 1}});
+  tap(750, 300, 11);
+  assert.equal(instance.data.zoomed, false);
+  instance.onHide();
+  tap(800, 300, 11);
+  assert.equal(instance.data.zoomed, false);
+  assert.equal(instance._photoTap, null);
+  instance.onUnload();
+});
+
+test("ordinary photo taps do not double-handle Skyline gestures or toggle videos", () => {
+  for (const kind of ["image", "video"]) {
+    const {instance} = viewer(kind);
+    instance.renderer = kind === "image" ? "skyline" : "webview";
+    instance.photoTap({timeStamp: 100, detail: {x: 195, y: 422}});
+    instance.photoTap({timeStamp: 200, detail: {x: 195, y: 422}});
+    assert.equal(instance.data.zoomed, false);
+    assert.equal(instance.data.photoTransformStyle, "");
+    instance.onUnload();
+  }
+  const markup = source("pages/memory_detail/memory_detail.wxml");
+  assert.match(markup, /class="viewer-photo-stage" data-id="\{\{item.id\}\}" bindtap="photoTap"/);
+  assert.match(markup, /\{\{photoTransformStyle\}\}/);
+  assert.match(markup, /bindtap="restorePhoto" aria-label="还原适宽"[^>]*><image[^>]*memory-restore\.svg[^>]*\/><text>还原适宽<\/text>/);
+});
+
+test("review title matches the 20px Pencil text and safe area scrolls with the list instead of forming a fixed bar", () => {
+  const markup = source("pages/memory_review/memory_review.wxml");
+  const styles = source("pages/memory_review/memory_review.wxss");
+  assert.match(markup, /<view class="memory-nav-title review-filter"[^>]*aria-role="button"/);
+  assert.doesNotMatch(markup, /<button class="memory-nav-title/);
+  assert.match(styles, /\.review-filter text\s*\{[^}]*font-size:\s*20px;[^}]*line-height:\s*1\.4;[^}]*font-weight:\s*700;/);
+  assert.match(markup, /class="memory-body review-stage">/);
+  assert.match(markup, /class="review-list" style="padding-bottom:\{\{bottom \+ 30\.76923\}\}rpx;"/);
+  assert.doesNotMatch(markup, /margin-bottom:\{\{bottom\}\}/);
+  assert.match(markup, /<view class="review-title-copy"><text>/);
+  assert.match(styles, /\.review-filter image\s*\{[^}]*position:\s*absolute;[^}]*left:\s*100%;/);
+});
+
+test("preview preloads full images on both sides and never shows a loading label while paging", () => {
+  const {instance}=viewer();
+  const prepared=[];
+  instance._memoryImages={prepare(urls,preload){prepared.push({urls,preload});},dispose(){}};
+  instance.data.memory.media=[0,1,2,3,4].map(id=>({id,kind:"image",url:`https://test.invalid/${id}.jpg`,thumbnail_url:`https://test.invalid/${id}-thumb.jpg`}));
+  instance.data.index=2;
+  instance.preparePreviewImages();
+  assert.deepEqual(Array.from(prepared[0].preload),["https://test.invalid/2.jpg","https://test.invalid/3.jpg","https://test.invalid/1.jpg"]);
+  instance.data.index=0;
+  instance.preparePreviewImages();
+  assert.equal(prepared[1].preload.length,2);
+  instance.data.memory=null; instance.data.viewerMedia=[];
+  assert.doesNotThrow(()=>instance.preparePreviewImages());
+  const markup=source("pages/memory_detail/memory_detail.wxml");
+  assert.match(markup,/cache-extent="1"/);
+  assert.match(markup,/wx:if="\{\{loading && !memory\}\}" class="memory-state"/);
+  assert.doesNotMatch(markup,/loading \|\| imageLoading \|\| videoLoading/);
+  assert.match(markup,/imageSources\[item.url\] \|\| imageSources\[item.thumbnail_url\]/);
+  instance.onUnload();
 });
 
 test("short landscape photos cannot pan into blank space vertically", () => {
@@ -1361,7 +1526,9 @@ test("active video autoplays with sound only while its page is visible", () => {
   assert.equal(instance.data.playing, false);
   assert.equal(instance.data.muted, false);
   const markup = source("pages/memory_detail/memory_detail.wxml");
-  assert.match(markup, /autoplay="\{\{visible\}\}"/);
+  assert.match(markup, /autoplay="\{\{visible && !pausedByUser && !selectionOpen\}\}"/);
+  assert.match(markup, /loop="\{\{true\}\}"/);
+  assert.doesNotMatch(markup, /bindended=/);
   assert.match(markup, /mediaIndex === index/);
   assert.equal(calls.length, 0);
   instance.playVideo();
@@ -1399,6 +1566,514 @@ test("slider seeking pauses then resumes only a video that was playing", () => {
   instance.seekChanged({ detail: { value: 0 } });
   assert.equal(calls.at(-1).name, "seek");
   assert.equal(instance.data.progress, 0);
+});
+
+test("portrait progress is hidden until a bottom-region drag, then hides three seconds after release", () => {
+  const {instance, calls, timers} = viewer("video");
+  assert.equal(instance.data.progressVisible, false);
+  instance.setData({visible: true, playing: true});
+  assert.equal(instance.portraitSeekAllowed({absoluteY: 750}), true);
+  assert.equal(instance.portraitSeekAllowed({absoluteY: 200}), false);
+  instance._currentTime = 10;
+  instance.portraitVideoDrag({state: 1});
+  assert.equal(instance.data.seeking, true);
+  assert.equal(instance.pagerAllowed(), false);
+  assert.equal(calls.at(-1).name, "pause");
+  instance.portraitVideoDrag({state: 2, deltaX: 179});
+  assert.equal(instance.data.seekCurrentLabel, "00:25");
+  assert.equal(instance.data.seekDurationLabel, "00:30");
+  instance.portraitVideoDrag({state: 3});
+  assert.equal(calls.find(call => call.name === "seek").value, 25);
+  assert.equal(calls.at(-1).name, "play");
+  assert.equal(instance.data.progressVisible, true);
+  assert.equal(instance.data.seeking, false);
+  assert.equal(instance.pagerAllowed(), true);
+  const hide = timers.get(instance._progressTimer);
+  assert.equal(typeof hide, "function");
+  hide();
+  assert.equal(instance.data.progressVisible, false);
+  instance.onUnload();
+});
+
+test("ordinary pointer events seek PC review video through the same state machine", () => {
+  const {instance, calls} = viewer("video");
+  instance.renderer = "webview";
+  instance._admin = true;
+  instance.setData({visible: true, playing: true, admin: true});
+  instance._currentTime = 10;
+  const point = (x,y) => ({identifier: 0, clientX: x, clientY: y});
+  instance.portraitTouchStart({touches: [point(100, 680)]});
+  instance.portraitTouchMove({touches: [point(102, 680)]});
+  assert.equal(instance.data.seeking, false, "click jitter is not seeking");
+  instance.portraitTouchMove({touches: [point(279, 680)]});
+  assert.equal(instance.data.seeking, true);
+  assert.equal(instance.data.seekCurrentLabel, "00:25");
+  instance.portraitTouchEnd({changedTouches: [point(300, 680)]});
+  assert.equal(instance.data.seeking, false);
+  assert.equal(instance.data.progressVisible, true);
+  assert.equal(calls.filter(call => call.name === "seek").length, 1);
+  assert.equal(calls.at(-1).name, "play");
+  assert.equal(instance._portraitTouch, null);
+  const markup = source("pages/memory_detail/memory_detail.wxml");
+  assert.match(markup, /class="memory-viewer" bindtouchmove="portraitTouchMove" bindtouchend="portraitTouchEnd" bindtouchcancel="portraitTouchCancel"/);
+  const controls = source("pages/memory_detail/memory-controls.wxml");
+  assert.equal((controls.match(/bindtouchstart="portraitTouchStart"/g) || []).length, 2);
+  instance.onUnload();
+});
+
+test("pointer seeking does not steal vertical scrolling, replay paused video or duplicate Skyline gestures", () => {
+  const {instance, calls} = viewer("video");
+  instance.renderer = "webview";
+  instance._currentTime = 10;
+  instance.setData({visible: true, pausedByUser: true});
+  const point = (x,y) => ({identifier: 0, clientX: x, clientY: y});
+  instance.portraitTouchStart({touches: [point(100, 680)]});
+  instance.portraitTouchMove({touches: [point(101, 710)]});
+  instance.portraitTouchEnd({changedTouches: [point(130, 711)]});
+  assert.equal(instance.data.seeking, false);
+  assert.equal(calls.length, 0);
+  instance.portraitTouchStart({touches: [point(100, 680)]});
+  instance.portraitTouchMove({touches: [point(179, 680)]});
+  instance.portraitTouchCancel();
+  assert.equal(instance.data.currentLabel, "0:10");
+  assert.equal(calls.some(call => call.name === "seek" || call.name === "play"), false);
+  instance.renderer = "skyline";
+  calls.length = 0;
+  instance.portraitTouchStart({touches: [point(100, 680)]});
+  instance._portraitDragging.value = true;
+  instance.portraitTouchEnd({changedTouches: [point(200, 680)]});
+  assert.equal(calls.length, 0);
+  assert.equal(instance._portraitDragging.value, true, "raw events cannot clear a Skyline-owned gesture");
+  instance.onUnload();
+});
+
+test("portrait dragging clamps both ends, supports backward seek and preserves a user-paused video", () => {
+  const {instance, calls, timers} = viewer("video");
+  instance.setData({pausedByUser: true});
+  instance._currentTime = 15;
+  instance.dragSeek(1, 0, true);
+  instance.dragSeek(2, -9999, true);
+  assert.equal(instance.data.progress, 0);
+  instance.dragSeek(3, 0, true);
+  assert.equal(calls.at(-1).name, "seek");
+  assert.equal(calls.at(-1).value, 0);
+  assert.equal(instance.data.pausedByUser, true);
+  assert.equal(instance.data.progressVisible, true);
+  timers.get(instance._progressTimer)();
+  assert.equal(instance.data.progressVisible, false, "paused videos also hide the progress bar after three seconds");
+  instance.dragSeek(1, 0, true);
+  instance.dragSeek(2, 9999, true);
+  assert.equal(instance.data.progress, 100);
+  instance.dragSeek(3, 0, true);
+  assert.equal(calls.at(-1).value, 30);
+  instance.onUnload();
+});
+
+test("cancelled portrait gestures restore playback position, and a new drag cancels the old hide timer", () => {
+  const {instance, calls, timers} = viewer("video");
+  instance._currentTime = 12;
+  instance.setData({playing: true});
+  instance.dragSeek(1, 0, true);
+  instance.dragSeek(2, 100, true);
+  instance.dragSeek(4, 0, true);
+  assert.equal(calls.some(call => call.name === "seek"), false);
+  assert.equal(instance.data.currentLabel, "0:12");
+  const oldTimer = instance._progressTimer;
+  const oldHide = timers.get(oldTimer);
+  instance.dragSeek(1, 0, true);
+  assert.equal(timers.has(oldTimer), false);
+  assert.equal(instance.data.progressVisible, false);
+  instance.dragSeek(3, 0, true);
+  oldHide();
+  assert.equal(instance.data.progressVisible, true, "a late prior timer cannot shorten the new three-second window");
+  instance.onHide();
+  assert.equal(instance.data.seeking, false);
+  assert.equal(instance.data.progressVisible, false);
+  assert.equal(timers.size, 0);
+});
+
+test("portrait gestures exclude review buttons, hidden pages, images and loading video", () => {
+  const {instance} = viewer("video");
+  instance._admin = true;
+  instance.setData({visible: true});
+  instance.activate();
+  assert.equal(instance.portraitSeekAllowed({absoluteY: 680}), true);
+  assert.equal(instance.portraitSeekAllowed({absoluteY: 800}), false, "review footer cannot seek");
+  for (const values of [{selectionOpen: true}, {busy: true}, {videoLoading: true}, {error: "failed"}, {fullScreen: true}, {visible: false}]) {
+    const previous = {...instance.data};
+    instance.setData(values);
+    assert.equal(instance.portraitSeekAllowed({absoluteY: 680}), false);
+    instance.setData(previous);
+  }
+  instance.data.current.kind = "image";
+  assert.equal(instance.portraitSeekAllowed({absoluteY: 680}), false);
+});
+
+test("late portrait gesture events and progress timers cannot seek or hide the next video", () => {
+  const {instance, calls, timers} = viewer("video");
+  instance.dragSeek(1, 0, true, instance.data.videoGeneration);
+  instance.dragSeek(3, 0, true, instance.data.videoGeneration);
+  const hide = timers.get(instance._progressTimer);
+  const generation = instance.data.videoGeneration;
+  instance.activate();
+  calls.length = 0;
+  instance.dragSeek(1, 0, true, generation);
+  assert.equal(instance.data.seeking, false);
+  assert.equal(calls.length, 0);
+  instance.setData({progressVisible: true});
+  hide();
+  assert.equal(instance.data.progressVisible, true);
+  instance.onUnload();
+});
+
+test("resizing updates the portrait gesture region without restarting video and refits images without cropping", () => {
+  const video = viewer("video");
+  video.instance.setData({playing: true, visible: true});
+  video.instance._currentTime = 12;
+  const generation = video.instance.data.videoGeneration;
+  video.wx.getWindowInfo = () => ({windowWidth: 320, windowHeight: 568, statusBarHeight: 20});
+  video.instance.onResize();
+  assert.equal(video.instance.data.videoGeneration, generation);
+  assert.equal(video.instance._currentTime, 12);
+  assert.equal(video.instance.data.playing, true);
+  assert.equal(video.calls.length, 0);
+  assert.equal(video.instance.portraitSeekAllowed({absoluteY: 510}), true);
+  assert.equal(video.instance.portraitSeekAllowed({absoluteY: 750}), false);
+  const photo = viewer();
+  photo.instance.photoDoubleTap({state: 3, absoluteX: 195, absoluteY: 422});
+  photo.wx.getWindowInfo = video.wx.getWindowInfo;
+  photo.instance.onResize();
+  assert.equal(photo.instance.data.zoomed, false);
+  assert.ok(photo.instance.data.photoWidth <= 320);
+  assert.ok(photo.instance.data.photoHeight <= 568);
+  assert.ok(photo.instance.data.photoLeft >= 0 && photo.instance.data.photoTop >= 0);
+});
+
+test("preview bottom information and controls are children of each media slide, not a fixed page overlay", () => {
+  const markup = source("pages/memory_detail/memory_detail.wxml");
+  const controls = source("pages/memory_detail/memory-controls.wxml");
+  const slide = markup.slice(markup.indexOf('<swiper-item'), markup.indexOf('</swiper-item>'));
+  assert.match(slide, /is="memory-portrait-bottom"/);
+  assert.match(slide, /memory:viewerInfo\[mediaIndex\],current:item/);
+  assert.match(slide, /active:mediaIndex === index/);
+  assert.match(slide, /seeking:mediaIndex === index && seeking/);
+  assert.match(slide, /progressVisible:mediaIndex === index && progressVisible/);
+  assert.doesNotMatch(markup.slice(markup.indexOf('</swiper>')), /is="memory-portrait-bottom"|class="viewer-bottom"/);
+  const bottom = controls.slice(controls.indexOf('<template name="memory-portrait-bottom">'), controls.indexOf('<template name="memory-fullscreen">'));
+  assert.match(bottom, /class="viewer-info /);
+  assert.match(bottom, /class="viewer-footer"/);
+  assert.match(bottom, /class="viewer-portrait-timeline"/);
+  assert.match(bottom, /disabled="\{\{busy \|\| !active\}\}"/);
+});
+
+test("offscreen portrait metadata cannot start seeking the active PC video", () => {
+  const {instance} = viewer("video");
+  instance.renderer = "webview";
+  instance.setData({visible: true});
+  instance.portraitTouchStart({currentTarget: {dataset: {mediaId: 99}},
+    touches: [{identifier: 0, clientX: 100, clientY: 680}]});
+  assert.equal(instance._portraitTouch, null);
+  instance.onUnload();
+});
+
+test("public preview keeps submission metadata attached to every media page", async () => {
+  const api = service();
+  api.detail = async () => ({id: 7, caption: "今晚的桌游局", author: {nickname: "小雨"},
+    activity_name: "周末桌游夜", location_name: "龙城桌游馆", media: [
+      {id: 20, kind: "image", state: "ready", publication_status: "published"},
+      {id: 21, kind: "video", state: "ready", publication_status: "published", duration: 8}]});
+  const {instance} = page("memory_detail", api);
+  instance.onLoad({id: "7"});
+  await instance.load();
+  assert.equal(instance.data.viewerInfo.length, 2);
+  assert.deepEqual(Array.from(instance.data.viewerInfo, item => item.caption), ["今晚的桌游局", "今晚的桌游局"]);
+  instance.change({detail: {current: 1}});
+  assert.equal(instance.data.current.id, 21);
+  assert.equal(instance.data.viewerInfo[0].author.nickname, "小雨");
+  assert.equal(instance.data.viewerInfo[1].activity_name, "周末桌游夜");
+  instance.onUnload();
+});
+
+test("portrait controls match the Pencil component geometry without moving metadata or changing fullscreen controls", () => {
+  const markup = source("pages/memory_detail/memory_detail.wxml");
+  const controls = source("pages/memory_detail/memory-controls.wxml");
+  const styles = source("pages/memory_detail/memory_detail.wxss");
+  assert.match(controls, /worklet:should-accept-gesture="portraitSeekAllowed" worklet:ongesture="portraitVideoDrag"/);
+  assert.match(markup, /wx:if="\{\{!zoomed && !fullScreen\}\}" is="memory-portrait-bottom"/);
+  assert.match(controls, /class="viewer-activity-name" max-lines="1"/);
+  assert.match(controls, /class="viewer-activity-divider">丨<\/text>/);
+  assert.match(controls, /class="viewer-activity-time"/);
+  assert.doesNotMatch(markup, /viewer-image-progress-space|viewer-info--admin/);
+  assert.match(controls, /template name="memory-portrait-seek"/);
+  assert.match(controls, /progressVisible && !seeking/);
+  assert.match(styles, /\.portrait-seek\s*\{[^}]*gap:\s*69\.23077rpx/);
+  assert.match(styles, /\.portrait-seek-time\s*\{[^}]*height:\s*61\.53846rpx/);
+  assert.match(styles, /\.portrait-seek-track\s*\{[^}]*height:\s*19\.23077rpx/);
+  assert.match(styles, /\.portrait-seek-thumb\s*\{[^}]*width:\s*13\.46154rpx;[^}]*height:\s*26\.92308rpx/);
+  assert.match(styles, /transition:\s*opacity 200ms ease-out/);
+  assert.match(controls, /template name="memory-fullscreen"/);
+  assert.match(controls, /worklet:ongesture="videoDrag"/);
+});
+
+test("a single video tap pauses immediately and the next single tap resumes without a timer", () => {
+  const {instance, calls, timers} = viewer("video");
+  instance.videoPlay({currentTarget: {dataset: {id: 10}}});
+  instance.videoTap();
+  assert.equal(calls.at(-1).name, "pause");
+  assert.equal(instance.data.playing, false);
+  assert.equal(instance.data.pausedByUser, true);
+  assert.equal(instance.data.controlsVisible, true);
+  assert.equal(timers.size, 0);
+  instance.videoTap();
+  assert.equal(calls.at(-1).name, "play");
+  assert.equal(instance.data.pausedByUser, false);
+  assert.equal(timers.size, 0);
+  instance.setData({fullScreen: true, playing: true});
+  instance.videoTap();
+  assert.equal(calls.at(-1).name, "pause");
+});
+
+async function downloadingViewer(emitPlay = true) {
+  const api = service(), downloads = [], calls = [], removed = [];
+  const submission = {id: 7, status: "published", revision: 3, media: [61, 62].map(id => ({
+    id, kind: "video", state: "ready", publication_status: "published", duration: 8,
+    url: `https://test.invalid/${id}.mp4`, thumbnail_url: `https://test.invalid/${id}.jpg`,
+  }))};
+  api.detail = async () => structuredClone(submission);
+  const result = page("memory_detail", api, {
+    createVideoContext: () => ({play() {calls.push("play");}, pause() {calls.push("pause");}, seek(time) {calls.push({seek: time});}}),
+    downloadFile(options) {
+      if (/\.jpg(?:\?|$)/.test(options.url)) {
+        options.success({statusCode:200,tempFilePath:'thumb-'+options.url}); return {abort(){}};
+      }
+      const job = {options, aborted: false}; downloads.push(job);
+      return {abort() {job.aborted = true;}};
+    },
+    getFileSystemManager: () => ({unlink: ({filePath,success}) => {removed.push(filePath); if (success) success();},
+      getFileInfo: options => options.success({size: 1024})}),
+  });
+  const instance = result.instance;
+  instance.onLoad({id: "7"}); instance.onShow(); await tick();
+  if (emitPlay) {
+    instance.videoPlay({currentTarget: {dataset: {id: 61, generation: instance.data.videoGeneration}}});
+    instance.videoTime({currentTarget: {dataset: {id: 61, generation: instance.data.videoGeneration}},detail:{currentTime:0.1,duration:8}});
+  }
+  const finish = index => {
+    downloads[index].options.success({statusCode: 200, tempFilePath: `video-cache-${index}`});
+  };
+  return {...result, api, submission, calls, downloads, removed, finish};
+}
+
+test("network video mounts and autoplays with sound before any download completes; only next is preloaded", async () => {
+  const {instance, calls, downloads, finish} = await downloadingViewer();
+  assert.equal(instance.data.videoLoading, false);
+  assert.equal(instance.data.videoMounted, true);
+  assert.equal(downloads.length, 1);
+  assert.equal(instance.data.videoSource, "https://test.invalid/61.mp4");
+  assert.equal(downloads[0].options.url, "https://test.invalid/62.mp4");
+  assert.equal(calls.includes("play"), true);
+  finish(0); await tick();
+  assert.equal(instance.data.videoSource, "https://test.invalid/61.mp4", "a background completion cannot remount the current player");
+  assert.equal(instance.data.videoMounted, true);
+  assert.equal(instance.data.videoLoading, false);
+  assert.equal(instance.data.muted, false);
+  assert.equal(instance.data.videoPoster, "https://test.invalid/61.jpg");
+  assert.equal(calls.at(-1), "play");
+  assert.equal(downloads.length, 1);
+  instance.onUnload();
+});
+
+test("loading completion and late native play cannot override a single-tap pause", async () => {
+  const {instance, calls, finish} = await downloadingViewer();
+  instance.videoTap();
+  assert.equal(instance.data.pausedByUser, true);
+  calls.length = 0;
+  finish(0); await tick();
+  assert.equal(instance.data.videoMounted, true);
+  assert.equal(calls.includes("play"), false);
+  instance.startVideo({currentTarget: {dataset: {id: 61, generation: instance.data.videoGeneration}}});
+  instance.videoPlay({currentTarget: {dataset: {id: 61, generation: instance.data.videoGeneration}}});
+  assert.equal(instance.data.playing, false);
+  assert.equal(calls.at(-1), "pause");
+  instance.videoTap(); assert.equal(calls.at(-1), "play");
+  instance.onUnload();
+});
+
+test("single tap can pause between the play request and its native event; preloads cannot race initial buffering", async () => {
+  const {instance, downloads, calls} = await downloadingViewer(false);
+  assert.equal(instance.data.videoMounted,true);
+  assert.equal(instance.data.videoSource,"https://test.invalid/61.mp4");
+  assert.equal(downloads.length,0);
+  instance.videoTap();
+  assert.equal(instance.data.pausedByUser,true);
+  instance.videoPlay({currentTarget: {dataset: {id:61,generation:instance.data.videoGeneration}}});
+  assert.equal(calls.at(-1),"pause");
+  assert.equal(downloads.length,0);
+  instance.videoTap();
+  instance.videoPlay({currentTarget: {dataset: {id:61,generation:instance.data.videoGeneration}}});
+  instance.videoTime({currentTarget: {dataset: {id:61,generation:instance.data.videoGeneration}},detail:{currentTime:0.1,duration:8}});
+  assert.equal(downloads.length,1);
+  instance.onUnload();
+});
+
+test("a failed background preload cannot interrupt the current network video", async () => {
+  const {instance, downloads, calls} = await downloadingViewer();
+  downloads[0].options.fail({errno: 5});
+  assert.equal(instance.data.videoSource,"https://test.invalid/61.mp4");
+  assert.equal(instance.data.videoMounted,true);
+  assert.equal(instance.data.error,"");
+  assert.equal(instance._videoRetries,0);
+  assert.equal(calls.at(-1),"play");
+  instance.onUnload();
+});
+
+test("swiping back reuses the previous local file and rejects old events for the same media ID", async () => {
+  const {instance, calls, downloads, finish} = await downloadingViewer();
+  finish(0); await tick();
+  const oldGeneration = instance.data.videoGeneration;
+  instance.change({detail: {current: 1}}); await tick();
+  assert.equal(instance.data.videoSource, "video-cache-0");
+  instance.videoPlay({currentTarget: {dataset: {id:62,generation:instance.data.videoGeneration}}});
+  instance.videoTime({currentTarget: {dataset: {id:62,generation:instance.data.videoGeneration}},detail:{currentTime:0.1,duration:8}});
+  finish(1); await tick();
+  instance.change({detail: {current: 0}}); await tick();
+  assert.equal(instance.data.videoSource, "video-cache-1");
+  assert.equal(downloads.length, 2);
+  assert.equal(calls.at(-1), "play");
+  const stale = {currentTarget: {dataset: {id: 61, generation: oldGeneration}}, detail: {errMsg: "old decoder"}};
+  instance.mediaError(stale); instance.videoPlay(stale);
+  assert.equal(instance.data.error, "");
+  assert.equal(instance.data.playing, false);
+  assert.equal(instance._videoRetries, 0);
+  instance.onUnload();
+});
+
+test("native playback failure renews the source and remounts once without overriding user pause", async () => {
+  const {instance, api, calls, downloads, removed, finish, submission} = await downloadingViewer();
+  finish(0); await tick();
+  let detailCalls = 0;
+  api.detail = async () => {
+    detailCalls++;
+    const fresh = structuredClone(submission); fresh.revision = 99;
+    fresh.media[0].url += "?renewed=1";
+    return fresh;
+  };
+  instance.mediaError({currentTarget: {dataset: {id: 61, generation: instance.data.videoGeneration}}, detail: {errMsg: "Format error"}});
+  assert.equal(instance.data.videoMounted, false);
+  instance.videoTap();
+  await tick();
+  assert.equal(detailCalls, 1);
+  assert.equal(removed.includes("video-cache-0"), false, "unrelated next-video preloads remain intact");
+  assert.match(downloads[1].options.url, /renewed=1/);
+  calls.length = 0; finish(1); await tick();
+  assert.equal(instance.data.videoSource, "video-cache-1");
+  assert.equal(instance.data.memory.revision, 3, "refreshing playback must not silently accept a newer review revision");
+  assert.equal(calls.includes("play"), false);
+  instance.mediaError({currentTarget: {dataset: {id: 61, generation: instance.data.videoGeneration}}, detail: {errMsg: "Format error"}});
+  await tick();
+  assert.equal(detailCalls, 1);
+  assert.equal(instance.data.error, "媒体加载失败，请刷新重试");
+  assert.equal(instance.data.videoLoading, false);
+  instance.onUnload();
+});
+
+test("leaving before download completion cannot mount or autoplay an obsolete video", async () => {
+  const {instance, calls, removed, finish, downloads} = await downloadingViewer();
+  calls.length = 0;
+  instance.onHide(); finish(0); await tick();
+  assert.equal(downloads[0].aborted, true);
+  assert.equal(instance.data.videoMounted, false);
+  assert.equal(calls.includes("play"), false);
+  assert.equal(removed.includes("video-cache-0"), true);
+});
+
+test("video poster never receives a downloaded image path or local HTTP URL", () => {
+  const {instance} = viewer("video");
+  instance.data.memory.media[0].thumbnail_url = "http://192.168.10.2:8002/cover.jpg";
+  instance.activate();
+  assert.equal(instance.data.videoPoster, "");
+  const markup = source("pages/memory_detail/memory_detail.wxml");
+  assert.match(markup, /poster="\{\{videoPoster\}\}"/);
+  assert.doesNotMatch(markup, /poster="\{\{imageSources/);
+  assert.match(markup, /bindloadedmetadata="videoMetadata"/);
+});
+
+test("background return preserves the selected video, playhead and user pause after fresh server validation", async () => {
+  const {instance, finish, calls} = await downloadingViewer();
+  finish(0); instance.change({detail:{current:1}}); await tick();
+  const event = () => ({currentTarget:{dataset:{id:62,generation:instance.data.videoGeneration}},detail:{currentTime:4,duration:8}});
+  instance.videoPlay(event()); instance.videoTime(event()); instance.videoTap();
+  assert.equal(instance.data.pausedByUser,true);
+  instance.onHide(); calls.length=0; instance.onShow(); await tick();
+  assert.equal(instance.data.current.id,62);
+  assert.equal(instance.data.videoInitialTime,4);
+  assert.equal(instance.data.pausedByUser,true);
+  assert.equal(calls.includes('play'),false);
+  instance.videoMetadata(event()); instance.videoMetadata(event());
+  assert.deepEqual(calls.filter(value=>value.seek),[{seek:4}]);
+  assert.equal(calls.includes('play'),false);
+  instance.videoTap();assert.equal(calls.at(-1),'play');instance.onUnload();
+});
+
+test("a playing video resumes at its playhead; stale metadata cannot seek the fresh player", async () => {
+  const {instance,calls} = await downloadingViewer();
+  const old={currentTarget:{dataset:{id:61,generation:instance.data.videoGeneration}},detail:{currentTime:3,duration:8}};
+  instance.videoTime(old);instance.onHide();calls.length=0;instance.onShow();await tick();
+  assert.equal(instance.data.videoInitialTime,3);assert.equal(instance.data.pausedByUser,false);
+  instance.videoMetadata(old);assert.equal(calls.some(value=>value.seek),false);
+  instance.videoMetadata({currentTarget:{dataset:{id:61,generation:instance.data.videoGeneration}}});
+  assert.ok(calls.some(value=>value.seek===3));instance.onUnload();
+});
+
+test("background revalidation cannot restore media removed by the server",async()=>{
+  const {instance,api,calls} = await downloadingViewer();
+  instance.onHide();api.detail=async()=>({id:7,media:[]});calls.length=0;
+  instance.onShow();await tick();
+  assert.equal(instance.data.videoMounted,false);
+  assert.equal(calls.includes('play'),false);
+  assert.match(instance.data.error,/不可用|下架/);instance.onUnload();
+});
+
+test("mixed neighbours share the video buffering gate; only one offscreen image downloads after first progress",async()=>{
+  const api=service(), jobs=[];
+  api.detail=async()=>({id:7,media:[{id:1,kind:'image',url:'https://test.invalid/one.jpg'},
+    {id:2,kind:'video',duration:8,url:'https://test.invalid/clip.mp4'},
+    {id:3,kind:'image',url:'https://test.invalid/three.jpg'}]});
+  const {instance}=page('memory_detail',api,{
+    createVideoContext:()=>({play(){},pause(){}}),
+    downloadFile(options){const job={options,aborted:false};jobs.push(job);return{abort(){job.aborted=true;}};},
+  });
+  instance.onLoad({id:'7',media_id:'2'});instance.onShow();await tick();
+  assert.equal(jobs.length,0);
+  const event=time=>({currentTarget:{dataset:{id:2,generation:instance.data.videoGeneration}},detail:{currentTime:time,duration:8}});
+  instance.videoPlay(event(0));assert.equal(jobs.length,0);
+  instance.videoTime(event(0.1));assert.equal(jobs.length,1);
+  instance.videoWaiting(event(0.1));assert.equal(jobs[0].aborted,true);
+  jobs[0].options.success({statusCode:200,tempFilePath:'obsolete'});
+  assert.equal(instance.data.imageSources['https://test.invalid/three.jpg'],undefined);
+  instance.videoTime(event(0.2));assert.equal(jobs.length,2);
+  assert.equal(instance.data.videoSource,'https://test.invalid/clip.mp4');instance.onUnload();
+});
+
+test("swiping into an unfinished preloaded video cancels its download before native streaming",async()=>{
+  const {instance,downloads,finish}=await downloadingViewer();
+  instance.change({detail:{current:1}});await tick();
+  assert.equal(downloads[0].aborted,true);
+  assert.equal(instance.data.videoSource,'https://test.invalid/62.mp4');
+  finish(0);assert.equal(instance.data.videoSource,'https://test.invalid/62.mp4');instance.onUnload();
+});
+
+test("mixed media preloads the next video ahead of the previous image",async()=>{
+  const api=service(), jobs=[];
+  api.detail=async()=>({id:7,media:[{id:1,kind:'image',url:'https://test.invalid/previous.jpg'},
+    {id:2,kind:'video',duration:8,url:'https://test.invalid/current.mp4'},
+    {id:3,kind:'video',duration:8,url:'https://test.invalid/next.mp4'}]});
+  const {instance}=page('memory_detail',api,{createVideoContext:()=>({play(){},pause(){}}),
+    downloadFile(options){jobs.push(options);return{abort(){}};}});
+  instance.onLoad({id:'7',media_id:'2'});instance.onShow();await tick();
+  const event={currentTarget:{dataset:{id:2,generation:instance.data.videoGeneration}},detail:{currentTime:0.1,duration:8}};
+  instance.videoPlay(event);instance.videoTime(event);
+  assert.equal(jobs[0].url,'https://test.invalid/next.mp4');instance.onUnload();
 });
 
 test("fullscreen retains the same player and time, left-drag seeks forward, cancellation does not seek", () => {
@@ -1532,6 +2207,24 @@ test("submission custom controls use the same Skyline view nodes as activity cre
     );
     assert.doesNotMatch(pageMarkup, /<button class="memory-back"/);
   }
+});
+
+test("activity picker renders its none option as Skyline text and clears all association fields", async () => {
+  const markup = source("pages/memory_create/memory_create.wxml");
+  assert.match(markup, /class="activity-option"[^>]*data-id="0"[^>]*><text>不关联活动<\/text><\/view>/);
+  const {instance} = page("memory_create", service());
+  instance.setData({activities: [{id: 7, name: "Test activity", start_time: "2026-10-13T19:00:00"}], showActivities: true});
+  instance.selectActivity({currentTarget: {dataset: {id: "7"}}});
+  assert.equal(instance.data.activityId, 7);
+  assert.equal(instance.data.activityName, "Test activity");
+  assert.ok(instance.data.activityTime);
+  await instance.chooseActivity();
+  assert.equal(instance.data.showActivities, true);
+  instance.selectActivity({currentTarget: {dataset: {id: "0"}}});
+  assert.equal(instance.data.activityId, null);
+  assert.equal(instance.data.activityName, "");
+  assert.equal(instance.data.activityTime, "");
+  assert.equal(instance.data.showActivities, false);
 });
 
 test("view controls preserve submission disabled guards without native button suppression", async () => {
@@ -1727,16 +2420,47 @@ test("memory feed scales grid gutters with the viewport and reuses the dragon wa
   });
   instance.onLoad();
   assert.equal(instance.data.gridGap, (8 * 320) / 390);
+  assert.equal(instance.data.cardRadius, (12 * 320) / 390);
   assert.equal(instance.data.gridPadding[0], (12 * 320) / 390);
   assert.equal(instance._cardWidth, (171 * 320) / 390);
+  assert.equal(instance.data.cardWidth, instance._cardWidth);
   assert.match(
     source("pages/memory/memory.wxml"),
     /dragon-watermark dragon-watermark--absolute/,
   );
   assert.match(
     source("pages/memory/memory.wxss"),
-    /border-radius:\s*46\.15385rpx/,
+    /\.memory-cover\s*\{[^}]*border-radius:\s*23\.07692rpx/,
   );
+});
+
+test("memory heading scrolls with its grid and cards reuse the home open-container transition", () => {
+  const markup = source("pages/memory/memory.wxml");
+  const scrollStart = markup.indexOf('<scroll-view class="memory-scroll"');
+  const heading = markup.indexOf('<view class="memory-heading"');
+  const grid = markup.indexOf('<grid-view');
+  const scrollEnd = markup.indexOf('</scroll-view>');
+  assert.ok(scrollStart < heading && heading < grid && grid < scrollEnd);
+  assert.match(markup, /<list-view><view class="memory-heading">/);
+  assert.match(markup, /<view[^>]*wx:for="\{\{items\}\}"[^>]*class="memory-card-slot"/);
+  assert.match(markup, /<open-container class="memory-card-transition"/);
+  assert.match(markup, /closed-border-radius="\{\{cardRadius\}\}"/);
+  assert.match(markup, /open-border-radius="0"/);
+  assert.match(markup, /open-color="#000000"/);
+  assert.match(markup, /transition-type="fadeThrough" transition-duration="320"/);
+  assert.match(markup, /bind:tap="open"/);
+  const home = source("pages/activity_list/activity_list.wxml");
+  assert.match(home, /transition-type="fadeThrough"/);
+  assert.match(home, /transition-duration="320"/);
+});
+
+test("memory transition keeps a sized ordinary card instead of relying on its native host", () => {
+  const markup = source("pages/memory/memory.wxml");
+  const styles = source("pages/memory/memory.wxss");
+  assert.match(markup, /class="memory-card-slot" style="width:\{\{cardWidth\}\}px;height:\{\{item.coverHeight\}\}px;"/);
+  assert.match(markup, /<open-container[^>]*>\s*<view class="memory-cover" style="width:\{\{cardWidth\}\}px;height:\{\{item.coverHeight\}\}px;">\s*<image class="memory-cover-image memory-window-image"/);
+  assert.match(styles, /\.memory-card-transition\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*100%;/);
+  assert.match(styles, /\.memory-cover\s*\{[^}]*display:\s*block;/);
 });
 
 test("admin summaries display aggregate sizes and durations rather than the first cover only", () => {
@@ -1751,7 +2475,7 @@ test("admin summaries display aggregate sizes and durations rather than the firs
   });
   assert.equal(result.mediaLabel, "0:45");
   assert.equal(result.sizeLabel, "12.5 MB");
-  assert.equal(result.activityTime, "2026/9/20 19:00");
+  assert.equal(result.activityTime, "2026/09/20 19:00");
   assert.equal(
     service().presentation({ media_count: 6, image_count: 6, video_count: 0 })
       .mediaLabel,
@@ -1759,28 +2483,327 @@ test("admin summaries display aggregate sizes and durations rather than the firs
   );
 });
 
-test("review list retains all status filters and rejection requires explicit confirmation", async () => {
-  let actionSheet, confirmation;
+test("bottom review filter exposes six statuses and maps every selection correctly", async () => {
+  const {instance} = page("memory_review", service());
+  const statuses = Array.from(instance.data.tabs, item => ({...item}));
+  assert.deepEqual(statuses.map(item => item.name), ["待审核", "压缩中", "压缩失败", "已上架", "已下架", "未通过"]);
+  assert.ok(!statuses.some(item => item.id === "draft"));
+  for (const current of statuses) {
+    for (const target of statuses.filter(item => item.id !== current.id)) {
+      let query;
+      const h = page("memory_review", {...service(), list: async values => {
+        query = values;
+        return {items: [], cursor: null};
+      }}, {showActionSheet() {
+        assert.fail("status filtering must use the bottom-anchored shared sheet");
+      }});
+      h.instance.setData({status: current.id, statusLabel: current.name});
+      h.instance.chooseStatus();
+      assert.equal(h.instance.data.filterOpen, true);
+      assert.equal(h.instance.data.tabs.length, 6);
+      h.instance.tab({currentTarget: {dataset: {status: target.id}}});
+      await tick();
+      assert.equal(h.instance.data.status, target.id);
+      assert.equal(h.instance.data.statusLabel, target.name);
+      assert.equal(query.status, target.id);
+      assert.equal(h.instance.data.filterOpen, false);
+    }
+  }
+});
+
+test("drawer uses global counts and refreshes every opening including zero", async () => {
+  let calls = 0;
+  const first = {pending: 120, processing: 2, failed: 3, published: 45, offline: 6, rejected: 7};
+  const latest = {...first, pending: 0, rejected: 8};
+  const {instance} = page("memory_review", {...service(),
+    list: async () => ({items: [], cursor: "more", status_counts: first}),
+    send: async url => {assert.equal(url, "/admin/memories/counts"); calls++; return {status_counts: latest};},
+  });
+  await instance.load(true);
+  assert.equal(instance.data.statusCounts.pending, 120, "not the zero visible items");
+  instance.chooseStatus(); await tick();
+  assert.equal(instance.data.statusCounts.pending, 0);
+  assert.equal(instance.data.statusCounts.rejected, 8);
+  instance.closeFilter(); instance.chooseStatus(); await tick();
+  assert.equal(calls, 2);
+  assert.match(source("pages/memory_review/memory_review.wxml"), /item.name\}\}（\{\{statusCounts \? statusCounts\[item.id\] : '…'\}\}）/);
+});
+
+test("late drawer counts cannot overwrite a newer refresh or a hidden page", async () => {
+  const responses = [];
+  const {instance} = page("memory_review", {...service(),
+    send: () => new Promise(resolve => responses.push(resolve)),
+  });
+  instance.chooseStatus(); instance.closeFilter(); instance.chooseStatus();
+  responses[1]({status_counts: {pending: 9}}); await tick();
+  responses[0]({status_counts: {pending: 100}}); await tick();
+  assert.equal(instance.data.statusCounts.pending, 9);
+  instance.closeFilter(); instance.chooseStatus(); instance.onHide();
+  responses[2]({status_counts: {pending: 99}}); await tick();
+  assert.equal(instance.data.statusCounts.pending, 9);
+});
+
+test("count failures stay unknown and old list totals cannot replace fresh counts", async () => {
+  const toasts = [];
+  let listResponse;
+  const api = {...service(), send: async () => {throw new Error("offline");},
+    list: () => new Promise(resolve => {listResponse = resolve;})};
+  const {instance} = page("memory_review", api, {showToast(options) {toasts.push(options);}});
+  instance.chooseStatus(); await tick();
+  assert.equal(instance.data.statusCounts, null);
+  assert.equal(toasts[0].title, "数量加载失败，请重试");
+  api.send = async () => ({status_counts: {pending: 7}});
+  const loading = instance.load(true);
+  await instance.refreshCounts();
+  listResponse({items: [], cursor: null, status_counts: {pending: 8}});
+  await loading;
+  assert.equal(instance.data.statusCounts.pending, 7);
+});
+
+test("rejected card returns only its file to pending after confirmation and refreshes counts", async () => {
+  let confirmation, posted;
+  const {instance} = page("memory_review", {...service(),
+    send: async (...args) => {posted = args; return {revision: 5};},
+    list: async () => ({items: [], cursor: null, status_counts: {rejected: 0, pending: 1}}),
+  });
+  instance.selectComponent = () => ({open(options) {confirmation = options;}});
+  instance.setData({status: "rejected", items: [{id: 8, memory_id: 7, media_id: 8, revision: 4, status: "rejected"}]});
+  await instance.resourceAction({currentTarget: {dataset: {id: 8, action: "reopen"}}});
+  assert.equal(posted, undefined);
+  assert.equal(confirmation.title, "确认重新审核");
+  assert.match(confirmation.message, /不会直接上架/);
+  await instance.confirmAction();
+  assert.equal(posted[0], "/admin/memories/7/review");
+  assert.equal(posted[2].action, "reopen");
+  assert.equal(posted[2].individual, true);
+  assert.equal(posted[2].expected_revision, 4);
+  assert.deepEqual(Array.from(posted[2].selected_media_ids), [8]);
+  assert.equal(instance.data.items.length, 0);
+  assert.equal(instance.data.statusCounts.rejected, 0);
+  assert.equal(instance.data.statusCounts.pending, 1);
+  assert.match(source("pages/memory_review/memory_review.wxml"), /data-action="reopen"[^>]*>重新审核/);
+});
+
+test("rejected preview reopens one file without treating it as approval", async () => {
+  let confirmation, posted, returns = 0;
+  const {instance} = page("memory_detail", {...service(), send: async (...args) => {posted = args; return {revision: 5};}},
+    {navigateBack() {returns++;}});
+  instance.onLoad({id: "7", admin: "1", media_id: "8"});
+  instance.setData({memory: {id: 7, status: "rejected", revision: 4}, current: {id: 8, kind: "image"}});
+  instance.selectComponent = () => ({open(options) {confirmation = options;}});
+  instance.askReview({currentTarget: {dataset: {action: "reopen"}}});
+  assert.equal(posted, undefined);
+  assert.equal(confirmation.confirmText, "重新审核");
+  await instance.confirmReview();
+  assert.equal(posted[2].action, "reopen");
+  assert.equal(posted[2].manually_reviewed, false);
+  assert.equal(posted[2].individual, true);
+  assert.deepEqual(Array.from(posted[2].selected_media_ids), [8]);
+  assert.equal(returns, 1);
+});
+
+test("six resource states stay independent of mixed submission status", () => {
+  const api = service();
+  const examples = [
+    {state: "uploaded", publication_status: "unreviewed", expected: "processing", label: "压缩中"},
+    {state: "working", publication_status: "unreviewed", expected: "processing", label: "压缩中"},
+    {state: "failed", publication_status: "unreviewed", expected: "failed", label: "压缩失败"},
+    {state: "ready", publication_status: "unreviewed", expected: "pending", label: "待审核"},
+    {state: "ready", publication_status: "published", expected: "published", label: "已上架"},
+    {state: "ready", publication_status: "offline", expected: "offline", label: "已下架"},
+    {state: "ready", publication_status: "excluded", expected: "rejected", label: "未通过"},
+  ];
+  for (const parent of ["processing", "pending", "published", "failed", "offline", "rejected"]) {
+    for (const example of examples) {
+      const card = api.reviewCards({id: 7, status: parent, media: [{id: 8, kind: "image", ...example}]})[0];
+      assert.equal(card.status, example.expected);
+      assert.equal(card.statusLabel, example.label);
+      assert.equal(card.media[0].stateLabel, example.label);
+      assert.equal(card.media[0].selectable, example.expected === "pending");
+    }
+  }
+});
+
+test("failed compression retries only one file and blocks duplicate requests", async () => {
+  let resolve, calls = 0, sent;
+  const {instance} = page("memory_review", {...service(),
+    send: async (...args) => {calls++; sent = args; return new Promise(done => {resolve = done;});},
+    list: async () => ({items: [], cursor: null}),
+  });
+  instance.setData({items: [{id: 8, memory_id: 7, media_id: 8, revision: 4, status: "failed"}]});
+  const event = {currentTarget: {dataset: {id: 8, action: "retry"}}};
+  const pending = instance.resourceAction(event);
+  await instance.resourceAction(event);
+  assert.equal(calls, 1);
+  assert.equal(sent[0], "/admin/memories/7/review");
+  assert.equal(sent[2].action, "retry");
+  assert.equal(sent[2].expected_revision, 4);
+  assert.equal(sent[2].individual, true);
+  assert.deepEqual(Array.from(sent[2].selected_media_ids), [8]);
+  resolve({revision: 5});
+  await pending;
+  assert.equal(instance.data.busy, false);
+  assert.equal(instance.data.items.length, 0);
+});
+
+test("republish requires confirmation, retains failures and cannot bypass resource state guards", async () => {
+  let confirmation, calls = 0;
+  const {instance} = page("memory_review", {...service(), send: async () => {
+    calls++; throw new Error("原文件不可用");
+  }});
+  instance.selectComponent = () => ({open(options) {confirmation = options;}});
+  instance.setData({items: [{id: 8, memory_id: 7, media_id: 8, revision: 4, status: "offline"}]});
+  await instance.resourceAction({currentTarget: {dataset: {id: 8, action: "retry"}}});
+  assert.equal(calls, 0);
+  assert.equal(confirmation, undefined);
+  await instance.resourceAction({currentTarget: {dataset: {id: 8, action: "republish"}}});
+  assert.equal(calls, 0);
+  assert.equal(confirmation.title, "确认重新上架");
+  await instance.confirmAction();
+  assert.equal(calls, 1);
+  assert.equal(instance.data.error, "原文件不可用");
+  assert.equal(instance.data.items.length, 1);
+  assert.equal(instance.data.busy, false);
+  const markup = source("pages/memory_review/memory_review.wxml");
+  assert.match(markup, /重新压缩/);
+  assert.match(markup, /重新上架/);
+  assert.match(markup, /item.statusLabel/);
+  assert.doesNotMatch(markup, /status === 'draft'/);
+});
+
+test("published list replaces redundant preview with confirmed per-file offline action", async () => {
+  let confirmation, complete;
+  const sent = [], toasts = [];
+  const {instance} = page("memory_review", {...service(),
+    send: (...args) => {sent.push(args); return new Promise(resolve => {complete = resolve;});},
+    list: async () => ({items: [{id: 7, status: "published", revision: 5,
+      media: [{id: 9, kind: "image", state: "ready", publication_status: "published"}]}], cursor: null}),
+  }, {showToast(options) {toasts.push(options);}});
+  instance.selectComponent = () => ({open(options) {confirmation = options;}});
+  instance.setData({status: "published", items: [
+    {id: 8, memory_id: 7, media_id: 8, revision: 4, status: "published"},
+    {id: 9, memory_id: 7, media_id: 9, revision: 4, status: "published"},
+  ]});
+  await instance.resourceAction({currentTarget: {dataset: {id: 8, action: "offline"}}});
+  assert.equal(sent.length, 0);
+  assert.equal(confirmation.title, "确认下架");
+  assert.equal(confirmation.confirmText, "内容下架");
+  assert.equal(confirmation.variant, "danger");
+  assert.match(confirmation.message, /仅下架当前内容.*其他内容不受影响.*文件保留/);
+  const request = instance.confirmAction();
+  await instance.confirmAction();
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0][0], "/admin/memories/7/review");
+  assert.equal(sent[0][2].action, "offline");
+  assert.equal(sent[0][2].expected_revision, 4);
+  assert.equal(sent[0][2].individual, true);
+  assert.deepEqual(Array.from(sent[0][2].selected_media_ids), [8]);
+  complete({revision: 5});
+  await request;
+  assert.deepEqual(Array.from(instance.data.items, item => item.id), [9]);
+  assert.equal(instance.data.items[0].status, "published");
+  assert.equal(toasts.at(-1).title, "已下架");
+  assert.equal(instance.data.busy, false);
+  const markup = source("pages/memory_review/memory_review.wxml");
+  assert.match(markup, /<button wx:if="\{\{item.status === 'published'\}\}"[^>]*data-action="offline"[^>]*bindtap="resourceAction"[^>]*>内容下架<\/button>/);
+  assert.match(markup, /class="review-preview"[^>]*bindtap="open"/);
+  assert.doesNotMatch(markup, /wx:if="[^\n]*published[^\n]*bindtap="open"/);
+});
+
+test("offline failure keeps the published card and cannot target a different status", async () => {
+  let confirmation, calls = 0;
+  const {instance} = page("memory_review", {...service(), send: async () => {
+    calls++; throw new Error("下架失败，请重试");
+  }});
+  instance.selectComponent = () => ({open(options) {confirmation = options;}});
+  instance.setData({items: [{id: 8, memory_id: 7, media_id: 8, revision: 4, status: "pending"}]});
+  const event = {currentTarget: {dataset: {id: 8, action: "offline"}}};
+  await instance.resourceAction(event);
+  assert.equal(confirmation, undefined);
+  instance.data.items[0].status = "published";
+  await instance.resourceAction(event);
+  await instance.confirmAction();
+  assert.equal(calls, 1);
+  assert.equal(instance.data.items[0].status, "published");
+  assert.equal(instance.data.error, "下架失败，请重试");
+  assert.equal(instance.data.busy, false);
+});
+
+test("bottom filter closes without navigation or state changes and respects loading and unload guards", () => {
+  let returns = 0;
+  const {instance} = page("memory_review", service(), {
+    navigateBack() {returns++;},
+  });
+  instance.chooseStatus();
+  assert.equal(instance.data.filterOpen, true);
+  instance.back();
+  assert.equal(instance.data.filterOpen, false);
+  assert.equal(returns, 0);
+  instance.chooseStatus(); instance.closeFilter();
+  assert.equal(instance.data.filterOpen, false);
+  instance.setData({loading: true});
+  instance.chooseStatus();
+  assert.equal(instance.data.filterOpen, false);
+  instance.setData({loading: false, busy: true});
+  instance.chooseStatus();
+  assert.equal(instance.data.filterOpen, false);
+  instance.setData({busy: false});
+  instance.chooseStatus();
+  instance.onHide();
+  assert.equal(instance.data.filterOpen, false);
+  instance._unloaded = true;
+  instance.chooseStatus();
+  instance.tab({currentTarget: {dataset: {status: "published"}}});
+  assert.equal(instance.data.filterOpen, false);
+  assert.equal(instance.data.status, "pending");
+});
+
+test("bottom filter reuses bottom anchoring, keeps cancel visible and scrolls options in short viewports", () => {
+  for (const [width, height, top] of [[320, 568, 20], [390, 844, 47], [430, 932, 59], [620, 1170, 0], [620, 260, 0]]) {
+    const {instance} = page("memory_review", service(), {
+      getWindowInfo: () => ({windowWidth: width, windowHeight: height, statusBarHeight: top}),
+    });
+    instance.onLoad();
+    instance.chooseStatus();
+    const unit = width / 750;
+    assert.ok(instance.data.filterHeight <= 600 * unit);
+    assert.ok(instance.data.filterHeight > 0);
+    assert.ok(instance.data.filterHeight + 112 * unit <= height * 0.85 + 0.01);
+    if (height >= 568) assert.equal(instance.data.filterHeight, 600 * unit);
+    else assert.ok(instance.data.filterHeight < 600 * unit);
+    instance.onResize();
+    assert.equal(instance.data.filterOpen, true);
+  }
+  const markup = source("pages/memory_review/memory_review.wxml");
+  assert.match(markup, /class="memory-sheet-overlay" bindtap="closeFilter"/);
+  assert.match(markup, /review-status-cancel" bindtap="closeFilter"/);
+  assert.doesNotMatch(markup, /filterTop|review-status-overlay/);
+  assert.match(markup, /scroll-y="\{\{!filterOpen\}\}"/);
+  assert.match(markup, /data-status="\{\{item.id\}\}" bindtap="tab"/);
+  const styles = readWxss(path.join(__dirname, "../pages/memory_review/memory_review.wxss"));
+  assert.match(styles, /\.memory-sheet-overlay\s*\{[^}]*position:\s*fixed[^}]*bottom:\s*0[^}]*align-items:\s*flex-end/);
+  assert.match(styles, /\.review-status-menu\s*\{[^}]*height:\s*auto[^}]*max-height:\s*85vh/);
+  assert.doesNotMatch(styles, /review-status-overlay|width:\s*192px/);
+});
+
+test("review list retains all status filters and rejects one file without a dialog", async () => {
+  let confirmation;
   const calls = [];
   const { instance } = page(
     "memory_review",
     {
       ...service(),
       list: async () => ({ items: [], cursor: null }),
-      send: async (...args) => calls.push(args),
+      send: async (...args) => args[0] === "/admin/memories/counts" ? {} : calls.push(args),
     },
-    {
-      showActionSheet: (options) => {
-        actionSheet = options;
-      },
-    },
+    {},
   );
   instance.chooseStatus();
-  assert.equal(actionSheet.itemList.length, 7);
-  actionSheet.success({ tapIndex: 2 });
+  assert.equal(instance.data.filterOpen, true);
+  instance.tab({currentTarget: {dataset: {status: "published"}}});
   await tick();
   assert.equal(instance.data.status, "published");
-  assert.equal(instance.data.statusLabel, "已发布");
+  assert.equal(instance.data.statusLabel, "已上架");
   instance.selectComponent = () => ({
     open(options) {
       confirmation = options;
@@ -1788,19 +2811,289 @@ test("review list retains all status filters and rejection requires explicit con
   });
   instance.setData({
     status: "pending",
-    items: [{ id: 8, memory_id: 7, media_id: 8, revision: 3, caption: "备注", captionExpandable: true }],
+    items: [{ id: 8, memory_id: 7, media_id: 8, revision: 3, status: "pending", caption: "备注", captionExpandable: true }],
   });
   instance.toggleCaption({ currentTarget: { dataset: { id: 8 } } });
   assert.equal(instance.data.items[0].expanded, true);
-  instance.askReject({ currentTarget: { dataset: { id: 8 } } });
-  assert.equal(confirmation.title, "确认不通过");
-  assert.equal(calls.length, 0);
-  await instance.confirmAction();
+  await instance.reject({ currentTarget: { dataset: { id: 8 } } });
+  assert.equal(confirmation, undefined);
+  assert.equal(calls.length, 1);
   assert.equal(calls[0][0], "/admin/memories/7/review");
   assert.equal(calls[0][2].expected_revision, 3);
   assert.equal(calls[0][2].action, "reject");
   assert.equal(calls[0][2].individual, true);
   assert.deepEqual(Array.from(calls[0][2].selected_media_ids), [8]);
+  assert.equal(instance.data.items.length, 0);
+});
+
+test("direct list rejection prevents duplicate requests and preserves the card on failure", async () => {
+  let fail, calls = 0;
+  const {instance} = page("memory_review", {...service(), send: () => {
+    calls++;
+    return new Promise((resolve, reject) => {fail = reject;});
+  }});
+  instance.selectComponent = () => ({open() {assert.fail("rejection must not open a dialog");}});
+  instance.setData({items: [{id: 8, memory_id: 7, media_id: 8, revision: 3, status: "pending"}]});
+  const event = {currentTarget: {dataset: {id: 8}}};
+  const request = instance.reject(event);
+  assert.equal(instance.data.busy, true);
+  await instance.reject(event);
+  assert.equal(calls, 1);
+  fail(new Error("network failed"));
+  await request;
+  assert.equal(instance.data.busy, false);
+  assert.equal(instance.data.error, "network failed");
+  assert.equal(instance.data.items[0].id, 8);
+  await instance.reject({currentTarget: {dataset: {id: 999}}});
+  assert.equal(calls, 1);
+});
+
+test("list approval publishes only the clicked file without opening preview or a selection dialog", async () => {
+  for (const kind of ["image", "video"]) {
+    const submission = {id: 7, status: "pending", revision: 3, media: [8, 9].map(id => ({
+      id, kind, state: "ready", publication_status: "unreviewed",
+    }))};
+    let sent;
+    const api = {...service(), list: async () => ({items: [structuredClone(submission)], cursor: null,
+      status_counts: {pending: 1, published: 1}}), send: async (url, method, body) => {
+      sent = {url, method, body};
+      submission.revision++;
+      submission.media = submission.media.filter(item => item.id !== 8);
+    }};
+    const {instance, app} = page("memory_review", api, {navigateTo() {assert.fail("approval cannot navigate");}});
+    instance.selectComponent = () => ({open() {assert.fail("approval cannot open another step");}});
+    instance.setData({items: api.reviewCards(submission)});
+    await instance.approve({currentTarget: {dataset: {id: 8}}});
+    assert.equal(sent.url, "/admin/memories/7/review");
+    assert.equal(sent.method, "POST");
+    assert.equal(sent.body.action, "publish");
+    assert.equal(sent.body.expected_revision, 3);
+    assert.equal(sent.body.manually_reviewed, true);
+    assert.equal(sent.body.individual, true);
+    assert.deepEqual(Array.from(sent.body.selected_media_ids), [8]);
+    assert.deepEqual(Array.from(instance.data.items, item => item.id), [9]);
+    assert.equal(instance.data.items[0].revision, 4);
+    assert.equal(instance.data.statusCounts.pending, 1);
+    assert.equal(instance.data.statusCounts.published, 1);
+    assert.equal(app.globalData.memoryVersion, 1);
+    const markup = source("pages/memory_review/memory_review.wxml");
+    assert.match(markup, /class="review-approve"[^>]*bindtap="approve"[^>]*>通过<\/button>/);
+    assert.match(markup, /class="review-preview"[^>]*bindtap="open"/);
+  }
+});
+
+test("list approval blocks duplicate taps and keeps failed or stale cards instead of reporting success", async () => {
+  let fail, calls = 0;
+  const {instance, app} = page("memory_review", {...service(), send: () => {
+    calls++; return new Promise((resolve, reject) => {fail = reject;});
+  }}, {navigateTo() {assert.fail("approval cannot navigate");}});
+  instance.setData({items: [{id: 8, media_id: 8, memory_id: 7, revision: 3, status: "pending"}]});
+  const event = {currentTarget: {dataset: {id: 8}}};
+  const request = instance.approve(event);
+  await instance.approve(event);
+  assert.equal(calls, 1);
+  fail(new Error("内容已更新，请刷新")); await request;
+  assert.equal(instance.data.busy, false);
+  assert.equal(instance.data.error, "内容已更新，请刷新");
+  assert.equal(instance.data.items[0].status, "pending");
+  assert.equal(app.globalData.memoryVersion, undefined);
+  for (const status of ["processing", "failed", "published", "offline", "rejected"]) {
+    instance.data.items[0].status = status; await instance.approve(event);
+  }
+  assert.equal(calls, 1);
+});
+
+test("detail rejection submits immediately but offline still requires confirmation", async () => {
+  let finish, sent, confirmation, returns = 0;
+  const {instance} = page("memory_detail", {...service(), send: (...args) => {
+    sent = args;
+    return new Promise(resolve => {finish = resolve;});
+  }, list: async () => ({items: [], cursor: null})}, {navigateBack() {returns++;}});
+  instance.onLoad({id: "7", admin: "1", media_id: "8"});
+  instance.setData({memory: {id: 7, revision: 3, status: "pending", media: [{id: 8}]}});
+  instance.selectComponent = () => ({open(options) {confirmation = options;}});
+  const request = instance.askReview({currentTarget: {dataset: {action: "reject"}}});
+  assert.equal(confirmation, undefined);
+  assert.equal(instance.data.busy, true);
+  assert.equal(sent[0], "/admin/memories/7/review");
+  assert.equal(sent[2].action, "reject");
+  assert.equal(sent[2].expected_revision, 3);
+  assert.equal(sent[2].individual, true);
+  assert.deepEqual(Array.from(sent[2].selected_media_ids), [8]);
+  finish();
+  await request;
+  assert.equal(returns, 0);
+  assert.equal(instance.data.reviewComplete, true);
+  assert.equal(instance.data.busy, false);
+  instance.setData({memory: {id: 7, status: "published", revision: 4}});
+  instance.askReview({currentTarget: {dataset: {action: "offline"}}});
+  assert.equal(confirmation.title, "确认下架");
+});
+
+test("approval and rejection advance in place, refresh sibling revisions and finish without leaving", async () => {
+  const api = service();
+  const submissions = [
+    {id: 7, status: "pending", revision: 3, caption: "first", author: {nickname: "A"}, media: [
+      {id: 20, kind: "image", state: "ready", publication_status: "unreviewed"},
+      {id: 21, kind: "video", state: "ready", publication_status: "unreviewed", duration: 8},
+    ]},
+    {id: 8, status: "pending", revision: 5, caption: "second", author: {nickname: "B"}, media: [
+      {id: 22, kind: "image", state: "ready", publication_status: "unreviewed"},
+    ]},
+  ];
+  const sent = [];
+  api.detail = async id => structuredClone(submissions.find(item => item.id === id));
+  api.list = async () => ({items: structuredClone(submissions), cursor: null});
+  api.send = async (url, method, body) => {
+    const submission = submissions.find(item => url === `/admin/memories/${item.id}/review`);
+    assert.equal(body.expected_revision, submission.revision);
+    const media = submission.media.find(item => item.id === body.selected_media_ids[0]);
+    assert.equal(media.publication_status, "unreviewed");
+    media.publication_status = body.action === "publish" ? "published" : "excluded";
+    sent.push({url, body});
+    return {revision: ++submission.revision};
+  };
+  let returns = 0;
+  const {instance} = page("memory_detail", api, {navigateBack() {returns++;}});
+  instance.onLoad({id: "7", admin: "1", media_id: "20"});
+  await instance.load();
+  instance.selectComponent = () => ({open() {assert.fail("individual approval is a direct decision");}});
+  await instance.approve();
+  assert.equal(sent[0].body.manually_reviewed, true);
+  assert.deepEqual(Array.from(sent[0].body.selected_media_ids), [20]);
+  assert.equal(instance.data.current.id, 21);
+  assert.equal(instance.data.memory.revision, 4);
+  assert.equal(instance.data.selected.length, 0);
+  assert.equal(instance.data.reviewed, false);
+  assert.equal(instance.data.selectionOpen, false);
+  assert.equal(instance.data.muted, false);
+  assert.deepEqual(Array.from(instance.data.viewerMedia, item => item.id), [21, 22]);
+  assert.deepEqual(Array.from(instance.data.viewerInfo, item => item.caption), ["first", "second"]);
+  await instance.askReview({currentTarget: {dataset: {action: "reject"}}});
+  assert.equal(instance.data.current.id, 22);
+  assert.equal(instance.data.memory.id, 8);
+  assert.equal(instance.data.memory.author.nickname, "B");
+  assert.equal(instance.data.memory.caption, "second");
+  assert.equal(instance.data.viewerInfo.length, 1);
+  assert.equal(instance.data.viewerInfo[0].author.nickname, "B");
+  assert.equal(instance.data.memory.revision, 5);
+  await instance.askReview({currentTarget: {dataset: {action: "reject"}}});
+  assert.equal(instance.data.reviewComplete, true);
+  assert.equal(instance.data.current, null);
+  assert.equal(instance.data.memory, null);
+  assert.equal(instance.data.viewerMedia.length, 0);
+  assert.equal(instance.data.viewerInfo.length, 0);
+  assert.equal(instance.data.loading, false);
+  assert.equal(instance.data.busy, false);
+  assert.equal(returns, 0);
+  assert.equal(sent.length, 3);
+  await instance.confirmReview();
+  assert.equal(sent.length, 3, "completed content cannot be submitted again");
+});
+
+test("review advancement consumes the preloaded next video and clears it on completion", async () => {
+  const api = service();
+  const submission = {id: 7, status: "pending", revision: 3, media: [
+    {id: 20, kind: "image", state: "ready", publication_status: "unreviewed"},
+    {id: 21, kind: "video", state: "ready", publication_status: "unreviewed", url: "/clip.mp4", duration: 8},
+  ]};
+  api.detail = async () => structuredClone(submission);
+  api.list = async () => ({items: [structuredClone(submission)], cursor: null});
+  api.send = async () => ({revision: ++submission.revision});
+  let download, removed;
+  const {instance} = page("memory_detail", api, {
+    downloadFile(options) {download = options; return {abort() {}};},
+    getFileSystemManager: () => ({unlink: ({filePath,success}) => {removed = filePath; success();},
+      getFileInfo: options => options.success({size: 1024})}),
+  });
+  instance.onLoad({id: "7", admin: "1", media_id: "20"});
+  instance.onShow();
+  await tick();
+  download.success({statusCode: 200, tempFilePath: "next-video-cache"});
+  await instance.askReview({currentTarget: {dataset: {action: "reject"}}});
+  assert.equal(instance.data.current.id, 21);
+  assert.equal(instance.data.videoSource, "next-video-cache");
+  assert.equal(instance.data.visible, true);
+  assert.equal(instance.data.muted, false);
+  assert.equal(instance.data.memory.revision, 4);
+  await instance.askReview({currentTarget: {dataset: {action: "reject"}}});
+  assert.equal(instance.data.reviewComplete, true);
+  assert.equal(removed, "next-video-cache");
+});
+
+test("review continuation loads the next queue page and retries loading without resubmitting", async () => {
+  const api = service();
+  const first = {id: 7, status: "pending", revision: 3, media: [
+    {id: 20, kind: "image", state: "ready", publication_status: "unreviewed"},
+  ]};
+  const second = {id: 8, status: "pending", revision: 2, media: [
+    {id: 21, kind: "image", state: "ready", publication_status: "unreviewed"},
+  ]};
+  let oldPrefetch, cursorCalls = 0, writes = 0;
+  api.detail = async () => structuredClone(first);
+  api.list = async values => {
+    if (!values.cursor) return {items: [structuredClone(first)], cursor: "next"};
+    cursorCalls++;
+    if (cursorCalls === 1) return new Promise(resolve => {oldPrefetch = resolve;});
+    if (cursorCalls === 2) throw new Error("next page unavailable");
+    return {items: [structuredClone(second)], cursor: null};
+  };
+  api.send = async () => {writes++; return {revision: 4};};
+  const {instance} = page("memory_detail", api);
+  instance.onLoad({id: "7", admin: "1", media_id: "20"});
+  await instance.load();
+  await instance.askReview({currentTarget: {dataset: {action: "reject"}}});
+  assert.equal(writes, 1);
+  assert.equal(instance.data.reviewComplete, false);
+  assert.equal(instance.data.error, "next page unavailable");
+  assert.equal(instance.data.memory, null);
+  oldPrefetch({items: [first], cursor: null});
+  await tick();
+  assert.equal(instance.data.memory, null, "late old pagination cannot restore reviewed content");
+  await instance.load();
+  assert.equal(writes, 1);
+  assert.equal(instance.data.current.id, 21);
+  assert.equal(instance.data.memory.id, 8);
+  assert.equal(instance.data.error, "");
+});
+
+test("failed review keeps the current preview and offline still returns to the list", async () => {
+  let returns = 0;
+  const api = service();
+  api.send = async () => {throw new Error("review failed");};
+  const {instance} = page("memory_detail", api, {navigateBack() {returns++;}});
+  instance.onLoad({id: "7", admin: "1", media_id: "20"});
+  instance.setData({memory: {id: 7, revision: 3}, current: {id: 20, kind: "image"}});
+  await instance.askReview({currentTarget: {dataset: {action: "reject"}}});
+  assert.equal(instance.data.current.id, 20);
+  assert.equal(instance.data.memory.id, 7);
+  assert.equal(instance.data.error, "review failed");
+  assert.equal(instance.data.busy, false);
+  assert.equal(returns, 0);
+  api.send = async () => ({revision: 4});
+  instance._action = "offline";
+  await instance.confirmReview();
+  assert.equal(returns, 1);
+});
+
+test("permanent cleanup still previews its manifest and waits for explicit confirmation", async () => {
+  let confirmation;
+  const calls = [];
+  const {instance} = page("memory_review", {...service(),
+    send: async (...args) => {calls.push(args); return {id: 7, media_id: 8, revision: 3, allowed: true, bytes: 1024};},
+    list: async () => ({items: [], cursor: null}),
+  });
+  instance.selectComponent = () => ({open(options) {confirmation = options;}});
+  instance.setData({items: [{id: 8, memory_id: 7, media_id: 8}]});
+  await instance.askCleanup({currentTarget: {dataset: {id: 8}}});
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0][0], "/admin/memories/7/cleanup?media_id=8");
+  assert.equal(confirmation.title, "确认删除");
+  assert.match(confirmation.message, /服务器.*原件.*压缩文件.*缩略图.*不可恢复/);
+  assert.match(source("pages/memory_review/memory_review.wxml"), /bind:confirm="confirmAction"/);
+  await instance.confirmAction();
+  assert.equal(calls[1][0], "/admin/memories/7/cleanup");
+  assert.equal(calls[1][2].confirmed, true);
 });
 
 test("review captions only expand when native layout exceeds one line", () => {
@@ -1853,7 +3146,7 @@ test("review expand control does not reserve the native button default width", (
   assert.match(styles, /\.review-expand\s*\{[^}]*align-self:\s*flex-end;/);
 });
 
-test("prototype approve opens a separate selection sheet without bypassing manual review", () => {
+test("legacy batch review retains a separate selection sheet and manual acknowledgement", () => {
   const { instance } = viewer("video");
   instance.data.memory.status = "pending";
   instance.beginReview();
@@ -1863,20 +3156,60 @@ test("prototype approve opens a separate selection sheet without bypassing manua
   assert.equal(instance.data.selectionOpen, false);
   assert.equal(instance.data.memory.status, "pending");
   const markup = source("pages/memory_detail/memory_detail.wxml");
-  assert.match(markup, /class="viewer-approve" bindtap="beginReview"/);
+  assert.match(source("pages/memory_detail/memory-controls.wxml"), /class="viewer-approve" bindtap="approve"/);
   assert.match(markup, /class="memory-sheet-overlay"/);
   assert.doesNotMatch(markup, /class="viewer-count"/);
 });
 
-test("portrait photos fill the prototype frame while landscape photos retain black bars", () => {
+test("photo previews fit the complete image without cropping in public and review viewers", () => {
   const { instance } = viewer();
-  Object.assign(instance.data.memory.media[0], { width: 800, height: 1200 });
-  instance.activate();
-  assert.equal(instance.data.photoHeight, 844);
-  assert.ok(instance.data.photoWidth > 390);
-  assert.ok(instance.data.photoLeft < 0);
-  Object.assign(instance.data.memory.media[0], { width: 1920, height: 1080 });
+  const frames = [[320, 568], [390, 844], [430, 932], [844, 390]];
+  const photos = [[800, 1200], [1080, 1920], [1920, 1080], [1000, 1000], [1000, 10000], [10000, 1000], [390, 844]];
+  const epsilon = 1e-8;
+  for (const admin of [false, true]) for (const [width, height] of frames) {
+    instance.setData({admin});
+    instance._frame.value = {width, height};
+    for (const [photoWidth, photoHeight] of photos) {
+      Object.assign(instance.data.memory.media[0], {width: photoWidth, height: photoHeight});
+      instance.activate();
+      const data = instance.data;
+      assert.ok(data.photoWidth <= width + epsilon && data.photoHeight <= height + epsilon);
+      assert.ok(data.photoLeft >= -epsilon && data.photoTop >= -epsilon);
+      assert.ok(data.photoLeft + data.photoWidth <= width + epsilon);
+      assert.ok(data.photoTop + data.photoHeight <= height + epsilon);
+      assert.ok(Math.abs(data.photoWidth / data.photoHeight - photoWidth / photoHeight) < epsilon);
+      assert.ok(Math.abs(data.photoWidth - width) < epsilon || Math.abs(data.photoHeight - height) < epsilon);
+      assert.equal(data.photoLeft, (width - data.photoWidth) / 2);
+      assert.equal(data.photoTop, (height - data.photoHeight) / 2);
+    }
+  }
+  assert.match(source("pages/memory_detail/memory_detail.wxml"), /id="memory-photo"[^>]*mode="aspectFit"/);
+});
+
+test("restoring and switching portraits returns to uncropped fit instead of filling the screen", () => {
+  const {instance} = viewer();
+  Object.assign(instance.data.memory.media[0], {width: 800, height: 1200});
   instance.activate();
   assert.equal(instance.data.photoWidth, 390);
-  assert.ok(instance.data.photoTop > 0);
+  assert.equal(instance.data.photoHeight, 585);
+  assert.equal(instance.data.photoLeft, 0);
+  assert.equal(instance.data.photoTop, 129.5);
+  instance.photoDoubleTap({state: 3, absoluteX: 195, absoluteY: 422});
+  instance.photoPan({state: 2, deltaX: 1000, deltaY: 1000});
+  assert.equal(instance._scale.value, 2);
+  assert.ok(instance._x.value > 0 && instance._y.value > 0);
+  instance.restorePhoto();
+  assert.equal(instance._scale.value, 1);
+  assert.equal(instance._x.value, 0);
+  assert.equal(instance._y.value, 0);
+  assert.equal(instance.data.photoWidth, 390);
+  assert.equal(instance.data.photoHeight, 585);
+  assert.equal(instance.data.zoomed, false);
+  instance.data.memory.media.push({id: 11, kind: "image", width: 500, height: 3000});
+  instance.change({detail: {current: 1}});
+  assert.equal(instance.data.current.id, 11);
+  assert.ok(Math.abs(instance.data.photoHeight - 844) < 1e-8);
+  assert.ok(instance.data.photoWidth < 390 && instance.data.photoLeft > 0);
+  assert.equal(instance._scale.value, 1);
+  assert.equal(instance.data.zoomed, false);
 });

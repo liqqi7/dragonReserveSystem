@@ -106,8 +106,8 @@ def list_page(db, status, limit, cursor, actor=None, individual=False):
             item["media_count"] = len(item["media"])
     if actor:
         if individual:
-            result["pending_count"] = db.scalar(select(func.count()).select_from(MemoryMedia).join(Memory)
-                .where(service.review_media_filter("pending")))
+            result["status_counts"] = service.review_counts(db)
+            result["pending_count"] = result["status_counts"]["pending"]
         else:
             result["pending_count"] = db.scalar(select(func.count()).select_from(Memory).where(Memory.status == "pending"))
     return result
@@ -115,8 +115,9 @@ def list_page(db, status, limit, cursor, actor=None, individual=False):
 
 @router.get("/memories")
 def memories(limit: int = Query(20, ge=1, le=50), cursor: str | None = Query(None, max_length=512),
+             individual: bool = False,
              db: Session = Depends(get_db)):
-    return list_page(db, "published", limit, cursor)
+    return list_page(db, "published", limit, cursor, individual=individual)
 
 
 @router.get("/memories/{memory_id}")
@@ -128,11 +129,16 @@ def detail(memory_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/admin/memories")
-def admin_memories(status: Literal["pending", "processing", "published", "rejected", "offline", "failed", "draft"] = "pending",
+def admin_memories(status: Literal["pending", "processing", "published", "rejected", "offline", "failed"] = "pending",
                    limit: int = Query(20, ge=1, le=50), cursor: str | None = Query(None, max_length=512),
                    individual: bool = False,
                    db: Session = Depends(get_db), actor: User = Depends(require_admin)):
     return list_page(db, status, limit, cursor, actor, individual)
+
+
+@router.get("/admin/memories/counts")
+def admin_counts(db: Session = Depends(get_db), actor: User = Depends(require_admin)):
+    return {"status_counts": service.review_counts(db)}
 
 
 @router.get("/admin/memories/{memory_id}")

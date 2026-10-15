@@ -8,7 +8,7 @@ import shutil
 import time
 from uuid import uuid4
 
-from sqlalchemy import and_, func, select, update
+from sqlalchemy import and_, case, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -19,6 +19,8 @@ from app.models.memory import Memory, MemoryAuditLog, MemoryCapacity, MemoryMedi
 from app.services import memory_media as media
 from app.utils.app_time import app_now
 from app.utils.media import resolve_media_root
+
+SUBMITTED_STATUSES = ("processing", "pending", "published", "rejected", "offline", "failed")
 
 
 def enabled():
@@ -306,8 +308,8 @@ def serialize(db, memory, actor=None, summary=False):
         "media_count": len(items)}
     exposed = items[:1] if summary else items
     result["media"] = [{"id": item.id, "kind": item.kind, "width": item.width, "height": item.height,
-        "duration": item.duration, "thumbnail_url": media_url(item, "thumbnail", actor) if item.thumbnail_key else "",
-        **({"url": media_url(item, "display", actor)} if item.display_key and not summary else {}),
+        "duration": item.duration, "thumbnail_url": media_url(item, "thumbnail", actor) if item.state == "ready" and item.thumbnail_key else "",
+        **({"url": media_url(item, "display", actor)} if item.state == "ready" and item.display_key and not summary else {}),
         **({"state": item.state, "publication_status": item.publication_status,
             "original_bytes": item.original_bytes} if actor else {})} for item in exposed]
     if actor:
@@ -322,7 +324,7 @@ def serialize(db, memory, actor=None, summary=False):
 
 def review_media_filter(status):
     active = MemoryMedia.state.notin_(["removed", "cleaned"])
-    reviewable = Memory.status.in_(["pending", "published", "rejected", "offline", "failed"])
+    reviewable = Memory.status.in_(SUBMITTED_STATUSES)
     if status == "pending":
         condition = and_(reviewable, MemoryMedia.state == "ready", MemoryMedia.publication_status == "unreviewed")
     elif status == "published":
@@ -333,9 +335,26 @@ def review_media_filter(status):
         condition = and_(reviewable, MemoryMedia.publication_status == "offline")
     elif status == "failed":
         condition = and_(reviewable, MemoryMedia.state == "failed", MemoryMedia.publication_status == "unreviewed")
+    elif status == "processing":
+        condition = and_(reviewable, MemoryMedia.state.in_(["uploaded", "working"]),
+                         MemoryMedia.publication_status == "unreviewed")
     else:
         condition = Memory.status == status
     return and_(active, condition)
+
+
+def review_counts(db):
+    columns = [func.count(case((review_media_filter(status), 1))).label(status)
+               for status in SUBMITTED_STATUSES]
+    result = db.execute(select(*columns).select_from(MemoryMedia).join(Memory)).mappings().one()
+    return {status: int(result[status]) for status in SUBMITTED_STATUSES}
+
+
+def require_processed_files(item):
+    if not item.display_key or not item.thumbnail_key or not all(
+        media.private_path(storage_root(), key).is_file() for key in (item.display_key, item.thumbnail_key)
+    ):
+        raise ConflictError("压缩文件已不可用，请删除后重新投稿")
 
 
 def sync_review_status(memory, items):
@@ -344,6 +363,8 @@ def sync_review_status(memory, items):
         memory.status = "published"
         if not memory.published_at:
             memory.published_at = app_now()
+    elif any(item.publication_status == "unreviewed" and item.state in {"uploaded", "working"} for item in active):
+        memory.status = "processing"
     elif any(item.publication_status == "unreviewed" and item.state == "ready" for item in active):
         memory.status = "pending"
     elif any(item.publication_status == "unreviewed" for item in active):
@@ -357,7 +378,7 @@ def sync_review_status(memory, items):
 def review_individual(memory, items, payload):
     selected = set(payload.selected_media_ids)
     chosen = [item for item in items if item.id in selected and item.state not in {"removed", "cleaned"}]
-    if len(payload.selected_media_ids) != 1 or len(chosen) != 1 or memory.status not in {"pending", "published", "rejected", "offline", "failed"}:
+    if len(payload.selected_media_ids) != 1 or len(chosen) != 1 or memory.status not in SUBMITTED_STATUSES:
         raise ConflictError("请选择一份有效的审核内容")
     item = chosen[0]
     if payload.action == "publish":
@@ -367,24 +388,42 @@ def review_individual(memory, items, payload):
             raise ConflictError("请确认已完成人工审核，包括文字、图片及视频画面和声音")
         item.publication_status = "published"
     elif payload.action == "reject":
-        if item.publication_status != "unreviewed" or item.state not in {"ready", "failed"}:
+        if item.publication_status != "unreviewed" or item.state != "ready":
             raise ConflictError("当前素材不能拒绝，请刷新")
         item.publication_status = "excluded"
-    else:
+    elif payload.action == "offline":
         if item.publication_status != "published":
             raise ConflictError("当前素材未发布")
         item.publication_status = "offline"
+    elif payload.action == "retry":
+        if item.state != "failed" or item.publication_status != "unreviewed":
+            raise ConflictError("只能重新压缩失败的素材，请刷新")
+        if not item.original_key or not media.private_path(storage_root(), item.original_key).is_file():
+            raise ConflictError("原件已不可用，无法重新压缩，请删除后重新投稿")
+        item.state, item.attempts, item.lease_until = "uploaded", 0, None
+    elif payload.action == "republish":
+        if item.state != "ready" or item.publication_status != "offline":
+            raise ConflictError("只能重新上架已下架的素材，请刷新")
+        require_processed_files(item)
+        item.publication_status = "published"
+    elif payload.action == "reopen":
+        if item.state != "ready" or item.publication_status != "excluded":
+            raise ConflictError("只能将未通过且压缩完成的素材放回待审核")
+        require_processed_files(item)
+        item.publication_status = "unreviewed"
     sync_review_status(memory, items)
 
 
 def review(db, memory_id, actor, payload):
-    if not get_settings().memory_publish_enabled and payload.action == "publish":
+    if not get_settings().memory_publish_enabled and payload.action in {"publish", "republish"}:
         raise AppError("MEMORY_PUBLISH_DISABLED", "记忆发布尚未开放", 503)
     memory = get_memory(db, memory_id, True)
     if memory.revision != payload.expected_revision:
         raise ConflictError("审核内容已变化，请刷新")
     items = assets(db, memory.id)
     selected = set(payload.selected_media_ids)
+    if payload.action in {"retry", "republish", "reopen"} and not payload.individual:
+        raise ConflictError("请选择单个资源操作")
     if payload.individual:
         if not db.get(User, memory.user_id):
             raise ConflictError("投稿人资料已变化，请重新检查")
@@ -429,7 +468,7 @@ def cleanup_preview(db, memory_id, media_id=None):
         if not item:
             raise NotFoundError("素材不存在")
         allowed = item.state == "cleaned" or (
-            memory.status not in {"draft", "processing", "cancelled", "cleaned"} and
+            memory.status in SUBMITTED_STATUSES and
             (item.publication_status in {"excluded", "offline"} or item.state == "failed")) or (
             memory.status == "draft" and memory.expires_at <= app_now())
         return {"id": memory.id, "media_id": item.id, "status": memory.status,

@@ -1,5 +1,6 @@
 @import "../../styles/memory.wxss";
 @import "../../styles/memoryMedia.wxss";
+@import "../../styles/memorySheet.wxss";
 .review-filter {
   display: flex;
   align-items: center;
@@ -10,10 +11,52 @@
   padding: 0;
   background: transparent;
 }
+.review-title-copy {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
 .review-filter image {
+  position: absolute;
+  left: 100%;
+  margin-left: 7.69231rpx;
+  top: 50%;
   width: 23.07692rpx;
   height: 23.07692rpx;
-  transform: rotate(90deg);
+  transform: translateY(-50%) rotate(90deg);
+}
+.review-filter text {
+  font-size: 20px;
+  line-height: 1.4;
+  font-weight: 700;
+  color: #000000;
+}
+.review-status-menu {
+  height: auto;
+  max-height: 85vh;
+  padding: 0;
+}
+.review-status-options {
+  width: 100%;
+  flex: none;
+}
+.review-status-option,
+.review-status-cancel {
+  height: 100rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  font-size: 34.61538rpx;
+  line-height: 1.2;
+}
+.review-status-option {
+  border-bottom: 1rpx solid #e5e7eb;
+}
+.review-status-cancel {
+  height: 112rpx;
+  flex: none;
+  border-top: 12rpx solid #f5f5f5;
 }
 .review-stage {
   position: relative;

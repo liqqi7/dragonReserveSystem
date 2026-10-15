@@ -7,6 +7,39 @@
     <slider class="viewer-progress-input" min="0" max="1000" step="1" value="{{progress * 10}}" block-size="16" bindchanging="seekChanging" bindchange="seekChanged" aria-label="播放进度" />
   </view>
 </template>
+<template name="memory-portrait-seek">
+  <view class="portrait-seek {{seeking ? 'portrait-seek--active' : ''}}" aria-hidden="{{!seeking}}">
+    <view class="portrait-seek-time"><text>{{seekCurrentLabel}}</text><text class="portrait-seek-divider">/</text><text class="portrait-seek-duration">{{seekDurationLabel}}</text></view>
+    <view class="portrait-seek-track"><view class="portrait-seek-played" style="width:{{progress}}%;" /><view class="portrait-seek-thumb" style="left:{{progress < 1.2 ? 1.2 : progress > 98.8 ? 98.8 : progress}}%;" /></view>
+  </view>
+  <view class="portrait-progress {{progressVisible && !seeking ? 'portrait-progress--visible' : ''}}" aria-hidden="{{!progressVisible || seeking}}"><view class="portrait-progress-track" /><view class="portrait-progress-played" style="width:{{progress}}%;" /><view class="portrait-progress-thumb" style="left:{{progress < 1.2 ? 1.2 : progress > 98.8 ? 98.8 : progress}}%;" /></view>
+</template>
+<template name="memory-portrait-bottom">
+  <horizontal-drag-gesture-handler worklet:should-accept-gesture="portraitSeekAllowed" worklet:ongesture="portraitVideoDrag">
+    <view class="viewer-bottom">
+      <view class="viewer-bottom-shade {{seeking && !admin ? 'viewer-bottom-shade--seeking' : ''}}" />
+      <view wx:if="{{current.kind === 'video' && active}}" class="viewer-seek-region" style="bottom:{{bottom + (admin ? 142.30769 : 3.84615)}}rpx;" bindtouchstart="portraitTouchStart" />
+      <view class="viewer-info {{seeking ? 'viewer-info--seeking' : ''}}" style="bottom:{{bottom + (admin ? (current.kind === 'video' ? 169.23077 : 221.15385) : 30.76923)}}rpx;" aria-hidden="{{seeking}}" bindtouchstart="portraitTouchStart" data-media-id="{{current.id}}">
+        <view class="viewer-copy">
+          <view class="viewer-author"><image src="{{memory.author.avatar_url}}" mode="aspectFill" /><text max-lines="1" overflow="ellipsis">{{memory.author.nickname}}</text><view class="viewer-tools"><button size="mini" wx:if="{{!admin}}" class="viewer-share" open-type="share" disabled="{{!active}}" aria-label="分享记忆"><image src="/images/memory-share.svg" /></button><button size="mini" wx:if="{{current.kind === 'video'}}" class="viewer-enter-fullscreen" bindtap="enterFullScreen" disabled="{{!active}}" aria-label="横屏播放"><image src="/images/memory-fullscreen.svg" /></button></view></view>
+          <text wx:if="{{memory.caption}}" class="viewer-caption">{{memory.caption}}</text>
+          <view wx:if="{{memory.activity_name}}" class="viewer-meta viewer-meta--activity"><image src="/images/memory-flag.svg" /><text class="viewer-activity-name" max-lines="1" overflow="ellipsis">{{memory.activity_name}}</text><text wx:if="{{memory.activityTime}}" class="viewer-activity-divider">丨</text><text wx:if="{{memory.activityTime}}" class="viewer-activity-time">{{memory.activityTime}}</text></view>
+          <view wx:if="{{!admin && memory.location_name}}" class="viewer-meta"><image src="/images/memory-location.svg" /><text max-lines="2" overflow="ellipsis">{{memory.location_name}}</text></view>
+        </view>
+      </view>
+      <view wx:if="{{current.kind === 'video' && active}}" class="viewer-portrait-timeline" style="bottom:{{bottom + (admin ? 142.30769 : 3.84615)}}rpx;">
+        <template is="memory-portrait-seek" data="{{progress,seeking,progressVisible,seekCurrentLabel,seekDurationLabel}}" />
+      </view>
+      <view wx:if="{{admin}}" class="viewer-footer" style="bottom:{{bottom + (current.kind === 'video' ? 30.76923 : 38.46154)}}rpx;">
+        <view wx:if="{{memory.status === 'pending'}}" class="memory-actions"><button class="viewer-reject" data-action="reject" bindtap="askReview" disabled="{{busy || !active}}">不通过</button><button class="viewer-approve" bindtap="approve" disabled="{{busy || !active}}">通过</button></view>
+        <button wx:elif="{{memory.status === 'published'}}" class="memory-danger" data-action="offline" bindtap="askReview" disabled="{{busy || !active}}">下架</button>
+        <button wx:elif="{{memory.status === 'offline'}}" class="primary" data-action="republish" bindtap="askReview" disabled="{{busy || !active}}">重新上架</button>
+        <button wx:elif="{{memory.status === 'failed'}}" class="primary" data-action="retry" bindtap="askReview" disabled="{{busy || !active}}">重新压缩</button>
+        <button wx:elif="{{memory.status === 'rejected'}}" class="primary" data-action="reopen" bindtap="askReview" disabled="{{busy || !active}}">重新审核</button>
+      </view>
+    </view>
+  </horizontal-drag-gesture-handler>
+</template>
 <template name="memory-fullscreen">
   <view class="viewer-fullscreen">
     <horizontal-drag-gesture-handler worklet:ongesture="videoDrag">
