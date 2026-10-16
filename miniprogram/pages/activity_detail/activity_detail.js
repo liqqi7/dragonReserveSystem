@@ -144,7 +144,7 @@ Page({
     showSignupProfileModal: false,
     signupProfileNickname: "",
     signupProfileAvatarUrl: "",
-    signupProfileHint: "请修改昵称和头像后再进行报名",
+    signupProfileHint: "以下内容将公开展示，上传即视为同意",
     signupProfileCanSubmit: false
   },
 
@@ -265,7 +265,7 @@ Page({
         showSignupProfileModal: true,
         signupProfileNickname: nick,
         signupProfileAvatarUrl: normalizeProfileAvatarForModal(avatarRaw),
-        signupProfileHint: "请修改昵称和头像后再进行报名"
+        signupProfileHint: "以下内容将公开展示，上传即视为同意"
       },
       () => this.updateSignupProfileValidation()
     );

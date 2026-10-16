@@ -330,38 +330,18 @@
     bindremove="removeParticipant"
   />
 
-  <view wx:if="{{showSignupProfileModal}}" class="signup-profile-overlay" catchtouchmove="stopPropagation">
-    <view class="signup-profile-modal-bg" bindtap="closeSignupProfileModal"></view>
-    <view class="signup-profile-modal-sheet" catchtap="stopPropagation" catchtouchmove="stopPropagation">
-      <view class="signup-profile-modal-header">
-        <view class="signup-profile-modal-title-wrap">
-          <image class="signup-profile-modal-title-icon" src="/images/icon-message-square-text.svg" mode="aspectFit" aria-hidden="true" />
-          <text class="signup-profile-modal-title">修改个人资料</text>
-          <view class="signup-profile-modal-title-spacer" aria-hidden="true" />
-        </view>
-      </view>
-      <view class="signup-profile-modal-body">
-        <view class="signup-profile-hint">{{signupProfileHint}}</view>
-        <view class="signup-profile-form-row">
-          <view class="signup-profile-label">头像</view>
-          <view class="signup-profile-avatar-wrap">
-            <button class="signup-profile-avatar-btn" bindtap="onSignupProfileChooseAvatar">
-              <image wx:if="{{signupProfileAvatarUrl}}" class="signup-profile-avatar-img" src="{{signupProfileAvatarUrl}}" mode="aspectFill" />
-              <view wx:else class="signup-profile-avatar-placeholder"><image src="/images/icon-avatar-user-round.svg" mode="aspectFit" /></view>
-            </button>
-          </view>
-        </view>
-        <view class="signup-profile-form-item">
-          <view class="signup-profile-label">昵称</view>
-          <input type="text" class="signup-profile-input" placeholder="请输入昵称" placeholder-style="color:#9CA3AF;" value="{{signupProfileNickname}}" bindinput="onSignupProfileNicknameInput" />
-        </view>
-      </view>
-      <view class="signup-profile-modal-footer">
-        <button class="signup-profile-btn signup-profile-btn-default" bindtap="closeSignupProfileModal">取消</button>
-        <button class="signup-profile-btn signup-profile-btn-primary {{!signupProfileCanSubmit ? 'signup-profile-btn-disabled' : ''}}" bindtap="saveSignupProfile" disabled="{{!signupProfileCanSubmit}}">保存</button>
-      </view>
-    </view>
-  </view>
+  <profile-editor-dialog
+    visible="{{showSignupProfileModal}}"
+    avatar-url="{{signupProfileAvatarUrl}}"
+    nickname="{{signupProfileNickname}}"
+    hint="{{signupProfileHint}}"
+    save-disabled="{{!signupProfileCanSubmit}}"
+    z-index="1300"
+    bind:close="closeSignupProfileModal"
+    bind:chooseavatar="onSignupProfileChooseAvatar"
+    bind:nicknameinput="onSignupProfileNicknameInput"
+    bind:save="saveSignupProfile"
+  />
 </view>
 
 <create-access-dialog id="signup-login-dialog" bind:confirm="onSignupLoginConfirm" />

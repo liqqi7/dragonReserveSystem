@@ -23,11 +23,6 @@ from app.utils.media import resolve_media_root
 SUBMITTED_STATUSES = ("processing", "pending", "published", "rejected", "offline", "failed")
 
 
-def enabled():
-    if not get_settings().memory_enabled:
-        raise AppError("MEMORY_DISABLED", "记忆功能暂未开放", 503)
-
-
 def member(actor):
     if actor.role not in {"user", "admin"}:
         raise PermissionDeniedError("成员和管理员才可投稿")
@@ -415,8 +410,6 @@ def review_individual(memory, items, payload):
 
 
 def review(db, memory_id, actor, payload):
-    if not get_settings().memory_publish_enabled and payload.action in {"publish", "republish"}:
-        raise AppError("MEMORY_PUBLISH_DISABLED", "记忆发布尚未开放", 503)
     memory = get_memory(db, memory_id, True)
     if memory.revision != payload.expected_revision:
         raise ConflictError("审核内容已变化，请刷新")

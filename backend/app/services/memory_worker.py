@@ -15,7 +15,6 @@ logger = logging.getLogger("dragon.reserve")
 
 
 def process_one(db):
-    service.enabled()
     now = app_now()
     item = db.scalar(select(MemoryMedia).join(Memory).where(Memory.status.in_(service.SUBMITTED_STATUSES),
         MemoryMedia.publication_status == "unreviewed",

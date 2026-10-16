@@ -98,34 +98,50 @@ test("prototype dialog style and empty-avatar placeholder match their canvas geo
   assert.match(detailMarkup, /id="exit-activity-dialog" bind:confirm="confirmExitActivity"/);
   const profileMarkup = source("pages/profile/profile.wxml");
   const profileStyles = source("pages/profile/profile.wxss");
+  const profileConfig = JSON.parse(source("pages/profile/profile.json"));
+  const detailConfig = JSON.parse(source("pages/activity_detail/activity_detail.json"));
+  const profileDialog = source("components/profile-editor-dialog/index.wxml");
+  const profileDialogLogic = source("components/profile-editor-dialog/index.js");
+  const profileDialogStyles = stylesSource("components/profile-editor-dialog/index.wxss");
   const avatarIcon = source("images/icon-avatar-user-round.svg");
-  assert.match(detailMarkup, /class="signup-profile-avatar-placeholder"><image src="\/images\/icon-avatar-user-round\.svg"/);
-  assert.match(detailMarkup, /class="signup-profile-avatar-img"[^>]*mode="aspectFill"/);
-  assert.match(detailStyles, /\.signup-profile-avatar-btn\s*\{[^}]*width:\s*76\.92308rpx !important;[^}]*border-radius:\s*38\.46154rpx;[^}]*overflow:\s*hidden;/s);
-  assert.match(detailStyles, /\.signup-profile-avatar-placeholder image\s*\{\s*width:\s*30\.76923rpx;\s*height:\s*30\.76923rpx;/);
-  assert.match(profileMarkup, /class="modal-title-icon" src="\/images\/icon-message-square-text\.svg"/);
-  assert.doesNotMatch(profileMarkup, /class="close-btn"/);
-  assert.doesNotMatch(profileMarkup, /forceProfile|force-profile-hint/);
-  assert.match(profileMarkup, /class="avatar-edit-placeholder"><image src="\/images\/icon-avatar-user-round\.svg"/);
-  assert.match(profileStyles, /\.modal-overlay\s*\{[^}]*background:\s*rgba\(0, 0, 0, 0\.4\)/s);
-  assert.match(profileStyles, /\.modal-content\s*\{[^}]*width:\s*76\.923%;[^}]*border-radius:\s*30\.76923rpx;/s);
-  const editOverlay = profileStyles.match(/\.modal-overlay\s*\{([^}]*)\}/)?.[1] || "";
-  const editDialog = profileStyles.match(/\.modal-content\s*\{([^}]*)\}/)?.[1] || "";
-  assert.match(editOverlay, /position:\s*fixed;[\s\S]*top:\s*0;[\s\S]*bottom:\s*0;[\s\S]*align-items:\s*center;[\s\S]*justify-content:\s*center;/);
-  assert.doesNotMatch(editDialog, /transform:|top:|margin-top:/);
-  const signupOverlay = detailStyles.match(/\.signup-profile-overlay\s*\{([^}]*)\}/)?.[1] || "";
-  const signupDialogBlocks = [...detailStyles.matchAll(/\.signup-profile-modal-sheet\s*\{([^}]*)\}/g)];
-  assert.match(signupOverlay, /position:\s*fixed;[\s\S]*top:\s*0;[\s\S]*bottom:\s*0;[\s\S]*align-items:\s*center;[\s\S]*justify-content:\s*center;/);
-  assert.ok(signupDialogBlocks.length > 0);
-  for (const [, block] of signupDialogBlocks) assert.doesNotMatch(block, /transform:|top:|margin-top:/);
+  assert.equal(profileConfig.usingComponents["profile-editor-dialog"], "../../components/profile-editor-dialog/index");
+  assert.equal(detailConfig.usingComponents["profile-editor-dialog"], "../../components/profile-editor-dialog/index");
+  assert.match(profileMarkup, /<profile-editor-dialog[\s\S]*visible="\{\{showEditModal\}\}"[\s\S]*avatar-url="\{\{editAvatarUrl\}\}"[\s\S]*nickname="\{\{editNickname\}\}"[\s\S]*bind:chooseavatar="onChooseAvatar"[\s\S]*bind:nicknameinput="onInputNickname"[\s\S]*bind:save="saveProfile"/);
+  assert.match(detailMarkup, /<profile-editor-dialog[\s\S]*visible="\{\{showSignupProfileModal\}\}"[\s\S]*avatar-url="\{\{signupProfileAvatarUrl\}\}"[\s\S]*nickname="\{\{signupProfileNickname\}\}"[\s\S]*save-disabled="\{\{!signupProfileCanSubmit\}\}"[\s\S]*z-index="1300"[\s\S]*bind:chooseavatar="onSignupProfileChooseAvatar"[\s\S]*bind:nicknameinput="onSignupProfileNicknameInput"[\s\S]*bind:save="saveSignupProfile"/);
+  assert.match(profileDialogLogic, /hint:\s*\{\s*type:\s*String,\s*value:\s*"以下内容将公开展示，上传即视为同意"/);
+  assert.match(profileDialog, /bindtap="close"/);
+  assert.match(profileDialog, /bindtap="chooseAvatar"/);
+  assert.match(profileDialog, /bindinput="inputNickname"/);
+  assert.match(profileDialog, /bindtap="save" disabled="\{\{saveDisabled\}\}"/);
+  assert.match(profileDialogStyles, /\.profile-editor-overlay\s*\{[^}]*position:\s*fixed;[\s\S]*align-items:\s*center;[\s\S]*justify-content:\s*center;/);
+  assert.match(profileDialogStyles, /\.profile-editor-dialog\s*\{[^}]*width:\s*76\.923%;[^}]*border-radius:\s*30\.76923rpx;/s);
+  assert.doesNotMatch(profileStyles, /\.modal-overlay|\.avatar-edit-/);
+  assert.doesNotMatch(detailStyles, /\.signup-profile-/);
+  assert.doesNotMatch(profileMarkup, /class="close-btn"|forceProfile|force-profile-hint/);
+  assert.match(profileDialog, /class="profile-editor-avatar-placeholder"><image src="\/images\/icon-avatar-user-round\.svg"/);
   const sharedDialogStyles = stylesSource("components/create-access-dialog/index.wxss");
   assert.match(sharedDialogStyles, /\.create-access-dialog-overlay\s*\{[^}]*position:\s*fixed;[\s\S]*top:\s*0;[\s\S]*bottom:\s*0;[\s\S]*align-items:\s*center;[\s\S]*justify-content:\s*center;/);
-  assert.match(profileStyles, /\.avatar-edit-wrap,[^}]*border-radius:\s*38\.46154rpx;/s);
-  assert.match(profileStyles, /button\.avatar-edit-btn\s*\{[^}]*width:\s*76\.92308rpx;[^}]*overflow:\s*hidden;/s);
-  assert.match(profileStyles, /\.avatar-edit-placeholder image\s*\{[^}]*width:\s*30\.76923rpx;[^}]*height:\s*30\.76923rpx;/s);
   assert.match(avatarIcon, /stroke="#9CA3AF"/);
   assert.match(avatarIcon, /<circle cx="12" cy="8" r="5"\s*\/>/);
   assert.match(avatarIcon, /<path d="M20 21a8 8 0 0 0-16 0"\s*\/>/);
+});
+
+test("shared profile editor forwards each user action to its page", () => {
+  let definition;
+  vm.runInNewContext(source("components/profile-editor-dialog/index.js"), {
+    Component: (value) => { definition = value; }
+  });
+  const events = [];
+  const dialog = {
+    ...definition.methods,
+    triggerEvent: (name, detail) => events.push({ name, detail })
+  };
+  dialog.close();
+  dialog.chooseAvatar();
+  dialog.inputNickname({ detail: { value: "小明" } });
+  dialog.save();
+  assert.deepEqual(events.map(({ name }) => name), ["close", "chooseavatar", "nicknameinput", "save"]);
+  assert.equal(events[2].detail.value, "小明");
 });
 test("prototype dialog confirmation dispatches re-login and exit exactly once", () => {
   let definition;

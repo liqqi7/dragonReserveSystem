@@ -1,0 +1,187 @@
+.profile-editor-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-editor-mask {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.profile-editor-dialog {
+  position: relative;
+  z-index: 1;
+  width: 76.923%;
+  max-height: 80vh;
+  padding: 38.46154rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 30.76923rpx;
+  background: #ffffff;
+  border-radius: 30.76923rpx;
+  box-shadow: 0 19.23077rpx 53.84615rpx rgba(0, 0, 0, 0.15);
+}
+
+.profile-editor-intro {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 23.07692rpx;
+}
+
+.profile-editor-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15.38462rpx;
+}
+
+.profile-editor-title-icon {
+  width: 34.61538rpx;
+  height: 34.61538rpx;
+  flex: none;
+}
+
+.profile-editor-title {
+  color: #111827;
+  font-size: 30.76923rpx;
+  font-weight: 700;
+  line-height: 34.61538rpx;
+}
+
+.profile-editor-hint {
+  width: 100%;
+  color: #4b5563;
+  font-size: 26.92308rpx;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.profile-editor-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 23.07692rpx;
+  min-height: 0;
+}
+
+.profile-editor-avatar-row {
+  height: 76.92308rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-editor-label {
+  color: #4b5563;
+  font-size: 26.92308rpx;
+  line-height: 38.46154rpx;
+}
+
+.profile-editor-avatar-button,
+.profile-editor-avatar-image,
+.profile-editor-avatar-placeholder {
+  width: 76.92308rpx;
+  height: 76.92308rpx;
+  border-radius: 38.46154rpx;
+}
+
+.profile-editor-avatar-button {
+  flex: none;
+  min-width: 76.92308rpx;
+  min-height: 76.92308rpx;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 1.92308rpx solid #e5e7eb;
+  background: #f9fafb;
+  line-height: 0;
+}
+
+.profile-editor-avatar-button::after,
+.profile-editor-button::after {
+  border: none;
+}
+
+.profile-editor-avatar-image {
+  display: block;
+}
+
+.profile-editor-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.profile-editor-avatar-placeholder image {
+  width: 30.76923rpx;
+  height: 30.76923rpx;
+  display: block;
+}
+
+.profile-editor-nickname-field {
+  display: flex;
+  flex-direction: column;
+  gap: 11.53846rpx;
+}
+
+.profile-editor-input {
+  width: 100%;
+  height: 84.61538rpx;
+  padding: 0 23.07692rpx;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 23.07692rpx;
+  background: #f5f5f5;
+  color: #111827;
+  font-size: 26.92308rpx;
+}
+
+.profile-editor-actions {
+  display: flex;
+  gap: 23.07692rpx;
+}
+
+.profile-editor-button {
+  width: 0;
+  height: 84.61538rpx;
+  flex: 1;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 23.07692rpx;
+  font-size: 26.92308rpx;
+  font-weight: 600;
+  line-height: 84.61538rpx;
+  box-sizing: border-box;
+}
+
+.profile-editor-button-cancel {
+  background: #f5f5f5;
+  color: #4b5563;
+}
+
+.profile-editor-button-save {
+  background: #ff9800;
+  color: #ffffff;
+}
+
+.profile-editor-button-disabled {
+  opacity: 0.45;
+}

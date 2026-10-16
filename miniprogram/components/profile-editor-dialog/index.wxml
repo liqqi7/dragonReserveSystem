@@ -1,0 +1,39 @@
+<view wx:if="{{visible}}" class="profile-editor-overlay" style="z-index: {{zIndex}};" catchtouchmove="stopPropagation">
+  <view class="profile-editor-mask" bindtap="close"></view>
+  <view class="profile-editor-dialog" catchtap="stopPropagation" catchtouchmove="stopPropagation" aria-role="dialog" aria-label="修改个人资料">
+    <view class="profile-editor-intro">
+      <view class="profile-editor-title-row">
+        <image class="profile-editor-title-icon" src="/images/icon-message-square-text.svg" mode="aspectFit" />
+        <text class="profile-editor-title">修改个人资料</text>
+      </view>
+      <text class="profile-editor-hint">{{hint}}</text>
+    </view>
+
+    <view class="profile-editor-fields">
+      <view class="profile-editor-avatar-row">
+        <text class="profile-editor-label">头像</text>
+        <button class="profile-editor-avatar-button" bindtap="chooseAvatar" aria-role="button" aria-label="修改头像">
+          <image wx:if="{{avatarUrl}}" class="profile-editor-avatar-image" src="{{avatarUrl}}" mode="aspectFill" />
+          <view wx:else class="profile-editor-avatar-placeholder"><image src="/images/icon-avatar-user-round.svg" mode="aspectFit" /></view>
+        </button>
+      </view>
+
+      <view class="profile-editor-nickname-field">
+        <text class="profile-editor-label">昵称</text>
+        <input
+          type="text"
+          class="profile-editor-input"
+          placeholder="请输入昵称"
+          placeholder-style="color:#9CA3AF;"
+          value="{{nickname}}"
+          bindinput="inputNickname"
+        />
+      </view>
+    </view>
+
+    <view class="profile-editor-actions">
+      <button class="profile-editor-button profile-editor-button-cancel" bindtap="close">取消</button>
+      <button class="profile-editor-button profile-editor-button-save {{saveDisabled ? 'profile-editor-button-disabled' : ''}}" bindtap="save" disabled="{{saveDisabled}}">保存</button>
+    </view>
+  </view>
+</view>

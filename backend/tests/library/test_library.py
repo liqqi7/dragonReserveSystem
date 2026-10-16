@@ -149,7 +149,13 @@ def test_detail_for_nonowner_and_inactive_library_entries(library):
     assert client.get(f"/api/v1/boardgame-inventory?game_id={result['game_id']}").json()['items'] == []
 
 
-def test_public_browsing_is_anonymous_but_inventory_and_intake_remain_member_only(library):
+def test_public_browsing_is_anonymous_but_inventory_and_intake_remain_member_only(library, monkeypatch):
+    # This is a permission regression, not a live upstream availability check.
+    def image_gallery(url, **kwargs):
+        assert url == "https://api.geekdo.com/api/images"
+        return httpx.Response(200, json={"images": []}, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr("app.services.boardgame_images.httpx.get", image_gallery)
     client, db, actor, other, factory, app = library
     result = post(client, '/boardgame-intakes', payload(ready(library))).json()
     game_id = result['game_id']

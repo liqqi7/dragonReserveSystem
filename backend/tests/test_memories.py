@@ -17,8 +17,7 @@ from app.services import memory_media, memory_service, memory_worker
 @pytest.fixture(autouse=True)
 def memory_settings(monkeypatch, tmp_path, db_session):
     settings = get_settings()
-    for key, value in dict(memory_enabled=True, memory_publish_enabled=True,
-        memory_storage_root=str(tmp_path / "private"), memory_capacity_bytes=1024**3,
+    for key, value in dict(memory_storage_root=str(tmp_path / "private"), memory_capacity_bytes=1024**3,
         memory_min_free_bytes=0, memory_media_signing_key="s" * 64,
         wechat_app_id="test-app", public_base_url="https://example.test").items():
         monkeypatch.setattr(settings, key, value)
@@ -58,9 +57,22 @@ def prepared(client, headers, db, count=1):
     return memory, items
 
 
-def test_feature_disabled(client, user_headers, monkeypatch):
-    monkeypatch.setattr(get_settings(), "memory_enabled", False)
-    assert client.get("/api/v1/memories").status_code == 503
+def test_memory_does_not_require_feature_flags(client, user_headers, admin_headers, monkeypatch):
+    from app.core.config import Settings
+
+    # Old deployment variables must no longer gate the API or define settings fields.
+    monkeypatch.setenv("MEMORY_ENABLED", "false")
+    monkeypatch.setenv("MEMORY_PUBLISH_ENABLED", "false")
+    settings = Settings(_env_file=None)
+    assert not hasattr(settings, "memory_enabled")
+    assert not hasattr(settings, "memory_publish_enabled")
+    for url in ("/api/v1/memories", "/api/v1/memories?individual=true"):
+        response = client.get(url)
+        assert response.status_code == 200, response.text
+        assert response.json()["items"] == []
+    assert client.get("/api/v1/admin/memories", headers=admin_headers).status_code == 200
+    draft, _ = make_draft(client, user_headers)
+    assert draft["status"] == "draft"
 
 
 def test_individual_review_list_exposes_every_file(client, user_headers, admin_headers, db_session):
@@ -187,7 +199,7 @@ def test_retry_mixed_submission_preserves_public_and_cleaned_siblings(client, us
 
 @pytest.mark.parametrize("count", [1, 2])
 def test_republish_restores_only_offline_file_and_delete_removes_actual_files(client, user_headers, admin_headers,
-                                                                            db_session, monkeypatch, count):
+                                                                            db_session, count):
     memory, items = prepared(client, user_headers, db_session, count=count)
     for item in items:
         assert individual_action(client, admin_headers, memory, item, "publish").status_code == 200
@@ -200,9 +212,6 @@ def test_republish_restores_only_offline_file_and_delete_removes_actual_files(cl
     assert client.get(f"/api/v1/memory-media/{item.id}").status_code == 404
     assert individual_action(client, user_headers, memory, item, "republish").status_code == 403
     assert individual_action(client, admin_headers, memory, item, "republish", expected_revision=999).status_code == 409
-    monkeypatch.setattr(get_settings(), "memory_publish_enabled", False)
-    assert individual_action(client, admin_headers, memory, item, "republish").status_code == 503
-    monkeypatch.setattr(get_settings(), "memory_publish_enabled", True)
     result = individual_action(client, admin_headers, memory, item, "republish")
     assert result.status_code == 200, result.text
     assert item.publication_status == "published" and memory.status == "published"

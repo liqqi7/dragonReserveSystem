@@ -52,8 +52,13 @@ test("newly migrated tab pages avoid WebView-only layout rules", () => {
 
 test("profile form and prompt dialogs keep native inputs in non-collapsing containers", () => {
   const wxml = readPage("profile", "wxml");
-  assert.equal((wxml.match(/<view class="modal-body">/g) || []).length, 1);
-  assert.doesNotMatch(wxml, /<scroll-view class="modal-body"/);
+  const profileDialog = fs.readFileSync(
+    path.join(__dirname, "../components/profile-editor-dialog/index.wxml"),
+    "utf8"
+  );
+  assert.match(wxml, /<profile-editor-dialog\b/);
+  assert.match(profileDialog, /<view class="profile-editor-fields">[\s\S]*?<input[\s\S]*?value="\{\{nickname\}\}"/);
+  assert.doesNotMatch(profileDialog, /<scroll-view[^>]*class="profile-editor-fields"/);
   assert.match(wxml, /<view[\s\S]*?class="permission-dialog"[\s\S]*?<input[\s\S]*?value="\{\{permissionInput\}\}"[\s\S]*?bindinput="onPermissionInput"/);
 });
 

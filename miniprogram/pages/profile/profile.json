@@ -4,6 +4,7 @@
   "navigationStyle": "custom",
   "disableScroll": true,
   "usingComponents": {
-    "create-access-dialog": "../../components/create-access-dialog/index"
+    "create-access-dialog": "../../components/create-access-dialog/index",
+    "profile-editor-dialog": "../../components/profile-editor-dialog/index"
   }
 }

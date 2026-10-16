@@ -149,9 +149,8 @@ Page({
         this.setData({ memoryPendingCount: Number(result.pending_count) || 0 });
       }
     } catch (error) {
-      if (generation === this._memoryRequest && error && error.body && error.body.code === "MEMORY_DISABLED") {
-        this.setData({ isMemoryAdmin: false });
-      }
+      // A failed badge request must not hide the role-based review entry.
+      logPageError("refresh_memory_review_state", error);
     }
   },
 

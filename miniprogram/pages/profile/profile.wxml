@@ -142,44 +142,15 @@
     </view>
   </view>
 
-  <!-- 编辑资料弹窗 -->
-  <view wx:if="{{showEditModal}}" class="modal-overlay" bindtap="closeEditModal">
-    <view class="modal-content" catchtap="stopTap">
-      <view class="modal-header">
-        <image class="modal-title-icon" src="/images/icon-message-square-text.svg" mode="aspectFit" aria-hidden="true" />
-        <text class="modal-title">修改个人资料</text>
-        <view class="modal-title-spacer" aria-hidden="true" />
-      </view>
-
-      <view class="modal-body">
-        <view class="form-item avatar-form-row">
-          <view class="label"><text>头像</text></view>
-          <view class="avatar-edit-wrap">
-            <button class="avatar-edit-btn" bindtap="onChooseAvatar">
-              <image wx:if="{{editAvatarUrl}}" class="avatar-edit-img" src="{{editAvatarUrl}}" mode="aspectFill" />
-              <view wx:else class="avatar-edit-placeholder"><image src="/images/icon-avatar-user-round.svg" mode="aspectFit" /></view>
-            </button>
-          </view>
-        </view>
-        <view class="form-item">
-          <view class="label"><text>昵称</text></view>
-          <input
-            type="text"
-            class="input"
-            placeholder="请输入昵称"
-            placeholder-style="color:#9CA3AF;"
-            value="{{editNickname}}"
-            bindinput="onInputNickname"
-          />
-        </view>
-      </view>
-
-      <view class="modal-footer">
-        <button class="btn default" bindtap="closeEditModal"><text>取消</text></button>
-        <button class="btn primary" bindtap="saveProfile"><text>保存</text></button>
-      </view>
-    </view>
-  </view>
+  <profile-editor-dialog
+    visible="{{showEditModal}}"
+    avatar-url="{{editAvatarUrl}}"
+    nickname="{{editNickname}}"
+    bind:close="closeEditModal"
+    bind:chooseavatar="onChooseAvatar"
+    bind:nicknameinput="onInputNickname"
+    bind:save="saveProfile"
+  />
 </view>
 
 <create-access-dialog id="create-access-dialog" />

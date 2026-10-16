@@ -9,6 +9,7 @@ const source = relative => fs.readFileSync(path.join(root, relative), "utf8");
 const shared = readWxss(path.join(root, "styles/centeredDialog.wxss"));
 const dialog = source("components/create-access-dialog/index.wxss");
 const profile = source("pages/profile/profile.wxss");
+const profileEditor = source("components/profile-editor-dialog/index.wxss");
 
 test("both dialog surfaces import the shared styles before their local overrides", () => {
   for (const relative of ["components/create-access-dialog/index.wxss", "pages/profile/profile.wxss"]) {
@@ -59,7 +60,7 @@ test("danger colors, mask variants and permission-only controls remain intact", 
   assert.doesNotMatch(shared, /permission-dialog-input|permission-dialog-button--disabled|overlay--prototype|overlay--strong/);
 });
 
-const titleStyles = source("styles/dialogTitle.wxss");
+const titleStyles = source("styles/dialogTitle.wxss") + profileEditor;
 function titleRule(selector) {
   const rule = titleStyles.match(new RegExp(`\\.${selector}(?=\\s*[,\\{])[^\\{]*\\{([^}]+)\\}`));
   assert.ok(rule, selector);
@@ -67,8 +68,7 @@ function titleRule(selector) {
 }
 
 test("every custom centered dialog uses one full-width centered title layout", () => {
-  for (const selector of ["permission-dialog-title-row", "create-access-dialog-title-row",
-    "modal-header", "signup-profile-modal-title-wrap"]) {
+  for (const selector of ["permission-dialog-title-row", "create-access-dialog-title-row"]) {
     const rule = titleRule(selector);
     assert.match(rule, /width:\s*100%;/);
     assert.match(rule, /flex-direction:\s*row;/);
@@ -76,6 +76,7 @@ test("every custom centered dialog uses one full-width centered title layout", (
     assert.match(rule, /gap:\s*15\.38462rpx;/);
   }
   assert.match(source("styles/centeredDialog.wxss"), /^@import "\.\/dialogTitle\.wxss";/);
+  assert.match(profileEditor, /\.profile-editor-title-row\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;[^}]*gap:\s*15\.38462rpx;/s);
   assert.match(source("pages/activity_detail/activity_detail.wxss"), /@import "\.\.\/\.\.\/styles\/dialogTitle\.wxss";/);
 });
 
@@ -83,8 +84,6 @@ test("invisible right spacers exactly mirror the nonshrinking left icons", () =>
   for (const [icon, spacer] of [
     ["permission-dialog-icon", "permission-dialog-title-spacer"],
     ["create-access-dialog-icon", "create-access-dialog-title-spacer"],
-    ["modal-title-icon", "modal-title-spacer"],
-    ["signup-profile-modal-title-icon", "signup-profile-modal-title-spacer"],
   ]) {
     assert.equal(titleRule(icon), titleRule(spacer));
     assert.match(titleRule(icon), /width:\s*34\.61538rpx;\s*height:\s*34\.61538rpx;\s*flex:\s*none;/);
@@ -95,17 +94,16 @@ test("title markup keeps the icon left and an aria-hidden equal spacer right", (
   for (const [relative, icon, title, spacer, count] of [
     ["components/create-access-dialog/index.wxml", "create-access-dialog-icon", "create-access-dialog-title", "create-access-dialog-title-spacer", 1],
     ["pages/profile/profile.wxml", "permission-dialog-icon", "permission-dialog-title", "permission-dialog-title-spacer", 2],
-    ["pages/profile/profile.wxml", "modal-title-icon", "modal-title", "modal-title-spacer", 1],
-    ["pages/activity_detail/activity_detail.wxml", "signup-profile-modal-title-icon", "signup-profile-modal-title", "signup-profile-modal-title-spacer", 1],
   ]) {
     const markup = source(relative);
     const pattern = new RegExp(`<image[^>]*class="${icon}"[^>]*>[\\s\\S]*?<text class="${title}">[\\s\\S]*?<\\/text>\\s*<view class="${spacer}" aria-hidden="true" \\/>`, "g");
     assert.equal([...markup.matchAll(pattern)].length, count, relative + " " + title);
   }
+  assert.match(source("components/profile-editor-dialog/index.wxml"), /class="profile-editor-title-icon"[\s\S]*?<text class="profile-editor-title">修改个人资料<\/text>/);
 });
 
 test("long titles can wrap without shrinking the icon or shifting the center", () => {
-  for (const title of ["permission-dialog-title", "create-access-dialog-title", "modal-title", "signup-profile-modal-title"]) {
+  for (const title of ["permission-dialog-title", "create-access-dialog-title"]) {
     const rule = titleRule(title);
     assert.match(rule, /min-width:\s*0;/);
     assert.match(rule, /flex-shrink:\s*1;/);
@@ -113,8 +111,8 @@ test("long titles can wrap without shrinking the icon or shifting the center", (
     assert.match(rule, /word-break:\s*break-all;/);
     assert.doesNotMatch(rule, /white-space:\s*nowrap|overflow:\s*hidden/);
   }
-  assert.doesNotMatch(source("pages/profile/profile.wxss"), /\.modal-(?:header|title-icon|title)\s*\{/);
-  assert.doesNotMatch(source("pages/activity_detail/activity_detail.wxss"), /\.signup-profile-modal-title(?:-wrap|-icon)?\s*\{/);
+  assert.doesNotMatch(source("pages/profile/profile.wxml"), /class="modal-(?:header|title-icon|title)"/);
+  assert.doesNotMatch(source("pages/activity_detail/activity_detail.wxml"), /class="signup-profile-modal-title(?:-wrap|-icon)?"/);
 });
 
 test("warning dialogs use the prototype circular Lucide info icon", () => {

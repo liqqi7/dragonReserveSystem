@@ -22,7 +22,7 @@ from app.models.memory import Memory, MemoryMedia
 from app.schemas.memory import MediaDeclaration, MemoryCleanupRequest, MemoryDraftRequest, MemoryMetadata, MemoryReviewRequest
 from app.services import memory_media, memory_service as service
 
-router = APIRouter(tags=["memories"], dependencies=[Depends(service.enabled)])
+router = APIRouter(tags=["memories"])
 
 
 @router.post("/memory-drafts", status_code=201)

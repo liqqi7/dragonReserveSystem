@@ -4,7 +4,8 @@
   "componentFramework": "glass-easel",
   "usingComponents": {
     "create-access-dialog": "../../components/create-access-dialog/index",
-    "participants-drawer": "../../components/participants-drawer/index"
+    "participants-drawer": "../../components/participants-drawer/index",
+    "profile-editor-dialog": "../../components/profile-editor-dialog/index"
   },
   "disableScroll": true
 }

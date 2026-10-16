@@ -74619,7 +74619,7 @@
               "content": "修改个人资料"
             },
             "LPAeR": {
-              "content": "请修改昵称和头像后再进行报名"
+              "content": "以下内容将公开展示，上传即视为同意"
             },
             "s2UQ43": {
               "type": "frame",
@@ -82713,8 +82713,8 @@
               "content": "修改个人资料"
             },
             "LPAeR": {
-              "enabled": false,
-              "content": "请修改昵称和头像后再进行报名",
+              "enabled": true,
+              "content": "以下内容将公开展示，上传即视为同意",
               "width": 260
             },
             "s2UQ43": {

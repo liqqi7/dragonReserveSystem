@@ -90,8 +90,6 @@ class Settings(BaseSettings):
     media_root: str = "storage"
     media_url_prefix: str = "/media"
 
-    memory_enabled: bool = False
-    memory_publish_enabled: bool = False
     memory_storage_root: str = "private-storage/memories"
     # No production budget is assumed until the operator explicitly configures it.
     memory_capacity_bytes: int = Field(10_000_000_000, ge=0)
