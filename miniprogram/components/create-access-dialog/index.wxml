@@ -19,7 +19,7 @@
         <text class="create-access-dialog-title">{{title}}</text>
         <view class="create-access-dialog-title-spacer" aria-hidden="true" />
       </view>
-      <text class="create-access-dialog-message">{{message}}</text>
+      <text class="create-access-dialog-message {{messageAlign === 'left' ? 'create-access-dialog-message--left' : ''}}">{{message}}</text>
     </view>
     <view class="create-access-dialog-actions">
       <view id="qa-create-access-dialog-cancel" class="create-access-dialog-button create-access-dialog-button--cancel" bindtap="close" aria-role="button">{{cancelText}}</view>

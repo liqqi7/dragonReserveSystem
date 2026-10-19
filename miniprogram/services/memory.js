@@ -47,6 +47,9 @@ function createdLabel(value, now = new Date()) {
 }
 
 function send(url, method = "GET", data, auth = true) {
+  if (method === "POST" && /^\/admin\/memories\/\d+\/cleanup$/.test(url)) {
+    return request({ url, method, data, auth, apiVersion: 1, timeout: 120000 });
+  }
   return request({ url, method, data, auth, apiVersion: 1 });
 }
 

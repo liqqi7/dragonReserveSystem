@@ -1,0 +1,61 @@
+function transform(x, y) {
+  return 'translate(' + x + 'px, ' + y + 'px)';
+}
+function sync(value, previous, owner, instance) {
+  if (!value) return; // Skyline owns its transforms through worklets.
+  var state = instance.getState();
+  if (value.serial && value.serial < (state.serial || 0) && value.enabled && state.config && state.config.enabled) return;
+  state.config = value;
+  state.gesture = null;
+  state.x = value.x; state.y = value.y;
+  // The bound stage owns translation; the image's declarative style owns scale.
+  state.stage = instance;
+  state.stage.setStyle({
+    transform: transform(value.x, value.y),
+    transition: value.animated ? 'transform 240ms ease-out' : 'none'
+  });
+}
+function finish(state, owner) {
+  var gesture = state.gesture;
+  if (!gesture) return;
+  state.gesture = null;
+  owner.callMethod('photoPointer', {type: 'end', id: state.config.id,
+    generation: state.config.generation, serial: gesture.serial,
+    x: state.x, y: state.y, moved: gesture.moved});
+}
+function touch(event, owner) {
+  var state = event.instance.getState();
+  var data = event.currentTarget.dataset;
+  var config = state.config;
+  if (!config || !config.enabled || data.id !== config.id || data.generation !== config.generation) return;
+  var touches = event.touches || [];
+  var points = touches.length ? touches : event.changedTouches || [];
+  if (event.type === 'touchcancel' || points.length !== 1) {
+    if (state.gesture) state.gesture.moved = true;
+    finish(state, owner);
+    if (event.type === 'touchmove') return false;
+    return;
+  }
+  var point = points[0];
+  if (typeof point.clientX !== 'number' || typeof point.clientY !== 'number') return;
+  if (event.type === 'touchstart') {
+    state.serial = (state.serial || 0) + 1;
+    state.gesture = {serial: state.serial, identifier: point.identifier,
+      startX: point.clientX, startY: point.clientY, lastX: point.clientX, lastY: point.clientY, moved: false};
+    owner.callMethod('photoPointer', {type: 'start', id: config.id,
+      generation: config.generation, serial: state.serial});
+    return;
+  }
+  var gesture = state.gesture;
+  if (!gesture || gesture.identifier !== point.identifier) return;
+  var dx = point.clientX - gesture.lastX, dy = point.clientY - gesture.lastY;
+  gesture.lastX = point.clientX; gesture.lastY = point.clientY;
+  if (Math.abs(point.clientX - gesture.startX) > 6 || Math.abs(point.clientY - gesture.startY) > 6) gesture.moved = true;
+  state.x = Math.max(-config.maxX, Math.min(config.maxX, state.x + dx));
+  state.y = Math.max(-config.maxY, Math.min(config.maxY, state.y + dy));
+  // Pointer frames stay in the view layer; only the final position crosses to JS.
+  if (dx || dy) state.stage.setStyle({transform: transform(state.x, state.y), transition: 'none'});
+  if (event.type === 'touchend') finish(state, owner);
+  if (event.type === 'touchmove') return false;
+}
+module.exports = {sync: sync, touch: touch};

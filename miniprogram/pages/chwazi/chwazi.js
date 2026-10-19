@@ -1,4 +1,5 @@
 const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
+const {supportsWorkletAnimations} = require("../../utils/workletCompat");
 const {
   MIN_TOUCHES,
   MAX_TOUCHES,
@@ -358,9 +359,7 @@ Page({
       innerBackground: "transparent"
     }));
     this.setData({ slotStyles }, () => {
-      const useWorklet = typeof wx !== "undefined"
-        && wx.worklet && typeof wx.worklet.shared === "function"
-        && typeof this.applyAnimatedStyle === "function";
+      const useWorklet = supportsWorkletAnimations(this, typeof wx === "undefined" ? null : wx);
       this._useWorkletVisuals = !!useWorklet;
       if (!useWorklet) return;
       this._slotShared = Array.from({ length: MAX_TOUCHES }, () => wx.worklet.shared({ x: -9999, y: -9999, active: 0 }));

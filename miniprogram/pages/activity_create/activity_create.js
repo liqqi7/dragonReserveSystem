@@ -2,7 +2,7 @@ const app = getApp();
 const activityService = require("../../services/activity");
 const { logPageError } = require("../../services/logger");
 const { buildCreateForm, validateActivityForm, buildActivityPayload, normalizeSubItems } = require("../../utils/activityForm");
-const { getWindowInfoCompat, getBottomSafeAreaRpx } = require("../../utils/safeArea");
+const { getWindowInfoCompat, getBottomSafeAreaRpx, getBottomContentInsetRpx } = require("../../utils/safeArea");
 const { createHomeCardMediaLoader } = require("../../utils/homeCardMediaLoader");
 const { prepareHomeImage, invalidateHomeImageCache } = require("../../utils/homeImagePreparation");
 const CATEGORIES = ["派对", "运动", "外出", "游戏", "电影", "生日", "吃饭", "杂项"];
@@ -24,20 +24,23 @@ Page({
     if (!app.globalData.isAuthenticated || !token || !["user", "admin"].includes(app.globalData.userRole)) {
       wx.navigateBack(); return;
     }
-    const info = getWindowInfoCompat();
+    this.onResize();
     const initialForm = { ...buildCreateForm(), startDate: "", startTime: "", endDate: "", endTime: "", maxParticipants: 16 };
-    const footerSafeAreaRpx = Math.round((getBottomSafeAreaRpx() + 7.69) * 100) / 100;
     this.setData({
       form: initialForm,
       startDateDisplay: String(initialForm.startDate || "").replace(/-/g, "/"),
-      endDateDisplay: String(initialForm.endDate || "").replace(/-/g, "/"),
-      statusBarHeight: info.statusBarHeight || 20,
-      footerSafeAreaRpx
+      endDateDisplay: String(initialForm.endDate || "").replace(/-/g, "/")
     });
     this.loadCovers();
   },
   onReady() {
     this.configureCategoryScroller();
+  },
+  onResize() {
+    const info = getWindowInfoCompat();
+    this.setData({statusBarHeight: info.statusBarHeight || 20,
+      footerSafeAreaRpx: this.renderer === "webview" ? getBottomContentInsetRpx() :
+        Math.round((getBottomSafeAreaRpx() + 7.69) * 100) / 100});
   },
   onShow() {
     this._pageVisible = true;
@@ -55,6 +58,7 @@ Page({
     this.setData({ coverSkeletonShimmerRunning: false });
   },
   configureCategoryScroller() {
+    if (this._unloaded || this.renderer === "webview") return;
     this.createSelectorQuery().select("#categoryScroller").node().exec(result => {
       const scroller = result && result[0] && result[0].node;
       if (!scroller) return;

@@ -1,5 +1,6 @@
 const activityService = require("../../services/activity");
 const { logPageError } = require("../../services/logger");
+const {getBottomContentInsetRpx} = require("../../utils/safeArea");
 
 const CHECKIN_RADIUS_M = 1000;
 const CHECKIN_RADIUS_KM = CHECKIN_RADIUS_M / 1000;
@@ -30,11 +31,13 @@ Page({
     scale: 15,
     markers: [],
     circles: [],
-    submitting: false
+    submitting: false,
+    footerPaddingRpx: null
   },
 
   onLoad() {
     this._unloaded = false;
+    this.onResize();
     const eventChannel = this.getOpenerEventChannel && this.getOpenerEventChannel();
     if (eventChannel) {
       eventChannel.on("initCheckin", (data) => {
@@ -84,6 +87,9 @@ Page({
     this.hideSubmissionLoading();
   },
 
+  onResize() {
+    if (this.renderer === "webview") this.setData({footerPaddingRpx: Math.max(24, getBottomContentInsetRpx() - 24)});
+  },
   onUnload() {
     this._unloaded = true;
     this._pageVisible = false;

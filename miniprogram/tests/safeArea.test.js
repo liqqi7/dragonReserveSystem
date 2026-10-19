@@ -254,6 +254,34 @@ test("runtime info preserves raw device values while the resolver converts the i
   });
 });
 
+test("content inset keeps a 24px minimum without changing or adding the system safe area", () => {
+  for (const platform of ["windows", "mac", "ios", "android"]) {
+    for (const windowWidth of [320, 390, 620]) {
+      for (const inset of [0, 12, 34]) {
+        withWx({getWindowInfo: () => ({windowWidth, windowHeight: 844, safeAreaInsets: {bottom: inset}}),
+          getDeviceInfo: () => ({platform})}, () => {
+          const before = safeArea.getBottomSafeAreaRpx();
+          const result = safeArea.getBottomContentInsetRpx();
+          assert.ok(Math.abs(result * windowWidth / 750 - Math.max(24, before * windowWidth / 750)) < 0.01,
+            `${platform} ${windowWidth}px window with ${inset}px inset`);
+          assert.equal(safeArea.getBottomSafeAreaRpx(), before, "callers needing only safe area are unaffected");
+        });
+      }
+    }
+  }
+});
+
+test("content inset handles missing runtime information and follows resized windows", () => {
+  withWx(undefined, () => assert.equal(safeArea.getBottomContentInsetRpx(), 46.15));
+  let width = 390;
+  withWx({getWindowInfo: () => ({windowWidth: width})}, () => {
+    assert.equal(safeArea.getBottomContentInsetRpx(), 46.15);
+    width = 620;
+    assert.equal(safeArea.getBottomContentInsetRpx(), 29.03);
+    assert.equal(safeArea.getBottomContentInsetRpx(0), 0);
+  });
+});
+
 test("tab pages with bottom content and the custom tab bar share the same safe-area resolver", () => {
   const fs = require("node:fs");
   const path = require("node:path");
@@ -266,6 +294,6 @@ test("tab pages with bottom content and the custom tab bar share the same safe-a
 
   for (const relativeFile of relativeFiles) {
     const source = fs.readFileSync(path.join(__dirname, relativeFile), "utf8");
-    assert.match(source, /getBottomSafeAreaRpx/);
+    assert.match(source, /getBottom(?:SafeArea|ContentInset)Rpx/);
   }
 });

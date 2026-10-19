@@ -147,7 +147,13 @@ function report(level, event, payload) {
       }
     } catch (_) {}
     if (record.releaseEnv === "develop" || record.platform === "devtools") {
-      if (typeof console[level] === "function") console[level]("[mini]", record);
+      // Remote device consoles cannot always expand object arguments.
+      if (typeof console[level] === "function") {
+        const text = JSON.stringify(record);
+        const summary = event === "request_fail" ?
+          `${record.method || ""} ${record.url || ""} | ${record.summary || ""} | ${record.duration ?? "?"}ms | status=${record.statusCode ?? "?"}\n` : "";
+        console[level]("[mini]", summary + text);
+      }
     }
   } catch (_) {}
 }

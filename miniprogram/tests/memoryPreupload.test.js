@@ -48,33 +48,47 @@ function setup() {
 }
 const file = (id) => ({ id, kind: "image", size: 100, path: `local-${id}` });
 
-test("selection immediately uploads two at a time, with no final submit", async () => {
+test("selection uploads in receipt order without declaring the next file behind an active upload", async () => {
   const h = setup();
   const pending = h.uploader.setFiles([file("a"), file("b"), file("c")]);
   await tick();
-  assert.equal(h.tasks.length, 2);
+  assert.equal(h.tasks.length, 1);
+  assert.equal(h.calls.filter(call => call.method === "PUT").length, 1);
   assert.equal(h.calls.filter((call) => call.url === "/memory-drafts").length, 1);
-  h.tasks[0].progress({ totalBytesSent: 500 });
+  h.tasks[0].progress({ progress: 100, totalBytesSent: 500, totalBytesExpectedToSend: 500 });
   assert.equal(h.states.get("a").progress, 99);
+  assert.equal(h.states.get("a").state, "uploading");
+  h.uploader.setFiles([file("a"), file("b"), file("c"), file("d")]);
+  await tick();
+  assert.equal(h.calls.filter(call => call.method === "PUT").length, 1);
+  assert.equal(h.tasks.length, 1, "100% transport is not a server acknowledgement");
   h.tasks[0].resolve();
   await tick();
-  assert.equal(h.tasks.length, 3);
+  assert.equal(h.tasks.length, 2);
   h.tasks[0].progress({ totalBytesSent: 2 });
   assert.equal(h.states.get("a").state, "uploaded");
-  h.tasks[1].resolve(); h.tasks[2].resolve(); await pending;
+  for (let index = 1; index < 4; index++) {
+    h.tasks[index].resolve();
+    await tick();
+  }
+  await pending;
   assert.equal(h.calls.some((call) => call.url.endsWith("/submit")), false);
   await h.uploader.submit({ caption: "final edited caption" });
-  assert.equal(h.tasks.length, 3);
+  assert.equal(h.tasks.length, 4);
   assert.equal(h.calls.at(-1).data.caption, "final edited caption");
 });
 
 test("deleting an in-flight file aborts it, removes remote bytes, and keeps stable slots", async () => {
   const h = setup();
   h.uploader.setFiles([file("a"), file("b")]); await tick();
+  h.tasks[0].progress({progress: 100});
+  assert.equal(h.states.get("a").state, "uploading");
   h.uploader.setFiles([file("b"), file("c")]); await tick();
   assert.equal(h.tasks[0].aborted, true);
+  assert.equal(h.tasks[1].slot, 1);
+  h.tasks[1].resolve(); await tick();
   assert.equal(h.tasks[2].slot, 2);
-  h.tasks[1].resolve(); h.tasks[2].resolve(); await h.uploader.running; await tick();
+  h.tasks[2].resolve(); await h.uploader.running; await tick();
   await h.uploader.submit({});
   assert.deepEqual(Array.from(h.remote.keys()).sort(), [1, 2]);
 });
@@ -82,7 +96,7 @@ test("deleting an in-flight file aborts it, removes remote bytes, and keeps stab
 test("a failed remote deletion blocks submission until deletion succeeds", async () => {
   const h = setup();
   h.uploader.setFiles([file("a"), file("b")]); await tick();
-  h.tasks.forEach((task) => task.resolve()); await h.uploader.running;
+  h.tasks[0].resolve(); await tick(); h.tasks[1].resolve(); await h.uploader.running;
   h.setFailDelete(true); h.uploader.setFiles([file("b")]); await tick();
   await assert.rejects(h.uploader.submit({}), /delete offline/);
   assert.equal(h.calls.some((call) => call.url.endsWith("/submit")), false);
@@ -112,7 +126,10 @@ test("lost final acknowledgement freezes metadata and retries submit without re-
 
 test("leaving aborts transfer and cancels only unsubmitted drafts", async () => {
   const h = setup();
-  h.uploader.setFiles([file("a")]); await tick(); h.uploader.close(); await tick();
+  h.uploader.setFiles([file("a")]); await tick();
+  h.tasks[0].progress({progress: 100});
+  assert.equal(h.states.get("a").state, "uploading");
+  h.uploader.close(); await tick();
   assert.equal(h.tasks[0].aborted, true);
   assert.ok(h.calls.some((call) => call.method === "DELETE" && call.url === "/memory-drafts/7"));
 });

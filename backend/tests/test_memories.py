@@ -1,5 +1,7 @@
 from io import BytesIO
 import asyncio
+import hashlib
+import logging
 import os
 from pathlib import Path
 import subprocess
@@ -43,6 +45,63 @@ def make_draft(client, headers, files=None, **extra):
 def send_file(client, headers, draft, slot=0, data=None):
     return client.post(f"/api/v1/memory-drafts/{draft['id']}/media/{slot}", headers=headers,
                        files={"file": ("photo.jpg", data or picture(), "image/jpeg")})
+
+
+def test_upload_hashes_while_writing_without_rereading_remote_file(client, user_headers, db_session, monkeypatch):
+    stream = BytesIO()
+    Image.frombytes("RGB", (400, 400), os.urandom(400 * 400 * 3)).save(stream, "PNG")
+    data = stream.getvalue()
+    assert len(data) > 256 * 1024
+    draft, _ = make_draft(client, user_headers, [data])
+
+    def unexpected_reread(*args):
+        pytest.fail("upload must not reread the stored original to compute its digest")
+
+    image_open = Image.open
+
+    def open_input(source, *args, **kwargs):
+        assert hasattr(source, "read"), "image admission must inspect the request stream, not reread remote storage"
+        return image_open(source, *args, **kwargs)
+
+    monkeypatch.setattr(memory_media, "file_digest", unexpected_reread)
+    monkeypatch.setattr(Image, "open", open_input)
+    assert send_file(client, user_headers, draft, data=data).status_code == 200
+    item = memory_service.assets(db_session, draft["id"])[0]
+    assert item.state == "uploaded"
+    assert item.digest == hashlib.sha256(data).hexdigest()
+    assert memory_media.private_path(memory_service.storage_root(), item.original_key).read_bytes() == data
+    assert send_file(client, user_headers, draft, data=data).status_code == 200
+    assert len(list(memory_service.storage_root().rglob("original-*.bin"))) == 1
+
+
+def test_private_path_resolves_the_trusted_root_only_once(tmp_path, monkeypatch):
+    original_resolve = Path.resolve
+    calls = []
+
+    def tracked_resolve(path, *args, **kwargs):
+        calls.append(path)
+        return original_resolve(path, *args, **kwargs)
+
+    root = tmp_path / "private"
+    root.mkdir()
+    monkeypatch.setattr(Path, "resolve", tracked_resolve)
+    path = memory_media.private_path(root, "draft/media/original.bin")
+    assert path == root / "draft/media/original.bin"
+    assert calls.count(root) == 1
+
+
+def test_upload_timing_correlates_with_request_without_logging_file_or_credentials(client, user_headers, caplog):
+    draft, _ = make_draft(client, user_headers)
+    with caplog.at_level(logging.INFO, logger="dragon.reserve"):
+        result = send_file(client, {**user_headers, "X-Request-Id": "upload-timing-probe"}, draft)
+    assert result.status_code == 200
+    records = [record.getMessage() for record in caplog.records if record.getMessage().startswith("memory_upload_completed ")]
+    assert len(records) == 1
+    message = records[0]
+    for field in ("lock_ms=", "write_ms=", "verify_ms=", "commit_ms=", "trace_id=upload-timing-probe"):
+        assert field in message
+    assert "photo.jpg" not in message and "Bearer" not in message
+    assert user_headers["Authorization"] not in message
 
 
 def prepared(client, headers, db, count=1):
@@ -91,6 +150,24 @@ def individual_action(client, headers, memory, item, action, **extra):
     return client.post(f"/api/v1/admin/memories/{memory.id}/review", headers=headers, json={
         "individual": True, "action": action, "expected_revision": memory.revision,
         "selected_media_ids": [item.id], "manually_reviewed": action == "publish", **extra})
+
+
+def test_content_versions_follow_processed_bytes_not_review_revisions(client, user_headers, admin_headers, db_session):
+    memory, items = prepared(client, user_headers, db_session, count=2)
+    admin = client.get(f"/api/v1/admin/memories/{memory.id}", headers=admin_headers).json()
+    first = admin["media"][0]
+    assert len(first["content_version"]) == 32
+    assert items[0].display_key.endswith(f"display-{memory_media.file_digest(memory_media.private_path(memory_service.storage_root(), items[0].display_key))}.jpg")
+    assert individual_action(client, admin_headers, memory, items[0], "publish").status_code == 200
+    public = client.get(f"/api/v1/memories/{memory.id}").json()["media"][0]
+    assert public["content_version"] == first["content_version"]
+    assert f"&v={public['content_version']}" in public["url"]
+    assert individual_action(client, admin_headers, memory, items[1], "reject").status_code == 200
+    after = client.get(f"/api/v1/memories/{memory.id}").json()["media"][0]
+    assert after["content_version"] == first["content_version"]
+    items[0].display_key = items[0].display_key.replace("display-", "changed-")
+    db_session.commit()
+    assert memory_service.serialize(db_session, memory)["media"][0]["content_version"] != first["content_version"]
 
 
 def test_public_individual_feed_exposes_all_published_files_but_no_private_siblings(
@@ -787,6 +864,50 @@ def test_transparency_and_no_upscaling(tmp_path):
     with Image.open(result.display) as image:
         assert image.size == (60, 40)
         assert image.getpixel((0, 0))[3] == 128
+
+
+@pytest.mark.parametrize("width,height", [(8192, 5464), (8000, 6000), (10000, 6000)])
+def test_image_pixel_budget_accepts_large_photos(tmp_path, monkeypatch, width, height):
+    from contextlib import nullcontext
+    from types import SimpleNamespace
+
+    source = tmp_path / "photo.jpg"
+    source.write_bytes(picture())
+    header = SimpleNamespace(format="JPEG", n_frames=1, width=width, height=height)
+    # Exercise header validation without allocating a 60MP bitmap in every CI run.
+    monkeypatch.setattr(memory_media.Image, "open", lambda path: nullcontext(header))
+    monkeypatch.setattr(memory_media.ImageOps, "exif_transpose", lambda image: Image.new("RGB", (60, 40)))
+    result = memory_media.compress_image(source, tmp_path / "processed")
+    assert result.display.is_file() and result.thumbnail.is_file()
+
+
+def test_image_above_pixel_budget_rejects_before_decoding(tmp_path, monkeypatch):
+    from contextlib import nullcontext
+    from types import SimpleNamespace
+
+    source = tmp_path / "photo.jpg"
+    source.write_bytes(picture())
+    header = SimpleNamespace(format="JPEG", n_frames=1, width=10000, height=6001)
+    monkeypatch.setattr(memory_media.Image, "open", lambda path: nullcontext(header))
+    def forbid_decode(image):
+        raise AssertionError("Oversized images must be rejected before decoding")
+    monkeypatch.setattr(memory_media.ImageOps, "exif_transpose", forbid_decode)
+    with pytest.raises(AppError, match="图片分辨率过大"):
+        memory_media.compress_image(source, tmp_path / "processed")
+
+
+@pytest.mark.parametrize("height,allowed", [(4000, True), (4001, False)])
+def test_video_pixel_budget_does_not_follow_the_larger_image_budget(tmp_path, monkeypatch, height, allowed):
+    import json
+    payload = {"format": {"duration": "1"}, "streams": [
+        {"codec_type": "video", "width": 10000, "height": height, "duration": "1"},
+    ]}
+    monkeypatch.setattr(memory_media, "_run", lambda *args: subprocess.CompletedProcess([], 0, json.dumps(payload)))
+    if allowed:
+        assert memory_media.inspect_video(tmp_path / "video.mp4", "ffprobe")["height"] == height
+    else:
+        with pytest.raises(AppError, match="视频分辨率不支持"):
+            memory_media.inspect_video(tmp_path / "video.mp4", "ffprobe")
 
 
 def test_original_oversize_cannot_be_compressed_to_bypass_limit(tmp_path):

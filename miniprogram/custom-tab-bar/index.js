@@ -7,7 +7,7 @@ const TAB_GLASS_TUNING = Object.freeze({
 
 const ACTIVITY_LIST_ROUTE = "pages/activity_list/activity_list";
 const TAB_MIN_BOTTOM_GAP_PX = 24;
-const { getBottomSafeAreaRpx, getWindowInfoCompat } = require("../utils/safeArea");
+const { getBottomContentInsetRpx, getWindowInfoCompat } = require("../utils/safeArea");
 
 const TAB_URLS = [
   "/pages/activity_list/activity_list",
@@ -120,15 +120,12 @@ function vibrateTabSelection() {
   }
 }
 
-function getBottomSafeAreaCssPx() {
+function getTabBottomInsetCssPx() {
   const info = getWindowInfoCompat();
   const windowWidth = Number(info && info.windowWidth);
-  if (!(windowWidth > 0)) return 0;
-  return Math.round(getBottomSafeAreaRpx() * windowWidth / 750 * 100) / 100;
-}
-
-function getTabBottomInsetCssPx() {
-  return Math.max(TAB_MIN_BOTTOM_GAP_PX, getBottomSafeAreaCssPx());
+  if (!(windowWidth > 0)) return TAB_MIN_BOTTOM_GAP_PX;
+  return Math.max(TAB_MIN_BOTTOM_GAP_PX,
+    Math.round(getBottomContentInsetRpx(TAB_MIN_BOTTOM_GAP_PX) * windowWidth / 750 * 100) / 100);
 }
 
 function syncSelectedFromCurrentRoute(component) {

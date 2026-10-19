@@ -87,11 +87,17 @@ function getBottomSafeAreaRpx() {
   return resolveBottomSafeAreaRpx(windowInfo, deviceInfo);
 }
 
+// Content spacing is separate from the system inset; never add the two together.
+function getBottomContentInsetRpx(minimumGapPx = 24) {
+  return roundRpx(Math.max(getBottomSafeAreaRpx(), minimumGapPx * getRpxPerPx()));
+}
+
 module.exports = {
   ANDROID_BOTTOM_SAFE_AREA_FALLBACK_RPX,
   getWindowInfoCompat,
   getRpxPerPx,
   getDeviceInfoCompat,
   getBottomSafeAreaPx,
-  getBottomSafeAreaRpx
+  getBottomSafeAreaRpx,
+  getBottomContentInsetRpx
 };

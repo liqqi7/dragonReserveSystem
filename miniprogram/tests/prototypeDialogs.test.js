@@ -44,6 +44,28 @@ test("every configured page mounts the shared session-expired dialog", () => {
   }
 });
 
+test("dialog message alignment is opt-in and resets for other confirmations", () => {
+  let definition;
+  vm.runInNewContext(source("components/create-access-dialog/index.js"), {
+    Component: value => {definition = value;},
+  });
+  const dialog = {...definition.methods, data: {...definition.data},
+    setData(patch) {Object.assign(this.data, patch);}};
+  const message = "第一段。\n第二段。";
+  dialog.open({message, messageAlign: "left"});
+  assert.equal(dialog.data.messageAlign, "left");
+  assert.equal(dialog.data.message, message);
+  dialog.close();
+  dialog.open({message: "普通确认提示"});
+  assert.equal(dialog.data.messageAlign, "center");
+  assert.equal(dialog.data.message, "普通确认提示");
+  dialog.open({messageAlign: "invalid", variant: "danger"});
+  assert.equal(dialog.data.messageAlign, "center");
+  const markup = source("components/create-access-dialog/index.wxml");
+  assert.match(markup, /messageAlign === 'left' \? 'create-access-dialog-message--left'/);
+  assert.match(source("components/create-access-dialog/index.wxss"), /\.create-access-dialog-message--left\s*\{\s*text-align:\s*left;/);
+});
+
 test("exit confirmation reuses the danger dialog and only removes the intended signup", () => {
   let definition;
   let nativeCalls = 0;
@@ -114,7 +136,7 @@ test("prototype dialog style and empty-avatar placeholder match their canvas geo
   assert.match(profileDialog, /bindinput="inputNickname"/);
   assert.match(profileDialog, /bindtap="save" disabled="\{\{saveDisabled\}\}"/);
   assert.match(profileDialogStyles, /\.profile-editor-overlay\s*\{[^}]*position:\s*fixed;[\s\S]*align-items:\s*center;[\s\S]*justify-content:\s*center;/);
-  assert.match(profileDialogStyles, /\.profile-editor-dialog\s*\{[^}]*width:\s*76\.923%;[^}]*border-radius:\s*30\.76923rpx;/s);
+  assert.match(profileDialogStyles, /\.profile-editor-dialog\s*\{[^}]*width:\s*576\.92308rpx;[^}]*max-width:\s*calc\(100% - 64rpx\);[^}]*border-radius:\s*30\.76923rpx;/s);
   assert.doesNotMatch(profileStyles, /\.modal-overlay|\.avatar-edit-/);
   assert.doesNotMatch(detailStyles, /\.signup-profile-/);
   assert.doesNotMatch(profileMarkup, /class="close-btn"|forceProfile|force-profile-hint/);

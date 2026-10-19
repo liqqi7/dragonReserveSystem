@@ -13,7 +13,7 @@ test("edit footer uses the native home indicator exactly once", () => {
   assert.doesNotMatch(wxml, /footer-home-indicator|footer-touch-bar/);
   assert.doesNotMatch(wxss, /\.footer-home-indicator|\.footer-touch-bar/);
   assert.match(wxml, /class="footer" style="padding-bottom:{{footerSafeAreaRpx}}rpx;"/);
-  assert.match(js, /Math\.max\(0, getBottomSafeAreaRpx\(\) - 9\.62\)/);
+  assert.match(js, /getBottomContentInsetRpx\(\) : Math\.max\(0, getBottomSafeAreaRpx\(\) - 9\.62\)/);
 });
 
 test("edit form uses remaining height without a second footer reservation", () => {

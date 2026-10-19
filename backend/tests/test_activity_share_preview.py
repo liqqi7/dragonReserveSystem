@@ -26,6 +26,40 @@ def _file(url, folder):
     return folder / Path(url).name
 
 
+@pytest.mark.parametrize("source_size, expected", [
+    ((1100, 440), (-275, 0, 1100, 440)),
+    ((550, 880), (0, -220, 550, 880)),
+    ((1100, 880), (0, 0, 550, 440)),
+    ((275, 220), (0, 0, 550, 440)),
+])
+def test_share_cover_is_centered_aspect_fill(source_size, expected):
+    x, y, width, height = preview._cover_layout(*source_size)
+    assert (x, y, width, height) == expected
+    assert width >= 550 and height >= 440
+    assert abs(x + width / 2 - 275) <= 0.5
+    assert abs(y + height / 2 - 220) <= 0.5
+    assert width / height == pytest.approx(source_size[0] / source_size[1])
+
+
+@pytest.mark.parametrize("source_size, center", [
+    ((1100, 440), (275, 0, 824, 439)),
+    ((550, 880), (0, 220, 549, 659)),
+])
+def test_rendered_share_cover_crops_both_edges_without_stretching_or_letterboxing(
+    source_size, center, sample_activity, tmp_path,
+):
+    source = tmp_path / "cover.png"
+    original = Image.new("RGB", source_size, "red")
+    ImageDraw.Draw(original).rectangle(center, fill=(0, 255, 0))
+    original.save(source)
+    target = tmp_path / "share.png"
+    preview._render_share_preview(target, sample_activity, source)
+    with Image.open(target) as rendered:
+        assert rendered.size == (550, 440)
+        for point in ((0, 0), (549, 0), (275, 100), (0, 200), (549, 200)):
+            assert rendered.getpixel(point) == (0, 255, 0)
+
+
 def test_create_prepares_card_and_reads_never_generate(client, admin_headers, monkeypatch, tmp_path):
     folder = tmp_path / "share-previews"
     monkeypatch.setattr(preview, "SHARE_PREVIEW_DIR", folder)

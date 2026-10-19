@@ -93,6 +93,37 @@ test("back-to-top can repeatedly scroll the native view and ignores a detached v
   assert.equal(requests.length, 2);
 });
 
+test("WebView back-to-top repeatedly updates the scroll property without querying native nodes", () => {
+  const {page} = createPage(), positions = [];
+  page.renderer = "webview";
+  page.createSelectorQuery = () => assert.fail("WebView uses scroll-top, not a Skyline scroll context");
+  page.setData = (patch, callback) => {
+    Object.assign(page.data, patch);
+    if ("detailScrollTop" in patch) positions.push(patch.detailScrollTop);
+    callback?.();
+  };
+  for (const scrollTop of [420, 690]) {
+    page.onDetailScroll({detail: {scrollTop}});
+    page.backToTop();
+  }
+  assert.deepEqual(positions, [420, 0, 690, 0]);
+  page.onUnload();
+  page.backToTop();
+  assert.equal(positions.length, 4);
+});
+
+test("scroll property fallback does not update after detachment between its two frames", () => {
+  const {page} = createPage();
+  page.renderer = "webview";
+  let complete;
+  page.setData = (patch, callback) => {Object.assign(page.data, patch); complete = callback;};
+  page.backToTop();
+  assert.equal(page.data.detailScrollTop, 1);
+  page.onUnload();
+  complete();
+  assert.equal(page.data.detailScrollTop, 1);
+});
+
 test("detail retry recovers from the initial error while a failed retry keeps its error visible", async () => {
   const raw = {
     id: 73, name: "可重试的活动", start_time: "2030-01-01T12:00:00",

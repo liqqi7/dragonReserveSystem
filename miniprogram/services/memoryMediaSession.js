@@ -2,9 +2,10 @@ const MAX_TEMP_BYTES = 20 * 1024 * 1024;
 const cancelled = () => Object.assign(new Error('媒体加载已取消'), {cancelled: true});
 const limitError = () => Object.assign(new Error('临时媒体超出大小限制'), {sizeLimit: true});
 
-// One visible page owns one queue and byte budget, including pending transfers.
-function createMediaSession(wxApi = wx, {maxBytes = MAX_TEMP_BYTES} = {}) {
+// Transfers and files awaiting deletion are included in the same byte budget.
+function createMediaSession(wxApi = wx, {maxBytes = MAX_TEMP_BYTES, retainCompleted = false, maxFiles = Infinity} = {}) {
   const owners = new Map(), files = new Map(), failures = new Map(), deleting = new Map();
+  let identities = new Map();
   const listeners = new Set(), waiters = new Map(), removed = new Set();
   let wanted = new Map(), pending = null, speculation = true, disposed = false, updating = 0;
   const notify = event => {for (const fn of listeners) {try {fn(event);} catch (_) {}}};
@@ -26,6 +27,7 @@ function createMediaSession(wxApi = wx, {maxBytes = MAX_TEMP_BYTES} = {}) {
       const success = () => {
         if (settled) return; settled = true; clearTimeout(timer);
         deleting.delete(file.path); removed.add(file.path); wake();
+        if (removed.size > 256) removed.delete(removed.values().next().value);
       };
       const fail = error => {
         if (settled) return;
@@ -59,17 +61,18 @@ function createMediaSession(wxApi = wx, {maxBytes = MAX_TEMP_BYTES} = {}) {
   }
   function reserve(job, size) {
     if (!Number.isSafeInteger(size) || size <= 0 || size > Math.min(maxBytes, wanted.get(job.url)?.maxBytes || maxBytes)) return false;
-    if (wanted.get(job.url)?.foreground) {
+    const incoming = wanted.get(job.url);
+    if (incoming?.foreground || retainCompleted) {
       updating++;
-      for (const [url, file] of [...files].sort((a, b) => (wanted.get(b[0])?.priority || 0) - (wanted.get(a[0])?.priority || 0))) {
-        if (usage() + size <= maxBytes) break;
+      for (const [url, file] of [...files].sort((a, b) => (wanted.get(b[0])?.priority ?? Infinity) - (wanted.get(a[0])?.priority ?? Infinity))) {
+        if (usage() + size <= maxBytes && files.size < maxFiles) break;
         const existing = wanted.get(url);
-        if (existing?.protected || existing?.foreground && existing.priority <= wanted.get(job.url).priority) continue;
+        if (existing?.protected || existing?.foreground && existing.priority <= incoming.priority || !incoming.foreground && existing) continue;
         files.delete(url); failures.set(url, limitError()); remove(file); notify({url});
       }
       updating--;
     }
-    if (usage() + size > maxBytes) {
+    if (usage() + size > maxBytes || files.size + deleting.size >= maxFiles) {
       if ([...deleting.values()].some(file => !file.failed)) {job.space = true; return 'wait';}
       return false;
     }
@@ -91,6 +94,8 @@ function createMediaSession(wxApi = wx, {maxBytes = MAX_TEMP_BYTES} = {}) {
           if (result.statusCode !== 200 || !path) {
             fail(job, Object.assign(new Error('媒体下载失败'), {statusCode: result.statusCode}), path); return;
           }
+          removed.delete(path);
+          if (deleting.has(path)) {fail(job, new Error('媒体临时文件仍在清理')); return;}
           job.path = path;
           clearTimeout(job.timer);
           job.timer = setTimeout(() => fail(job, new Error('无法读取媒体大小')), 3000);
@@ -103,7 +108,7 @@ function createMediaSession(wxApi = wx, {maxBytes = MAX_TEMP_BYTES} = {}) {
                   fail(job, limitError(), path); return;
                 }
                 clearTimeout(job.timer); pending = null;
-                files.set(job.url, {path, size: info.size}); settle(job.url, path);
+                files.set(job.url, {path, size: info.size, key: job.key}); settle(job.url, path);
                 notify({url: job.url}); drain();
               }, fail: () => fail(job, new Error('无法读取媒体大小'), path),
             });
@@ -123,7 +128,7 @@ function createMediaSession(wxApi = wx, {maxBytes = MAX_TEMP_BYTES} = {}) {
     const item = [...wanted.values()].filter(item => item.load !== false && !files.has(item.url) &&
       !failures.has(item.url) && (speculation || item.foreground)).sort((a, b) => a.priority - b.priority)[0];
     if (!item) return;
-    const job = {url: item.url, reserved: 0}; pending = job;
+    const job = {url: item.url, key: identities.get(item.url), reserved: 0}; pending = job;
     try {
       // Reserve space before downloading, not after a complete file occupies disk.
       job.timer = setTimeout(() => fail(job, new Error('媒体信息读取超时')), 10000);
@@ -154,7 +159,7 @@ function createMediaSession(wxApi = wx, {maxBytes = MAX_TEMP_BYTES} = {}) {
     }
     for (const [url, item] of next) if (!wanted.has(url) || item.foreground && !wanted.get(url).foreground) failures.delete(url);
     wanted = next;
-    for (const [url, file] of files) if (!wanted.has(url)) {files.delete(url); remove(file);}
+    for (const [url, file] of files) if (!wanted.has(url) && !retainCompleted) {files.delete(url); remove(file);}
     for (const url of failures.keys()) if (!wanted.has(url)) failures.delete(url);
     for (const url of waiters.keys()) if (!wanted.has(url)) settle(url, null, cancelled());
     if (pending) {
@@ -167,14 +172,53 @@ function createMediaSession(wxApi = wx, {maxBytes = MAX_TEMP_BYTES} = {}) {
     updating--; notify({}); drain();
   }
   return {
+    bindResources(resources, unchanged = false) {
+      identities = new Map(resources.map(item => [item.url, item.key]));
+      updating++;
+      for (const [url, key] of identities) {
+        if (pending?.url === url && pending.key !== key) stop();
+        const existing = files.get(url);
+        if (existing && unchanged) existing.key = key;
+        if (existing && existing.key !== key) {files.delete(url); remove(existing);}
+        if (!files.has(url)) {
+          const match = [...files].find(([, file]) => file.key === key);
+          if (match) {files.delete(match[0]); files.set(url, match[1]);}
+        }
+      }
+      updating--;
+    },
+    validateFiles() {
+      const fs = wxApi.getFileSystemManager();
+      if (!fs.accessSync) return;
+      for (const [url, file] of files) {
+        try {fs.accessSync(file.path);} catch (_) {files.delete(url); remove(file);}
+      }
+    },
+    suspend() {
+      owners.clear(); reconcile();
+    },
+    clear() {
+      updating++; stop();
+      for (const url of waiters.keys()) settle(url, null, cancelled());
+      owners.clear(); wanted.clear(); failures.clear(); identities.clear();
+      for (const file of files.values()) remove(file);
+      files.clear(); updating--; notify({});
+    },
     replace(owner, list, allowed) {
       if (disposed) return;
       if (typeof allowed === 'boolean') speculation = allowed;
       if (list.length) owners.set(owner, list); else owners.delete(owner);
       reconcile();
     },
-    source: url => files.get(url)?.path || '',
+    source(url) {
+      const file = files.get(url);
+      if (!file) return '';
+      files.delete(url); files.set(url, file);
+      return file.path;
+    },
     error: url => failures.get(url),
+    identity: url => files.get(url)?.key,
+    pending: url => pending?.url === url,
     clearError: url => failures.delete(url),
     wait(url) {
       if (disposed) return Promise.reject(cancelled());

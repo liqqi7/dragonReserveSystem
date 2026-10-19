@@ -1,6 +1,7 @@
 """A separately invoked worker; never started by API imports or the boardgame worker."""
 
 from datetime import timedelta
+from dataclasses import replace
 import logging
 import shutil
 
@@ -51,6 +52,15 @@ def process_one(db):
         else:
             settings = get_settings()
             processed = media.compress_video(source, output, settings.memory_ffmpeg, settings.memory_ffprobe)
+        # Content-address the outputs once, off the request path. Review actions
+        # and renewed authorization must not change the identity of these bytes.
+        paths = {}
+        for name in ("display", "thumbnail"):
+            path = getattr(processed, name)
+            target = path.with_name(f"{name}-{media.file_digest(path)}{path.suffix}")
+            path.replace(target)
+            paths[name] = target
+        processed = replace(processed, **paths)
         item.display_key = processed.display.relative_to(root).as_posix()
         item.thumbnail_key = processed.thumbnail.relative_to(root).as_posix()
         item.width, item.height, item.duration = processed.width, processed.height, processed.duration

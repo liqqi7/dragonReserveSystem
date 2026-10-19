@@ -44,6 +44,20 @@ const [artist] = normalizeCatalog([{
   artworks: [0, 1, 2].map(index => ({ id: String(index), thumbnail_url: url(`thumb-${index}`), image_url: url(index), categories: ["派对"] }))
 }]);
 
+test("WebView cover preview navigates without an open-container node", () => {
+  const originalWx = global.wx, requests = [];
+  global.wx = {navigateTo: options => requests.push(options)};
+  try {
+    const sheet = instance(picker, {artists: [artist]});
+    sheet.renderer = "webview";
+    sheet.createSelectorQuery = () => assert.fail("WebView has no open-container node");
+    sheet.onPreview({currentTarget: {dataset: {artistIndex: 0, artworkIndex: 1}}});
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].url, "/pages/activity_cover_preview/activity_cover_preview");
+    assert.equal(Object.hasOwn(requests[0], "withOpenContainer"), false);
+  } finally {global.wx = originalWx;}
+});
+
 test("picker gives visible artwork precedence and pauses when hidden", () => {
   const calls = [];
   const sheet = instance(picker, { artists: [artist] }, { visible: true });

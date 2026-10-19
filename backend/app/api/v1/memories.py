@@ -8,7 +8,7 @@ import json
 import time
 from typing import Literal
 
-from fastapi import APIRouter, Depends, File, Path, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Path, Query, Request, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
@@ -17,6 +17,7 @@ from app.api.deps import get_current_user, require_admin
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.exceptions import AppError, ConflictError, NotFoundError
+from app.core.logging import ensure_trace_id
 from app.models import User
 from app.models.memory import Memory, MemoryMedia
 from app.schemas.memory import MediaDeclaration, MemoryCleanupRequest, MemoryDraftRequest, MemoryMetadata, MemoryReviewRequest
@@ -42,9 +43,9 @@ def draft(memory_id: int, db: Session = Depends(get_db), actor: User = Depends(g
 
 
 @router.post("/memory-drafts/{memory_id}/media/{slot}")
-def upload(memory_id: int, slot: int = Path(..., ge=0, le=1000000), file: UploadFile = File(...), db: Session = Depends(get_db),
+def upload(memory_id: int, request: Request, slot: int = Path(..., ge=0, le=1000000), file: UploadFile = File(...), db: Session = Depends(get_db),
            actor: User = Depends(get_current_user)):
-    item = service.upload(db, memory_id, slot, actor, file.file)
+    item = service.upload(db, memory_id, slot, actor, file.file, trace_id=ensure_trace_id(request))
     return {"id": item.id, "slot": item.sort, "state": item.state}
 
 

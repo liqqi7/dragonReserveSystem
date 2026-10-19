@@ -586,12 +586,12 @@ test("weather card matches the prototype structure and unavailable state", () =>
 test("activity detail uses the shared rpx safe-area resolver", () => {
   assert.match(js, /getBottomSafeAreaRpx/);
   assert.match(wxml, /class="bottom-bar" style="padding-bottom: \{\{bottomBarSafeAreaRpx\}\}rpx"/);
-  assert.match(js, /bottomBarSafeAreaRpx = Math\.max\(0, Math\.round\(\(safeBottomRpx - 21\.15\) \* 100\) \/ 100\)/);
+  assert.match(js, /bottomBarSafeAreaRpx = this\.renderer === "webview" \?\s*Math\.max\(0, getBottomContentInsetRpx\(\) - 11\.53\) : Math\.max\(0, Math\.round\(\(safeBottomRpx - 21\.15\) \* 100\) \/ 100\)/);
   assert.match(js, /bottomBarHeightRpx = Math\.round\(\(107\.69 \+ bottomBarSafeAreaRpx\) \* 100\) \/ 100/);
   // 原型：两个按钮栏顶部均为 6px、按钮高 44px；详情栏底部另有 6px，需从安全区扣除。
   const editJs = fs.readFileSync(path.join(__dirname, "../pages/activity_edit/activity_edit.js"), "utf8");
   const editWxss = fs.readFileSync(path.join(__dirname, "../pages/activity_edit/activity_edit.wxss"), "utf8");
-  assert.match(editJs, /footerSafeAreaRpx: Math\.max\(0, getBottomSafeAreaRpx\(\) - 9\.62\)/);
+  assert.match(editJs, /footerSafeAreaRpx: this\.renderer === "webview" \? getBottomContentInsetRpx\(\) : Math\.max\(0, getBottomSafeAreaRpx\(\) - 9\.62\)/);
   assert.match(wxss, /\.bottom-inner\s*\{[^}]*height:\s*107\.69rpx;/s);
   assert.match(wxss, /\.bottom-icon-button\s*\{[^}]*top:\s*11\.54rpx;/s);
   assert.match(editWxss, /\.footer\s*\{[^}]*padding:\s*11\.54rpx 38\.46rpx 0;/s);

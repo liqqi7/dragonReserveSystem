@@ -7,7 +7,7 @@
         <view class="bg-sheet-heading"><text class="bg-sheet-title">{{title}}</text><view role="button" wx:if="{{showClose && kind === 'form'}}" class="bg-sheet-close" bindtap="close" aria-label="关闭"><image src="/images/icon-close.svg" mode="aspectFit"/></view></view>
       </view>
       <scroll-view type="custom" class="bg-sheet-content" scroll-y enhanced><slot/></scroll-view>
-      <view wx:if="{{kind === 'form'}}" class="bg-sheet-footer"><slot name="footer"/></view>
+      <view wx:if="{{kind === 'form'}}" class="bg-sheet-footer" style="{{footerPaddingRpx !== null ? 'height:auto;padding-bottom:' + footerPaddingRpx + 'rpx;' : ''}}"><slot name="footer"/></view>
     </view>
   </view>
 </root-portal>

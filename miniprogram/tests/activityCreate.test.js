@@ -19,6 +19,15 @@ function context(data) {
   return { ...definition, data: { ...definition.data, ...data }, setData(patch) { Object.assign(this.data, patch); } };
 }
 
+test("WebView category scrolling uses existing scroll-view attributes without native context queries", () => {
+  const page = context();
+  page.renderer = "webview";
+  page.createSelectorQuery = () => assert.fail("WebView needs no Skyline scroll context");
+  assert.doesNotThrow(() => page.configureCategoryScroller());
+  page.categoryTap({currentTarget: {dataset: {category: "游戏"}}});
+  assert.equal(page.data.category, "游戏");
+});
+
 test("cover category uses 游戏 to match the cover catalog", () => {
   assert.deepEqual(definition.data.categories, ["派对", "运动", "外出", "游戏", "电影", "生日", "吃饭", "杂项"]);
   assert.doesNotMatch(fs.readFileSync(path.join(__dirname, "../pages/activity_create/activity_create.js"), "utf8"), /const CATEGORIES = .*桌游/);
@@ -306,7 +315,7 @@ test("footer matches the prototype action stack and keeps only the runtime safe 
   const wxml = fs.readFileSync(path.join(pageDir, "activity_create.wxml"), "utf8");
   const wxss = readWxss(path.join(pageDir, "activity_create.wxss"));
   assert.match(js, /footerSafeAreaRpx: 7\.69/);
-  assert.match(js, /footerSafeAreaRpx = Math\.round\(\(getBottomSafeAreaRpx\(\) \+ 7\.69\) \* 100\) \/ 100/);
+  assert.match(js, /footerSafeAreaRpx: this\.renderer === "webview" \? getBottomContentInsetRpx\(\) :\s*Math\.round\(\(getBottomSafeAreaRpx\(\) \+ 7\.69\) \* 100\) \/ 100/);
   assert.match(wxml, /<view class="footer" style="padding-bottom:\{\{footerSafeAreaRpx\}\}rpx;">/);
   assert.doesNotMatch(wxml, /footerBottomPx/);
   assert.match(wxss, /\.footer \{[^}]*padding:23\.08rpx 46\.15rpx 0;/);

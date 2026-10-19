@@ -1,10 +1,14 @@
+<wxs module="videoPointer" src="./video-pointer.wxs" />
+<template name="memory-loading">
+  <view class="viewer-loading" aria-label="加载中"><image class="viewer-loading-spinner" src="/images/memory-upload-spinner.svg" mode="aspectFit" /></view>
+</template>
 <template name="memory-progress">
   <view class="viewer-progress {{seeking ? 'viewer-progress--seeking' : ''}}" catchtap="stopTap">
     <view class="viewer-progress-track" />
     <view class="viewer-progress-played" style="width:{{progress}}%;" />
     <view wx:if="{{seeking}}" class="viewer-progress-thumb" style="left:{{progress}}%;" />
     <view wx:if="{{seeking}}" class="viewer-progress-bubble" style="left:{{bubbleLeft}}%;"><text>{{currentLabel}}</text></view>
-    <slider class="viewer-progress-input" min="0" max="1000" step="1" value="{{progress * 10}}" block-size="16" bindchanging="seekChanging" bindchange="seekChanged" aria-label="播放进度" />
+    <slider class="viewer-progress-input" min="0" max="1000" step="1" value="{{progress * 10}}" block-size="16" bindchanging="{{videoPointer.changing}}" bindchange="{{videoPointer.changed}}" bindtouchcancel="{{videoPointer.cancel}}" aria-label="播放进度" />
   </view>
 </template>
 <template name="memory-portrait-seek">
@@ -15,11 +19,13 @@
   <view class="portrait-progress {{progressVisible && !seeking ? 'portrait-progress--visible' : ''}}" aria-hidden="{{!progressVisible || seeking}}"><view class="portrait-progress-track" /><view class="portrait-progress-played" style="width:{{progress}}%;" /><view class="portrait-progress-thumb" style="left:{{progress < 1.2 ? 1.2 : progress > 98.8 ? 98.8 : progress}}%;" /></view>
 </template>
 <template name="memory-portrait-bottom">
-  <horizontal-drag-gesture-handler worklet:should-accept-gesture="portraitSeekAllowed" worklet:ongesture="portraitVideoDrag">
     <view class="viewer-bottom">
       <view class="viewer-bottom-shade {{seeking && !admin ? 'viewer-bottom-shade--seeking' : ''}}" />
-      <view wx:if="{{current.kind === 'video' && active}}" class="viewer-seek-region" style="bottom:{{bottom + (admin ? 142.30769 : 3.84615)}}rpx;" bindtouchstart="portraitTouchStart" />
-      <view class="viewer-info {{seeking ? 'viewer-info--seeking' : ''}}" style="bottom:{{bottom + (admin ? (current.kind === 'video' ? 169.23077 : 221.15385) : 30.76923)}}rpx;" aria-hidden="{{seeking}}" bindtouchstart="portraitTouchStart" data-media-id="{{current.id}}">
+      <horizontal-drag-gesture-handler wx:if="{{current.kind === 'video' && active}}" worklet:should-accept-gesture="portraitSeekAllowed" worklet:ongesture="portraitVideoDrag">
+        <view class="viewer-seek-region" style="bottom:{{bottom + (admin ? 142.30769 : 3.84615)}}rpx;" bindtouchstart="{{videoPointer.start}}" data-media-id="{{current.id}}" />
+      </horizontal-drag-gesture-handler>
+      <horizontal-drag-gesture-handler worklet:should-accept-gesture="portraitSeekAllowed" worklet:ongesture="portraitVideoDrag">
+      <view class="viewer-info {{seeking ? 'viewer-info--seeking' : ''}}" style="bottom:{{bottom + (admin ? 169.23077 : 30.76923)}}rpx;" aria-hidden="{{seeking}}" bindtouchstart="{{videoPointer.start}}" data-media-id="{{current.id}}">
         <view class="viewer-copy">
           <view class="viewer-author"><image src="{{memory.author.avatar_url}}" mode="aspectFill" /><text max-lines="1" overflow="ellipsis">{{memory.author.nickname}}</text><view class="viewer-tools"><button size="mini" wx:if="{{!admin}}" class="viewer-share" open-type="share" disabled="{{!active}}" aria-label="分享记忆"><image src="/images/memory-share.svg" /></button><button size="mini" wx:if="{{current.kind === 'video'}}" class="viewer-enter-fullscreen" bindtap="enterFullScreen" disabled="{{!active}}" aria-label="横屏播放"><image src="/images/memory-fullscreen.svg" /></button></view></view>
           <text wx:if="{{memory.caption}}" class="viewer-caption">{{memory.caption}}</text>
@@ -27,10 +33,11 @@
           <view wx:if="{{!admin && memory.location_name}}" class="viewer-meta"><image src="/images/memory-location.svg" /><text max-lines="2" overflow="ellipsis">{{memory.location_name}}</text></view>
         </view>
       </view>
+      </horizontal-drag-gesture-handler>
       <view wx:if="{{current.kind === 'video' && active}}" class="viewer-portrait-timeline" style="bottom:{{bottom + (admin ? 142.30769 : 3.84615)}}rpx;">
         <template is="memory-portrait-seek" data="{{progress,seeking,progressVisible,seekCurrentLabel,seekDurationLabel}}" />
       </view>
-      <view wx:if="{{admin}}" class="viewer-footer" style="bottom:{{bottom + (current.kind === 'video' ? 30.76923 : 38.46154)}}rpx;">
+      <view wx:if="{{admin}}" class="viewer-footer" style="bottom:{{bottom + 30.76923}}rpx;">
         <view wx:if="{{memory.status === 'pending'}}" class="memory-actions"><button class="viewer-reject" data-action="reject" bindtap="askReview" disabled="{{busy || !active}}">不通过</button><button class="viewer-approve" bindtap="approve" disabled="{{busy || !active}}">通过</button></view>
         <button wx:elif="{{memory.status === 'published'}}" class="memory-danger" data-action="offline" bindtap="askReview" disabled="{{busy || !active}}">下架</button>
         <button wx:elif="{{memory.status === 'offline'}}" class="primary" data-action="republish" bindtap="askReview" disabled="{{busy || !active}}">重新上架</button>
@@ -38,13 +45,13 @@
         <button wx:elif="{{memory.status === 'rejected'}}" class="primary" data-action="reopen" bindtap="askReview" disabled="{{busy || !active}}">重新审核</button>
       </view>
     </view>
-  </horizontal-drag-gesture-handler>
 </template>
 <template name="memory-fullscreen">
   <view class="viewer-fullscreen">
+    <template wx:if="{{loadingIndicatorVisible && !error}}" is="memory-loading" />
     <horizontal-drag-gesture-handler worklet:ongesture="videoDrag">
-      <view class="viewer-video-hitbox" bindtap="videoTap">
-        <button size="mini" wx:if="{{!playing && !seeking}}" class="viewer-play-button" catchtap="playVideo" aria-label="播放"><image src="/images/memory-play-large.svg" /></button>
+      <view class="viewer-video-hitbox" bindtap="videoTap" data-full-screen="{{true}}" bindtouchstart="{{videoPointer.start}}" bindtouchmove="{{videoPointer.move}}" bindtouchend="{{videoPointer.end}}" bindtouchcancel="{{videoPointer.cancel}}">
+        <button size="mini" wx:if="{{!playing && pausedByUser && !mediaLoading && !error && !seeking}}" class="viewer-play-button" catchtap="playVideo" aria-label="播放"><image src="/images/memory-play-large.svg" /></button>
         <view wx:if="{{seekGesture}}" class="viewer-seek-indicator"><image src="{{seekForward ? '/images/memory-fast-forward.svg' : '/images/memory-rewind.svg'}}" /><text>{{currentLabel}} / {{durationLabel}}</text></view>
       </view>
     </horizontal-drag-gesture-handler>

@@ -364,6 +364,7 @@ Component({
       };
 
       this.setData({ previewTransitionDuration: 360 }, () => {
+        if (this.renderer === "webview") return openPreview(null);
         this.createSelectorQuery()
           .select(`#coverPreviewTransition-${artistIndex}-${artworkIndex}`)
           .node()

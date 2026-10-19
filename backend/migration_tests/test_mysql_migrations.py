@@ -63,12 +63,31 @@ def test_full_chain_and_index_rollback(migration_db):
             connection.execute(text("INSERT INTO users (nickname, role, wechat_openid) VALUES ('second','user','unique-openid')"))
     assert_success(migrate("downgrade", "20260924_0020"))
     assert "ix_users_wechat_openid" in {i["name"] for i in inspect(engine).get_indexes("users")}
-    assert_success(migrate("upgrade", "head"))
+    assert_success(migrate("upgrade", "20261010_0023"))
     assert {"signup_deadline", "activity_type", "activity_style_key"}.isdisjoint(
         c["name"] for c in inspect(engine).get_columns("activities")
     )
     result = migrate("downgrade", "20261009_0021")
     assert result.returncode != 0 and "restore the pre-migration database backup" in result.stderr
+
+
+def test_memory_upgrade_preserves_existing_data_and_rejects_destructive_rollback(migration_db):
+    engine, migrate = migration_db
+    assert_success(migrate("upgrade", "20261010_0023"))
+    with engine.begin() as connection:
+        connection.execute(text("INSERT INTO users (id,nickname,role,wechat_openid) VALUES (1,'preserve','admin','memory-migration-probe')"))
+    assert_success(migrate("upgrade", "head"))
+    with engine.connect() as connection:
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "20261011_0024"
+        assert tuple(connection.execute(text("SELECT nickname,role,wechat_openid FROM users WHERE id=1")).one()) == (
+            "preserve", "admin", "memory-migration-probe")
+        assert connection.scalar(text("SELECT reserved_bytes FROM memory_capacity WHERE id=1")) == 0
+        assert {"memories", "memory_media", "memory_audit_logs", "memory_capacity"} <= set(inspect(connection).get_table_names())
+    result = migrate("downgrade", "20261010_0023")
+    assert result.returncode != 0 and "preserve submissions" in result.stderr
+    with engine.connect() as connection:
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "20261011_0024"
+        assert connection.scalar(text("SELECT nickname FROM users WHERE id=1")) == "preserve"
 
 
 def test_status_backfill_and_dynamic_foreign_key_rollback(migration_db):

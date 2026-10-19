@@ -16,6 +16,7 @@ env/
 .env
 .env.*
 !.env.example
+!.env.test.example
 
 # Alembic / local state
 backend/.alembic_cache/

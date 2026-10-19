@@ -1,5 +1,6 @@
 @import "../../styles/dragonChrome.wxss";
 @import "../../styles/memoryMedia.wxss";
+@import "../../styles/cardSkeleton.wxss";
 page {
   background: #f8fafc;
   color: #111827;
@@ -20,7 +21,8 @@ page {
   display: flex;
   align-items: center;
   font-size: 46.15385rpx;
-  font-weight: 700;
+  font-weight: 600;
+  line-height: 65.38462rpx;
 }
 .memory-scroll {
   position: relative;
@@ -31,17 +33,48 @@ page {
 .memory-card-slot {
   position: relative;
 }
+.memory-web-grid { display: flex; align-items: flex-start; box-sizing: border-box; }
+.memory-web-column { display: flex; flex-direction: column; min-width: 0; }
 .memory-card-transition {
   display: block;
   width: 100%;
   height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  /* The opaque content stays behind the fading skeleton, avoiding a page-color flash. */
+  transition: none;
+}
+.memory-card-transition--ready { opacity: 1; pointer-events: auto; }
+.memory-card-skeleton {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 23.07692rpx;
+  background: #EAECEF;
+  opacity: 1;
+  transition: opacity 440ms ease-out;
+}
+.memory-card-skeleton--ready { opacity: 0; pointer-events: none; }
+.memory-initial-skeleton { background: #EAECEF; }
+.memory-cover-retry {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666666;
+  font-size: 25rpx;
+  background: transparent;
 }
 .memory-cover {
   display: block;
   position: relative;
   overflow: hidden;
   border-radius: 23.07692rpx;
-  background: #f3f4f6;
+  background: #EAECEF;
 }
 .memory-cover-image {
   width: 100%;

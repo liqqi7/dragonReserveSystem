@@ -23,7 +23,7 @@ function harness() {
   const source = relative => fs.readFileSync(path.join(__dirname, "..", relative), "utf8");
   vm.runInNewContext(source("custom-tab-bar/index.js"), {
     ...globals, Component: value => { component = value; },
-    require: () => ({ getWindowInfoCompat: () => ({}), getBottomSafeAreaRpx: () => 0 })
+    require: () => ({ getWindowInfoCompat: () => ({}), getBottomContentInsetRpx: () => 0 })
   });
   const tab = {
     ...component.methods, data: { ...component.data, hidden: false, selected: 1 },

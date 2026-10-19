@@ -1,5 +1,6 @@
 const api = require('../../services/boardgames');
 const media = require('../../utils/boardgameMedia');
+const {getBottomContentInsetRpx} = require('../../utils/safeArea');
 
 const PAGE_SIZE = 20;
 
@@ -40,10 +41,12 @@ Page({
     filterForm: {},
     filterCount: 0,
     filterTags: [],
-    emptyFiltered: false
+    emptyFiltered: false,
+    bottomContentInsetRpx: null
   },
 
   onLoad(options) {
+    this.onResize();
     try {
       const info=wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
       const capsule=wx.getMenuButtonBoundingClientRect();
@@ -52,6 +55,7 @@ Page({
     if (options && options.query) this.setData({ query: options.query });
   },
 
+  onResize() {if(this.renderer === 'webview')this.setData({bottomContentInsetRpx:getBottomContentInsetRpx()});},
   onShow() {
     this.loadAll();
   },

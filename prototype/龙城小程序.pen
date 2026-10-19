@@ -84343,7 +84343,7 @@
               "id": "JGwCT",
               "name": "副标题",
               "fill": "#9CA3AF",
-              "content": "好记忆值得被官方收藏",
+              "content": "整点有意思的东西上来",
               "lineHeight": 1.4,
               "textAlign": "center",
               "fontFamily": "Noto Sans SC",
@@ -84440,7 +84440,7 @@
                   "name": "标题行",
                   "width": "fill_container",
                   "height": 24,
-                  "justifyContent": "space_between",
+                  "gap": 8,
                   "alignItems": "center",
                   "children": [
                     {
@@ -84453,6 +84453,17 @@
                       "fontFamily": "Noto Sans SC",
                       "fontSize": 14,
                       "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "EqVjv",
+                      "name": "上传限制副文案",
+                      "fill": "#6B7280",
+                      "content": "单个文件大小不超过20m，视频不超过30s",
+                      "lineHeight": 1.2,
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -91406,7 +91417,7 @@
               "id": "b6gDmX",
               "name": "副标题",
               "fill": "#9CA3AF",
-              "content": "好记忆值得被官方收藏",
+              "content": "整点有意思的东西上来",
               "lineHeight": 1.4,
               "textAlign": "center",
               "fontFamily": "Noto Sans SC",
@@ -91503,6 +91514,8 @@
                   "name": "标题行",
                   "width": "fill_container",
                   "height": 24,
+                  "gap": 8,
+                  "alignItems": "center",
                   "children": [
                     {
                       "type": "text",
@@ -91514,6 +91527,17 @@
                       "fontFamily": "Noto Sans SC",
                       "fontSize": 14,
                       "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "cqhve",
+                      "name": "上传限制副文案",
+                      "fill": "#6B7280",
+                      "content": "单个文件大小不超过20m，视频不超过30s",
+                      "lineHeight": 1.2,
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -125595,7 +125619,7 @@
               "id": "xUjmf",
               "name": "副标题",
               "fill": "#9CA3AF",
-              "content": "好记忆值得被官方收藏",
+              "content": "整点有意思的东西上来",
               "lineHeight": 1.4,
               "textAlign": "center",
               "fontFamily": "Noto Sans SC",
@@ -125692,6 +125716,8 @@
                   "name": "标题行",
                   "width": "fill_container",
                   "height": 24,
+                  "gap": 8,
+                  "alignItems": "center",
                   "children": [
                     {
                       "type": "text",
@@ -125703,6 +125729,17 @@
                       "fontFamily": "Noto Sans SC",
                       "fontSize": 14,
                       "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Iswpd",
+                      "name": "上传限制副文案",
+                      "fill": "#6B7280",
+                      "content": "单个文件大小不超过20m，视频不超过30s",
+                      "lineHeight": 1.2,
+                      "fontFamily": "Noto Sans SC",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 },

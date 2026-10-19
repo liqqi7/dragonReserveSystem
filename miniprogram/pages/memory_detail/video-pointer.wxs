@@ -1,0 +1,127 @@
+function stateFor(owner) {
+  var root = owner.selectComponent('.memory-viewer');
+  return root ? root.getState() : {};
+}
+function clear(state) {
+  var nodes = state.nodes || [];
+  for (var i = 0; i < nodes.length; i++) nodes[i].node.setStyle({});
+  state.nodes = null;
+}
+function collect(state, owner) {
+  var names = state.config.fullScreen ?
+    ['viewer-progress-played', 'viewer-progress-thumb', 'viewer-progress-bubble'] :
+    ['portrait-seek-played', 'portrait-seek-thumb'];
+  state.nodes = [];
+  for (var i = 0; i < names.length; i++) {
+    var matches = owner.selectAllComponents('.' + names[i]);
+    for (var j = 0; j < matches.length; j++) state.nodes.push({node: matches[j], kind: i});
+  }
+}
+function draw(state, time, owner) {
+  if (!state.nodes || state.nodes.length < (state.config.fullScreen ? 3 : 2)) collect(state, owner);
+  var progress = Math.max(0, Math.min(100, time / state.config.duration * 100));
+  for (var i = 0; i < state.nodes.length; i++) {
+    var entry = state.nodes[i];
+    if (entry.kind === 0) entry.node.setStyle({width: progress + '%'});
+    else entry.node.setStyle({left: (entry.kind === 2 ? Math.max(10, Math.min(90, progress)) :
+      state.config.fullScreen ? progress : Math.max(1.2, Math.min(98.8, progress))) + '%'});
+  }
+}
+function sync(value, previous, owner, instance) {
+  var state = instance.getState();
+  var old = state.config;
+  state.config = value;
+  if (!value || !value.enabled || old && (old.id !== value.id || old.generation !== value.generation ||
+      old.fullScreen !== value.fullScreen || old.width !== value.width || old.duration !== value.duration || old.epoch !== value.epoch)) {
+    state.gesture = null;
+    clear(state);
+  } else if (state.gesture) {
+    if (!previous || previous.seeking !== value.seeking) state.nodes = null;
+    if (state.gesture.started) draw(state, state.gesture.time, owner);
+  } else if (!value.seeking) clear(state);
+}
+function notify(state, owner, phase, stamp) {
+  var gesture = state.gesture;
+  var second = Math.floor(gesture.time), forward = gesture.time >= gesture.start;
+  if (phase === 2 && (gesture.second === second && gesture.forward === forward ||
+      stamp && gesture.stamp && stamp - gesture.stamp < 80)) return;
+  gesture.second = second; gesture.forward = forward; gesture.stamp = stamp;
+  var payload = {state: phase, id: state.config.id, generation: state.config.generation, epoch: state.config.epoch,
+    serial: gesture.serial, fullScreen: state.config.fullScreen, slider: !!gesture.slider,
+    time: gesture.time, start: gesture.start};
+  if (phase === 3 || phase === 4) state.gesture = null;
+  owner.callMethod('pointerSeek', payload);
+}
+function begin(state) {
+  state.serial = (state.serial || 0) + 1;
+  return {serial: state.serial, start: state.config.progress / 100 * state.config.duration};
+}
+function start(event, owner) {
+  var state = stateFor(owner), config = state.config;
+  if (!config) return owner.callMethod('portraitTouchStart', {touches: event.touches, currentTarget: {dataset: event.currentTarget.dataset}});
+  var data = event.currentTarget.dataset, points = event.touches || [];
+  if (!config.enabled || !!data.fullScreen !== config.fullScreen || data.mediaId != null && data.mediaId !== config.id || points.length !== 1) return;
+  var point = points[0], gesture = begin(state);
+  gesture.x = point.clientX; gesture.y = point.clientY; gesture.identifier = point.identifier;
+  gesture.horizontal = null; state.gesture = gesture;
+}
+function move(event, owner) {
+  var state = stateFor(owner), config = state.config;
+  if (!config) return owner.callMethod('portraitTouchMove', {touches: event.touches, changedTouches: event.changedTouches});
+  var gesture = state.gesture;
+  if (!gesture || gesture.slider) return;
+  var points = event.touches && event.touches.length ? event.touches : event.changedTouches || [];
+  if (points.length !== 1) return cancel(event, owner);
+  var point = points[0];
+  if (point.identifier !== gesture.identifier) return;
+  var dx = point.clientX - gesture.x, dy = point.clientY - gesture.y;
+  if (gesture.horizontal === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) gesture.horizontal = Math.abs(dx) > Math.abs(dy);
+  if (!gesture.horizontal) return;
+  gesture.time = Math.max(0, Math.min(config.duration,
+    gesture.start + (config.fullScreen ? -1 : 1) * dx / config.width * config.duration));
+  draw(state, gesture.time, owner);
+  if (!gesture.started) {
+    gesture.started = true;
+    // Only state boundaries and text changes cross to JS, never progress frames.
+    owner.callMethod('pointerSeek', {state: 1, id: config.id, generation: config.generation, epoch: config.epoch,
+      serial: gesture.serial, fullScreen: config.fullScreen, start: gesture.start, time: gesture.start});
+  }
+  notify(state, owner, 2, event.timeStamp);
+  return false;
+}
+function end(event, owner) {
+  var state = stateFor(owner);
+  if (!state.config) return owner.callMethod('portraitTouchEnd', {});
+  if (state.gesture && state.gesture.slider) return;
+  move(event, owner);
+  if (state.gesture && state.gesture.started) notify(state, owner, 3, event.timeStamp);
+  state.gesture = null;
+}
+function cancel(event, owner) {
+  var state = stateFor(owner);
+  if (!state.config) return owner.callMethod('portraitTouchCancel', {});
+  if (state.gesture && state.gesture.started) notify(state, owner, 4, event.timeStamp);
+  state.gesture = null;
+}
+function changing(event, owner) {
+  var state = stateFor(owner), config = state.config;
+  if (!config) return owner.callMethod('seekChanging', {detail: event.detail});
+  if (!config.enabled || !config.fullScreen) return;
+  var time = Math.max(0, Math.min(1000, event.detail.value)) / 1000 * config.duration;
+  if (!state.gesture) {
+    state.gesture = begin(state);
+    state.gesture.slider = true; state.gesture.started = true; state.gesture.time = time;
+    notify(state, owner, 1, event.timeStamp);
+  }
+  state.gesture.time = time;
+  draw(state, time, owner);
+  notify(state, owner, 2, event.timeStamp);
+}
+function changed(event, owner) {
+  var state = stateFor(owner);
+  if (!state.config) return owner.callMethod('seekChanged', {detail: event.detail});
+  changing(event, owner);
+  if (state.gesture) notify(state, owner, 3, event.timeStamp);
+  state.gesture = null;
+}
+module.exports = {sync: sync, start: start, move: move, end: end, cancel: cancel, changing: changing, changed: changed};

@@ -1,20 +1,41 @@
+<template name="memory-cover-content">
+  <view class="memory-cover" style="width:{{cardWidth}}px;height:{{item.coverHeight}}px;">
+    <image class="memory-cover-image memory-window-image" data-url="{{item.cover}}" data-token="{{coverStates[item.cover].token}}" src="{{imageSources[item.cover] || ''}}" mode="aspectFill" bindload="coverLoaded" binderror="coverFailed" />
+    <image wx:if="{{item.videoCover}}" class="memory-play" src="/images/memory-play.svg" mode="aspectFit" />
+  </view>
+</template>
+<template name="memory-grid-item">
+  <view wx:if="{{item.skeleton}}" class="memory-cover memory-initial-skeleton" style="width:{{cardWidth}}px;height:{{item.coverHeight}}px;" aria-label="内容加载中">
+    <view class="memory-skeleton-shimmer {{skeletonShimmerRunning ? 'memory-skeleton-shimmer--running' : ''}}" />
+  </view>
+  <view wx:else class="memory-card-slot" style="width:{{cardWidth}}px;height:{{item.coverHeight}}px;">
+    <view wx:if="{{webview}}" class="memory-card-transition {{coverStates[item.cover].ready ? 'memory-card-transition--ready' : ''}}" data-id="{{item.id}}" bindtap="open" aria-role="button" aria-label="查看记忆">
+      <template is="memory-cover-content" data="{{item,cardWidth,coverStates,imageSources}}" />
+    </view>
+    <open-container wx:else class="memory-card-transition {{coverStates[item.cover].ready ? 'memory-card-transition--ready' : ''}}" closed-color="transparent" closed-elevation="0" closed-border-radius="{{cardRadius}}" middle-color="#000000" open-color="#000000" open-elevation="0" open-border-radius="0" transition-type="fadeThrough" transition-duration="320" data-id="{{item.id}}" bind:tap="open" aria-role="button" aria-label="查看记忆">
+      <template is="memory-cover-content" data="{{item,cardWidth,coverStates,imageSources}}" />
+    </open-container>
+    <view class="memory-card-skeleton {{coverStates[item.cover].ready ? 'memory-card-skeleton--ready' : ''}}" aria-hidden="{{!!coverStates[item.cover].ready}}">
+      <view class="memory-skeleton-shimmer {{skeletonShimmerRunning && !coverStates[item.cover].failed && !coverStates[item.cover].ready ? 'memory-skeleton-shimmer--running' : ''}}" />
+      <button wx:if="{{coverStates[item.cover].failed}}" class="memory-cover-retry" data-url="{{item.cover}}" catchtap="retryCover">重试</button>
+    </view>
+  </view>
+</template>
 <view class="memory-page" style="padding-top:{{top}}px;">
   <image class="dragon-watermark dragon-watermark--absolute" src="/images/activity-home-logo.png" mode="aspectFit" aria-hidden="true" />
   <scroll-view class="memory-scroll" type="custom" scroll-y refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="refresh" bindscrolltolower="more" bindscroll="scroll">
-    <list-view><view class="memory-heading"><text>记忆</text></view></list-view>
-    <grid-view type="masonry" cross-axis-count="2" cross-axis-gap="{{gridGap}}" main-axis-gap="{{gridGap}}" padding="{{gridPadding}}">
-      <view wx:for="{{items}}" wx:key="id" class="memory-card-slot" style="width:{{cardWidth}}px;height:{{item.coverHeight}}px;">
-        <open-container class="memory-card-transition" closed-color="transparent" closed-elevation="0" closed-border-radius="{{cardRadius}}" middle-color="#000000" open-color="#000000" open-elevation="0" open-border-radius="0" transition-type="fadeThrough" transition-duration="320" data-id="{{item.id}}" bind:tap="open" aria-role="button" aria-label="查看记忆">
-          <view class="memory-cover" style="width:{{cardWidth}}px;height:{{item.coverHeight}}px;">
-            <image class="memory-cover-image memory-window-image" data-url="{{item.cover}}" src="{{imageSources[item.cover] || ''}}" mode="aspectFill" />
-            <image wx:if="{{item.videoCover}}" class="memory-play" src="/images/memory-play.svg" mode="aspectFit" />
-          </view>
-        </open-container>
-      </view>
+    <list-view wx:if="{{!webview}}"><view class="memory-heading"><text>记忆</text></view></list-view>
+    <view wx:else class="memory-heading"><text>记忆</text></view>
+    <grid-view wx:if="{{!webview}}" type="masonry" cross-axis-count="2" cross-axis-gap="{{gridGap}}" main-axis-gap="{{gridGap}}" padding="{{gridPadding}}">
+      <block wx:for="{{loading && !items.length ? skeletonItems : items}}" wx:key="id"><template is="memory-grid-item" data="{{item,cardWidth,cardRadius,coverStates,imageSources,skeletonShimmerRunning,webview}}" /></block>
     </grid-view>
+    <view wx:else class="memory-web-grid" style="padding:{{gridPadding[0]}}px {{gridPadding[1]}}px {{gridPadding[2]}}px {{gridPadding[3]}}px;gap:{{gridGap}}px;">
+      <view wx:for="{{loading && !items.length ? skeletonColumns : columns}}" wx:for-item="column" wx:key="id" class="memory-web-column" style="width:{{cardWidth}}px;gap:{{gridGap}}px;">
+        <block wx:for="{{column.items}}" wx:key="id"><template is="memory-grid-item" data="{{item,cardWidth,cardRadius,coverStates,imageSources,skeletonShimmerRunning,webview}}" /></block>
+      </view>
+    </view>
     <view wx:if="{{!loading && !items.length && !error}}" class="memory-empty"><text>暂无记忆</text></view>
     <view wx:if="{{error}}" class="memory-empty"><text>{{error}}</text><button bindtap="retry">重试</button></view>
-    <view wx:if="{{loading}}" class="memory-empty"><text>加载中</text></view>
   </scroll-view>
 </view>
 <create-access-dialog id="create-access-dialog" />

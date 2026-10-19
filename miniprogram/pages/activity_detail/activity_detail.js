@@ -12,7 +12,7 @@ const { isDefaultNickname, isDefaultAvatar, isTemporaryAvatarUrl } = require("..
 const { orderParticipantsForDrawerRecentFirst } = require("../../utils/participantSort");
 const { resolveLocalMediaUrl, isLocalTestMediaUrl, getApiEnvironment } = require("../../services/config");
 const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
-const { getBottomSafeAreaRpx, getWindowInfoCompat } = require("../../utils/safeArea");
+const { getBottomSafeAreaRpx, getBottomContentInsetRpx, getWindowInfoCompat } = require("../../utils/safeArea");
 const { resolveActivityWeather } = require("../../utils/activityWeatherCache");
 const {
   formatActivityDate,
@@ -83,9 +83,11 @@ Page({
   data: {
     statusBarHeight: 20,
     safeBottomRpx: 0,
+    signupBottomInsetRpx: 0,
     bottomBarSafeAreaRpx: 0,
     bottomBarHeightRpx: 107.69,
     showBackToTop: false,
+    detailScrollTop: 0,
     activityId: "",
     activity: null,
     loading: true,
@@ -154,9 +156,8 @@ Page({
   _windowWidthPx: 390,
   _backToTopThresholdPx: BACK_TO_TOP_THRESHOLD_RPX * 390 / 750,
 
-  onLoad(options) {
-    this._detailUnloaded = false;
-    const id = (options && options.id) || "";
+  onResize() {
+    if (this._detailUnloaded) return;
     try {
       const win = getWindowInfoCompat();
       const statusBarHeight = win.statusBarHeight || 20;
@@ -164,21 +165,27 @@ Page({
       const safeBottomRpx = getBottomSafeAreaRpx();
       // 与编辑活动页一致：按钮底缘相对系统 Home Indicator 保留原型的 15px。
       // 详情按钮栏自身在按钮下方已有 11.53rpx，故比编辑页的安全区修正再减去这段空间。
-      const bottomBarSafeAreaRpx = Math.max(0, Math.round((safeBottomRpx - 21.15) * 100) / 100);
+      const bottomBarSafeAreaRpx = this.renderer === "webview" ?
+        Math.max(0, getBottomContentInsetRpx() - 11.53) : Math.max(0, Math.round((safeBottomRpx - 21.15) * 100) / 100);
       const bottomBarHeightRpx = Math.round((107.69 + bottomBarSafeAreaRpx) * 100) / 100;
       this._backToTopThresholdPx = BACK_TO_TOP_THRESHOLD_RPX * this._windowWidthPx / 750;
       this.setData({
         statusBarHeight,
         safeBottomRpx,
+        signupBottomInsetRpx: this.renderer === "webview" ? bottomBarSafeAreaRpx : safeBottomRpx,
         bottomBarSafeAreaRpx,
-        bottomBarHeightRpx,
-        activityId: id
+        bottomBarHeightRpx
       });
     } catch (e) {
       this._windowWidthPx = 390;
-      this.setData({ activityId: id, bottomBarHeightRpx: 107.69, safeBottomRpx: 0, bottomBarSafeAreaRpx: 0 });
+      this.setData({ bottomBarHeightRpx: 107.69, safeBottomRpx: 0, bottomBarSafeAreaRpx: 0, signupBottomInsetRpx: 0 });
     }
-
+  },
+  onLoad(options) {
+    this._detailUnloaded = false;
+    const id = (options && options.id) || "";
+    this.setData({activityId: id});
+    this.onResize();
     if (!id) {
       this.setData({
         loading: false,
@@ -222,6 +229,7 @@ Page({
   onDetailScroll(e) {
     if (this._detailUnloaded) return;
     const scrollTop = Math.max(0, Number(e.detail && e.detail.scrollTop) || 0);
+    this._detailScrollTop = scrollTop;
     const showBackToTop = scrollTop >= this._backToTopThresholdPx;
     if (showBackToTop !== this.data.showBackToTop) {
       this.setData({ showBackToTop });
@@ -229,12 +237,19 @@ Page({
   },
 
   backToTop() {
+    const fallback = () => {
+      if (this._detailUnloaded) return;
+      this.setData({detailScrollTop: this._detailScrollTop || 1}, () => {
+        if (!this._detailUnloaded) this.setData({detailScrollTop: 0});
+      });
+    };
+    if (this.renderer === "webview") return fallback();
     this.createSelectorQuery().select('.main-scroll').node().exec(result => {
       if (this._detailUnloaded) return;
       const scroller = result && result[0] && result[0].node;
       if (scroller && typeof scroller.scrollTo === 'function') {
         scroller.scrollTo({ top: 0, animated: true });
-      }
+      } else fallback();
     });
   },
 

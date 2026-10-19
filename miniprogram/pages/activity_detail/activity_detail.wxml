@@ -91,6 +91,7 @@
 
   <view wx:if="{{activity || loadError}}" class="detail-content-layer {{activity && !detailContentVisible ? 'detail-content-layer--hidden' : 'detail-content-layer--visible'}}">
   <scroll-view type="list" scroll-y enhanced="{{true}}" bindscroll="onDetailScroll"
+    scroll-top="{{detailScrollTop}}" scroll-with-animation="{{true}}"
     class="main-scroll"
     style="height: calc(100vh - {{bottomBarHeightRpx}}rpx)"
   >
@@ -348,7 +349,7 @@
 <create-access-dialog id="exit-activity-dialog" bind:confirm="confirmExitActivity" />
 
 <page-container wx:if="{{subItemSignupContainerRendered}}" show="{{showSubItemSignup}}" position="bottom" round="{{false}}" close-on-slide-down="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="background:#FFFFFF;border-radius:46.15rpx 46.15rpx 0 0;" bind:clickoverlay="closeSubItemSignup" bind:beforeleave="onSubItemSignupBeforeLeave" bind:afterleave="onSubItemSignupAfterLeave">
-  <view class="signup-project-sheet" style="height:calc({{signupSheetContentHeightRpx}}rpx + {{safeBottomRpx}}rpx);">
+  <view class="signup-project-sheet" style="height:calc({{signupSheetContentHeightRpx}}rpx + {{signupBottomInsetRpx}}rpx);">
     <view class="signup-project-heading"><text class="signup-project-title">选择报名子项目</text><view class="signup-project-close" bindtap="closeSubItemSignup" aria-role="button" aria-label="关闭"><image class="signup-project-close-icon" src="/images/icon-close.svg" mode="aspectFit" /></view></view>
     <scroll-view type="list" scroll-y="{{true}}" class="project-options" show-scrollbar="{{false}}">
       <view class="project-options-inner">
@@ -358,7 +359,7 @@
         </view>
       </view>
     </scroll-view>
-    <view class="project-confirm-bar" style="padding-bottom:{{safeBottomRpx}}rpx;"><view class="project-confirm-inner"><button class="project-confirm {{!signupSelection.length || signupSubmitting ? 'project-confirm--disabled' : ''}}" disabled="{{!signupSelection.length || signupSubmitting}}" loading="{{signupSubmitting}}" bindtap="confirmSubItemSignup"><text>{{signupSelection.length ? '确定报名' : '请选择报名的子项目'}}</text></button></view></view>
+    <view class="project-confirm-bar" style="padding-bottom:{{signupBottomInsetRpx}}rpx;"><view class="project-confirm-inner"><button class="project-confirm {{!signupSelection.length || signupSubmitting ? 'project-confirm--disabled' : ''}}" disabled="{{!signupSelection.length || signupSubmitting}}" loading="{{signupSubmitting}}" bindtap="confirmSubItemSignup"><text>{{signupSelection.length ? '确定报名' : '请选择报名的子项目'}}</text></button></view></view>
   </view>
 </page-container>
 <page-container wx:if="{{projectMembersContainerRendered}}" show="{{showProjectMembers}}" position="bottom" overlay="{{true}}" round="{{false}}" duration="240" z-index="1230" close-on-slide-down="{{false}}" overlay-style="background:rgba(0,0,0,0.4);" custom-style="height:{{projectMembersDrawerHeightRpx}}rpx;max-height:{{projectMembersDrawerMaxHeightRpx}}rpx;background:transparent;border-radius:46.15rpx 46.15rpx 0 0;overflow:hidden;" bind:clickoverlay="closeProjectMembers" bind:beforeleave="onProjectMembersBeforeLeave" bind:afterleave="onProjectMembersAfterLeave">

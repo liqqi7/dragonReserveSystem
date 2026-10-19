@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const {readWxss} = require("./helpers/readWxss");
 
 const pageDir = path.join(__dirname, "../pages/activity_list");
 const js = fs.readFileSync(path.join(pageDir, "activity_list.js"), "utf8");
@@ -114,7 +115,7 @@ test("returning from activity detail preserves the active card by ID across list
 });
 
 test("home uses independent skeletons and an image-independent Tab entrance", () => {
-  const wxss = fs.readFileSync(path.join(pageDir, "activity_list.wxss"), "utf8");
+  const wxss = readWxss(path.join(pageDir, "activity_list.wxss"));
   assert.match(js, /homeListLoading: true/);
   assert.doesNotMatch(js, /_coldStartGlassPendingIds|_pendingColdStartGroupedActivities/);
   assert.match(wxml, /wx:if="\{\{homeListLoading\}\}"/);

@@ -6,10 +6,22 @@ const vm = require("node:vm");
 const crypto = require("node:crypto");
 const { readWxss } = require("./helpers/wxss");
 const {loadMediaModules} = require("./helpers/memoryMedia");
+const {createWorkletClock} = require("./helpers/workletClock");
 
 const source = (file) =>
   fs.readFileSync(path.join(__dirname, "..", file), "utf8");
 const tick = () => new Promise((resolve) => setImmediate(resolve));
+
+test("only confirmed file cleanup uses the filesystem operation timeout", async () => {
+  const calls = [];
+  const api = service({}, options => { calls.push(options); return Promise.resolve({}); });
+  await api.send("/admin/memories/7/cleanup", "POST", {confirmed: true});
+  await api.send("/admin/memories/7/cleanup?media_id=20");
+  await api.send("/admin/memories/7/review", "POST", {action: "publish"});
+  await api.send("/memories");
+  assert.equal(calls[0].timeout, 120000);
+  assert.ok(calls.slice(1).every(options => options.timeout === undefined));
+});
 
 test("review cards represent one image or video with independent metadata", () => {
   const cards = service().reviewCards({id: 7, status: "pending", caption: "同一次投稿", revision: 3,
@@ -160,7 +172,7 @@ test("stale video errors do not overwrite the newly visible file", () => {
   assert.equal(instance.data.playing, false);
 });
 
-test("viewer preloads a video arriving on the next queue page and cleans it on hide", async () => {
+test("viewer preloads a video arriving on the next queue page and retains completed files briefly on hide", async () => {
   const api = service();
   const first = {id: 7, status: "pending", revision: 3,
     media: [{id: 20, kind: "image", state: "ready", publication_status: "unreviewed", url: "/photo.jpg"}]};
@@ -195,17 +207,48 @@ test("viewer preloads a video arriving on the next queue page and cleans it on h
   instance.onHide();
   assert.equal(instance.data.visible, false);
   assert.equal(instance.data.playing, false);
-  assert.deepEqual(new Set(removed),new Set(["cached-photo","cached-video"]));
+  assert.equal(removed.length, 0);
+  assert.equal(instance._mediaSession.source("https://test.invalid/clip.mp4"), "cached-video");
   instance.videoPlay({currentTarget: {dataset: {id: 21}}});
   assert.equal(instance.data.playing, false);
 });
 
 test("submission upload label matches the prototype without a swipe hint", () => {
   const markup = source("pages/memory_create/memory_create.wxml");
-  assert.match(markup, /<view class="label memory-label"><text>上传内容<\/text><\/view>/);
+  assert.match(markup, /<text class="subtitle">整点有意思的东西上来<\/text>/);
+  assert.doesNotMatch(markup, /这不是网盘/);
+  assert.doesNotMatch(markup, /好记忆值得被官方收藏/);
+  assert.match(markup, /<view class="label memory-label upload-label"><text>上传内容<\/text><text class="upload-subtitle /);
+  assert.doesNotMatch(markup, /服务器确认中|准备提交|提交中|uploadLabel|confirming/);
   assert.doesNotMatch(markup, /左右滑动|upload-hint/);
   assert.doesNotMatch(source("pages/memory_create/memory_create.wxss"), /\.upload-hint\b/);
   assert.match(markup, /class="upload-scroll" type="list" scroll-x enable-flex/);
+});
+
+test("upload subtitle matches the prototype and file errors replace it in the same text node", () => {
+  const markup = source("pages/memory_create/memory_create.wxml");
+  const styles = source("pages/memory_create/memory_create.wxss");
+  const slot = markup.match(/<text class="upload-subtitle ([^"]+)" aria-live="polite">\{\{([^}]+)\}\}<\/text>/);
+  assert.ok(slot);
+  assert.equal((markup.match(/class="upload-subtitle /g) || []).length, 1);
+  const text = uploadError => new Function("uploadError", `return (${slot[2]})`)(uploadError);
+  assert.equal(text(""), "单个文件大小不超过20m，视频不超过30s");
+  for (const error of ["原图片不能超过 20MB", "视频时长不能超过 30 秒", "第 2 项：无法读取原文件"]) {
+    assert.equal(text(error), error);
+    assert.doesNotMatch(text(error), /单个文件大小/);
+  }
+  assert.equal(text(""), "单个文件大小不超过20m，视频不超过30s");
+  assert.match(styles, /\.upload-label\s*\{[^}]*gap:\s*15\.38462rpx;/s);
+  assert.match(styles, /\.upload-subtitle\s*\{[^}]*font-size:\s*23\.07692rpx;[^}]*font-weight:\s*400;[^}]*line-height:\s*1\.2;[^}]*color:\s*#6b7280;/s);
+  assert.match(styles, /\.upload-subtitle--error\s*\{\s*color:\s*#dc2626;/);
+  assert.doesNotMatch(markup + styles, /upload-error/);
+});
+
+test("WebView submission scrolling does not query a Skyline node", () => {
+  const {instance} = page("memory_create", service());
+  instance.renderer = "webview";
+  instance.createSelectorQuery = () => assert.fail("ordinary scroll-into-view remains the WebView path");
+  instance.configureMediaScroller();
 });
 
 test("memory icons preserve the exact Pencil-exported paths and source nodes", () => {
@@ -573,14 +616,17 @@ function service(wx = {}, request = () => Promise.resolve({}), logger = {}) {
   return module.exports;
 }
 
-function page(name, memory, wx = {}, thumbnails = {}) {
+function page(name, memory, wx = {}, thumbnails = {}, sharedMediaModules) {
   let definition;
+  const logs = [];
+  const animations = [], cancelledAnimations = [];
   const app = {
     validateStoredSession: async () => true,
     showSessionExpiredPrompt() {},
     globalData: {
       userRole: "user",
       accessToken: "token",
+      userId: "100",
       isAuthenticated: true,
     },
   };
@@ -596,34 +642,52 @@ function page(name, memory, wx = {}, thumbnails = {}) {
     worklet: {
       shared: (value) => ({ value }),
       runOnJS: (callback) => callback,
+      timing: (target, options) => {animations.push({target, options}); return target;},
+      cancelAnimation: value => cancelledAnimations.push(value),
+      Easing: {linear: value => value, cubic: value => value ** 3, out: easing => value => 1 - easing(1 - value)},
     },
     ...wx,
   };
   const originalFileSystem = api.getFileSystemManager;
   api.getFileSystemManager = () => ({getFileInfo: options => options.success({size:1024}), ...originalFileSystem()});
-  const mediaModules = loadMediaModules(api);
-  const timers = new Map();
+  const timers = new Map(), timerDelays = new Map();
   let timerId = 0;
+  const mediaModules = sharedMediaModules || loadMediaModules(api, {}, {}, {
+    setTimeout: callback => {timers.set(++timerId, callback); return timerId;},
+    clearTimeout: id => timers.delete(id),
+  });
   vm.runInNewContext(source(`pages/${name}/${name}.js`), {
     wx: api,
+    console: {info: (...args) => logs.push(args)},
     getApp: () => app,
     Page: (value) => {
       definition = value;
     },
     Date,
     Promise,
-    setTimeout(callback) {
+    setTimeout(callback, delay) {
       timers.set(++timerId, callback);
+      timerDelays.set(timerId, delay);
       return timerId;
     },
     clearTimeout(id) {
       timers.delete(id);
     },
     require(name) {
-      if (name.endsWith("/memoryVideoPreload")) {
-        return mediaModules.videos;
+      if (name.endsWith("/memoryCardPresentation")) {
+        const module = {exports: {}};
+        vm.runInNewContext(source("utils/memoryCardPresentation.js"), {
+          module, setTimeout: callback => {timers.set(++timerId, callback); return timerId;},
+          clearTimeout: id => timers.delete(id),
+        });
+        return module.exports;
+      }
+      if (name.endsWith("/memoryPreviewMedia")) {
+        return mediaModules.previewMedia;
       }
       if (name.endsWith("/memoryMediaSession")) return mediaModules.session;
+      if (name.endsWith("/memoryPreviewSession")) return mediaModules.previews;
+      if (name.endsWith("/memoryShareImage")) return mediaModules.shares;
       if (name.endsWith("/memoryImages")) {
         return mediaModules.images;
       }
@@ -642,6 +706,7 @@ function page(name, memory, wx = {}, thumbnails = {}) {
           ...thumbnails,
         };
       if (name.endsWith("/logger")) return { logPageError() {} };
+      if (name.endsWith("/workletCompat")) return require("../utils/workletCompat");
       if (name.endsWith("/memory")) {
         for (const [key, value] of Object.entries(service()))
           if (!(key in memory)) memory[key] = value;
@@ -654,7 +719,11 @@ function page(name, memory, wx = {}, thumbnails = {}) {
         });
         return module.exports;
       }
-      if (name.endsWith("/safeArea")) return { getBottomSafeAreaRpx: () => 0 };
+      if (name.endsWith("/safeArea")) {
+        const module = {exports: {}};
+        vm.runInNewContext(source("utils/safeArea.js"), {module, wx: api});
+        return module.exports;
+      }
       if (name.endsWith("/tabBarSync")) return { patchTabBarIfNeeded() {} };
       return { listActivities: async () => [] };
     },
@@ -664,10 +733,11 @@ function page(name, memory, wx = {}, thumbnails = {}) {
     data: structuredClone(definition.data),
     applyAnimatedStyle(selector, updater) {
       this._animatedStyle = { selector, updater };
+      (this._animatedStyles ||= new Map()).set(selector, updater);
     },
     setData(patch, callback) {
       for (const [key, value] of Object.entries(patch)) {
-        const keys = key.split(".");
+        const keys = key.replace(/\[(\d+)\]/g, ".$1").split(".");
         let object = this.data;
         for (const part of keys.slice(0, -1)) object = object[part];
         object[keys.at(-1)] = value;
@@ -680,7 +750,7 @@ function page(name, memory, wx = {}, thumbnails = {}) {
     },
   };
   if (name === "memory_create") instance.data.ready = true;
-  return { instance, app, wx: api, timers };
+  return { instance, app, wx: api, timers, timerDelays, mediaModules, logs, animations, cancelledAnimations };
 }
 
 test("memory validates original sizes and duration, without a separate video quota", () => {
@@ -845,7 +915,8 @@ test("selection failures identify the selected item and release the selection lo
   await options.success({
     tempFiles: [{ kind: "image", size: 100 }, { bad: true }],
   });
-  assert.equal(instance.data.error, "第 2 项：开发者工具缺少 FFmpeg");
+  assert.equal(instance.data.uploadError, "第 2 项：开发者工具缺少 FFmpeg");
+  assert.equal(instance.data.error, "");
   assert.equal(instance.data.selecting, false);
   assert.equal(instance.data.files.length, 0);
 });
@@ -1093,6 +1164,8 @@ test("a lost submission acknowledgement retries idempotent submit without re-upl
   instance.setData({ files: [{ kind: "image", size: 100, path: "photo" }] });
   await instance.upload();
   assert.equal(instance._uploader.submitted, undefined);
+  assert.equal(instance.data.error, "acknowledgement lost");
+  assert.equal(instance.data.uploadError, "");
   await instance.upload();
   assert.equal(instance._uploader.submitted, true);
   assert.equal(uploads, 1);
@@ -1254,6 +1327,149 @@ test("public feed displays every published file as its own card and opens the co
   assert.equal(target, "/pages/memory_detail/memory_detail?id=80&media_id=7");
 });
 
+test("memory feed admits only three native covers, then refills immediately even before the top cover is ready", async () => {
+  const api = {...service(), list: async () => ({items: [{id: 7, media:
+    [1,2,3,4,5].map(id => ({id, kind: "image", thumbnail_url: `/cover-${id}.jpg`}))}], cursor: null})};
+  const {instance} = page("memory", api);
+  instance.onLoad(); instance.onShow(); await tick();
+  const urls = Array.from(instance.data.items, item => item.cover);
+  assert.deepEqual(Object.keys(instance.data.imageSources), urls.slice(0,3));
+  assert.equal(instance.data.coverStates[urls[3]].token, undefined);
+  instance.coverLoaded({currentTarget: {dataset: {url: urls[2], token: instance.data.coverStates[urls[2]].token}}});
+  assert.deepEqual(Object.keys(instance.data.imageSources), urls.slice(0,4));
+  assert.equal(instance.data.coverStates[urls[0]].ready, false);
+  assert.equal(instance.data.coverStates[urls[2]].loaded, true);
+  assert.equal(instance.data.coverStates[urls[2]].ready, false);
+  assert.ok(instance.data.coverStates[urls[3]].token);
+  instance.onUnload();
+});
+
+test("retry repeats a failed refresh from the beginning even after reaching the last page", async () => {
+  const queries = [];
+  const api = {...service(), list: async query => {
+    queries.push(query);
+    if (queries.length === 2) throw new Error("刷新失败");
+    return {items: [{id: 7, media: [{id: queries.length, kind: "image", thumbnail_url: "/cover.jpg"}]}], cursor: null};
+  }};
+  const {instance} = page("memory", api);
+  instance.onLoad(); await instance.load(true); await tick();
+  const url = instance.data.items[0].cover, covers = instance._covers;
+  instance.coverLoaded({currentTarget: {dataset: {url, token: instance.data.coverStates[url].token}}});
+  await instance.refresh(); await tick();
+  assert.equal(instance.data.error, "刷新失败");
+  assert.equal(instance._covers, covers, "failed refresh must preserve already displayed covers");
+  assert.equal(instance.data.coverStates[url].ready, true);
+  await instance.more();
+  assert.equal(queries.length, 2, "scroll events must not replace the failed refresh with pagination");
+  await instance.retry(); await tick();
+  assert.equal(queries.length, 3);
+  assert.ok(queries.every(query => query.cursor === undefined));
+  assert.deepEqual(Array.from(instance.data.items, item => item.id), [3]);
+  assert.equal(instance.data.error, "");
+  assert.notEqual(instance._covers, covers, "successful refresh invalidates the old covers");
+  instance.onUnload();
+});
+
+test("retry of a failed next page preserves its cursor and existing cards", async () => {
+  const queries = [];
+  const api = {...service(), list: async query => {
+    queries.push(query);
+    if (queries.length === 2) throw new Error("翻页失败");
+    return {items: [{id: 7, media: [{id: queries.length, kind: "image"}]}], cursor: queries.length === 1 ? "next" : null};
+  }};
+  const {instance} = page("memory", api);
+  instance.onLoad(); await instance.load(true); await tick();
+  await instance.more(); await tick(); await instance.retry(); await tick();
+  assert.deepEqual(queries.map(query => query.cursor), [undefined, "next", "next"]);
+  assert.deepEqual(Array.from(instance.data.items, item => item.id), [1, 3]);
+  instance.onUnload();
+});
+
+test("memory tab return retains ready sources and does not request the list again", async () => {
+  let requested = 0;
+  const api = {...service(), list: async () => {
+    requested++;
+    return {items: [{id: 7, media: [1,2].map(id => ({id, kind: "image", thumbnail_url: `/cover-${id}.jpg`}))}], cursor: null};
+  }};
+  const {instance} = page("memory", api);
+  instance.onLoad(); instance.onShow(); await tick();
+  const url = instance.data.items[0].cover;
+  instance.coverLoaded({currentTarget: {dataset: {url, token: instance.data.coverStates[url].token}}});
+  const covers = instance._covers, images = instance._memoryImages, source = instance.data.imageSources[url];
+  const token = instance.data.coverStates[url].token;
+  instance.onHide();
+  assert.equal(instance.data.coverStates[url].ready, true);
+  assert.equal(instance.data.imageSources[url], source);
+  assert.equal(instance.data.skeletonShimmerRunning, false);
+  instance.onShow(); await tick();
+  assert.equal(requested, 1);
+  assert.equal(instance._covers, covers);
+  assert.equal(instance._memoryImages, images);
+  assert.equal(instance.data.coverStates[url].token, token);
+  assert.equal(instance.data.coverStates[url].ready, true);
+  instance.onUnload();
+  assert.equal(instance._covers, null); assert.equal(instance._memoryImages, null);
+});
+
+test("signed-out visitors can view memories and retain ready covers on tab return", async () => {
+  let requests = 0, opened;
+  const {instance, app} = page("memory", {...service(), list: async () => {
+    requests++; return {items: [{id: 7, media: [{id: 1, kind: "image", thumbnail_url: "/cover.jpg"}]}], cursor: null};
+  }}, {navigateTo(options) {opened = options.url;}});
+  app.globalData.userRole = "guest"; app.globalData.isAuthenticated = false;
+  app.globalData.accessToken = ""; app.globalData.userId = "";
+  instance.onLoad(); instance.onShow(); await tick();
+  assert.equal(requests, 1); assert.equal(instance.data.items.length, 1);
+  const url = instance.data.items[0].cover;
+  instance.coverLoaded({currentTarget: {dataset: {url, token: instance.data.coverStates[url].token}}});
+  instance.open({currentTarget: {dataset: {id: 1}}});
+  assert.equal(opened, "/pages/memory_detail/memory_detail?id=7&media_id=1");
+  instance.onHide(); instance.onShow(); await tick();
+  assert.equal(requests, 1); assert.equal(instance.data.coverStates[url].ready, true);
+  assert.equal(instance.data.imageSources[url], url);
+  instance.refresh(); await tick(); assert.equal(requests, 2);
+  assert.doesNotMatch(source("pages/memory/memory.wxml"), /login-empty|canView|登录后查看记忆/);
+  instance.onUnload();
+});
+
+test("memory content version changes and explicit refresh reset retained covers", async () => {
+  let requested = 0;
+  const api = {...service(), list: async () => {
+    requested++;
+    return {items: [{id: 7, media: [{id: 1, kind: "image", thumbnail_url: "/cover.jpg"}]}], cursor: null};
+  }};
+  const {instance, app} = page("memory", api);
+  instance.onLoad(); instance.onShow(); await tick();
+  const url = instance.data.items[0].cover;
+  instance.coverLoaded({currentTarget: {dataset: {url, token: instance.data.coverStates[url].token}}});
+  const old = instance._covers;
+  instance.onHide(); app.globalData.memoryVersion = 1; instance.onShow(); await tick();
+  assert.equal(requested, 2); assert.notEqual(instance._covers, old);
+  assert.equal(instance.data.coverStates[url].ready, false);
+  assert.equal(instance._version, 1);
+  instance.refresh(); await tick(); assert.equal(requested, 3);
+  instance.onUnload();
+});
+
+test("returning during a pending list request refreshes only if the content version changed", async () => {
+  for (const changed of [false, true]) {
+    let requested = 0, finish;
+    const result = {items: [], cursor: null};
+    const api = {...service(), list: () => {
+      requested++;
+      return requested === 1 ? new Promise(resolve => {finish = resolve;}) : Promise.resolve(result);
+    }};
+    const {instance, app} = page("memory", api);
+    instance.onLoad(); instance.onShow(); instance.onHide();
+    app.globalData.memoryVersion = changed ? 1 : 0;
+    instance.onShow(); assert.equal(requested, 1);
+    finish(result); await tick();
+    assert.equal(requested, changed ? 2 : 1);
+    assert.equal(instance._version, changed ? 1 : 0);
+    instance.onUnload();
+  }
+});
+
 test("public detail and sharing start with the selected published file and reject unavailable targets", async () => {
   const api = {...service(), detail: async () => ({id: 70, media: [
     {id: 1, kind: "image"}, {id: 2, kind: "image"}, {id: 3, kind: "image"},
@@ -1273,6 +1489,41 @@ test("public detail and sharing start with the selected published file and rejec
   missing.onLoad({id: "70", media_id: "99"}); await missing.load();
   assert.match(missing.data.error, /已下架/);
   assert.equal(missing.data.current, null);
+});
+
+for (const kind of ["image", "video"]) test(`memory ${kind} share crops the current photo or poster, with a stable target`, async () => {
+  const {mediaModules} = page("memory_detail", service());
+  let source;
+  mediaModules.shares.memoryShareImage = value => {source = value; return Promise.resolve("cropped.jpg");};
+  // Reload the page after supplying the shared service so its destructured import uses this stub.
+  const target = page("memory_detail", service(), {}, {}, mediaModules).instance;
+  target._id = 70;
+  target.data.memory = {caption: "桌游夜的回忆"};
+  target.data.current = {id: 3, kind, url: "display", thumbnail_url: "thumbnail"};
+  target.data.imageSources = {display: "photo.jpg", thumbnail: "poster.jpg"};
+  const share = target.onShareAppMessage();
+  assert.equal(source, kind === "video" ? "poster.jpg" : "photo.jpg");
+  assert.equal(share.imageUrl, source);
+  target.data.current = {id: 4, kind: "image"};
+  const completed = await share.promise;
+  assert.equal(completed.imageUrl, "cropped.jpg");
+  assert.equal(completed.title, "桌游夜的回忆");
+  assert.equal(completed.path, "/pages/memory_detail/memory_detail?id=70&media_id=3");
+  target._admin = true;
+  assert.equal(target.onShareAppMessage().imageUrl, undefined);
+  assert.equal(target.onShareAppMessage().promise, undefined);
+});
+
+test("memory share export failure keeps its chosen image and path instead of a page screenshot", async () => {
+  const {mediaModules} = page("memory_detail", service());
+  mediaModules.shares.memoryShareImage = () => Promise.reject(new Error("export failed"));
+  const instance = page("memory_detail", service(), {}, {}, mediaModules).instance;
+  instance._id = 70;
+  instance.data.memory = {caption: "周末聚会"};
+  instance.data.current = {id: 3, kind: "video", url: "video.mp4", thumbnail_url: "poster.jpg"};
+  const result = await instance.onShareAppMessage().promise;
+  assert.equal(result.imageUrl, "poster.jpg");
+  assert.equal(result.path, "/pages/memory_detail/memory_detail?id=70&media_id=3");
 });
 
 test("only the memory tab routes plus to submission; guests see submission-specific copy", () => {
@@ -1324,7 +1575,7 @@ test("only the memory tab routes plus to submission; guests see submission-speci
   assert.equal(app.globalData.pendingOpenCreateActivity, true);
 });
 
-function viewer(kind = "image") {
+function viewer(kind = "image", wx = {}) {
   const calls = [];
   const context = Object.fromEntries(
     ["play", "pause", "seek", "requestFullScreen", "exitFullScreen"].map(
@@ -1333,6 +1584,7 @@ function viewer(kind = "image") {
   );
   const result = page("memory_detail", service(), {
     createVideoContext: () => context,
+    ...wx,
   });
   result.instance.onLoad({ id: 1 });
   result.instance._visible = true;
@@ -1344,6 +1596,28 @@ function viewer(kind = "image") {
   result.instance.activate();
   return { ...result, calls };
 }
+
+test("submission footer shares the home minimum gap, preserves larger safe areas and updates after resize", () => {
+  for (const platform of ["windows", "ios", "android"]) {
+    let width = 390, inset = 0;
+    const {instance} = page("memory_create", service(), {
+      getWindowInfo: () => ({windowWidth: width, windowHeight: 844, statusBarHeight: 20, safeAreaInsets: {bottom: inset}}),
+      getDeviceInfo: () => ({platform}),
+    });
+    instance.onLoad();
+    assert.equal(instance.data.footerSafeAreaRpx, 46.15);
+    assert.equal(instance.data.bottom, platform === "android" ? 46.15 : 0, "drawers keep the existing safe-area policy");
+    inset = 34; instance.onResize();
+    assert.equal(instance.data.footerSafeAreaRpx, 65.38, "use max, not 34px + 24px");
+    width = 620; inset = 0; instance.onResize();
+    assert.equal(instance.data.footerSafeAreaRpx, platform === "android" ? 46.15 : 29.03);
+    assert.equal(instance.data.top, 20);
+    instance.onUnload();
+  }
+  const markup = source("pages/memory_create/memory_create.wxml");
+  assert.match(markup, /class="memory-footer" style="padding-bottom:{{footerSafeAreaRpx}}rpx;"/);
+  assert.match(markup, /class="memory-sheet"[^>]*padding-bottom:{{bottom}}rpx/);
+});
 
 test("caption counts Unicode code points and original mixed selections can be previewed", () => {
   let preview;
@@ -1396,14 +1670,14 @@ test("photo pinch is anchored, bounded and locks paging until restored", () => {
 
 test("double tap toggles 200 percent zoom; near-fit cancelled pinch releases paging", () => {
   const { instance } = viewer();
-  instance.photoDoubleTap({ state: 3, absoluteX: 195, absoluteY: 422 });
+  instance.photoDoubleTap({ state: 1, absoluteX: 195, absoluteY: 422 });
   assert.equal(instance._scale.value, 2);
-  instance.photoDoubleTap({state: 3, absoluteX: 100, absoluteY: 300});
+  instance.photoDoubleTap({state: 1, absoluteX: 100, absoluteY: 300});
   assert.equal(instance._scale.value, 1);
   assert.equal(instance._x.value, 0);
   assert.equal(instance._y.value, 0);
   assert.equal(instance.data.zoomed, false);
-  instance.photoDoubleTap({state: 3, absoluteX: 195, absoluteY: 422});
+  instance.photoDoubleTap({state: 1, absoluteX: 195, absoluteY: 422});
   instance.back();
   assert.equal(instance.data.zoomed, false);
   instance.photoScale({ state: 1, focalX: 195, focalY: 422 });
@@ -1413,7 +1687,62 @@ test("double tap toggles 200 percent zoom; near-fit cancelled pinch releases pag
   assert.equal(instance.pagerAllowed(), true);
 });
 
-test("PC photo double clicks enlarge and restore with an actual inline image transform", () => {
+test("Skyline double tap consumes the discrete BEGIN event, not a drag END or cancellation", () => {
+  const {instance} = viewer();
+  for (const state of [0, 2, 3, 4]) {
+    instance.photoDoubleTap({state, absoluteX: 195, absoluteY: 422});
+    assert.equal(instance._scale.value, 1);
+    assert.equal(instance.data.zoomed, false);
+  }
+  instance.photoDoubleTap({state: 1, absoluteX: 100, absoluteY: 300});
+  assert.equal(instance._scale.value, 2);
+  assert.equal(instance.data.zoomed, true);
+  assert.equal(instance.pagerAllowed(), false);
+  assert.match(instance._animatedStyle.updater().transform, /scale\(2\)/);
+  instance.photoDoubleTap({state: 1, absoluteX: 100, absoluteY: 300});
+  assert.equal(instance._scale.value, 1);
+  assert.equal(instance._x.value, 0);
+  assert.equal(instance._y.value, 0);
+  assert.equal(instance.data.zoomed, false);
+  assert.equal(instance.pagerAllowed(), true);
+  assert.match(instance._animatedStyle.updater().transform, /scale\(1\)/);
+  instance.onUnload();
+});
+
+test("photo zoom interpolates scale and position, reverses from the live frame and lets pinch take over", () => {
+  const clock = createWorkletClock();
+  const {instance} = viewer("image", {worklet: clock.api});
+  instance.renderer = "skyline";
+  instance.photoDoubleTap({state: 1, absoluteX: 100, absoluteY: 300});
+  assert.equal(instance._scale.value, 1, "the first frame must not jump to the target");
+  assert.equal(instance.data.zoomed, true, "UI controls follow the zoom intent, not the tween's first frame");
+  assert.ok(clock.requests.every(animation => animation.duration === 240));
+  clock.advance(120);
+  const halfway = instance._scale.value;
+  assert.ok(halfway > 1 && halfway < 2);
+  assert.ok(instance._x.value > 0 && instance._x.value < 95);
+  assert.match(instance._animatedStyle.updater().transform, /scale\(1\./);
+  instance.photoDoubleTap({state: 1, absoluteX: 100, absoluteY: 300});
+  assert.equal(instance._scale.value, halfway, "a quick second double tap reverses without jumping");
+  clock.advance(240);
+  assert.equal(instance._scale.value, 1);
+  assert.equal(instance._x.value, 0);
+  instance.photoDoubleTap({state: 1, absoluteX: 100, absoluteY: 300});
+  clock.advance(100);
+  instance.photoScale({state: 1, focalX: 195, focalY: 422});
+  const held = instance._scale.value;
+  clock.advance(300);
+  assert.equal(instance._scale.value, held, "pinch cancels the in-flight tween");
+  instance.restorePhoto({type: "tap"});
+  clock.advance(120);
+  assert.ok(instance._scale.value > 1 && instance._scale.value < held);
+  clock.advance(120);
+  assert.equal(instance._scale.value, 1);
+  instance.onUnload();
+  assert.equal(clock.active.size, 0);
+});
+
+test("PC photo double clicks send progressive zoom targets to the view layer", () => {
   const {instance} = viewer();
   instance.renderer = "webview";
   const tap = (time, x = 195, y = 422) => instance.photoTap({timeStamp: time,
@@ -1423,19 +1752,225 @@ test("PC photo double clicks enlarge and restore with an actual inline image tra
   tap(200);
   assert.equal(instance.data.zoomed, true);
   assert.equal(instance._scale.value, 2);
-  assert.equal(instance.data.photoTransformStyle, "transform:translate(0px, 0px) scale(2);");
+  assert.equal(instance.data.photoPointerState.scale, 2);
+  assert.equal(instance.data.photoPointerState.animated, true);
   assert.equal(instance.pagerAllowed(), false);
   tap(500); tap(600);
   assert.equal(instance.data.zoomed, false);
-  assert.equal(instance.data.photoTransformStyle, "");
+  assert.equal(instance.data.photoPointerState.scale, 1);
   assert.equal(instance._scale.value, 1);
   assert.equal(instance.pagerAllowed(), true);
   tap(1000, 50, 300); tap(1100, 50, 300);
   assert.ok(instance._x.value > 0);
   instance.restorePhoto();
-  assert.equal(instance.data.photoTransformStyle, "");
+  assert.equal(instance.data.photoPointerState.scale, 1);
   assert.equal(instance._photoTap, null);
   instance.onUnload();
+});
+
+test("PC double click scales the actual image binding independently of the WXS observer", () => {
+  const {instance:p}=viewer();p.renderer="webview";
+  const markup=source("pages/memory_detail/memory_detail.wxml");
+  const template=markup.match(/<image id="memory-photo"[^>]*style="([^"]+)"/)[1];
+  const style=()=>template.replace(/\{\{([\s\S]*?)\}\}/g,(_,expression)=>String(vm.runInNewContext(expression,p.data)));
+  p.photoTap({timeStamp:100});p.photoTap({timeStamp:200});
+  assert.equal(p.data.zoomed,true);
+  assert.match(style(),/transform:scale\(2\);transition:transform 240ms ease-out;/);
+  p.photoTap({timeStamp:500});p.photoTap({timeStamp:600});
+  assert.equal(p.data.zoomed,false);
+  assert.match(style(),/transform:scale\(1\);transition:transform 240ms ease-out;/);
+  p.renderer="skyline";p.data.photoPointerState=null;
+  assert.doesNotMatch(style(),/transform:|transition:/,"Skyline's worklet remains the sole owner of its image transform");
+  p.onUnload();
+});
+
+function photoPointerBridge(instance) {
+  const module={exports:{}};
+  vm.runInNewContext(source("pages/memory_detail/photo-pointer.wxs"),{module});
+  instance.setViewerData({visible:true});
+  const state={},styles={},calls=[];
+  const stage={getState:()=>state,setStyle(patch){
+    for(const key of Object.keys(styles))delete styles[key];
+    Object.assign(styles,patch);
+  }};
+  const owner={callMethod(name,event){calls.push(event);instance[name](event);}};
+  let previous;
+  const sync=()=>{
+    const value=instance.data.photoPointerState;
+    if(value!==previous){module.exports.sync(value,previous,owner,stage);previous=value;}
+  };
+  const touch=(type,x,y,extra={})=>{
+    sync();
+    const point={clientX:x,clientY:y,identifier:1};
+    const result=module.exports.touch({type,instance:stage,currentTarget:{dataset:{id:instance.data.current?.id,
+      generation:instance.data.videoGeneration}},
+      touches:type==="touchend"||type==="touchcancel"?[]:[point],changedTouches:[point],...extra},
+    owner);
+    sync();return result;
+  };
+  Object.assign(touch,{state,styles,calls,sync});
+  sync();return touch;
+}
+
+test("PC enlarged photos pan in both axes, consume swiper movement and reuse the native pan bounds",()=>{
+  const {instance:p}=viewer();p.renderer="webview";
+  p.photoTap({timeStamp:100,detail:{x:195,y:422}});p.photoTap({timeStamp:200,detail:{x:195,y:422}});
+  const touch=photoPointerBridge(p);
+  assert.equal(touch("touchstart",195,422),undefined);
+  assert.equal(touch("touchmove",255,502),false,"WXS prevents the move from reaching the swiper");
+  assert.equal(touch.state.x,60);assert.equal(touch.state.y,80);
+  assert.equal(touch.styles.transform,"translate(60px, 80px)");
+  assert.equal(touch.styles.transition,"none","dragging follows the pointer without a CSS transition lag");
+  assert.equal(p._x.value,0,"movement does not wait for a round trip through the JS thread");
+  assert.equal(touch.calls.length,1,"only gesture start has crossed to JS");
+  assert.equal(touch("touchmove",-9999,-9999),false);
+  assert.equal(touch.state.x,-195);assert.equal(touch.state.y,-422);
+  assert.equal(touch("touchmove",9999,9999),false);
+  assert.equal(touch.state.x,195);assert.equal(touch.state.y,422);
+  touch("touchend",9999,9999);
+  assert.equal(p._x.value,195);assert.equal(p._y.value,422,"the final position is committed once at release");
+  assert.equal(touch.calls.length,2);
+  const style=touch.styles.transform;
+  touch("touchmove",9000,9000);assert.equal(touch.styles.transform,style,"ended pointers cannot continue panning");
+  p.data.memory.media.push({id:11,kind:"image"});p.change({detail:{current:1}});
+  assert.equal(p.data.index,0);assert.equal(p.pagerAllowed(),false);
+  p.restorePhoto();assert.equal(touch("touchmove",100,100),undefined,"fit mode leaves ordinary paging untouched");
+  assert.equal(p.pagerAllowed(),true);p.onUnload();
+});
+
+test("200 PC pointer moves paint in the view layer with no JS calls or setData round trips",()=>{
+  const {instance:p}=viewer();p.renderer="webview";
+  p.photoTap({timeStamp:100});p.photoTap({timeStamp:200});
+  const touch=photoPointerBridge(p),config=p.data.photoPointerState;
+  let writes=0;const setData=p.setData.bind(p);
+  p.setData=(patch,callback)=>{writes++;setData(patch,callback);};
+  touch("touchstart",100,200);
+  for(let frame=1;frame<=200;frame++)touch("touchmove",100+frame/2,200+frame);
+  assert.equal(touch.styles.transform,"translate(100px, 200px)");
+  assert.equal(touch.calls.length,1,"only start has reached the logic thread");
+  assert.equal(writes,0);
+  assert.equal(p.data.photoPointerState,config);
+  touch("touchend",200,400);
+  assert.equal(touch.calls.length,2);
+  assert.equal(writes,1,"only release commits the final transform");
+  assert.equal(p._x.value,100);assert.equal(p._y.value,200);
+  p.onUnload();
+});
+
+test("PC press and unmoved release preserve an existing off-centre zoom without repainting",()=>{
+  const {instance:p}=viewer();p.renderer="webview";
+  p.photoTap({timeStamp:100,detail:{x:100,y:300}});p.photoTap({timeStamp:200,detail:{x:100,y:300}});
+  const touch=photoPointerBridge(p);
+  assert.equal(touch.styles.transform,"translate(95px, 122px)");
+  const pose={...touch.styles};let writes=0;
+  const setData=p.setData.bind(p);p.setData=(patch,callback)=>{writes++;setData(patch,callback);};
+  touch("touchstart",195,422);
+  assert.deepEqual(touch.styles,pose,"press must not drop the translation or interrupt the zoom transition");
+  touch("touchend",195,422);
+  assert.deepEqual(touch.styles,pose,"an unmoved release must not snap the image to an animation target");
+  assert.equal(writes,0);
+  touch("touchstart",195,422);touch("touchmove",215,452);
+  assert.equal(touch.styles.transform,"translate(115px, 152px)");
+  assert.equal(touch.styles.transition,"none","movement writes a complete pose even when setStyle replaces old keys");
+  touch("touchend",215,452);
+  const moved={...touch.styles};
+  touch("touchstart",215,452);assert.deepEqual(touch.styles,moved);
+  touch("touchend",215,452);assert.deepEqual(touch.styles,moved);
+  assert.equal(writes,1,"only the actual drag commits a pose");
+  p.onUnload();
+});
+
+test("a late drag acknowledgement cannot rewind a newer view-layer gesture or block restore",()=>{
+  const module={exports:{}};
+  vm.runInNewContext(source("pages/memory_detail/photo-pointer.wxs"),{module});
+  const state={},styles={},calls=[];
+  const stage={getState:()=>state,setStyle:patch=>Object.assign(styles,patch)};
+  const owner={callMethod:(name,event)=>calls.push(event)};
+  const config={enabled:true,id:10,generation:2,x:0,y:0,scale:2,maxX:195,maxY:422,serial:0,animated:true};
+  module.exports.sync(config,null,owner,stage);
+  const touch=(type,x)=>module.exports.touch({type,instance:stage,currentTarget:{dataset:{id:10,generation:2}},
+    touches:type==="touchend"?[]:[{identifier:1,clientX:x,clientY:200}],
+    changedTouches:[{identifier:1,clientX:x,clientY:200}]},owner);
+  touch("touchstart",100);touch("touchmove",130);touch("touchend",140);
+  assert.equal(calls[1].x,40);
+  touch("touchstart",100);touch("touchmove",120);
+  assert.equal(state.x,60,"the next gesture starts from the live view position, before JS acknowledges");
+  module.exports.sync({...config,x:40,serial:1,animated:false},config,owner,stage);
+  assert.equal(state.x,60);
+  touch("touchmove",140);touch("touchend",140);
+  assert.equal(calls[3].x,80);
+  module.exports.sync({...config,x:80,serial:2,animated:false},config,owner,stage);
+  assert.equal(styles.transform,"translate(80px, 0px)");
+  touch("touchstart",100);touch("touchmove",120);
+  module.exports.sync({...config,enabled:false,x:0,y:0,scale:1},config,owner,stage);
+  assert.equal(styles.transform,"translate(0px, 0px)");
+  assert.equal(styles.transition,"transform 240ms ease-out");
+  touch("touchmove",180);assert.equal(state.x,0);
+});
+
+test("disabled, hidden and error states stop PC view-layer dragging before the logic thread",()=>{
+  for(const patch of [{busy:true},{selectionOpen:true},{fullScreen:true},{visible:false},{error:"failed"}]){
+    const {instance:p}=viewer();p.renderer="webview";
+    p.photoTap({timeStamp:100});p.photoTap({timeStamp:200});
+    const touch=photoPointerBridge(p);
+    touch("touchstart",100,200);touch("touchmove",130,240);
+    p.setViewerData(patch);touch.sync();
+    const style=touch.styles.transform,count=touch.calls.length;
+    touch("touchmove",180,290);touch("touchend",180,290);
+    assert.equal(touch.styles.transform,style);
+    assert.equal(touch.calls.length,count);
+    p.onUnload();
+  }
+});
+
+test("PC dragging cannot count as a double click, but subsequent ordinary double clicks still restore",()=>{
+  const {instance:p}=viewer();p.renderer="webview";
+  const tap=timeStamp=>p.photoTap({timeStamp,detail:{x:195,y:422}});
+  tap(100);tap(200);
+  const touch=photoPointerBridge(p);
+  touch("touchstart",195,422);touch("touchmove",220,450);touch("touchend",220,450);
+  tap(250);tap(300);assert.equal(p.data.zoomed,true,"the post-drag click must be ignored");
+  for(const time of [500,600]){
+    touch("touchstart",195,422);touch("touchend",195,422);tap(time);
+  }
+  assert.equal(p.data.zoomed,false);assert.equal(p.data.photoPointerState.scale,1);p.onUnload();
+});
+
+test("PC photo pan clamps short images and rejects stale, cancelled, multi-touch and hidden gestures",()=>{
+  const {instance:p}=viewer();p.renderer="webview";
+  p.data.memory.media[0].width=2000;p.data.memory.media[0].height=1000;p.fitPhoto(p.data.current);
+  p.photoTap({timeStamp:100});p.photoTap({timeStamp:200});
+  const touch=photoPointerBridge(p);
+  touch("touchstart",195,422);touch("touchmove",10000,10000);
+  assert.equal(touch.state.x,195);assert.equal(touch.state.y,0);
+  const style=touch.styles.transform;
+  touch("touchcancel",10000,10000);touch("touchmove",1,1);assert.equal(touch.styles.transform,style);
+  touch("touchstart",195,422);
+  const obsolete={type:"touchmove",id:10,generation:p.data.videoGeneration-1,touches:[{identifier:1,clientX:10,clientY:10}]};
+  p.photoPointer(obsolete);assert.equal(touch.styles.transform,style);
+  touch("touchmove",1,1,{touches:[{clientX:1,clientY:1},{clientX:2,clientY:2}]});
+  touch("touchmove",10,10);assert.equal(touch.styles.transform,style);
+  p.onHide();assert.equal(p._photoPointer,null);
+  p.photoPointer({...obsolete,generation:p.data.videoGeneration});assert.equal(touch.styles.transform,style);
+  p.onUnload();
+});
+
+test("photo pointer bridge never intercepts fit-mode swipes or duplicates Skyline worklet panning",()=>{
+  for(const renderer of ["webview","skyline"]){
+    const {instance:p}=viewer();p.renderer=renderer;const touch=photoPointerBridge(p);
+    assert.equal(touch("touchstart",100,100),undefined);assert.equal(touch("touchmove",150,150),undefined);
+    if(renderer==="skyline"){
+      p.photoDoubleTap({state:1,absoluteX:195,absoluteY:422});
+      assert.equal(touch("touchmove",200,200),undefined);assert.equal(p._photoPointer,null);
+      p.photoPan({state:2,deltaX:30,deltaY:40});assert.equal(p._x.value,30);assert.equal(p._y.value,40);
+    }
+    p.onUnload();
+  }
+  const markup=source("pages/memory_detail/memory_detail.wxml");
+  assert.match(markup,/prop="\{\{photoPointerState\}\}" change:prop="\{\{photoPointer.sync\}\}"/);
+  for(const type of ["start","move","end","cancel"])
+    assert.match(markup,new RegExp(`bindtouch${type}="\\{\\{photoPointer.touch\\}\\}"`));
+  assert.equal((markup.match(/id="memory-photo"/g)||[]).length,1,"the pointer adapter does not duplicate or remount the image");
 });
 
 test("photo taps cannot pair across time, distant positions, pages or a hidden viewer", () => {
@@ -1467,12 +2002,12 @@ test("ordinary photo taps do not double-handle Skyline gestures or toggle videos
     instance.photoTap({timeStamp: 100, detail: {x: 195, y: 422}});
     instance.photoTap({timeStamp: 200, detail: {x: 195, y: 422}});
     assert.equal(instance.data.zoomed, false);
-    assert.equal(instance.data.photoTransformStyle, "");
+    assert.equal(instance.data.photoPointerState, null);
     instance.onUnload();
   }
   const markup = source("pages/memory_detail/memory_detail.wxml");
   assert.match(markup, /class="viewer-photo-stage" data-id="\{\{item.id\}\}" bindtap="photoTap"/);
-  assert.match(markup, /\{\{photoTransformStyle\}\}/);
+  assert.doesNotMatch(markup, /photoTransformStyle|photoAnimating/);
   assert.match(markup, /bindtap="restorePhoto" aria-label="还原适宽"[^>]*><image[^>]*memory-restore\.svg[^>]*\/><text>还原适宽<\/text>/);
 });
 
@@ -1492,19 +2027,22 @@ test("review title matches the 20px Pencil text and safe area scrolls with the l
 test("preview preloads full images on both sides and never shows a loading label while paging", () => {
   const {instance}=viewer();
   const prepared=[];
-  instance._memoryImages={prepare(urls,preload){prepared.push({urls,preload});},dispose(){}};
+  instance._previewMedia={update(...items){prepared.push(items);},dispose(){}};
   instance.data.memory.media=[0,1,2,3,4].map(id=>({id,kind:"image",url:`https://test.invalid/${id}.jpg`,thumbnail_url:`https://test.invalid/${id}-thumb.jpg`}));
   instance.data.index=2;
-  instance.preparePreviewImages();
-  assert.deepEqual(Array.from(prepared[0].preload),["https://test.invalid/2.jpg","https://test.invalid/3.jpg","https://test.invalid/1.jpg"]);
+  instance.data.viewerMedia=[];
+  instance.preparePreviewMedia();
+  assert.deepEqual(Array.from(prepared[0].slice(0,3), item=>item.id),[2,3,1]);
   instance.data.index=0;
-  instance.preparePreviewImages();
-  assert.equal(prepared[1].preload.length,2);
+  instance.preparePreviewMedia();
+  assert.equal(prepared[1][1].id,1);
+  assert.equal(prepared[1][2],undefined);
   instance.data.memory=null; instance.data.viewerMedia=[];
-  assert.doesNotThrow(()=>instance.preparePreviewImages());
+  assert.doesNotThrow(()=>instance.preparePreviewMedia());
   const markup=source("pages/memory_detail/memory_detail.wxml");
   assert.match(markup,/cache-extent="1"/);
-  assert.match(markup,/wx:if="\{\{loading && !memory\}\}" class="memory-state"/);
+  assert.match(markup,/wx:if="\{\{loadingIndicatorVisible && !error && !fullScreen\}\}" is="memory-loading"/);
+  assert.doesNotMatch(markup,/<text>加载中<\/text>/);
   assert.doesNotMatch(markup,/loading \|\| imageLoading \|\| videoLoading/);
   assert.match(markup,/imageSources\[item.url\] \|\| imageSources\[item.thumbnail_url\]/);
   instance.onUnload();
@@ -1515,7 +2053,7 @@ test("short landscape photos cannot pan into blank space vertically", () => {
   instance.data.memory.media[0].width = 1920;
   instance.data.memory.media[0].height = 1080;
   instance.activate();
-  instance.photoDoubleTap({ state: 3, absoluteX: 195, absoluteY: 422 });
+  instance.photoDoubleTap({ state: 1, absoluteX: 195, absoluteY: 422 });
   instance.photoPan({ state: 2, deltaX: 1000, deltaY: 1000 });
   assert.equal(instance._y.value, 0);
   assert.equal(instance._x.value, 195);
@@ -1571,10 +2109,10 @@ test("slider seeking pauses then resumes only a video that was playing", () => {
 test("portrait progress is hidden until a bottom-region drag, then hides three seconds after release", () => {
   const {instance, calls, timers} = viewer("video");
   assert.equal(instance.data.progressVisible, false);
-  instance.setData({visible: true, playing: true});
-  assert.equal(instance.portraitSeekAllowed({absoluteY: 750}), true);
-  assert.equal(instance.portraitSeekAllowed({absoluteY: 200}), false);
+  instance.setViewerData({visible: true, playing: true});
+  assert.equal(instance.portraitSeekAllowed(), true, "the native hit area, not screen coordinates, gates the gesture");
   instance._currentTime = 10;
+  instance.showTime(10);
   instance.portraitVideoDrag({state: 1});
   assert.equal(instance.data.seeking, true);
   assert.equal(instance.pagerAllowed(), false);
@@ -1595,29 +2133,212 @@ test("portrait progress is hidden until a bottom-region drag, then hides three s
   instance.onUnload();
 });
 
+test("video progress advances between native time events and freezes on pause, buffering and exit", () => {
+  const clock = createWorkletClock();
+  const {instance} = viewer("video", {worklet: clock.api});
+  instance.renderer = "skyline";
+  instance.setViewerData({visible: true, playing: true});
+  instance.bindVideoProgress();
+  const time = value => instance.videoTime({currentTarget: {dataset: {id: 10}}, detail: {currentTime: value, duration: 30}});
+  time(1);
+  clock.advance(500);
+  assert.equal(instance._progress.value, 5);
+  assert.equal(instance.data.currentLabel, "0:01", "text is a clock, not the progress animation driver");
+  assert.equal(instance._animatedStyles.get(".portrait-progress-played")().width, "5%");
+  assert.equal(instance._animatedStyles.get(".portrait-progress-thumb")().left, "5%");
+  instance.videoPause();
+  clock.advance(2000);
+  assert.equal(instance._progress.value, 5);
+  instance.setViewerData({playing: true});
+  time(2);
+  clock.advance(500);
+  const buffered = instance._progress.value;
+  instance.videoWaiting();
+  clock.advance(2000);
+  assert.equal(instance._progress.value, buffered);
+  time(3);
+  instance.onHide();
+  const hidden = instance._progress.value;
+  clock.advance(2000);
+  assert.equal(instance._progress.value, hidden);
+  assert.equal(clock.active.size, 0);
+  instance.onUnload();
+});
+
+test("video looping resets progress without animating backwards and interpolation never exceeds the duration", () => {
+  const clock = createWorkletClock();
+  const {instance} = viewer("video", {worklet: clock.api});
+  instance.setViewerData({visible: true, playing: true});
+  instance.data.videoBuffering = false;
+  instance.showTime(29.8, true);
+  clock.advance(1500);
+  assert.equal(instance._progress.value, 100);
+  instance.showTime(0, true);
+  assert.equal(instance._progress.value, 0);
+  clock.advance(500);
+  assert.ok(Math.abs(instance._progress.value - 100 / 60) < 1e-9);
+  instance.onUnload();
+});
+
+test("portrait seeking updates fractional progress on the UI thread before queued JS callbacks", () => {
+  const clock = createWorkletClock(), queue = [];
+  const {instance, calls} = viewer("video", {worklet: {...clock.api, runOnJS: callback => (...args) => queue.push(() => callback(...args))}});
+  instance.renderer = "skyline";
+  instance.setViewerData({visible: true, playing: true});
+  instance._currentTime = 10;
+  instance.showTime(10);
+  instance.bindVideoProgress();
+  instance.portraitVideoDrag({state: 1});
+  instance.portraitVideoDrag({state: 2, deltaX: 17.9});
+  const progress = instance._progress.value;
+  assert.ok(Math.abs(progress - 11.5 / 30 * 100) < 1e-9);
+  assert.equal(calls.length, 0, "the native visual must not wait for JS");
+  assert.equal(instance.data.progress, 10 / 30 * 100);
+  while (queue.length) queue.shift()();
+  assert.equal(instance._progress.value, progress);
+  assert.equal(instance.data.seekCurrentLabel, "00:11");
+  instance.portraitVideoDrag({state: 3});
+  while (queue.length) queue.shift()();
+  assert.ok(Math.abs(calls.find(call => call.name === "seek").value - 11.5) < 1e-9);
+  instance.onUnload();
+});
+
+test("PC progress uses fractional frame updates and stale callbacks cannot continue after pause", () => {
+  const {instance, timers} = viewer("video");
+  instance.renderer = "webview";
+  instance.setViewerData({visible: true, playing: true});
+  instance.data.videoBuffering = false;
+  const originalNow = Date.now;
+  let now = 1000;
+  Date.now = () => now;
+  try {
+    instance.showTime(1, true);
+    const advance = timers.get(instance._progressFrame);
+    now += 125;
+    advance();
+    assert.equal(instance.data.progress, 1.125 / 30 * 100);
+    instance.videoPause();
+    const frozen = instance.data.progress;
+    now += 500;
+    advance();
+    assert.equal(instance.data.progress, frozen);
+    assert.equal(instance._progressFrame, null);
+  } finally {Date.now = originalNow; instance.onUnload();}
+});
+
+test("development portrait diagnostics distinguish raw touch, gesture acceptance and the JS bridge without starting a second seek", () => {
+  const {instance, calls, logs} = viewer("video", {
+    getAccountInfoSync: () => ({miniProgram: {envVersion: "develop"}}),
+  });
+  instance.renderer = "skyline";
+  instance.setViewerData({visible: true, playing: true});
+  const point = x => ({identifier: 0, clientX: x, clientY: 680});
+  instance.portraitTouchStart({touches: [point(100)]});
+  instance.portraitTouchMove({touches: [point(140)]});
+  instance.portraitTouchMove({touches: [point(180)]});
+  assert.equal(instance.data.seeking, false, "diagnostics must not enable the PC touch fallback on Skyline");
+  assert.equal(instance.portraitSeekAllowed(), true);
+  instance.portraitVideoDrag({state: 1});
+  instance.portraitVideoDrag({state: 2, deltaX: 100});
+  instance.portraitTouchEnd({changedTouches: [point(200)]});
+  assert.equal(instance._portraitDragging.value, true, "raw diagnostic events cannot release the native gesture lock");
+  instance.portraitVideoDrag({state: 3});
+  assert.equal(calls.filter(call => call.name === "seek").length, 1);
+  const records = logs.map(([prefix, json]) => {assert.equal(prefix, "[memory_seek]"); return JSON.parse(json);});
+  assert.deepEqual(records.map(record => record.stage), ["mounted", "touch-start", "touch-move", "accept", "bridge", "touch-end", "bridge"]);
+  assert.ok(records.every(record => record.build === "portrait-shared-v3"));
+  assert.equal(records.find(record => record.stage === "accept").uiGeneration, instance.data.videoGeneration);
+  assert.equal(records.find(record => record.stage === "touch-move").horizontal, true);
+  assert.ok(records.every(record => !Object.keys(record).some(key => /url|path|token|caption|nickname/i.test(key))));
+  instance.onUnload();
+});
+
+test("portrait diagnostic acceptance logs retain rejected state and hiding clears the touch probe", () => {
+  const {instance, logs} = viewer("video", {
+    getAccountInfoSync: () => ({miniProgram: {envVersion: "develop"}}),
+  });
+  instance.renderer = "skyline";
+  instance.setViewerData({visible: true, videoLoading: true});
+  instance.portraitTouchStart({touches: [{identifier: 0, clientX: 100, clientY: 680}]});
+  assert.equal(instance.portraitSeekAllowed(), false);
+  const record = JSON.parse(logs.at(-1)[1]);
+  assert.equal(record.allowed, false);
+  assert.equal(record.loading, true);
+  assert.equal(record.uiGeneration, instance.data.videoGeneration);
+  assert.equal(instance._pointerSeek, null);
+  instance.onHide();
+  assert.equal(instance._portraitProbeTouch, null);
+  instance.onUnload();
+});
+
+test("portrait diagnostics are disabled in trial, release and unknown environments", () => {
+  for (const envVersion of ["trial", "release", undefined]) {
+    const {instance, logs} = viewer("video", {getAccountInfoSync: () => ({miniProgram: {envVersion}})});
+    instance.renderer = "skyline";
+    instance.setData({visible: true});
+    instance.portraitTouchStart({touches: [{identifier: 0, clientX: 100, clientY: 680}]});
+    instance.portraitSeekAllowed();
+    instance.portraitVideoDrag({state: 1});
+    instance.portraitVideoDrag({state: 4});
+    assert.equal(logs.length, 0);
+    assert.equal(instance._portraitProbeTouch, null);
+    instance.onUnload();
+  }
+});
+
+function videoPointerBridge(instance, deferred = false) {
+  const module = {exports: {}};
+  vm.runInNewContext(source("pages/memory_detail/video-pointer.wxs"), {module});
+  const state = {}, nodes = {}, calls = [], queue = [];
+  const root = {getState: () => state};
+  const owner = {selectComponent: () => root,
+    selectAllComponents: name => touch.missing ? [] : [nodes[name] ||= {style: {}, setStyle(patch) {this.style = {...patch};}}],
+    callMethod(name, event) {calls.push({name, event});
+      if (deferred) queue.push(() => instance[name](event)); else instance[name](event);
+    }};
+  let previous, stamp = 1000;
+  const sync = () => {
+    const next = instance.data.videoPointerState;
+    if (next !== previous) {const old = previous; previous = next; module.exports.sync(next, old, owner, root);}
+  };
+  const setData = instance.setData.bind(instance);
+  instance.setData = (patch, callback) => {setData(patch); sync(); callback?.();};
+  instance.setViewerData({});
+  const touch = (type, x = 100, y = 680, dataset = {mediaId: instance.data.current.id}) => {
+    stamp += 17;
+    const point = {identifier: 0, clientX: x, clientY: y};
+    return module.exports[type]({type: `touch${type}`, timeStamp: stamp, instance: root,
+      currentTarget: {dataset}, touches: type === "end" || type === "cancel" ? [] : [point], changedTouches: [point]}, owner);
+  };
+  touch.slider = (type, value) => module.exports[type]({detail: {value}, timeStamp: stamp += 17}, owner);
+  touch.flush = () => {while (queue.length) queue.shift()();};
+  return Object.assign(touch, {state, nodes, calls, queue});
+}
+
 test("ordinary pointer events seek PC review video through the same state machine", () => {
   const {instance, calls} = viewer("video");
   instance.renderer = "webview";
   instance._admin = true;
   instance.setData({visible: true, playing: true, admin: true});
   instance._currentTime = 10;
-  const point = (x,y) => ({identifier: 0, clientX: x, clientY: y});
-  instance.portraitTouchStart({touches: [point(100, 680)]});
-  instance.portraitTouchMove({touches: [point(102, 680)]});
+  instance.showTime(10);
+  const touch = videoPointerBridge(instance);
+  touch("start", 100, 680);
+  touch("move", 102, 680);
   assert.equal(instance.data.seeking, false, "click jitter is not seeking");
-  instance.portraitTouchMove({touches: [point(279, 680)]});
+  touch("move", 279, 680);
   assert.equal(instance.data.seeking, true);
   assert.equal(instance.data.seekCurrentLabel, "00:25");
-  instance.portraitTouchEnd({changedTouches: [point(300, 680)]});
+  touch("end", 300, 680);
   assert.equal(instance.data.seeking, false);
   assert.equal(instance.data.progressVisible, true);
   assert.equal(calls.filter(call => call.name === "seek").length, 1);
   assert.equal(calls.at(-1).name, "play");
-  assert.equal(instance._portraitTouch, null);
+  assert.equal(instance._pointerSeek, null);
   const markup = source("pages/memory_detail/memory_detail.wxml");
-  assert.match(markup, /class="memory-viewer" bindtouchmove="portraitTouchMove" bindtouchend="portraitTouchEnd" bindtouchcancel="portraitTouchCancel"/);
+  assert.match(markup, /class="memory-viewer"[^>]*bindtouchmove="{{videoPointer.move}}" bindtouchend="{{videoPointer.end}}" bindtouchcancel="{{videoPointer.cancel}}"/);
   const controls = source("pages/memory_detail/memory-controls.wxml");
-  assert.equal((controls.match(/bindtouchstart="portraitTouchStart"/g) || []).length, 2);
+  assert.equal((controls.match(/bindtouchstart="{{videoPointer.start}}"/g) || []).length, 3);
   instance.onUnload();
 });
 
@@ -1626,24 +2347,167 @@ test("pointer seeking does not steal vertical scrolling, replay paused video or 
   instance.renderer = "webview";
   instance._currentTime = 10;
   instance.setData({visible: true, pausedByUser: true});
-  const point = (x,y) => ({identifier: 0, clientX: x, clientY: y});
-  instance.portraitTouchStart({touches: [point(100, 680)]});
-  instance.portraitTouchMove({touches: [point(101, 710)]});
-  instance.portraitTouchEnd({changedTouches: [point(130, 711)]});
+  instance.showTime(10);
+  const touch = videoPointerBridge(instance);
+  touch("start", 100, 680);
+  touch("move", 101, 710);
+  touch("end", 130, 711);
   assert.equal(instance.data.seeking, false);
   assert.equal(calls.length, 0);
-  instance.portraitTouchStart({touches: [point(100, 680)]});
-  instance.portraitTouchMove({touches: [point(179, 680)]});
-  instance.portraitTouchCancel();
+  touch("start", 100, 680);
+  touch("move", 179, 680);
+  touch("cancel");
   assert.equal(instance.data.currentLabel, "0:10");
   assert.equal(calls.some(call => call.name === "seek" || call.name === "play"), false);
   instance.renderer = "skyline";
+  instance.setViewerData({});
   calls.length = 0;
-  instance.portraitTouchStart({touches: [point(100, 680)]});
+  touch("start", 100, 680);
   instance._portraitDragging.value = true;
-  instance.portraitTouchEnd({changedTouches: [point(200, 680)]});
+  touch("end", 200, 680);
   assert.equal(calls.length, 0);
   assert.equal(instance._portraitDragging.value, true, "raw events cannot clear a Skyline-owned gesture");
+  instance.onUnload();
+});
+
+test("WebView fullscreen drags reuse seek, cancel and user-pause handling without worklets", () => {
+  const {instance, calls} = viewer("video", {worklet: undefined});
+  instance.renderer = "webview";
+  instance.setData({visible: true, fullScreen: true, pausedByUser: true});
+  instance._currentTime = 15;
+  instance.showTime(15);
+  const touch = videoPointerBridge(instance);
+  const start = () => touch("start", 300, 150, {fullScreen: true});
+  touch("start", 300, 150);
+  assert.ok(!touch.state.gesture, "portrait hitboxes cannot start fullscreen seeks");
+  start();
+  touch("move", 160, 150);
+  assert.equal(instance.data.seeking, true);
+  assert.ok(instance._seekTarget > 15, "fullscreen keeps the existing left-drag-forward direction");
+  touch("end", 120, 150);
+  assert.equal(instance.data.seeking, false);
+  assert.equal(calls.filter(call => call.name === "seek").length, 1);
+  assert.equal(calls.some(call => call.name === "play"), false);
+  const settled = instance._currentTime;
+  start();
+  touch("move", 450, 150);
+  touch("cancel");
+  assert.equal(instance._currentTime, settled);
+  assert.equal(calls.filter(call => call.name === "seek").length, 1);
+  assert.equal(instance._portraitDragging.value, false);
+  instance.onUnload();
+});
+
+test("WebView seek frames render ahead of delayed JS and only send bounded text updates", () => {
+  const {instance, calls} = viewer("video");
+  instance.renderer = "webview";
+  instance.setViewerData({visible: true, playing: true});
+  instance._currentTime = 10; instance.showTime(10);
+  const touch = videoPointerBridge(instance, true);
+  let writes = 0;
+  const setData = instance.setData.bind(instance);
+  instance.setData = (patch, callback) => {writes++; setData(patch, callback);};
+  touch("start", 100);
+  for (let i = 1; i <= 60; i++) touch("move", 100 + i);
+  assert.equal(writes, 0, "visual frames do not wait for any logic-layer work");
+  const expected = (10 / 30 + 60 / 358) * 100;
+  assert.ok(Math.abs(parseFloat(touch.nodes[".portrait-seek-played"].style.width) - expected) < 1e-9);
+  assert.ok(Math.abs(parseFloat(touch.nodes[".portrait-seek-thumb"].style.left) - expected) < 1e-9);
+  assert.ok(touch.calls.length <= 8, "only start and changed seconds cross the bridge, not 60 frames");
+  touch.flush();
+  assert.ok(writes <= 8);
+  assert.equal(calls.filter(call => call.name === "seek").length, 0);
+  touch("end", 161.25);
+  touch.flush();
+  assert.ok(Math.abs(calls.find(call => call.name === "seek").value - (10 + 61.25 / 358 * 30)) < 1e-9,
+    "release commits the exact fractional position, not the last throttled text update");
+  assert.deepEqual(touch.nodes[".portrait-seek-played"].style, {}, "release returns style ownership to normal playback");
+  assert.equal(instance.data.progressVisible, true);
+  instance.onUnload();
+});
+
+test("WebView fullscreen slider paints every frame but seeks once; cancellation restores a paused playhead", () => {
+  const {instance, calls} = viewer("video");
+  instance.renderer = "webview";
+  instance.setViewerData({visible: true, fullScreen: true, pausedByUser: true});
+  instance._currentTime = 10; instance.showTime(10);
+  const touch = videoPointerBridge(instance);
+  let writes = 0;
+  const setData = instance.setData.bind(instance);
+  instance.setData = (patch, callback) => {writes++; setData(patch, callback);};
+  for (let i = 1; i <= 60; i++) touch.slider("changing", 300 + i);
+  assert.equal(touch.nodes[".viewer-progress-played"].style.width, "36%");
+  assert.equal(touch.nodes[".viewer-progress-thumb"].style.left, "36%");
+  assert.ok(writes < 10, `60 slider changes should not cause ${writes} page updates`);
+  assert.equal(instance.data.seekGesture, false, "slider drag must not display the fullscreen swipe indicator");
+  assert.equal(calls.filter(call => call.name === "seek").length, 0);
+  touch.slider("changed", 367);
+  assert.ok(Math.abs(calls.find(call => call.name === "seek").value - 11.01) < 1e-9);
+  assert.equal(calls.some(call => call.name === "play"), false);
+  touch.slider("changing", 900);
+  touch("cancel");
+  assert.equal(calls.filter(call => call.name === "seek").length, 1);
+  assert.equal(instance.data.currentLabel, "0:11");
+  assert.deepEqual(touch.nodes[".viewer-progress-played"].style, {});
+  instance.onUnload();
+});
+
+test("WebView pointer invalidation rejects queued seek events after hide, resize or media changes", () => {
+  for (const accepted of [false, true]) {
+    for (const invalidate of [p => p.onHide(), p => p.onResize(), p => {
+      p._videoGeneration++; p.setViewerData({current: {...p.data.current, id: 99}});
+    }]) {
+      const {instance, calls} = viewer("video");
+      instance.renderer = "webview";
+      instance.setViewerData({visible: true, playing: true});
+      const touch = videoPointerBridge(instance, true);
+      touch("start", 100); touch("move", 130);
+      if (accepted) touch.flush();
+      touch("move", 150); touch("end", 160);
+      invalidate(instance);
+      touch.flush();
+      assert.equal(calls.filter(call => call.name === "seek").length, 0);
+      instance.onUnload();
+    }
+  }
+});
+
+test("WebView seeking discovers late native nodes, clamps both edges and keeps fractional release accuracy", () => {
+  const {instance, calls} = viewer("video");
+  instance.renderer = "webview";
+  instance.setViewerData({visible: true, pausedByUser: true});
+  instance._currentTime = 15; instance.showTime(15);
+  const touch = videoPointerBridge(instance);
+  touch.missing = true;
+  touch("start", 100); touch("move", 110);
+  assert.equal(Object.keys(touch.nodes).length, 0);
+  touch.missing = false;
+  touch("move", -9999);
+  assert.equal(touch.nodes[".portrait-seek-played"].style.width, "0%");
+  assert.equal(touch.nodes[".portrait-seek-thumb"].style.left, "1.2%");
+  touch("move", 9999);
+  assert.equal(touch.nodes[".portrait-seek-played"].style.width, "100%");
+  assert.equal(touch.nodes[".portrait-seek-thumb"].style.left, "98.8%");
+  touch("end", 101.25);
+  assert.ok(Math.abs(calls.find(call => call.name === "seek").value - (15 + 1.25 / 358 * 30)) < 1e-9);
+  instance.onUnload();
+});
+
+test("WebView photo initialization and double-click do not need native animated-style APIs", () => {
+  const {instance} = page("memory_detail", service(), {worklet: null});
+  instance.renderer = "webview";
+  instance.applyAnimatedStyle = () => assert.fail("WebView must use CSS transforms");
+  instance.onLoad({id: 1});
+  instance._visible = true;
+  instance.setData({memory: {media: [{id: 10, kind: "image", width: 390, height: 844}]}});
+  instance.activate();
+  instance.photoTap({timeStamp: 100, detail: {x: 195, y: 422}});
+  instance.photoTap({timeStamp: 240, detail: {x: 195, y: 422}});
+  assert.equal(instance.data.zoomed, true);
+  assert.equal(instance.data.photoPointerState.scale, 2);
+  assert.equal(instance.data.photoPointerState.animated, true);
+  instance.restorePhoto();
+  assert.equal(instance.data.zoomed, false);
   instance.onUnload();
 });
 
@@ -1692,21 +2556,111 @@ test("cancelled portrait gestures restore playback position, and a new drag canc
   assert.equal(timers.size, 0);
 });
 
-test("portrait gestures exclude review buttons, hidden pages, images and loading video", () => {
+test("portrait gestures exclude hidden pages, images and loading video", () => {
   const {instance} = viewer("video");
   instance._admin = true;
-  instance.setData({visible: true});
+  instance.setViewerData({visible: true});
   instance.activate();
-  assert.equal(instance.portraitSeekAllowed({absoluteY: 680}), true);
-  assert.equal(instance.portraitSeekAllowed({absoluteY: 800}), false, "review footer cannot seek");
+  assert.equal(instance.portraitSeekAllowed(), true);
   for (const values of [{selectionOpen: true}, {busy: true}, {videoLoading: true}, {error: "failed"}, {fullScreen: true}, {visible: false}]) {
     const previous = {...instance.data};
-    instance.setData(values);
-    assert.equal(instance.portraitSeekAllowed({absoluteY: 680}), false);
-    instance.setData(previous);
+    instance.setViewerData(values);
+    assert.equal(instance.portraitSeekAllowed(), false);
+    instance.setViewerData(previous);
   }
-  instance.data.current.kind = "image";
-  assert.equal(instance.portraitSeekAllowed({absoluteY: 680}), false);
+  instance.setViewerData({current: {...instance.data.current, kind: "image"}});
+  assert.equal(instance.portraitSeekAllowed(), false);
+});
+
+test("portrait worklets see live shared state even when the UI page data remains the initial snapshot", () => {
+  const {instance, calls} = viewer("video");
+  const ui = {
+    _portraitState: instance._portraitState,
+    _portraitDragging: instance._portraitDragging,
+    _portraitGestureGeneration: instance._portraitGestureGeneration,
+    _portraitTraceEnabled: instance._portraitTraceEnabled,
+    _progress: instance._progress,
+    _playback: instance._playback,
+    _seekMotion: instance._seekMotion,
+    _frame: instance._frame,
+    dragSeek: instance.dragSeek.bind(instance),
+    tracePortraitSeek: instance.tracePortraitSeek.bind(instance),
+  };
+  Object.defineProperty(ui, "data", {get() {throw new Error("UI data is not a live JS state channel");}});
+  const allowed = () => instance.portraitSeekAllowed.call(ui);
+  const drag = event => instance.portraitVideoDrag.call(ui, event);
+  assert.equal(allowed(), false);
+  instance.setViewerData({visible: true, playing: true});
+  assert.equal(allowed(), true);
+  instance._currentTime = 10;
+  instance.showTime(10);
+  drag({state: 1});
+  assert.equal(instance.data.seeking, true);
+  assert.equal(instance._portraitGestureGeneration.value, instance._videoGeneration);
+  drag({state: 2, deltaX: 179});
+  assert.equal(instance.data.seekCurrentLabel, "00:25");
+  drag({state: 3});
+  assert.equal(calls.find(call => call.name === "seek").value, 25);
+  assert.equal(calls.at(-1).name, "play");
+  assert.equal(instance.pagerAllowed(), true);
+
+  const oldGeneration = instance._videoGeneration;
+  instance.activate();
+  assert.ok(instance._portraitState.value.generation > oldGeneration);
+  drag({state: 1});
+  assert.equal(instance._portraitGestureGeneration.value, instance._videoGeneration);
+  drag({state: 4});
+  for (const patch of [{videoLoading: true}, {busy: true}, {selectionOpen: true},
+      {error: "failed"}, {fullScreen: true}, {visible: false},
+      {current: {...instance.data.current, kind: "image"}}]) {
+    const previous = {...instance.data};
+    instance.setViewerData(patch);
+    assert.equal(allowed(), false);
+    instance.setViewerData(previous);
+    assert.equal(allowed(), true);
+  }
+  instance.onHide();
+  assert.equal(allowed(), false);
+  instance.onUnload();
+  assert.equal(allowed(), false);
+});
+
+test("viewer data synchronization precedes render callbacks and avoids rewriting unchanged gesture state", () => {
+  const {instance} = viewer("video");
+  instance.setViewerData({visible: true});
+  const state = instance._portraitState.value;
+  instance.showTime(10);
+  assert.equal(instance._portraitState.value, state, "playback ticks need not cross the UI bridge again");
+  instance.setViewerData({busy: true}, () => {
+    assert.equal(instance.portraitSeekAllowed(), false);
+    instance.setViewerData({busy: false});
+  });
+  assert.equal(instance.portraitSeekAllowed(), true);
+  const rawUpdates = source("pages/memory_detail/memory_detail.js").match(/this\.setData\(/g) || [];
+  assert.equal(rawUpdates.length, 1, "only the synchronization helper may call raw setData");
+  instance.onUnload();
+});
+
+test("Skyline portrait gestures bind directly to stable touch targets, not the transparent overlay or review buttons", () => {
+  const controls = source("pages/memory_detail/memory-controls.wxml");
+  const styles = source("pages/memory_detail/memory_detail.wxss");
+  const bottom = controls.slice(controls.indexOf('<template name="memory-portrait-bottom">'), controls.indexOf('<template name="memory-fullscreen">'));
+  const handlers = [...bottom.matchAll(/<horizontal-drag-gesture-handler\b[^>]*>([\s\S]*?)<\/horizontal-drag-gesture-handler>/g)];
+  assert.equal(handlers.length, 2);
+  assert.match(handlers[0][1], /^\s*<view class="viewer-seek-region"/);
+  assert.match(handlers[1][1], /^\s*<view class="viewer-info /);
+  for (const [markup, child] of handlers) {
+    assert.match(markup, /worklet:should-accept-gesture="portraitSeekAllowed"/);
+    assert.match(markup, /worklet:ongesture="portraitVideoDrag"/);
+    assert.doesNotMatch(child, /class="viewer-bottom"|class="viewer-footer"/);
+    assert.match(child, /bindtouchstart="{{videoPointer.start}}" data-media-id="{{current.id}}"/);
+  }
+  const fadingInfo = styles.match(/\.viewer-info--seeking\s*\{([^}]*)\}/)[1];
+  assert.match(fadingInfo, /opacity:\s*0;/);
+  assert.doesNotMatch(fadingInfo, /pointer-events:\s*none|display:\s*none|visibility:\s*hidden/,
+    "fading metadata must not remove the active gesture's touch target");
+  assert.doesNotMatch(source("pages/memory_detail/memory_detail.js"), /_seekBounds|updateSeekBounds/,
+    "do not mix global touch coordinates with window-relative bounds");
 });
 
 test("late portrait gesture events and progress timers cannot seek or hide the next video", () => {
@@ -1726,10 +2680,11 @@ test("late portrait gesture events and progress timers cannot seek or hide the n
   instance.onUnload();
 });
 
-test("resizing updates the portrait gesture region without restarting video and refits images without cropping", () => {
+test("resizing preserves portrait seeking without restarting video and refits images without cropping", () => {
   const video = viewer("video");
-  video.instance.setData({playing: true, visible: true});
+  video.instance.setViewerData({playing: true, visible: true});
   video.instance._currentTime = 12;
+  video.instance.showTime(12);
   const generation = video.instance.data.videoGeneration;
   video.wx.getWindowInfo = () => ({windowWidth: 320, windowHeight: 568, statusBarHeight: 20});
   video.instance.onResize();
@@ -1737,10 +2692,13 @@ test("resizing updates the portrait gesture region without restarting video and 
   assert.equal(video.instance._currentTime, 12);
   assert.equal(video.instance.data.playing, true);
   assert.equal(video.calls.length, 0);
-  assert.equal(video.instance.portraitSeekAllowed({absoluteY: 510}), true);
-  assert.equal(video.instance.portraitSeekAllowed({absoluteY: 750}), false);
+  assert.equal(video.instance.portraitSeekAllowed(), true);
+  video.instance.portraitVideoDrag({state: 1});
+  video.instance.portraitVideoDrag({state: 2, deltaX: 320 * 358 / 390 / 10});
+  video.instance.portraitVideoDrag({state: 3});
+  assert.equal(video.calls.find(call => call.name === "seek").value, 15);
   const photo = viewer();
-  photo.instance.photoDoubleTap({state: 3, absoluteX: 195, absoluteY: 422});
+  photo.instance.photoDoubleTap({state: 1, absoluteX: 195, absoluteY: 422});
   photo.wx.getWindowInfo = video.wx.getWindowInfo;
   photo.instance.onResize();
   assert.equal(photo.instance.data.zoomed, false);
@@ -1770,9 +2728,12 @@ test("offscreen portrait metadata cannot start seeking the active PC video", () 
   const {instance} = viewer("video");
   instance.renderer = "webview";
   instance.setData({visible: true});
-  instance.portraitTouchStart({currentTarget: {dataset: {mediaId: 99}},
-    touches: [{identifier: 0, clientX: 100, clientY: 680}]});
-  assert.equal(instance._portraitTouch, null);
+  const touch = videoPointerBridge(instance);
+  touch("start", 100, 680, {mediaId: 99});
+  touch("move", 180, 680);
+  touch("end", 180, 680);
+  assert.equal(instance.data.seeking, false);
+  assert.equal(touch.calls.length, 0);
   instance.onUnload();
 });
 
@@ -1794,7 +2755,28 @@ test("public preview keeps submission metadata attached to every media page", as
   instance.onUnload();
 });
 
-test("portrait controls match the Pencil component geometry without moving metadata or changing fullscreen controls", () => {
+test("image and video portrait metadata and review buttons share the same bottom safe-area offsets", () => {
+  const controls = source("pages/memory_detail/memory-controls.wxml");
+  const expression = name => controls.match(new RegExp(`class="${name}[^\"]*" style="bottom:\\{\\{([^}]+)\\}\\}rpx;"`))[1];
+  const offset = (name, kind, admin, bottom) =>
+    new Function("current", "admin", "bottom", `return (${expression(name)})`)({kind}, admin, bottom);
+  for (const width of [320, 390, 620]) for (const bottom of [0, 34 * 750 / width]) {
+    for (const admin of [false, true]) {
+      const image = offset("viewer-info", "image", admin, bottom);
+      const video = offset("viewer-info", "video", admin, bottom);
+      assert.equal(image, video);
+      assert.equal(image, bottom + (admin ? 169.23077 : 30.76923));
+    }
+    const imageFooter = offset("viewer-footer", "image", true, bottom);
+    assert.equal(imageFooter, offset("viewer-footer", "video", true, bottom));
+    assert.equal(imageFooter, bottom + 30.76923);
+    const buttonHeight = Number(source("pages/memory_detail/memory_detail.wxss")
+      .match(/\.viewer-footer button\s*\{\s*height:\s*([\d.]+)rpx/)[1]);
+    assert.ok(offset("viewer-info", "image", true, bottom) - imageFooter - buttonHeight > 0);
+  }
+});
+
+test("portrait controls retain the Pencil progress geometry and fullscreen controls", () => {
   const markup = source("pages/memory_detail/memory_detail.wxml");
   const controls = source("pages/memory_detail/memory-controls.wxml");
   const styles = source("pages/memory_detail/memory_detail.wxss");
@@ -1864,6 +2846,458 @@ async function downloadingViewer(emitPlay = true) {
   return {...result, api, submission, calls, downloads, removed, finish};
 }
 
+test("preview shows a spinner from detail fetch through native image decode, not merely download completion", async () => {
+  let finish;
+  const api = {...service(), detail: () => new Promise(resolve => {finish = resolve;})};
+  const h = page("memory_detail", api);
+  h.instance.onLoad({id:"7"}); h.instance.onShow();
+  assert.equal(h.instance.data.mediaLoading, true);
+  finish({id:7, media:[{id:10, kind:"image", url:"/photo.jpg", thumbnail_url:"/thumb.jpg"}]});
+  await tick();
+  const p = h.instance, generation = p.data.videoGeneration, url = p.data.current.url;
+  p.setData({imageSources:{[url]:"photo-cache"}});
+  p.photoLoaded({currentTarget:{dataset:{id:10,generation,source:"thumbnail-cache"}}});
+  assert.equal(p.data.mediaLoading, true, "a thumbnail load cannot finish the full photo spinner");
+  p.photoLoaded({currentTarget:{dataset:{id:10,generation,source:"photo-cache"}}});
+  assert.equal(p.data.photoReady, true); assert.equal(p.data.mediaLoading, false);
+  p.onUnload();
+});
+
+test("late photo load and error events cannot settle the new image attempt or a hidden preview", () => {
+  const {instance:p} = viewer();
+  p.data.memory.media[0].url = "https://test.invalid/photo.jpg";
+  p.setViewerData({visible:true}); p.activate();
+  p.setData({imageSources:{"https://test.invalid/photo.jpg":"photo-cache"}});
+  const old = p.data.videoGeneration;
+  p.activate();
+  p.setData({imageSources:{"https://test.invalid/photo.jpg":"photo-cache"}});
+  const event = generation => ({currentTarget:{dataset:{id:10,generation,source:"photo-cache"}}});
+  p.photoLoaded(event(old)); p.mediaError({...event(old), detail:{errMsg:"old failure"}});
+  assert.equal(p.data.photoReady, false); assert.equal(p.data.error, "");
+  p.onHide(); p.photoLoaded(event(p.data.videoGeneration));
+  assert.equal(p.data.photoReady, false); assert.equal(p.data.mediaLoading, false);
+  p.onUnload();
+});
+
+test("paging updates the photo, index and load generation atomically before a fast cached native callback", async () => {
+  const api = service(), jobs = [];
+  api.detail = async () => ({id:7,revision:3,media:[1,2].map(id => ({id,kind:"image",url:`/${id}.jpg`}))});
+  const h = page("memory_detail", api, {downloadFile(options) {jobs.push(options); return {abort(){}};}});
+  const p = h.instance;
+  p.onLoad({id:"7"}); p.onShow(); await tick();
+  jobs[0].success({statusCode:200,tempFilePath:"photo-1"});
+  jobs[1].success({statusCode:200,tempFilePath:"photo-2"});
+  p.photoLoaded({currentTarget:{dataset:{id:1,generation:p.data.videoGeneration,source:"photo-1"}}});
+  const setData = p.setData.bind(p);
+  let nativeLoads = 0;
+  p.setData = (patch, callback) => {
+    const changed = patch.index !== undefined && patch.index !== p.data.index;
+    setData(patch);
+    if (changed && patch.index === 1) {
+      nativeLoads++;
+      p.photoLoaded({currentTarget:{dataset:{id:2,generation:p.data.videoGeneration,source:"photo-2"}}});
+    }
+    if (callback) callback();
+  };
+  p.change({detail:{current:1}});
+  assert.equal(p.data.current.id, 2); assert.equal(p.data.photoReady, true);
+  assert.equal(p.data.mediaLoading, false);
+  p.change({detail:{current:0}});
+  assert.equal(p.data.current.id, 1); assert.equal(p.data.mediaLoading, false,
+    "backward paging does not wait for a second bindload when bytes were already decoded");
+  assert.equal(nativeLoads, 1); assert.equal(jobs.length, 2);
+  p.onUnload();
+});
+
+test("both adjacent native photos become ready without another download or metadata inspection", async () => {
+  const api = service(), jobs = [], reads = [];
+  api.detail = async () => ({id:7,revision:3,media:[1,2,3].map(id => ({id,kind:"image",url:`/${id}.jpg`}))});
+  const h = page("memory_detail", api, {
+    downloadFile(options) {jobs.push(options);return {abort(){}};},
+    getImageInfo(options) {reads.push(options);},
+  });
+  const p = h.instance;
+  p.onLoad({id:"7",media_id:"2"}); p.onShow(); await tick();
+  assert.equal(jobs.length, 1);
+  for (let i = 0; i < 3; i++) jobs[i].success({statusCode:200,tempFilePath:`photo-${i}`});
+  assert.deepEqual(jobs.map(job => job.url), [2,3,1].map(id => `https://test.invalid/${id}.jpg`));
+  assert.equal(reads.length,0,"native bindload, not getImageInfo, determines readiness");
+  p.photoLoaded({currentTarget:{dataset:{id:2,generation:p.data.videoGeneration,source:"photo-0"}}});
+  for (const [id, file] of [[3,"photo-1"],[1,"photo-2"]])
+    p.photoLoaded({currentTarget:{dataset:{id,generation:p.data.videoGeneration,source:file}}});
+  p.preparePreviewMedia(); assert.equal(reads.length, 0);
+  for (const index of [2,1,0,1,2]) {
+    p.change({detail:{current:index}});
+    assert.equal(p.data.photoReady, true);
+    assert.equal(p.data.mediaLoading, false); assert.equal(p.data.loadingIndicatorVisible, false);
+  }
+  assert.equal(jobs.length, 3); p.onUnload();
+});
+
+test("stale neighbour native events cannot mark a new generation or hidden resource ready", async () => {
+  const api = service(), jobs = [], reads = [];
+  api.detail = async () => ({id:7,media:[1,2,3,4,5].map(id => ({id,kind:"image",url:`/${id}.jpg`}))});
+  const h = page("memory_detail", api, {
+    downloadFile(options) {jobs.push(options);return {abort(){}};},getImageInfo(options) {reads.push(options);},
+  });
+  const p = h.instance; p.onLoad({id:"7",media_id:"2"}); p.onShow(); await tick();
+  for (let i = 0; i < 3; i++) jobs[i].success({statusCode:200,tempFilePath:`photo-${i}`});
+  const stale = {currentTarget:{dataset:{id:3,generation:p.data.videoGeneration,source:"photo-1"}}};
+  p.change({detail:{current:4}});
+  p.photoLoaded(stale);
+  assert.equal(p._previewLease.photoReady("https://test.invalid/3.jpg"), false);
+  assert.equal(p.data.photoReady, false);
+  p.onHide(); p.photoLoaded(stale);
+  assert.equal(p.data.loadingIndicatorVisible, false); assert.equal(reads.length, 0);
+  p.onUnload();
+});
+
+test("a completed neighbour download alone does not claim the native photo is ready", async () => {
+  const api = service(), jobs = [], reads = [];
+  api.detail = async () => ({id:7,media:[1,2].map(id => ({id,kind:"image",url:`/${id}.jpg`}))});
+  const h = page("memory_detail", api, {
+    downloadFile(options) {jobs.push(options);return {abort(){}};},getImageInfo(options) {reads.push(options);},
+  });
+  const p = h.instance; p.onLoad({id:"7"}); p.onShow(); await tick();
+  jobs[0].success({statusCode:200,tempFilePath:"one"}); jobs[1].success({statusCode:200,tempFilePath:"two"});
+  assert.equal(reads.length,0);
+  p.change({detail:{current:1}});
+  assert.equal(p.data.photoReady, false); assert.equal(p.data.mediaLoading, true);
+  p.photoLoaded({currentTarget:{dataset:{id:2,generation:p.data.videoGeneration,source:"two"}}});
+  assert.equal(p.data.mediaLoading, false); p.onUnload();
+});
+
+test("video startup gets a 500ms grace period while sustained playback buffering uses 180ms", async () => {
+  const h = await downloadingViewer(false), p = h.instance;
+  const event = {currentTarget:{dataset:{id:61,generation:p.data.videoGeneration}}};
+  const initial = h.timers.get(p._loadingTimer);
+  assert.equal(h.timerDelays.get(p._loadingTimer), 500);
+  assert.equal(p.data.mediaLoading, true); assert.equal(p.data.loadingIndicatorVisible, false);
+  p.videoPlay(event);
+  assert.equal(p.data.mediaLoading, true, "play intent cannot finish startup before decoded frames advance");
+  p.videoTime({...event,detail:{currentTime:0.1,duration:8}});
+  assert.equal(p.data.mediaLoading, false); assert.equal(p.data.loadingIndicatorVisible, false);
+  initial(); assert.equal(p.data.loadingIndicatorVisible, false, "cancelled startup timer cannot flash later");
+  p.videoWaiting(event);
+  const timer = p._loadingTimer;
+  assert.equal(h.timerDelays.get(timer), 180);
+  assert.equal(p.data.loadingIndicatorVisible, false);
+  h.timers.get(timer)(); assert.equal(p.data.loadingIndicatorVisible, true);
+  p.videoTime({...event,detail:{currentTime:0.2,duration:8}});
+  assert.equal(p.data.loadingIndicatorVisible, false);
+  p.videoWaiting(event); const obsolete = h.timers.get(p._loadingTimer);
+  p.change({detail:{current:1}}); obsolete();
+  assert.equal(p.data.loadingIndicatorVisible, false, "old video timers cannot affect the next file");
+  const hidden = h.timers.get(p._loadingTimer);
+  p.onHide(); hidden(); assert.equal(p.data.loadingIndicatorVisible, false);
+  p.onUnload();
+});
+
+test("cached PC video mounting cannot start a loading timer even when its render callback is delayed", async () => {
+  const h=await downloadingViewer();
+  h.finish(0);h.timers.get(h.instance._videoWarmTimer)();h.finish(1);
+  h.instance.onHide();h.instance.onUnload();
+  const next=page("memory_detail",h.api,h.wx,{},h.mediaModules),p=next.instance;
+  p.renderer="webview";
+  const setData=p.setData.bind(p);let mount;
+  p.setData=(patch,callback)=>{
+    setData(patch);
+    if(patch.current?.kind==="video" && patch.videoLoading) mount=callback;
+    else callback?.();
+  };
+  p.onLoad({id:"7",media_id:"61"});p.onShow();
+  assert.equal(typeof mount,"function");assert.equal(p.data.videoLoading,true);
+  assert.equal(p.data.videoMounted,false,"native mount acknowledgement has not arrived");
+  assert.equal(p.data.videoBuffering,false);assert.equal(p.data.mediaLoading,false);
+  assert.equal(p._loadingTimer,null);assert.equal(p.data.loadingIndicatorVisible,false);
+  mount();await tick();
+  assert.equal(p.data.videoSource,"video-cache-1");assert.equal(p.data.mediaLoading,false);
+  assert.equal(h.downloads.length,2);p.onUnload();
+});
+
+test("play and waiting bursts remain startup until playback time advances; sustained waits still show feedback", async () => {
+  const h=await downloadingViewer(false),p=h.instance;
+  p.renderer="webview";
+  const event={currentTarget:{dataset:{id:61,generation:p.data.videoGeneration}},detail:{currentTime:0.1,duration:8}};
+  const initial=p._loadingTimer,stale=h.timers.get(initial);
+  p.videoWaiting(event);
+  assert.equal(p._loadingTimer,initial,"duplicate startup waiting must not restart the grace period");
+  assert.equal(h.timerDelays.get(initial),500);
+  p.videoPlay(event);
+  p.videoWaiting(event);
+  assert.equal(p._loadingTimer, initial, "play intent must neither reset nor shorten the startup wait");
+  p.videoTime({...event,detail:{currentTime:0,duration:8}});
+  assert.equal(p._videoProgressed,false,"an initial zero timestamp is not a decoded playback advance");
+  assert.equal(p._loadingTimer,initial);
+  p.videoTime(event);stale();
+  assert.equal(p.data.loadingIndicatorVisible,false);
+  p.videoWaiting(event);
+  const buffered=p._loadingTimer;
+  assert.equal(h.timerDelays.get(buffered),180,"real buffering after play keeps prompt feedback");
+  p.videoTime({...event,detail:{currentTime:0.2,duration:8}});h.timers.get(buffered)?.();
+  assert.equal(p.data.loadingIndicatorVisible,false);
+  p.change({detail:{current:1}});
+  const startup=p._loadingTimer;
+  assert.equal(h.timerDelays.get(startup),500);
+  h.timers.get(startup)();assert.equal(p.data.loadingIndicatorVisible,true);
+  p.onUnload();
+});
+
+test("repeated cached PC video entries do not download again or show a spinner for play-before-progress waits", async () => {
+  const h=await downloadingViewer();
+  h.finish(0);h.timers.get(h.instance._videoWarmTimer)();h.finish(1);
+  h.instance.onHide();h.instance.onUnload();
+  const downloads=h.downloads.length;
+  for(let visit=0;visit<3;visit++) {
+    const next=page("memory_detail",h.api,h.wx,{},h.mediaModules),p=next.instance;
+    p.renderer="webview";p.onLoad({id:"7",media_id:"61"});p.onShow();await tick();
+    assert.equal(p.data.videoSource,"video-cache-1");
+    assert.equal(p.data.mediaLoading,false);assert.equal(p._loadingTimer,null);
+    assert.equal(p._videoProgressed,false);
+    const event={currentTarget:{dataset:{id:61,generation:p.data.videoGeneration}}};
+    p.videoPlay(event);p.videoWaiting(event);
+    const startup=p._loadingTimer,obsolete=next.timers.get(startup);
+    assert.equal(next.timerDelays.get(startup),500,"cached decoder startup must not use the 180ms stall path");
+    p.videoPlay(event);p.videoWaiting(event);
+    assert.equal(p._loadingTimer,startup);
+    assert.equal(p.data.loadingIndicatorVisible,false);
+    p.videoTime({...event,detail:{currentTime:0,duration:8}});
+    assert.equal(p._loadingTimer,startup);
+    p.videoTime({...event,detail:{currentTime:0.1,duration:8}});
+    obsolete();
+    assert.equal(p.data.mediaLoading,false);assert.equal(p.data.loadingIndicatorVisible,false);
+    assert.equal(p._videoProgressed,true);
+    assert.equal(h.downloads.length,downloads);
+    p.onHide();p.onUnload();obsolete();
+    assert.equal(p.data.loadingIndicatorVisible,false);
+  }
+});
+
+test("a cached video's sustained decoder wait remains visible until progress, not another play event", async () => {
+  const h=await downloadingViewer();
+  h.finish(0);h.timers.get(h.instance._videoWarmTimer)();h.finish(1);
+  h.instance.change({detail:{current:1}});await tick();
+  const p=h.instance,event={currentTarget:{dataset:{id:62,generation:p.data.videoGeneration}}};
+  assert.equal(p.data.videoSource,"video-cache-0");
+  p.videoPlay(event);p.videoWaiting(event);
+  const timer=p._loadingTimer;
+  assert.equal(h.timerDelays.get(timer),500);
+  h.timers.get(timer)();assert.equal(p.data.loadingIndicatorVisible,true);
+  p.videoPlay(event);assert.equal(p.data.loadingIndicatorVisible,true,"a play event alone does not end the decoder wait");
+  p.videoTime({...event,detail:{currentTime:0.1,duration:8}});
+  assert.equal(p.data.loadingIndicatorVisible,false);
+  p.videoWaiting(event);
+  assert.equal(h.timerDelays.get(p._loadingTimer),180,"after real progress, stalls use normal feedback");
+  p.onUnload();
+});
+
+async function cachedPhotoViewer() {
+  const api = service(), jobs = [], submission = {id:7,revision:3,caption:"cached",media:
+    [1,2].map(id => ({id,kind:"image",url:`/${id}.jpg`}))};
+  api.detail = async () => structuredClone(submission);
+  const h = page("memory_detail", api, {downloadFile(options) {jobs.push(options);return {abort(){}};}});
+  h.instance.onLoad({id:"7"}); h.instance.onShow(); await tick();
+  jobs[0].success({statusCode:200,tempFilePath:"photo-1"});
+  jobs[1].success({statusCode:200,tempFilePath:"photo-2"});
+  h.instance.photoLoaded({currentTarget:{dataset:{id:1,generation:h.instance.data.videoGeneration,source:"photo-1"}}});
+  h.instance.onHide(); h.instance.onUnload();
+  const next = () => page("memory_detail", api, h.wx, {}, h.mediaModules);
+  return {...h,api,jobs,submission,next};
+}
+
+test("reopening an already viewed photo shows cached content before revalidation and does not reset it afterwards", async () => {
+  const h = await cachedPhotoViewer(); let finish;
+  h.api.detail = () => new Promise(resolve => {finish = resolve;});
+  const {instance:p} = h.next(); p.onLoad({id:"7",media_id:"1"}); p.onShow();
+  assert.equal(p.data.loading, true, "server revalidation is still in flight");
+  assert.equal(p.data.memory.id, 7); assert.equal(p.data.current.id, 1);
+  assert.equal(p.data.photoReady, true); assert.equal(p.data.mediaLoading, false);
+  assert.equal(p.data.imageSources[p.data.current.url], "photo-1");
+  const generation = p.data.videoGeneration;
+  p.photoDoubleTap({state:1, x:195,y:422});
+  finish({...structuredClone(h.submission),caption:"fresh"}); await tick();
+  assert.equal(p.data.memory.caption, "fresh"); assert.equal(p.data.videoGeneration, generation);
+  assert.equal(p.data.photoReady, true); assert.equal(p.data.mediaLoading, false);
+  assert.equal(h.jobs.length, 2); p.onUnload();
+});
+
+test("background revalidation preserves the file selected while waiting and removes revoked cached content", async () => {
+  for (const revoked of [0,401,403,404,410]) {
+    const h = await cachedPhotoViewer(); let finish, fail;
+    h.api.detail = () => new Promise((resolve,reject) => {finish = resolve;fail = reject;});
+    const {instance:p} = h.next(); p.onLoad({id:"7",media_id:"1"}); p.onShow();
+    assert.equal(p.data.current.id, 1);
+    p.change({detail:{current:1}});
+    if (revoked) fail({statusCode:revoked,message:"content removed"});
+    else finish(structuredClone(h.submission));
+    await tick();
+    if (revoked) {
+      assert.equal(p.data.memory, null); assert.equal(p.data.current, null);
+      assert.equal(p.data.mediaLoading, false); assert.equal(p.data.error, "content removed");
+      assert.equal(p._previewLease.detail(7), null);
+      assert.equal(p._mediaSession.source("https://test.invalid/1.jpg"), "");
+    } else {assert.equal(p.data.current.id, 2); assert.equal(p.data.index, 1);}
+    p.onUnload();
+  }
+});
+
+test("transient public validation failures retain usable cached media with a retry action", async () => {
+  for (const statusCode of [0,500,503]) {
+    const h=await cachedPhotoViewer();
+    h.api.detail=async()=>{throw {statusCode,message:"temporary failure"};};
+    const {instance:p}=h.next(); p.onLoad({id:"7",media_id:"1"});p.onShow();await tick();
+    assert.equal(p.data.current.id,1); assert.equal(p.data.error,"");
+    assert.equal(p.data.photoReady,true);assert.equal(p.data.revalidationFailed,true);
+    assert.equal(p.data.mediaLoading,false);assert.equal(h.jobs.length,2);
+    p.onUnload();
+  }
+});
+
+test("per-file content identity survives metadata revision and token renewal but changes with the bytes", async () => {
+  const h=await cachedPhotoViewer();
+  // First authorize a response that supplies the new per-file identity.
+  h.submission.media.forEach(item=>item.content_version="bytes-"+item.id);
+  let p=h.next().instance; p.onLoad({id:"7",media_id:"1"});p.onShow();await tick();
+  // Upgrading from an old server identity downloads once, then remains stable.
+  for(let i=2;i<h.jobs.length;i++)h.jobs[i].success({statusCode:200,tempFilePath:"versioned-"+i});
+  p.photoLoaded({currentTarget:{dataset:{id:1,generation:p.data.videoGeneration,source:p.data.imageSources[p.data.current.url]}}});
+  p.onHide();p.onUnload();
+  const count=h.jobs.length;
+  h.submission.revision++;
+  const next=h.next(); next.app.globalData.accessToken="renewed-token";
+  p=next.instance;p.onLoad({id:"7",media_id:"1"});p.onShow();await tick();
+  assert.equal(h.jobs.length,count);assert.equal(p.data.photoReady,true);assert.equal(p.data.mediaLoading,false);
+  p.onHide();p.onUnload();
+  h.submission.media[0].content_version="different-bytes";
+  p=h.next().instance;p.onLoad({id:"7",media_id:"1"});p.onShow();await tick();
+  assert.equal(h.jobs.length,count+1);assert.equal(p.data.photoReady,false);
+  p.onUnload();
+});
+
+test("a native preparation timeout ends loading, while old deadlines cannot fail a later slide", async () => {
+  const h=await downloadingViewer(false),p=h.instance;
+  const stale=h.timers.get(p._mediaDeadline);
+  assert.equal(h.timerDelays.get(p._mediaDeadline),20000);
+  p.change({detail:{current:1}});stale();assert.equal(p.data.error,"");
+  h.timers.get(p._mediaDeadline)();
+  assert.match(p.data.error,/超时/);assert.equal(p.data.mediaLoading,false);
+  assert.equal(p.data.videoMounted,false);assert.equal(p.data.loadingIndicatorVisible,false);
+  p.onUnload();
+});
+
+test("a play event without progressing time still has a finite native preparation deadline", async () => {
+  const h=await downloadingViewer(false),p=h.instance;
+  const event={currentTarget:{dataset:{id:61,generation:p.data.videoGeneration}},detail:{currentTime:0,duration:8}};
+  const deadline=p._mediaDeadline;p.videoPlay(event);p.videoTime(event);
+  assert.equal(p._mediaDeadline,deadline);
+  h.timers.get(deadline)();assert.match(p.data.error,/超时/);p.onUnload();
+});
+
+test("a ready cached PC image can be double-clicked while metadata revalidation is pending", async()=>{
+  const h=await cachedPhotoViewer();let finish;
+  h.api.detail=()=>new Promise(resolve=>{finish=resolve;});
+  const {instance:p}=h.next();p.renderer="webview";p.onLoad({id:"7",media_id:"1"});p.onShow();
+  assert.equal(p.data.loading,true);assert.equal(p.data.photoReady,true);
+  for(const timeStamp of [100,200])p.photoTap({timeStamp,currentTarget:{dataset:{id:1}},detail:{x:100,y:100}});
+  assert.equal(p.data.zoomed,true);
+  finish(structuredClone(h.submission));await tick();assert.equal(p.data.zoomed,true);p.onUnload();
+});
+
+test("entry thumbnail handoff is transient, ID-scoped and removed on confirmed unavailability", async () => {
+  const api=service(); let receive,fail;
+  api.detail=()=>new Promise((_,reject)=>{fail=reject;});
+  const {instance:p}=page("memory_detail",api);
+  p.getOpenerEventChannel=()=>({on(name,fn){assert.equal(name,"memoryEntry");receive=fn;}});
+  p.onLoad({id:"7",media_id:"1"});p.onShow();
+  receive({id:9,mediaId:1,source:"wrong"});assert.equal(p.data.entrySource,"");
+  receive({id:7,mediaId:1,source:"shown-thumbnail"});assert.equal(p.data.entrySource,"shown-thumbnail");
+  fail({statusCode:404,message:"removed"});await tick();
+  assert.equal(p.data.entrySource,"");p.onUnload();
+});
+
+test("admin previews never show public snapshot contents before fresh authorization", async () => {
+  const h = await cachedPhotoViewer(); let finish;
+  h.api.detail = () => new Promise(resolve => {finish = resolve;});
+  const {instance:p} = h.next(); p.onLoad({id:"7",admin:"1",media_id:"1"}); p.onShow();
+  assert.equal(p.data.memory, null); assert.equal(p.data.mediaLoading, true);
+  finish(structuredClone(h.submission)); await tick();
+  assert.equal(p.data.memory.id, 7); p.onUnload();
+});
+
+test("a new revision invalidates a warm photo while a late response cannot restore an unloaded preview", async () => {
+  for (const unload of [false,true]) {
+    const h = await cachedPhotoViewer(); let finish;
+    h.api.detail = () => new Promise(resolve => {finish = resolve;});
+    const {instance:p} = h.next(); p.onLoad({id:"7",media_id:"1"}); p.onShow();
+    assert.equal(p.data.mediaLoading, false);
+    if (unload) p.onUnload();
+    finish({...structuredClone(h.submission),revision:4}); await tick();
+    if (unload) {
+      assert.equal(p.data.memory.revision, 3);
+      assert.equal(h.jobs.length, 2, "late validation cannot start transfers after unloading");
+    } else {
+      assert.equal(p.data.memory.revision, 4); assert.equal(p.data.photoReady, false);
+      assert.equal(p.data.mediaLoading, true); assert.equal(h.jobs.length, 3);
+      p.onUnload();
+    }
+  }
+});
+
+test("cached video starts before revalidation and an unchanged response never remounts or restarts it", async () => {
+  const h = await downloadingViewer();
+  h.finish(0); h.timers.get(h.instance._videoWarmTimer)(); h.finish(1); await tick();
+  h.instance.onHide(); h.instance.onUnload();
+  let finish;
+  h.api.detail = () => new Promise(resolve => {finish = resolve;});
+  const next = page("memory_detail", h.api, h.wx, {}, h.mediaModules), p = next.instance;
+  p.onLoad({id:"7",media_id:"61"}); p.onShow();
+  assert.equal(p.data.videoSource, "video-cache-1"); assert.equal(p.data.videoMounted, true);
+  const generation = p.data.videoGeneration;
+  const event = {currentTarget:{dataset:{id:61,generation}},detail:{currentTime:2,duration:8}};
+  p.videoPlay(event); p.videoTime(event);
+  const plays = h.calls.filter(value => value === "play").length;
+  finish(structuredClone(h.submission)); await tick();
+  assert.equal(p.data.videoGeneration, generation); assert.equal(p._currentTime, 2);
+  assert.equal(p.data.mediaLoading, false);
+  assert.equal(h.calls.filter(value => value === "play").length, plays);
+  assert.equal(h.downloads.length, 2); p.onUnload();
+});
+
+test("video mounting awaits actual progress, while real waiting restores loading feedback", async () => {
+  const h = await downloadingViewer(false), p = h.instance;
+  const event = {currentTarget:{dataset:{id:61,generation:p.data.videoGeneration}}};
+  assert.equal(p.data.videoLoading, false); assert.equal(p.data.videoMounted, true);
+  assert.equal(p.data.mediaLoading, true);
+  p.videoPlay(event); assert.equal(p.data.mediaLoading, true);
+  p.videoTime({...event,detail:{currentTime:0.1,duration:8}});
+  assert.equal(p.data.mediaLoading, false);
+  p.videoWaiting(event); assert.equal(p.data.mediaLoading, true);
+  p.videoPause(event); assert.equal(p.data.mediaLoading, true, "native buffering is not an intentional pause");
+  p.videoTap(); assert.equal(p.data.pausedByUser, true); assert.equal(p.data.mediaLoading, false);
+  p.videoTap(); assert.equal(p.data.mediaLoading, true);
+  p.videoPlay(event); p.videoTime({...event,detail:{currentTime:0.2,duration:8}});
+  assert.equal(p.data.mediaLoading, false);
+  p.setViewerData({error:"load failed",videoBuffering:true});
+  assert.equal(p.data.mediaLoading, false);
+  p.onUnload();
+});
+
+test("portrait and native fullscreen share one centered animated loader and never offer play while loading", () => {
+  const markup = source("pages/memory_detail/memory_detail.wxml");
+  const controls = source("pages/memory_detail/memory-controls.wxml");
+  const css = source("pages/memory_detail/memory_detail.wxss");
+  assert.match(markup, /bindload="photoLoaded"/);
+  assert.match(markup, /data-generation="\{\{videoGeneration\}\}" data-source=/);
+  assert.match(markup, /wx:if="\{\{loadingIndicatorVisible && !error && !fullScreen\}\}" is="memory-loading"/);
+  assert.match(controls, /wx:if="\{\{loadingIndicatorVisible && !error\}\}" is="memory-loading"/);
+  for (const file of [markup, controls])
+    assert.match(file, /wx:if="\{\{!playing && [^"]*!mediaLoading && !error[^\"]*\}\}" class="viewer-play-button"/);
+  assert.match(css, /\.viewer-loading\s*\{[^}]*top: 50%;[^}]*left: 50%;[^}]*pointer-events: none/);
+  assert.match(css, /animation-name: viewer-loading-spin/);
+  assert.match(css, /@keyframes viewer-loading-spin/);
+  assert.match(controls, /src="\/images\/memory-upload-spinner.svg"/);
+});
+
 test("network video mounts and autoplays with sound before any download completes; only next is preloaded", async () => {
   const {instance, calls, downloads, finish} = await downloadingViewer();
   assert.equal(instance.data.videoLoading, false);
@@ -1881,6 +3315,64 @@ test("network video mounts and autoplays with sound before any download complete
   assert.equal(calls.at(-1), "play");
   assert.equal(downloads.length, 1);
   instance.onUnload();
+});
+
+test("a stable streaming video warms a temporary file and reopening reuses it without a second download", async () => {
+  const h = await downloadingViewer();
+  h.finish(0);
+  const warm = h.instance._videoWarmTimer;
+  assert.ok(warm); h.timers.get(warm)();
+  assert.equal(h.downloads.length, 2);
+  assert.equal(h.downloads[1].options.url, "https://test.invalid/61.mp4");
+  h.finish(1); await tick();
+  assert.equal(h.instance.data.videoSource, "https://test.invalid/61.mp4", "warming never remounts a playing video");
+  h.instance.onHide(); h.instance.onUnload();
+  let reads = 0;
+  h.api.detail = async () => {reads++; return structuredClone(h.submission);};
+  const next = page("memory_detail", h.api, h.wx, {}, h.mediaModules);
+  next.instance.onLoad({id: "7"}); next.instance.onShow(); await tick();
+  assert.equal(reads, 1, "reopening still validates the resource with the server");
+  assert.equal(next.instance.data.videoSource, "video-cache-1");
+  assert.equal(h.downloads.length, 2);
+  assert.equal(next.instance.data.mediaLoading, false, "a complete cached video does not force loading feedback");
+  const event = {currentTarget:{dataset:{id:61,generation:next.instance.data.videoGeneration}}};
+  next.instance.videoPlay(event); next.instance.videoTime({...event,detail:{currentTime:0.1,duration:8}});
+  assert.equal(next.instance.data.mediaLoading, false);
+  assert.equal(next.instance.data.muted, false);
+  next.instance.onUnload();
+});
+
+test("reopening a photo uses its completed temporary file after fresh server validation", async () => {
+  const api = service(), jobs = [];
+  let revision = 3, reads = 0;
+  api.detail = async () => {reads++; return {id: 7, revision, media: [{id: 1, kind: "image", url: "/photo.jpg"}]};};
+  const h = page("memory_detail", api, {downloadFile(options) {jobs.push(options); return {abort() {}};}});
+  h.instance.onLoad({id: "7"}); h.instance.onShow(); await tick();
+  jobs[0].success({statusCode: 200, tempFilePath: "photo-cache"});
+  h.instance.onHide(); h.instance.onUnload();
+  const next = page("memory_detail", api, h.wx, {}, h.mediaModules);
+  next.instance.onLoad({id: "7"}); next.instance.onShow(); await tick();
+  assert.equal(reads, 2); assert.equal(jobs.length, 1);
+  assert.equal(next.instance.data.imageSources["https://test.invalid/photo.jpg"], "photo-cache");
+  assert.equal(next.instance.data.mediaLoading, true);
+  next.instance.photoLoaded({currentTarget:{dataset:{id:1,generation:next.instance.data.videoGeneration,source:"photo-cache"}}});
+  assert.equal(next.instance.data.mediaLoading, false);
+  assert.equal(jobs.length, 1, "showing the loader never triggers a duplicate file download");
+  next.instance.onHide(); next.instance.onUnload();
+  revision++;
+  const changed = page("memory_detail", api, h.wx, {}, h.mediaModules);
+  changed.instance.onLoad({id: "7"}); changed.instance.onShow(); await tick();
+  assert.equal(jobs.length, 2, "a fresh revision cannot reuse stale media bytes");
+  changed.instance.onUnload();
+});
+
+test("buffering or leaving before the warm timer fires never starts a current-video transfer", async () => {
+  const h = await downloadingViewer();
+  const callback = h.timers.get(h.instance._videoWarmTimer);
+  h.instance.videoWaiting({currentTarget: {dataset: {id: 61, generation: h.instance.data.videoGeneration}}});
+  callback(); assert.equal(h.downloads.length, 1);
+  h.instance.onHide(); callback(); assert.equal(h.downloads.length, 1);
+  h.instance.onUnload();
 });
 
 test("loading completion and late native play cannot override a single-tap pause", async () => {
@@ -1906,13 +3398,15 @@ test("single tap can pause between the play request and its native event; preloa
   assert.equal(downloads.length,0);
   instance.videoTap();
   assert.equal(instance.data.pausedByUser,true);
+  assert.equal(downloads.length,1,"intentional pause opens neighbour preparation even before native play");
   instance.videoPlay({currentTarget: {dataset: {id:61,generation:instance.data.videoGeneration}}});
   assert.equal(calls.at(-1),"pause");
-  assert.equal(downloads.length,0);
+  assert.equal(downloads.length,1);
   instance.videoTap();
   instance.videoPlay({currentTarget: {dataset: {id:61,generation:instance.data.videoGeneration}}});
   instance.videoTime({currentTarget: {dataset: {id:61,generation:instance.data.videoGeneration}},detail:{currentTime:0.1,duration:8}});
-  assert.equal(downloads.length,1);
+  assert.equal(downloads.length,2,"resuming startup temporarily yields bandwidth back to the native player");
+  assert.equal(downloads[0].aborted,true);
   instance.onUnload();
 });
 
@@ -2271,15 +3765,15 @@ test("view controls preserve submission disabled guards without native button su
   assert.equal(confirmations, 1);
 });
 
-test("submission explanation keeps the complete copy and lets Skyline wrap naturally", () => {
+test("submission explanation is left aligned with an explicit paragraph break", () => {
   const { instance } = page("memory_create", service());
   let options;
   instance.selectComponent = () => ({ open(value) { options = value; } });
   instance.setData({ ready: true, files: [{ id: "explanation" }] });
   instance.confirmUpload();
   assert.equal(options.message,
-    "您上传的图片与视频将投稿至管理员，不会直接展示在小程序中。若内容合适，管理员将代为发布。");
-  assert.doesNotMatch(options.message, /[\r\n]/);
+    "您上传的图片与视频将投稿至管理员，不会直接展示在小程序中。\n若内容合适，管理员将代为发布。");
+  assert.equal(options.messageAlign, "left");
   assert.equal(options.prototypeStyle, true);
   assert.equal(options.confirmBehavior, "emit");
 });
@@ -2357,7 +3851,7 @@ test("submission media and the trailing add tile share one horizontal scroll wit
   );
 });
 
-test("upload state tracks each file independently, caps transfer progress and recovers failure", async () => {
+test("upload progress remains at 99 until receipt, patches only its tile and recovers failure", async () => {
   const tasks = [];
   const memory = {
     ...service(),
@@ -2389,20 +3883,41 @@ test("upload state tracks each file independently, caps transfer progress and re
   await tick();
   assert.deepEqual(
     Array.from(instance.data.files, (file) => file.uploadState),
-    ["uploading", "uploading", "waiting"],
+    ["uploading", "waiting", "waiting"],
   );
-  tasks[0].progress({ totalBytesSent: 45 });
+  const patches = [];
+  const setData = instance.setData.bind(instance);
+  instance.setData = (patch, callback) => { patches.push(patch); setData(patch, callback); };
+  const waitingTile = instance.data.files[2];
+  tasks[0].progress({ totalBytesSent: 90, totalBytesExpectedToSend: 200 });
   assert.equal(instance.data.files[0].uploadProgress, 45);
-  tasks[0].progress({ totalBytesSent: 150 });
+  assert.equal(patches.length, 1);
+  assert.ok(Object.keys(patches[0]).every(key => key.startsWith("files[0].") || key === "progress"));
+  assert.equal(instance.data.files[2], waitingTile);
+  tasks[0].progress({ progress: 45, totalBytesSent: 90, totalBytesExpectedToSend: 200 });
+  tasks[0].progress({ progress: 20 });
+  assert.equal(patches.length, 1, "duplicate or stale progress must not refresh waiting spinners");
+  tasks[0].progress({ progress: 75, totalBytesSent: 150, totalBytesExpectedToSend: 200 });
+  assert.equal(instance.data.files[0].uploadProgress, 75, "multipart overhead cannot count as original bytes");
+  tasks[0].progress({ progress: 100 });
   assert.equal(instance.data.files[0].uploadProgress, 99);
+  assert.equal(instance.data.files[0].uploadState, "uploading");
+  assert.equal(instance._uploader.submitted, undefined);
+  const writes = patches.length;
+  tasks[0].progress({ progress: 100 });
+  tasks[0].progress({ progress: 99 });
+  assert.equal(patches.length, writes);
   tasks[0].resolve();
   await tick();
   assert.equal(instance.data.files[0].uploadState, "uploaded");
   assert.equal(instance.data.files[0].uploadProgress, 100);
   tasks[0].progress({ totalBytesSent: 20 });
   assert.equal(instance.data.files[0].uploadState, "uploaded");
-  assert.equal(instance.data.files[2].uploadState, "uploading");
+  assert.equal(instance.data.files[1].uploadState, "uploading");
+  assert.equal(instance.data.files[2].uploadState, "waiting");
   tasks[1].reject(new Error("network interrupted"));
+  await tick();
+  assert.equal(instance.data.files[2].uploadState, "uploading");
   tasks[2].resolve();
   await pending;
   assert.equal(instance.data.files[1].uploadState, "failed");
@@ -2412,6 +3927,102 @@ test("upload state tracks each file independently, caps transfer progress and re
   tasks[1].progress({ totalBytesSent: 80 });
   assert.equal(instance.data.files[0].uploadState, "failed");
   assert.equal(instance.data.files.length, 2);
+});
+
+test("one upload progress holds at 99 through receipt and final submission, with safe retries", async () => {
+  const tasks = [], submissions = [], calls = [];
+  const api = {
+    ...service(),
+    async send(url, method) {
+      calls.push([url, method]);
+      if (url === "/memory-drafts") return {id: 1, status: "draft"};
+      if (url.endsWith("/submit")) return new Promise(resolve => submissions.push(resolve));
+      return {state: "empty"};
+    },
+    upload(id, slot, file, progress) {
+      let resolve, reject;
+      const promise = new Promise((done, fail) => {resolve = done; reject = fail;});
+      tasks.push({progress, resolve, reject});
+      return {promise, abort() {}};
+    },
+  };
+  const {instance} = page("memory_create", api);
+  instance.onLoad();
+  instance.setData({files: [{id: "photo", kind: "image", path: "photo.jpg", size: 100}]});
+  let pending = instance.upload();
+  await tick();
+  tasks[0].progress({progress: 100});
+  assert.equal(instance.data.progress, 99);
+  assert.equal(instance.data.files[0].uploadState, "uploading");
+  assert.equal(submissions.length, 0);
+  assert.equal(instance.data.busy, true);
+  tasks[0].reject(new Error("server validation failed"));
+  await pending;
+  assert.equal(instance.data.files[0].uploadState, "failed");
+  assert.equal(instance.data.uploadError, "server validation failed");
+  assert.equal(instance.data.error, "");
+  assert.equal(instance.data.busy, false);
+  assert.equal(instance._uploader.submitAttempted, undefined);
+  pending = instance.upload();
+  await tick();
+  assert.equal(instance.data.files[0].uploadProgress, 0);
+  assert.equal(instance.data.files[0].uploadState, "uploading");
+  tasks[1].progress({totalBytesSent: 150, totalBytesExpectedToSend: 200});
+  assert.equal(instance.data.progress, 75);
+  tasks[1].progress({progress: 100});
+  tasks[1].resolve();
+  await tick();
+  assert.equal(instance.data.files[0].uploadState, "uploaded");
+  assert.equal(instance.data.progress, 99);
+  assert.equal(instance._uploader.submitted, undefined);
+  assert.equal(submissions.length, 1);
+  submissions[0]({status: "received"});
+  await pending;
+  assert.equal(instance._uploader.submitted, true);
+  assert.equal(instance.data.progress, 100);
+  assert.equal(calls.filter(([url]) => url === "/memory-drafts").length, 1);
+  instance.onUnload();
+});
+
+test("file validation and picker errors belong beside the upload label, without hiding other form errors", async () => {
+  let options;
+  const {instance} = page("memory_create", service(), {chooseMedia: value => {options = value;}});
+  instance.onLoad();
+  await tick();
+  instance.setData({files: [{id: "large", kind: "image", path: "large.jpg", size: 20 * 1024 ** 2 + 1}]});
+  await instance.upload();
+  assert.ok(instance.data.uploadError);
+  assert.equal(instance.data.error, "");
+  assert.equal(instance.data.busy, false);
+  assert.equal(instance.data.locked, false);
+  assert.equal(instance._uploader, undefined);
+  instance.setData({error: "活动加载失败"});
+  instance.choose();
+  assert.equal(instance.data.uploadError, "");
+  assert.equal(instance.data.error, "活动加载失败");
+  options.fail({errMsg: "chooseMedia:fail permission denied"});
+  assert.equal(instance.data.uploadError, "选择内容失败，请重试");
+  assert.equal(instance.data.error, "活动加载失败");
+  instance.choose();
+  options.fail({errMsg: "chooseMedia:fail cancel"});
+  assert.equal(instance.data.uploadError, "");
+  assert.equal(instance.data.selecting, false);
+  instance.onUnload();
+});
+
+test("thumbnail updates patch only changed fields and keep upload spinner animation linear", () => {
+  const {instance} = thumbnailPage();
+  const patches = [];
+  const setData = instance.setData.bind(instance);
+  instance.setData = (patch, callback) => {patches.push(patch); setData(patch, callback);};
+  instance.updateThumbnail("first", {thumbnailState: "working"});
+  instance.updateThumbnail("first", {thumbnailState: "working"});
+  instance.updateThumbnail("removed", {thumbnail: "late.jpg"});
+  assert.equal(patches.length, 1);
+  assert.deepEqual(Object.keys(patches[0]), ["files[0].thumbnailState"]);
+  const styles = source("pages/memory_create/memory_create.wxss");
+  assert.match(styles, /\.upload-spinner\s*\{[^}]*animation-timing-function:\s*linear;[^}]*animation-iteration-count:\s*infinite;/s);
+  assert.match(styles, /@keyframes upload-spin\s*\{\s*from\s*\{\s*transform:\s*rotate\(0deg\);\s*\}\s*to\s*\{\s*transform:\s*rotate\(360deg\);/);
 });
 
 test("memory feed scales grid gutters with the viewport and reuses the dragon watermark", () => {
@@ -2434,6 +4045,32 @@ test("memory feed scales grid gutters with the viewport and reuses the dragon wa
   );
 });
 
+test("WebView memory columns resize without dropping covers, duplicating cards or resetting presentation", async () => {
+  let windowWidth = 390;
+  const api = service();
+  api.list = async values => ({items: [{id: values.cursor ? 8 : 7, media: [
+    {id: values.cursor ? 12 : 10, kind: "image", state: "ready", width: 390, height: 600, thumbnail_url: "/a.jpg"},
+    {id: values.cursor ? 13 : 11, kind: "video", state: "ready", width: 600, height: 390, thumbnail_url: "/b.jpg"},
+  ]}], cursor: values.cursor ? null : "next"});
+  const {instance} = page("memory", api, {getWindowInfo: () => ({windowWidth, statusBarHeight: 20})});
+  instance.renderer = "webview";
+  instance.onLoad();
+  assert.equal(instance.data.webview, true);
+  assert.equal(instance.data.skeletonColumns.flatMap(column => column.items).length, 6);
+  await instance.load(true);
+  await instance.load(false);
+  const ids = () => Array.from(instance.data.columns.flatMap(column => column.items), item => item.id).sort();
+  assert.deepEqual(ids(), [10, 11, 12, 13]);
+  const states = instance.data.coverStates, sources = instance.data.imageSources;
+  windowWidth = 620;
+  instance.onResize();
+  assert.deepEqual(ids(), [10, 11, 12, 13]);
+  assert.ok(instance.data.items.every(item => item.coverHeight === Math.round(instance.data.cardWidth * item.coverRatio)));
+  assert.equal(instance.data.coverStates, states);
+  assert.equal(instance.data.imageSources, sources);
+  instance.onUnload();
+});
+
 test("memory heading scrolls with its grid and cards reuse the home open-container transition", () => {
   const markup = source("pages/memory/memory.wxml");
   const scrollStart = markup.indexOf('<scroll-view class="memory-scroll"');
@@ -2441,9 +4078,11 @@ test("memory heading scrolls with its grid and cards reuse the home open-contain
   const grid = markup.indexOf('<grid-view');
   const scrollEnd = markup.indexOf('</scroll-view>');
   assert.ok(scrollStart < heading && heading < grid && grid < scrollEnd);
-  assert.match(markup, /<list-view><view class="memory-heading">/);
-  assert.match(markup, /<view[^>]*wx:for="\{\{items\}\}"[^>]*class="memory-card-slot"/);
-  assert.match(markup, /<open-container class="memory-card-transition"/);
+  assert.match(markup, /<list-view wx:if="\{\{!webview\}\}"><view class="memory-heading">/);
+  assert.match(markup, /<template name="memory-grid-item">/);
+  assert.match(markup, /<block wx:for="\{\{loading && !items.length \? skeletonItems : items\}\}" wx:key="id"><template is="memory-grid-item"/);
+  assert.match(markup, /<open-container wx:else class="memory-card-transition /);
+  assert.match(markup, /<view wx:if="\{\{webview\}\}" class="memory-card-transition [^>]*bindtap="open"/);
   assert.match(markup, /closed-border-radius="\{\{cardRadius\}\}"/);
   assert.match(markup, /open-border-radius="0"/);
   assert.match(markup, /open-color="#000000"/);
@@ -2458,7 +4097,8 @@ test("memory transition keeps a sized ordinary card instead of relying on its na
   const markup = source("pages/memory/memory.wxml");
   const styles = source("pages/memory/memory.wxss");
   assert.match(markup, /class="memory-card-slot" style="width:\{\{cardWidth\}\}px;height:\{\{item.coverHeight\}\}px;"/);
-  assert.match(markup, /<open-container[^>]*>\s*<view class="memory-cover" style="width:\{\{cardWidth\}\}px;height:\{\{item.coverHeight\}\}px;">\s*<image class="memory-cover-image memory-window-image"/);
+  assert.match(markup, /<open-container[^>]*>\s*<template is="memory-cover-content"/);
+  assert.match(markup, /<template name="memory-cover-content">\s*<view class="memory-cover" style="width:\{\{cardWidth\}\}px;height:\{\{item.coverHeight\}\}px;">\s*<image class="memory-cover-image memory-window-image"/);
   assert.match(styles, /\.memory-card-transition\s*\{[^}]*display:\s*block;[^}]*width:\s*100%;[^}]*height:\s*100%;/);
   assert.match(styles, /\.memory-cover\s*\{[^}]*display:\s*block;/);
 });
@@ -2991,7 +4631,7 @@ test("approval and rejection advance in place, refresh sibling revisions and fin
   assert.equal(sent.length, 3, "completed content cannot be submitted again");
 });
 
-test("review advancement consumes the preloaded next video and clears it on completion", async () => {
+test("review advancement consumes the preloaded next video across a publication-only revision change", async () => {
   const api = service();
   const submission = {id: 7, status: "pending", revision: 3, media: [
     {id: 20, kind: "image", state: "ready", publication_status: "unreviewed"},
@@ -3002,6 +4642,7 @@ test("review advancement consumes the preloaded next video and clears it on comp
   api.send = async () => ({revision: ++submission.revision});
   let download, removed;
   const {instance} = page("memory_detail", api, {
+    createVideoContext: () => ({play() {}, pause() {}}),
     downloadFile(options) {download = options; return {abort() {}};},
     getFileSystemManager: () => ({unlink: ({filePath,success}) => {removed = filePath; success();},
       getFileInfo: options => options.success({size: 1024})}),
@@ -3018,7 +4659,8 @@ test("review advancement consumes the preloaded next video and clears it on comp
   assert.equal(instance.data.memory.revision, 4);
   await instance.askReview({currentTarget: {dataset: {action: "reject"}}});
   assert.equal(instance.data.reviewComplete, true);
-  assert.equal(removed, "next-video-cache");
+  assert.equal(removed, undefined, "completed files remain within the shared short-lived budget");
+  instance.onUnload();
 });
 
 test("review continuation loads the next queue page and retries loading without resubmitting", async () => {
@@ -3194,7 +4836,7 @@ test("restoring and switching portraits returns to uncropped fit instead of fill
   assert.equal(instance.data.photoHeight, 585);
   assert.equal(instance.data.photoLeft, 0);
   assert.equal(instance.data.photoTop, 129.5);
-  instance.photoDoubleTap({state: 3, absoluteX: 195, absoluteY: 422});
+  instance.photoDoubleTap({state: 1, absoluteX: 195, absoluteY: 422});
   instance.photoPan({state: 2, deltaX: 1000, deltaY: 1000});
   assert.equal(instance._scale.value, 2);
   assert.ok(instance._x.value > 0 && instance._y.value > 0);

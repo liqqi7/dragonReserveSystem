@@ -9,7 +9,7 @@ app/        API、配置、模型、数据结构与业务服务
 alembic/    数据库迁移
 scripts/    测试数据和生产维护脚本
 tests/      pytest 测试
-storage/    本地空目录占位；生产服务器保存用户头像
+storage/    运行日志/锁及历史本地数据；日常测试媒体使用服务器挂载
 deploy/     Caddy 和活动状态同步配置
 ```
 
@@ -45,6 +45,8 @@ python -m pip install --require-hashes -r requirements-dev.lock  # 开发/测试
 
 ## Windows 本地测试
 
+此处指隔离自动化回归，是允许使用临时 SQLite 的例外，不是小程序日常联调环境。
+
 ```powershell
 cd backend
 .\.venv\Scripts\python.exe -m pytest tests -q
@@ -54,6 +56,8 @@ cd backend
 
 ## 小程序联调测试库
 
+当前统一规范见 [测试环境](../docs/测试环境.md)：**本地 API + 服务器测试 MySQL + 服务器测试媒体目录**。手机与开发者工具共用同一入口；远端不可用就停止，不能创建本地业务数据库。
+
 服务器测试库为 `dragon_reserve_test`。在 Windows PowerShell 中运行：
 
 ```powershell
@@ -61,48 +65,27 @@ cd backend
 powershell -ExecutionPolicy Bypass -File .\scripts\start_backend_test.ps1
 ```
 
-脚本读取 `.env.test`，必要时建立 SSH 隧道，启动本地 FastAPI（默认 `127.0.0.1:8001`），并临时把小程序配置指向本地后端；结束后恢复正式地址模板。
+脚本读取 `.env.test`，新建独占 SSH 隧道核验数据库，并通过 SSHFS 验证服务器测试媒体存储后，启动本地 FastAPI（默认 `127.0.0.1:8001`）；结束后停止 API、恢复正式地址模板、卸载本会话远端目录并关闭隧道。数据库和上传素材不持久保存在本机。
 
-Linux/macOS 的对应入口为 `bash scripts/start_backend_test.sh`（在 `backend` 目录运行）。两种脚本均保留用于联调，不是运行 pytest 的前置步骤；不要为了执行单元测试而启动远程数据库隧道。
+Linux/macOS 的对应入口为 `bash scripts/start_backend_test.sh`（在 `backend` 目录运行）。两种脚本仅转发到同一个 `scripts/test_environment.py`；不再独立维护环境逻辑。使用 `.env.test.example` 配置凭据，Windows 需安装 WinFsp/SSHFS-Win，其他平台需 SSHFS。这不是运行 pytest 的前置步骤，不要为了执行单元测试而连接共享测试库。
 
 重建虚构测试数据：
 
 ```powershell
 cd backend
-.\.venv\Scripts\python.exe scripts\seed_test_database.py
+.\.venv\Scripts\python.exe scripts\seed_test_database.py --apply
 ```
 
-测试数据不得使用真实微信身份或真实头像。
+造数脚本要求明确 `--apply`，并通过统一的目标校验和独占隧道连接服务器测试库；不传该参数只校验配置，不插入数据。测试数据不使用真实微信身份或正式头像，空头像使用客户端占位图；本轮没有运行造数脚本。
 
-## 本地数据库 + 手机联调环境（Windows）
-
-`start_backend_test.ps1` 的数据库是服务器的 `dragon_reserve_test`（必要时建 SSH 隧道），**不是**完全本地环境。手机联调且不希望连接远程测试库时，改用以下脚本；无需 Docker/MySQL/SSH：
+## 手机联调（同一服务器测试环境）
 
 ```powershell
 cd backend
-.\scripts\start_backend_local_phone.ps1
-# 如自动选址失败或电脑有多个网卡：
-.\scripts\start_backend_local_phone.ps1 -MiniProgramHost 192.168.10.2 -AppPort 8002
+.\scripts\start_backend_test.ps1 -AppHost 0.0.0.0 -MiniProgramHost 192.168.10.2 -AppPort 8002
 ```
 
-`-MiniProgramHost` 要替换为**当前电脑在手机所在局域网的 IPv4**（可用 `ipconfig` 查看，脚本会验证它确实分配给本机）。默认端口 `8002`，监听 `0.0.0.0`；绑定电脑所有网卡；只在可信局域网使用，不做路由器端口转发，也不要在公共网络启动。脚本要求 `backend/.venv` 和 `backend/.env.test` 中的 `WECHAT_APP_ID`/`WECHAT_APP_SECRET`（与本小程序 AppID 配套），但明确覆盖数据库连接等设置，绝不连接其中的远程数据库；微信登录仍需访问微信官方 `code2session` 服务，并非完全离线。手机和电脑需位于互通的 Wi-Fi／局域网；VPN、访客网络、客户端隔离或本机防火墙可能阻断连接。
-
-启动时脚本创建专用 SQLite（已有数据库只检查必需表和列，不自动迁移） `backend/storage/local-phone-test/local-phone.sqlite3`，新库使用当前 ORM 表结构（**不执行 MySQL 专用 Alembic 迁移，也不自动重建/清空已有数据**），并将头像、分享图等媒体保存到同目录 `media/`。首次启动是空库，不包含服务器历史活动。结构不兼容时会报错，需自行备份并明确迁移，脚本不会覆盖。只初始化/检查数据库、不改小程序配置和不启动后端，可加 `-InitializeOnly`。
-
-启动时小程序的 `miniprogram/services/config.js` 暂指向 `http://<电脑局域网 IP>:8002/api/v1`，服务端返回的媒体 URL 也使用该 IP；脚本会先将原配置备份在 `backend/storage/local-phone-test/config-before-*.js`，保存运行状态到 `session.json`，然后在后台运行后端并返回终端。完成测试后**必须显式停止**，脚本会按记录的进程身份停止后端并恢复**启动前的原配置**：
-
-```powershell
-cd backend
-.\scripts\start_backend_local_phone.ps1 -Stop
-```
-
-不要用 Ctrl+C 或关闭终端来代替 `-Stop`；如果意外中断，可重新运行 `-Stop`。若 `session.json` 丢失，可从对应的 `config-before-*.js` 手动恢复原配置。脚本拒绝与另一正在使用 `test` 配置的测试会话并行；先停旧脚本再启动。运行时 SQLite/媒体目录持久保留，`-Stop` 不删除测试数据。
-
-在微信开发者工具打开本项目、重新编译，使用**真机调试**而非上传/发布（项目 `project.config.json` 的开发设置已关闭 URL 合法域名校验）。先在手机浏览器访问 `http://<电脑局域网 IP>:8002/api/v1/health`，应返回 `{"status":"ok"}`；再看小程序请求是否连到此地址。此项只能由手机实际验证，本机健康检查不代表手机已连通。HTTP/IP 的调试设置**不等于**普通预览包或线上版的合法域名配置。
-
-本地库里真实微信账号首次登录是 `guest`，可用脚本启动时显示的**本地管理员邀请码**在小程序内获取管理员角色，之后测试创建活动、编辑地址／时间、进入详情及分享；它只对本轮本地服务有效，脚本每次重启会换新的 JWT 密钥和邀请码，重启后请重新登录。原远程测试环境的登录态/活动数据不通用。分享静态 PNG 会在活动创建/相关编辑时写到本机 `media/share-previews/`；手机需要在分享前能从局域网下载该图片。生产 HTTPS 分享路径不受该调试配置影响。
-
-可自行做的本机检查：两个地址的 `/api/v1/health`、`/api/v2/activities` 以及活动封面资源接口返回正确状态；微信开发者工具编译和手机真机卡片样式必须分别验证。请勿在该环境使用真实生产数据，退出后切勿将本地 HTTP 配置上传发布。
+替换为当前电脑的 LAN IPv4，手机和电脑连接互通的可信 Wi-Fi，不做公网端口转发。此参数只改变 API 的监听和访问地址，不改变数据库、媒体存储、测试 JWT 或邀请码。退出使用 Ctrl+C。旧本地 SQLite 手机脚本和初始化脚本已移除，历史本地数据不自动删除或导入。扫码预览的域名/HTTPS 限制、客户端连通性仍需单独验证，详见统一规范。
 
 ## 媒体地址配置
 
@@ -110,7 +93,7 @@ cd backend
 
 旧 v1 活动及类型样式接口已移除，现行活动接口使用 `/api/v2/activities`，封面目录与玻璃图片使用 `/api/v2/activity-covers`。登录、用户、排行榜等接口仍使用 v1，不要把小程序的默认 API 地址整体改成 v2。`PUBLIC_BASE_URL` 继续用于分享图等媒体的公开地址；生产环境应配置真实的对外 HTTPS 站点地址，避免反向代理后的内部协议或地址被用于媒体链接。
 
-这些配置只改变链接的拼接方式，不会复制、下载或迁移资源，也不会改写数据库里的已有 URL。测试环境若需要展示旧样式，应在对应的 `MEDIA_ROOT/images/` 下准备同名资源；现行 v2 封面及其独立 CDN 配置保持不变。PowerShell 和 Bash 远程测试脚本退出时恢复生产模板，本地独立真机脚本仍用 `-Stop` 恢复启动前配置。
+这些配置只改变链接的拼接方式，不会复制、下载或迁移资源，也不会改写数据库里的已有 URL。日常测试的 `MEDIA_ROOT` 与 `MEMORY_STORAGE_ROOT` 由已验证的服务器挂载提供，不指向本地目录，`PUBLIC_BASE_URL` 复用服务器测试 HTTPS 地址，媒体可以直接从服务器读取；现行 v2 内置封面及独立 CDN 配置保持不变。统一测试入口退出时恢复生产模板，不再保留独立手机环境。
 
 ## 业务时间与分享图清理
 
@@ -142,7 +125,7 @@ cd /home/ubuntu/apps/dragonReserveSystem
 
 ## 生产服务维护
 
-生产环境变量位于服务器 `backend/.env`，不提交到 Git。生产数据库为 `dragon_reserve`，测试数据库为 `dragon_reserve_test`。
+生产环境变量位于当前运行版本的 `backend/.env`，不提交到 Git。通过 `systemctl show dragonreserve-backend -p WorkingDirectory --value` 查询实际目录；`/home/ubuntu/apps/dragonReserveSystem/active-release.json` 记录激活版本。旧项目根目录下的 `backend/` 保留作为回滚版本及历史媒体位置，不应只凭该目录的 Git HEAD 判断线上代码。生产数据库为 `dragon_reserve`，测试数据库为 `dragon_reserve_test`。
 
 ```bash
 sudo systemctl status dragonreserve-backend
@@ -173,3 +156,19 @@ sudo systemctl enable --now dragonreserve-boardgame-preview-worker.service
 单实例运行该服务。`active` 和轮询接口返回 200 只说明进程或接口可用，仍须通过真实 BGG 名称搜索确认任务从 queued/fetching 到 ready、评分/排名/重度与版本有值，再检查原有登录、活动和排行榜接口。功能开关关闭或 BGG 凭据缺失时，worker 会空转，不能视为搜索验收通过。
 
 回退时停止新 worker、关闭桌游库开关并恢复部署前的应用版本，保留桌游表和已录入数据；不要直接 downgrade `20261007_0021`，它会删除六张新表。小程序上传体验版之前必须配置已验证的公网 HTTPS API；一次性 BGG 馆藏导入独立执行，本次上线不自动导入。
+
+## 记忆模块正式发布
+
+2026-10-20 已发布 `memory-20261020-r1`。正式 API 地址仍为 `https://dragon.liqqihome.top/api/v1`，实际代码目录为 `/home/ubuntu/apps/dragonReserveSystem-releases/memory-20261020-r1/backend`。发布包包含未提交的本期工作区文件，以服务器 `release-manifest.json` 中的逐文件 SHA256 为准，不以旧目录的 Git HEAD 代替发布标识。
+
+- 正式库通过 Alembic 从 `20261010_0023` 升级到 `20261011_0024`，仅新增四张记忆表，迁移前后原有业务行的数量和摘要一致。`scripts/migrate_memory_schema.py` 仍为测试库专用，不能用于正式迁移。
+- 正式公共媒体保留在原 `backend/storage/`；记忆私有媒体使用 `/home/ubuntu/apps/dragonReserveSystem/private-storage/memories`，不在公共静态目录下。初始记忆容量预算为 10,000,000,000 字节，磁盘保底空闲 3GiB。原始媒体按既有处理逻辑，在压缩结果持久化成功后删除；本次没有改压缩参数。
+- 保留原有正式 JWT 密钥、算法、有效期、成员码、管理员码和微信配置，仅新增独立的记忆媒体签名配置。不复制测试 `.env`、账号、业务数据或素材。后续更改配置时以实际运行目录为准。
+- `dragonreserve-memory-worker.service` 单实例串行处理，CPU 配额 75%、低调度优先级、内存高水位 640MiB、硬上限 900MiB；6000 万像素合成图实测进程峰值约 710MiB。活动状态、天气（含原有 flock 互斥）及桌游 worker 保留，服务器测试服务与路由未变。
+- 新 API 先在备用端口验证旧签名凭证、用户资料/角色、排行、活动、桌游和既有封面，再热切换代理；主服务更新期间由已验证的备用服务承接请求。临时服务已停止并移除。
+- 备份位于 `/home/ubuntu/backups/dragonReserveSystem/current`，是本次发布前 `0023` 的代码、数据库、媒体和必要配置的一致快照，已在隔离恢复库验证恢复与新迁移。最终仅保留这一套完整备份。备份期间维护提示约 32 秒，正式迁移也执行了短暂维护，不宣称零中断。
+- 普通回滚先停止记忆 worker，再切回旧代码与匹配服务配置，保留新增记忆表和已接收投稿；禁止直接 downgrade 记忆迁移。恢复旧数据库备份会舍弃备份后的写入，必须另行停写、评估并明确确认，不能作为自动回滚步骤。
+
+发版验收：前端 979 项、后端 453 项、独立 MySQL 实例迁移 6 项全部通过；全量 WXSS 静态检查零错误，29 个 WXML 与 3 个 WXS 经微信原生编译器编译通过。正式 HTTPS 已实测图片/视频上传、重复回执、提交、worker 压缩、私有媒体鉴权、视频 Range、拒绝/回待审、上架/下架/重新上架及删除；仅验收投稿被清理。另从 Windows 电脑实测约 632KiB 图片上传加回执 0.932 秒、1.6KiB 图片 0.303 秒，声明接口约 0.30 秒；这些是当次样本，不是性能保证，也不是微信原生真机证据。
+
+提审前必须确认正式 HTTPS 请求、上传和下载域名配置，生成最新正式体验包并完成 iOS 与 PC 微信验收。本轮开发者工具未运行，未为此另开窗口，尚未生成新的微信预览包、上传提审或执行新版真机界面验收。

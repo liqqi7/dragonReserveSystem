@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.exceptions import AppError, ConflictError, NotFoundError, PermissionDeniedError
+from app.core.logging import logger
 from app.models import Activity, User
 from app.models.memory import Memory, MemoryAuditLog, MemoryCapacity, MemoryMedia
 from app.services import memory_media as media
@@ -179,54 +180,65 @@ def remove_media(db, memory_id, slot, actor):
     return {"slot": slot, "state": "removed"}
 
 
-def upload(db, memory_id, slot, actor, source):
+def upload(db, memory_id, slot, actor, source, *, trace_id=""):
+    started = time.perf_counter()
     memory = owned_draft(db, memory_id, actor, True)
+    locked = time.perf_counter()
     item = db.scalar(select(MemoryMedia).where(MemoryMedia.memory_id == memory.id, MemoryMedia.sort == slot))
     if not item or item.state == "removed":
         raise NotFoundError("上传槽位不存在")
-    root = storage_root()
-    key = f"{memory.id}/{item.id}/original-{uuid4().hex}.bin"
-    path = media.private_path(root, key)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    path = None
     try:
+        if item.kind == "image":
+            from PIL import Image, UnidentifiedImageError
+            try:
+                with Image.open(source) as image:
+                    media.validate_static_image(image)
+                    image.verify()
+            except (OSError, UnidentifiedImageError, ValueError):
+                media.reject("图片损坏或格式不支持")
+            finally:
+                source.seek(0)
+        admitted = time.perf_counter()
+        root = storage_root()
+        key = f"{memory.id}/{item.id}/original-{uuid4().hex}.bin"
+        path = media.private_path(root, key)
+        path.parent.mkdir(parents=True, exist_ok=True)
         count = 0
+        hasher = hashlib.sha256()
         with path.open("xb") as destination:
             while chunk := source.read(256 * 1024):
                 count += len(chunk)
                 if count > item.declared_bytes:
                     media.reject("原文件大小与上传声明不符", 413)
                 destination.write(chunk)
+                hasher.update(chunk)
+        written = time.perf_counter()
         media.validate_original(path, item.kind)
         if count != item.declared_bytes:
             media.reject("原文件大小与上传声明不符")
-        digest = media.file_digest(path)
+        digest = hasher.hexdigest()
         if item.original_key:
             if item.digest != digest:
                 raise ConflictError("该位置已上传不同文件")
             path.unlink()
             db.rollback()
             return item
-        if item.kind == "image":
-            from PIL import Image, UnidentifiedImageError
-            try:
-                with Image.open(path) as image:
-                    if image.format not in {"JPEG", "PNG"} or getattr(image, "n_frames", 1) != 1:
-                        media.reject("目前支持静态 JPEG、PNG 图片")
-                    if image.width * image.height > media.MAX_IMAGE_PIXELS:
-                        media.reject("图片分辨率过大")
-                    image.verify()
-            except (OSError, UnidentifiedImageError, ValueError) as exc:
-                media.reject("图片损坏或格式不支持")
-        else:
+        if item.kind == "video":
             media.inspect_video(path, get_settings().memory_ffprobe)
+        verified = time.perf_counter()
         item.original_key, item.original_bytes, item.digest, item.state = key, count, digest, "uploaded"
         memory.expires_at = app_now() + timedelta(hours=24)
         db.commit()
-        return item
     except Exception:
         db.rollback()
-        path.unlink(missing_ok=True)
+        if path is not None:
+            path.unlink(missing_ok=True)
         raise
+    logger.info("memory_upload_completed memory_id=%s slot=%s bytes=%s lock_ms=%.2f write_ms=%.2f verify_ms=%.2f commit_ms=%.2f trace_id=%s",
+                memory_id, slot, count, (locked - started) * 1000, (written - admitted) * 1000,
+                (admitted - locked + verified - written) * 1000, (time.perf_counter() - verified) * 1000, trace_id)
+    return item
 
 
 def submit(db, memory_id, actor, metadata=None):
@@ -282,9 +294,13 @@ def signed_query(item_id, variant, actor_id, ttl=900):
     return f"actor={actor_id}&expires={expiry}&signature={signature}"
 
 
+def content_version(item):
+    return hashlib.sha256(f"{item.digest}:{item.display_key}:{item.thumbnail_key}".encode()).hexdigest()[:32]
+
+
 def media_url(item, variant, actor=None):
     base = get_settings().public_base_url.rstrip("/")
-    path = f"{base}/api/v1/memory-media/{item.id}?variant={variant}"
+    path = f"{base}/api/v1/memory-media/{item.id}?variant={variant}&v={content_version(item)}"
     return path + "&" + signed_query(item.id, variant, actor.id) if actor else path
 
 
@@ -303,6 +319,7 @@ def serialize(db, memory, actor=None, summary=False):
         "media_count": len(items)}
     exposed = items[:1] if summary else items
     result["media"] = [{"id": item.id, "kind": item.kind, "width": item.width, "height": item.height,
+        "content_version": content_version(item),
         "duration": item.duration, "thumbnail_url": media_url(item, "thumbnail", actor) if item.state == "ready" and item.thumbnail_key else "",
         **({"url": media_url(item, "display", actor)} if item.state == "ready" and item.display_key and not summary else {}),
         **({"state": item.state, "publication_status": item.publication_status,

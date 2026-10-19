@@ -47,20 +47,9 @@
 
     <block>
 
-      <!-- The shell paints before the activity request resolves. -->
-      <view wx:if="{{homeListLoading}}" class="home-loading-shell">
-        <view class="group-section">
-          <view class="group-header"><template is="home-skeleton-shape" data="{{shape: 'skeleton-heading', running: skeletonShimmerRunning}}" /></view>
-          <view class="skeleton-initial-row skeleton-initial-row--large">
-            <view wx:for="{{[0, 1]}}" wx:key="*this" class="skeleton-initial-large"><template is="home-card-skeleton" data="{{size: 'large', running: skeletonShimmerRunning}}" /></view>
-          </view>
-        </view>
-        <view class="group-section">
-          <view class="group-header"><template is="home-skeleton-shape" data="{{shape: 'skeleton-heading', running: skeletonShimmerRunning}}" /></view>
-          <view class="skeleton-initial-row skeleton-initial-row--small">
-            <view wx:for="{{[0, 1]}}" wx:key="*this" class="skeleton-initial-small"><template is="home-card-skeleton" data="{{size: 'small', running: skeletonShimmerRunning}}" /></view>
-          </view>
-        </view>
+      <!-- Card skeletons belong to real activities, never guessed rows. -->
+      <view wx:if="{{homeListLoading}}" class="group-section home-loading-shell" aria-label="活动加载中">
+        <view class="group-header"><template is="home-skeleton-shape" data="{{shape: 'skeleton-heading', running: skeletonShimmerRunning}}" /></view>
       </view>
 
       <!-- ── 我参与的 ── -->
@@ -417,7 +406,7 @@
       </view>
 
       <!-- 底部占位与悬浮 Tab 高度一致，避免内容被遮挡 -->
-      <view style="height: calc(100rpx + {{bottomSafeAreaRpx}}rpx)"></view>
+      <view style="height: calc(52px + {{bottomSafeAreaRpx}}rpx)"></view>
     </block>
   </scroll-view>
 

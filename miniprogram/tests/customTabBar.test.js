@@ -71,10 +71,9 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.doesNotMatch(wxml, /active-positive/);
 
   assert.match(wxml, /style="height: calc\(52px \+ \{\{bottomInsetPx\}\}px\); padding-bottom: \{\{bottomInsetPx\}\}px;"/);
-  assert.match(js, /function getBottomSafeAreaCssPx\(\)/);
-  assert.match(js, /getBottomSafeAreaRpx\(\) \* windowWidth \/ 750/);
+  assert.match(js, /getBottomContentInsetRpx\(TAB_MIN_BOTTOM_GAP_PX\) \* windowWidth \/ 750/);
   assert.match(js, /const TAB_MIN_BOTTOM_GAP_PX = 24/);
-  assert.match(js, /function getTabBottomInsetCssPx\(\)[\s\S]*?Math\.max\(TAB_MIN_BOTTOM_GAP_PX, getBottomSafeAreaCssPx\(\)\)/);
+  assert.match(js, /function getTabBottomInsetCssPx\(\)[\s\S]*?Math\.max\(TAB_MIN_BOTTOM_GAP_PX,/);
   assert.match(js, /bottomInsetPx:\s*TAB_MIN_BOTTOM_GAP_PX/);
   assert.doesNotMatch(js, /safeBottom(?:Px|Rpx):\s*0/);
   assert.doesNotMatch(wxss, /107\.69231rpx|safe-area-inset-bottom/);
@@ -140,7 +139,7 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.equal((js.match(/const TAB_URLS = \[([\s\S]*?)\]/)[1].match(/"\/pages\//g) || []).length, 4);
   assert.doesNotMatch(js, /TAB_SWITCH_COMMIT_DELAY_MS|_pendingSwitchIndex/);
   assert.doesNotMatch(syncJs, /indicatorTransitionEnabled/);
-  assert.match(listWxml, /height: calc\(100rpx \+ \{\{bottomSafeAreaRpx\}\}rpx\)/);
+  assert.match(listWxml, /height: calc\(52px \+ \{\{bottomSafeAreaRpx\}\}rpx\)/);
   assert.doesNotMatch(
     listWxss,
     /\.(?:custom-tab-bar|tab-items-wrap|tab-item|tab-item-active|tab-icon|tab-label|tab-label-active)\b/,
@@ -160,9 +159,9 @@ test("custom tab bar follows the updated floating glass Pencil component", () =>
   assert.match(js, /setHidden\(hidden,[\s\S]*?setGlobalTabHidden\(nextHidden\)/);
   assert.doesNotMatch(historyWxml, /bottom: calc\(107\.69231rpx/);
   assert.match(historyWxss, /\.ranking-scroll\s*\{[^}]*bottom:\s*0;/);
-  assert.match(historyWxml, /class="ranking-content"[^>]*padding-bottom: calc\(123\.07692rpx \+ \{\{bottomSafeAreaRpx\}\}rpx\)/);
+  assert.match(historyWxml, /class="ranking-content"[^>]*padding-bottom: calc\(52px \+ 23\.07692rpx \+ \{\{bottomSafeAreaRpx\}\}rpx\)/);
   assert.doesNotMatch(historyWxss, /safe-area-inset-bottom|123\.07692rpx/);
-  assert.match(profileWxml, /class="container" style="padding-bottom: calc\(131\.69231rpx \+ \{\{bottomSafeAreaRpx\}\}rpx\);"/);
+  assert.match(profileWxml, /class="container" style="padding-bottom: calc\(52px \+ 31\.69231rpx \+ \{\{bottomSafeAreaRpx\}\}rpx\);"/);
   assert.doesNotMatch(profileWxss, /safe-area-inset-bottom|131\.69231rpx/);
 });
 

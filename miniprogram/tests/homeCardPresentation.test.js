@@ -28,7 +28,7 @@ function harness(options = {}) {
   let definition;
   const app = { globalData: {} };
   const navigationCalls = [];
-  const wx = { nextTick: fn => fn(), getImageInfo: req => requests.push(req), getStorageSync: () => "", navigateTo: options => navigationCalls.push(options) };
+  const wx = { nextTick: fn => fn(), getImageInfo: req => requests.push(req), getStorageSync: () => "", navigateTo: options => navigationCalls.push(options), showToast() {} };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../pages/activity_list/activity_list.js'), 'utf8'), {
     Page: p => { definition = p; }, getApp: () => app, wx, console, JSON: options.JSON || JSON,
     Date: class extends Date { static now() { return c.now(); } },
@@ -44,7 +44,7 @@ function harness(options = {}) {
       if (name.endsWith('/homeCardMediaLoader')) return {
         createHomeCardMediaLoader: opts => createHomeCardMediaLoader({ ...opts, setTimer: c.set, clearTimer: c.clear })
       };
-      return { createTraceId: () => "test-home-view", logInfo: (...args) => logs.push(args), logError: (...args) => logs.push(args), summarizeError: String,
+      return { createTraceId: () => "test-home-view", logInfo: (...args) => logs.push(args), logError: (...args) => logs.push(args), logPageError: (...args) => logs.push(args), summarizeError: String,
         setCachedActivityList() {}, cancelScheduledPrefetch() {}, schedulePrefetchSignedUpList() { prefetchCalls.push(c.now()); }, patchTabBarIfNeeded() {} };
     }
   });
@@ -106,6 +106,15 @@ test('Tab appears after first frame even when the activity request never returns
   assert.equal(h.page._coldStartTabEntrancePending, false);
   assert.deepEqual(h.tabCalls.map(x => x[0]), [false]);
   assert.equal(h.tabCalls[0][1].animate, true);
+});
+
+test('initial request failure ends the heading skeleton without clearing existing card state', async () => {
+  const h = harness(); h.page.onReady();
+  await h.page.loadActivityList({responsePromise: Promise.reject(new Error('offline'))});
+  assert.equal(h.page.data.homeListLoading, false);
+  h.c.advance(2000);
+  assert.equal(h.page._skeletonShimmerTimer, null);
+  h.page.onUnload();
 });
 
 test('card navigation does not wait for asynchronous home media readiness', () => {

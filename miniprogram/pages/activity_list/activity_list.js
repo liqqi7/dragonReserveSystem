@@ -8,7 +8,7 @@ const cacheManager = require("../../services/cacheManager");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
 const { createHomeCardMediaLoader } = require("../../utils/homeCardMediaLoader");
 const { createHomePresentationDiagnostics } = require("../../utils/homePresentationDiagnostics");
-const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
+const { getBottomContentInsetRpx } = require("../../utils/safeArea");
 const { isSameHomeViewData } = require("../../utils/homeViewData");
 
 
@@ -115,7 +115,7 @@ Page({
     this._coldStartTabEntrancePending = true;
     if (app && app.globalData) app.globalData.homeTabEntrancePending = true;
     this.syncGuestState();
-    this.setData({ bottomSafeAreaRpx: getBottomSafeAreaRpx() });
+    this.setData({ bottomSafeAreaRpx: getBottomContentInsetRpx() });
     // 计算自定义导航栏高度
     try {
       const windowInfo = wx.getWindowInfo();
@@ -129,6 +129,9 @@ Page({
 
   },
 
+  onResize() {
+    this.setData({bottomSafeAreaRpx: getBottomContentInsetRpx()});
+  },
   onReady() {
     this._homeFirstFrameReady = true;
     this._cardEntranceNotBefore = Date.now() + COLD_START_CARD_ENTRANCE_DELAY_MS;
@@ -1000,6 +1003,7 @@ Page({
         this._homePresentationDiagnostics?.list("list_failed", summarizeError(err));
         this._homePresentationDiagnostics?.snapshot("list_error");
         logPageError("load_activity_list", err);
+        if (this.data.homeListLoading) this.setData({homeListLoading: false});
         // The independent Tab entrance also runs when the request never resolves.
         this._scheduleColdStartCardEntrance();
         wx.showToast({ title: "加载失败", icon: "none" });

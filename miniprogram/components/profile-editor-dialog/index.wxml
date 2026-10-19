@@ -5,6 +5,7 @@
       <view class="profile-editor-title-row">
         <image class="profile-editor-title-icon" src="/images/icon-message-square-text.svg" mode="aspectFit" />
         <text class="profile-editor-title">修改个人资料</text>
+        <view class="profile-editor-title-spacer" aria-hidden="true" />
       </view>
       <text class="profile-editor-hint">{{hint}}</text>
     </view>
@@ -12,7 +13,7 @@
     <view class="profile-editor-fields">
       <view class="profile-editor-avatar-row">
         <text class="profile-editor-label">头像</text>
-        <button class="profile-editor-avatar-button" bindtap="chooseAvatar" aria-role="button" aria-label="修改头像">
+        <button class="profile-editor-avatar-button" size="mini" bindtap="chooseAvatar" aria-role="button" aria-label="修改头像">
           <image wx:if="{{avatarUrl}}" class="profile-editor-avatar-image" src="{{avatarUrl}}" mode="aspectFill" />
           <view wx:else class="profile-editor-avatar-placeholder"><image src="/images/icon-avatar-user-round.svg" mode="aspectFit" /></view>
         </button>

@@ -15,7 +15,7 @@
     show-location="true"
   />
 
-  <view class="footer">
+  <view class="footer" style="{{footerPaddingRpx !== null ? 'padding-bottom:' + footerPaddingRpx + 'rpx;' : ''}}">
     <button class="btn default" bindtap="cancel">取消</button>
     <button class="btn primary" bindtap="confirmCheckin">确认签到</button>
   </view>

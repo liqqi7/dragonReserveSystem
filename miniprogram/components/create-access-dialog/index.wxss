@@ -23,3 +23,7 @@
 .create-access-dialog-overlay--strong {
   background: rgba(0, 0, 0, 0.6);
 }
+
+.create-access-dialog-message--left {
+  text-align: left;
+}

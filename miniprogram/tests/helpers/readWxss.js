@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 function readWxss(filePath) {
-  const source = fs.readFileSync(filePath, "utf8");
+  const source = fs.readFileSync(filePath, "utf8").replace(/\r\n/g, "\n");
   return source.replace(/@import\s+["']([^"']+)["']\s*;/g, (_, relativePath) =>
     readWxss(path.resolve(path.dirname(filePath), relativePath))
   );

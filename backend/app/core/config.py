@@ -7,6 +7,7 @@ from pathlib import Path
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.engine import make_url
 
 # backend/ — select env files explicitly so production commands never inherit test settings.
 # This keeps WECHAT_* configuration available without relying on uvicorn --env-file.
@@ -41,9 +42,10 @@ class Settings(BaseSettings):
     debug: bool = Field(default=False, validation_alias="APP_DEBUG")
 
     database_url: str = Field(
-        default="sqlite:///./dragon_reserve_dev.db",
+        default="",
         description="SQLAlchemy database URL",
     )
+    allow_local_test_database: bool = False
 
     jwt_secret_key: str = Field(
         default="dev-only-change-me",
@@ -108,14 +110,23 @@ class Settings(BaseSettings):
     )
 
     @property
+    def is_sqlite(self) -> bool:
+        return make_url(self.database_url.strip()).get_backend_name() == "sqlite"
+
+    @property
     def is_production_runtime(self) -> bool:
         environment = self.environment.strip().lower()
         if environment == "test":
             return False
-        return environment == "production" or not self.database_url.strip().lower().startswith("sqlite:")
+        return environment == "production" or not self.is_sqlite
 
     @model_validator(mode="after")
     def reject_insecure_production_defaults(self) -> "Settings":
+        if not self.database_url.strip():
+            raise ValueError("DATABASE_URL is required; local database fallback is disabled")
+        if self.is_sqlite and self.environment.strip().lower() != "production":
+            if self.environment.strip().lower() != "test" or not self.allow_local_test_database:
+                raise ValueError("SQLite is only allowed in isolated automated tests with ALLOW_LOCAL_TEST_DATABASE=true")
         if not self.is_production_runtime:
             return self
         # This opt-in preserves deployed keys, not missing keys or the built-in default.
@@ -126,7 +137,7 @@ class Settings(BaseSettings):
             or ("change-me" in self.jwt_secret_key and not self.allow_legacy_jwt_secret)
         )
         insecure = {
-            "DATABASE_URL": self.database_url.startswith("sqlite:") or "password@" in self.database_url,
+            "DATABASE_URL": self.is_sqlite or "password@" in self.database_url,
             "JWT_SECRET_KEY": invalid_jwt_secret,
             "USER_INVITE_CODE": not self.user_invite_code,
             "ADMIN_INVITE_CODE": not self.admin_invite_code,

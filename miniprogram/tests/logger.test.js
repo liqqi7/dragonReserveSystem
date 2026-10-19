@@ -87,6 +87,38 @@ test('hard limit measures UTF-8 bytes and preserves IDs and small numeric eviden
   assert.equal(record.cards[0].coverPhases.download.endedAt, 9);
 });
 
+test('device preview prints request failures as readable text without expanding an object', () => {
+  const h = setup({ env: 'develop' });
+  h.logger.logRequestFailure({ method: 'GET', url: '/memories?token=private-query',
+    traceId: 'req-timeout', requestId: 'req-timeout', duration: 15003, statusCode: 0 },
+    { message: 'network unavailable' }, { errMsg: 'request:fail timeout', errno: -1 });
+  assert.equal(h.mirrors.length, 1);
+  const [prefix, text] = h.mirrors[0];
+  assert.equal(prefix, '[mini]');
+  assert.equal(typeof text, 'string');
+  assert.equal(text.split('\n')[0], 'GET /memories | request:fail timeout errno:-1 | 15003ms | status=0');
+  assert.deepEqual(JSON.parse(text.slice(text.indexOf('\n') + 1)), JSON.parse(JSON.stringify(h.records[0].record)));
+  assert.equal(text.includes('private-query'), false);
+  assert.equal(h.requests.length, 0);
+});
+
+test('preview page errors and devtools mirrors also contain full JSON strings while release stays silent', () => {
+  for (const options of [{env:'develop'}, {platform:'devtools'}, {env:'release'}, {env:'trial'}]) {
+    const h = setup(options);
+    h.logger.logPageError('memory_image_download', {message:'image failed', traceId:'req-image'}, {mediaId:10});
+    const enabled = options.env === 'develop' || options.platform === 'devtools';
+    assert.equal(h.mirrors.length, enabled ? 1 : 0);
+    assert.equal(h.records.length, 1);
+    if (enabled) {
+      assert.equal(typeof h.mirrors[0][1], 'string');
+      const record = JSON.parse(h.mirrors[0][1]);
+      assert.equal(record.operation, 'memory_image_download');
+      assert.equal(record.mediaId, 10);
+      assert.equal(record.summary, 'image failed');
+    }
+  }
+});
+
 test('metadata and oversized arrays cannot overflow the official record budget', () => {
   const long = '\u{1f600}'.repeat(3000);
   const h = setup({ wx: { getDeviceInfo: () => ({ platform: long, model: long, system: long }),

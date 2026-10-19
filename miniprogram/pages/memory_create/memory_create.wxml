@@ -2,8 +2,8 @@
   <view class="memory-nav"><view class="memory-back" bindtap="back" aria-role="button" aria-disabled="{{busy}}" aria-label="返回"><image src="/images/memory-back-dark.svg" /></view></view>
   <scroll-view class="memory-body" type="list" scroll-y show-scrollbar="{{false}}" bounces="{{false}}">
     <view class="memory-form">
-      <view class="memory-intro"><text class="title">记忆投稿</text><text class="subtitle">好记忆值得被官方收藏</text></view>
-      <view class="memory-field"><view class="label memory-label"><text>上传内容</text></view>
+      <view class="memory-intro"><text class="title">记忆投稿</text><text class="subtitle">整点有意思的东西上来</text></view>
+      <view class="memory-field"><view class="label memory-label upload-label"><text>上传内容</text><text class="upload-subtitle {{uploadError ? 'upload-subtitle--error' : ''}}" aria-live="polite">{{uploadError || '单个文件大小不超过20m，视频不超过30s'}}</text></view>
         <view wx:if="{{files.length}}" class="upload-grid">
           <scroll-view class="upload-scroll" type="list" scroll-x enable-flex id="mediaScroller" enhanced="{{true}}" scroll-into-view="{{mediaScrollTarget}}" scroll-into-view-alignment="end" show-scrollbar="{{false}}" bounces="{{false}}">
           <view list-item class="upload-leading-space" />
@@ -35,7 +35,7 @@
       <text wx:if="{{error}}" class="memory-error">{{error}}</text>
     </view>
   </scroll-view>
-  <view class="memory-footer" style="padding-bottom:{{bottom}}rpx;"><view class="primary {{!ready || busy || selecting || !files.length ? 'primary--disabled' : ''}}" aria-role="button" aria-disabled="{{!ready || busy || selecting || !files.length}}" bindtap="confirmUpload"><text>{{busy ? (progress < 99 ? '上传中 ' + progress + '%' : '提交中') : (locked ? '重试提交' : '上传')}}</text></view></view>
+  <view class="memory-footer" style="padding-bottom:{{footerSafeAreaRpx}}rpx;"><view class="primary {{!ready || busy || selecting || !files.length ? 'primary--disabled' : ''}}" aria-role="button" aria-disabled="{{!ready || busy || selecting || !files.length}}" bindtap="confirmUpload"><text>{{busy ? '上传中 ' + progress + '%' : (locked ? '重试上传' : '上传')}}</text></view></view>
   <view wx:if="{{showActivities}}" class="memory-sheet-overlay" bindtap="closeActivities">
     <view class="memory-sheet" catchtap="stopTap" style="padding-bottom:{{bottom}}rpx;"><view class="memory-sheet-drag" bindtap="closeActivities"><view /></view><view class="memory-sheet-title"><text>关联活动</text></view>
       <scroll-view type="list" scroll-y class="memory-sheet-body activity-options"><view class="activity-option" bindtap="selectActivity" data-id="0" aria-role="button"><text>不关联活动</text></view><view wx:for="{{activities}}" wx:key="id" class="activity-option" bindtap="selectActivity" data-id="{{item.id}}" aria-role="button"><text max-lines="2" overflow="ellipsis">{{item.name}}</text></view></scroll-view>

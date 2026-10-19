@@ -6,7 +6,7 @@
   </view>
 
   <scroll-view class="profile-scroll" type="custom" scroll-y show-scrollbar="{{false}}">
-    <view class="container" style="padding-bottom: calc(131.69231rpx + {{bottomSafeAreaRpx}}rpx);">
+    <view class="container" style="padding-bottom: calc(52px + 31.69231rpx + {{bottomSafeAreaRpx}}rpx);">
       <view class="profile-hero">
         <view class="profile-avatar-frame">
           <image

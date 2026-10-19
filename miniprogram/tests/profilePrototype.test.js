@@ -63,3 +63,26 @@ test("我的页菜单遵循原型文本、字重和仅退出项分隔的布局",
   assert.match(wxss, /\.profile-menu-row--access\s*\{[^}]*border-top:/);
   assert.doesNotMatch(wxss, /\.profile-menu-row--logout\s*\{[^}]*border-top:/);
 });
+
+test("profile editor matches Pencil AUnVr geometry and keeps a circular native avatar button", () => {
+  const css = fs.readFileSync(path.join(root, "components/profile-editor-dialog/index.wxss"), "utf8");
+  const markup = fs.readFileSync(path.join(root, "components/profile-editor-dialog/index.wxml"), "utf8");
+  const rule = name => css.match(new RegExp("\\." + name + "\\s*\\{([^}]+)\\}"))[1];
+  assert.match(rule("profile-editor-dialog"), /width: 576\.92308rpx;/);
+  assert.match(rule("profile-editor-dialog"), /padding: 38\.46154rpx;/);
+  assert.match(rule("profile-editor-dialog"), /gap: 30\.76923rpx;/);
+  assert.match(rule("profile-editor-dialog"), /box-sizing: border-box;/);
+  assert.match(rule("profile-editor-title-row"), /width: 100%;/);
+  assert.match(rule("profile-editor-title"), /font-size: 30\.76923rpx;[\s\S]*font-weight: 700;/);
+  assert.match(markup, /<text class="profile-editor-title">修改个人资料<\/text>\s*<view class="profile-editor-title-spacer" aria-hidden="true"/);
+  assert.match(css, /\.profile-editor-title-icon,\s*\.profile-editor-title-spacer\s*\{[^}]*width: 34\.61538rpx;[^}]*height: 34\.61538rpx;[^}]*flex: none;/);
+  assert.match(markup, /<button class="profile-editor-avatar-button" size="mini"/);
+  assert.match(css, /button\.profile-editor-avatar-button\s*\{/);
+  for (const dimension of ["width", "height", "min-width", "max-width", "min-height", "max-height"])
+    assert.ok(rule("profile-editor-avatar-button").includes(`${dimension}: 76.92308rpx;`), dimension);
+  assert.match(rule("profile-editor-avatar-row"), /justify-content: space-between;/);
+  assert.match(rule("profile-editor-fields"), /width: 100%;/);
+  assert.match(rule("profile-editor-actions"), /width: 100%;/);
+  assert.match(rule("profile-editor-input"), /height: 84\.61538rpx;/);
+  assert.match(rule("profile-editor-button"), /height: 84\.61538rpx;/);
+});

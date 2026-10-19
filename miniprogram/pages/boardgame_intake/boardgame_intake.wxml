@@ -109,7 +109,7 @@
     </view>
   </block>
 </scroll-view>
-<view wx:if="{{stage === 'version'}}" class="entry-footer">
+<view wx:if="{{stage === 'version'}}" class="entry-footer" style="{{footerPaddingRpx !== null ? 'padding-bottom:' + footerPaddingRpx + 'rpx;' : ''}}">
   <view role="button" class="{{saving || candidate.owned_by_actor || (stage === 'version' && !selection) ? 'is-disabled' : ''}} entry-button full" bindtap="save" aria-disabled="{{saving || candidate.owned_by_actor || (stage === 'version' && !selection)}}">{{candidate.owned_by_actor ? '您已拥有' : (submitUnknown ? '重试确认录入' : '确认录入')}}</view>
 </view>
 </view>

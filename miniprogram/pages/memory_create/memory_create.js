@@ -6,13 +6,20 @@ const {
   discardThumbnail,
 } = require("../../services/videoThumbnail");
 const { logPageError } = require("../../services/logger");
-const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
+const { getBottomSafeAreaRpx, getBottomContentInsetRpx } = require("../../utils/safeArea");
 const { uploadProgressImage } = require("../../utils/memoryUploadProgress");
+
+function totalUploadProgress(files) {
+  const total = files.reduce((sum, file) => sum + file.size, 0);
+  const sent = files.reduce((sum, file) => sum + file.size * (file.uploadProgress || 0) / 100, 0);
+  return total ? Math.min(99, Math.floor(sent / total * 100)) : 0;
+}
 
 Page({
   data: {
     top: 0,
     bottom: 0,
+    footerSafeAreaRpx: 0,
     files: [],
     mediaScrollTarget: "",
     caption: "",
@@ -24,6 +31,7 @@ Page({
     busy: false,
     locked: false,
     progress: 0,
+    uploadError: "",
     error: "",
     activities: [],
     showActivities: false,
@@ -33,11 +41,15 @@ Page({
   onLoad() {
     this._submissionId = `memory-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     this._mediaBatch = 0;
+    this.onResize();
+    this.validateAccess();
+  },
+  onResize() {
     this.setData({
       top: wx.getWindowInfo().statusBarHeight || 0,
       bottom: getBottomSafeAreaRpx(),
+      footerSafeAreaRpx: getBottomContentInsetRpx(),
     });
-    this.validateAccess();
   },
   async validateAccess() {
     const app = getApp();
@@ -59,7 +71,7 @@ Page({
     if (!this.data.ready) this.validateAccess();
   },
   configureMediaScroller() {
-    if (this._unloaded) return;
+    if (this._unloaded || this.renderer === "webview") return;
     this.createSelectorQuery().select("#mediaScroller").node().exec((result) => {
       if (this._unloaded) return;
       const scroller = result && result[0] && result[0].node;
@@ -71,12 +83,9 @@ Page({
       onState: (id, uploadState, uploadProgress) => {
         if (this._unloaded) return;
         this.updateThumbnail(id, { uploadState, uploadProgress });
-        const total = this.data.files.reduce((sum, file) => sum + file.size, 0);
-        const sent = this.data.files.reduce((sum, file) => sum + file.size * (file.uploadProgress || 0) / 100, 0);
-        this.setData({ progress: total ? Math.min(99, Math.floor(sent / total * 100)) : 0 });
       },
       onError: (error) => {
-        if (!this._unloaded) this.setData({ error: error.message || "预上传失败，请重试" });
+        if (!this._unloaded) this.setData({ uploadError: error.message || "上传失败，请重试" });
       },
     });
     return this._uploader;
@@ -99,7 +108,7 @@ Page({
       this.data.files.length >= memory.MAX_FILES
     )
       return;
-    this.setData({ selecting: true, error: "", mediaScrollTarget: "" });
+    this.setData({ selecting: true, uploadError: "", mediaScrollTarget: "" });
     wx.chooseMedia({
       count: Math.min(9, memory.MAX_FILES - this.data.files.length),
       mediaType: ["mix"],
@@ -141,14 +150,14 @@ Page({
           }
         } catch (error) {
           if (!this._unloaded)
-            this.setData({ error: error.message || "无法读取原文件" });
+            this.setData({ uploadError: error.message || "无法读取原文件" });
         } finally {
           if (!this._unloaded) this.setData({ selecting: false });
         }
       },
       fail: (error) => {
         if (!this._unloaded && !String(error.errMsg).includes("cancel"))
-          this.setData({ error: "选择内容失败，请重试" });
+          this.setData({ uploadError: "选择内容失败，请重试" });
         if (!this._unloaded) this.setData({ selecting: false });
       },
     });
@@ -216,14 +225,22 @@ Page({
   },
   updateThumbnail(id, patch) {
     if (this._unloaded) return;
+    const index = this.data.files.findIndex(file => file.id === id);
+    if (index < 0) return;
+    const file = this.data.files[index];
     if (patch.uploadState === "uploading") {
       patch = { ...patch, progressImage: uploadProgressImage(patch.uploadProgress) };
     }
-    this.setData({
-      files: this.data.files.map((file) =>
-        file.id === id ? { ...file, ...patch } : file,
-      ),
-    });
+    const update = {};
+    for (const [key, value] of Object.entries(patch)) {
+      if (file[key] !== value) update[`files[${index}].${key}`] = value;
+    }
+    if (patch.uploadState) {
+      const files = this.data.files.map((item, i) => i === index ? { ...item, ...patch } : item);
+      const progress = totalUploadProgress(files);
+      if (this.data.progress !== progress) update.progress = progress;
+    }
+    if (Object.keys(update).length) this.setData(update);
   },
   thumbnailError(e) {
     if (this._unloaded) return;
@@ -326,7 +343,9 @@ Page({
   stopTap() {},
   retryFile(e) {
     if (this.data.locked || !this.data.ready) return;
-    this.setData({ error: "" });
+    const file = this.data.files.find(item => item.id === e.currentTarget.dataset.id);
+    if (!file || file.uploadState !== "failed") return;
+    this.setData({ uploadError: "" });
     this.uploader().retry(e.currentTarget.dataset.id);
   },
   confirmUpload() {
@@ -339,7 +358,8 @@ Page({
     this.selectComponent("#memory-confirm").open({
       title: "投稿说明",
       message:
-        "您上传的图片与视频将投稿至管理员，不会直接展示在小程序中。若内容合适，管理员将代为发布。",
+        "您上传的图片与视频将投稿至管理员，不会直接展示在小程序中。\n若内容合适，管理员将代为发布。",
+      messageAlign: "left",
       cancelText: "取消",
       confirmText: "确认投稿",
       prototypeStyle: true,
@@ -348,9 +368,14 @@ Page({
   },
   async upload() {
     if (!this.data.ready || this.data.busy || this._unloaded) return;
-    this.setData({ busy: true, locked: true, error: "" });
     try {
       this.data.files.forEach(memory.validateFile);
+    } catch (error) {
+      this.setData({ uploadError: error.message || "内容不符合上传要求" });
+      return;
+    }
+    this.setData({ busy: true, locked: true, error: "", uploadError: "", progress: totalUploadProgress(this.data.files) });
+    try {
       const uploader = this.uploader();
       uploader.setFiles(this.data.files);
       await uploader.submit({ caption: this.data.caption, location_name: this.data.locationName,
@@ -362,7 +387,8 @@ Page({
     } catch (error) {
       if (!this._unloaded)
         this.setData({
-          error: error.message || "投稿未完成，请重试",
+          error: this.data.files.some(file => file.uploadState === "failed") ? "" :
+            error.message || "投稿未完成，请重试",
           locked: !!(this._uploader && this._uploader.submitAttempted),
         });
     } finally {

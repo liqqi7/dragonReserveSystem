@@ -1,4 +1,5 @@
 @import "../../styles/dragonChrome.wxss";
+@import "../../styles/cardSkeleton.wxss";
 
 /* ============================================================
    微信原生 Light UI — Activity List
@@ -341,7 +342,8 @@ page {
 .home-card-entrance {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 440ms ease-out;
+  /* Only the skeleton fades; fading both layers exposes the page background. */
+  transition: none;
 }
 
 .home-card-entrance--pending {
@@ -408,6 +410,7 @@ page {
   overflow: hidden;
   flex-shrink: 0;
   box-shadow: none;
+  background: #EAECEF;
 }
 
 /* 「已结束」横向末尾加载格（宽同 .small-card-wrap，保证横向 snap 步长一致） */
@@ -485,6 +488,7 @@ page {
   position: relative;
   overflow: hidden;
   box-shadow: none;
+  background: #EAECEF;
 }
 
 .small-card-info {
@@ -707,19 +711,7 @@ page {
 .skeleton-heading { width: 153.85rpx; height: 38.46rpx; border-radius: 19.23rpx; }
 .skeleton-name { width: 246.15rpx; height: 23.08rpx; border-radius: 11.54rpx; margin-top: 15.38rpx; }
 .skeleton-time { width: 184.62rpx; height: 23.08rpx; border-radius: 11.54rpx; margin-top: 9.62rpx; }
-.skeleton-shimmer {
-  position: absolute; top: 0; bottom: 0; left: 0; width: 45%;
-  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.65), rgba(255,255,255,0));
-  transform: translateX(-100%);
-}
-/* Use Skyline's existing transform-transition path rather than CSS keyframes. */
-.skeleton-shimmer--running { transform: translateX(325%); transition: transform 1400ms linear; }
 .home-loading-shell { overflow: hidden; }
-.skeleton-initial-row { display: flex; flex-direction: row; padding-left: 38.46rpx; padding-top: 23.08rpx; box-sizing: border-box; }
-.skeleton-initial-row--large { height: 688.46rpx; }
-.skeleton-initial-row--small { height: 450.00rpx; }
-.skeleton-initial-large { position: relative; width: 469.23rpx; height: 626.92rpx; margin-right: 23.08rpx; flex-shrink: 0; }
-.skeleton-initial-small { position: relative; width: 307.69rpx; height: 391.54rpx; margin-right: 23.08rpx; flex-shrink: 0; }
 
 /* A failed image keeps its skeleton, but offers an explicit recovery action. */
 .home-card-retry { position: absolute; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: center; color: #666666; font-size: 25rpx; z-index: 3; }

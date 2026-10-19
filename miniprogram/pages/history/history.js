@@ -1,6 +1,6 @@
 const statsService = require("../../services/stats");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
-const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
+const { getBottomContentInsetRpx } = require("../../utils/safeArea");
 
 const DEFAULT_AVATAR = "/images/default-avatar.svg";
 const MONTH_NAMES = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
@@ -105,13 +105,16 @@ Page({
       const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
       this.setData({
         statusBarHeight: info.statusBarHeight || 20,
-        bottomSafeAreaRpx: getBottomSafeAreaRpx()
+        bottomSafeAreaRpx: getBottomContentInsetRpx()
       });
     } catch (_) {
       // Keep the default safe-area values when device information is unavailable.
     }
   },
 
+  onResize() {
+    this.setData({bottomSafeAreaRpx: getBottomContentInsetRpx()});
+  },
   onShow() {
     patchTabBarIfNeeded(this, {
       selected: 2,
@@ -120,12 +123,18 @@ Page({
     this.loadRankings();
   },
 
+  onUnload() {
+    this._unloaded = true;
+    this._rankingRequestSequence = (this._rankingRequestSequence || 0) + 1;
+  },
+
   switchRankingTab(event) {
     const tab = event.currentTarget.dataset.tab;
     if (tab && tab !== this.data.activeTab) this.setData({ activeTab: tab });
   },
 
   loadRankings() {
+    if (this._unloaded) return Promise.resolve();
     const sequence = (this._rankingRequestSequence || 0) + 1;
     this._rankingRequestSequence = sequence;
     this.setData({ isLoading: true, isLoadingActivityMore: false });
@@ -133,7 +142,7 @@ Page({
       statsService.getActivityRanking({ offset: 0, limit: ACTIVITY_RANKING_PAGE_SIZE }),
       statsService.getPigeonRanking()
     ]).then(([activityPayload, pigeonPayload]) => {
-        if (this._rankingRequestSequence !== sequence) return;
+        if (this._unloaded || this._rankingRequestSequence !== sequence) return;
         const activityRanking = formatActivityRanking(activityPayload || []);
         const pigeonRanking = formatPigeonRanking(pigeonPayload || []);
         this.setData({
@@ -150,7 +159,7 @@ Page({
         });
       })
       .catch((error) => {
-        if (this._rankingRequestSequence !== sequence) return;
+        if (this._unloaded || this._rankingRequestSequence !== sequence) return;
         this.setData({ isLoading: false, isLoadingActivityMore: false });
         wx.showToast({ title: (error && error.message) || "加载排行榜失败", icon: "none" });
       });
@@ -158,6 +167,7 @@ Page({
 
   loadMoreActivityRanking() {
     if (
+      this._unloaded ||
       this.data.activeTab !== "activity" ||
       this.data.isLoading ||
       this.data.isLoadingActivityMore ||
@@ -173,7 +183,7 @@ Page({
 
     return statsService.getActivityRanking({ offset, limit: ACTIVITY_RANKING_PAGE_SIZE })
       .then((payload) => {
-        if (this._rankingRequestSequence !== sequence) return;
+        if (this._unloaded || this._rankingRequestSequence !== sequence) return;
         const page = formatActivityRanking(payload || [], offset, leaderCount);
         const knownUserIds = new Set(this.data.activityRanking.map((item) => item.userId));
         const nextRanking = this.data.activityRanking.concat(
@@ -187,7 +197,7 @@ Page({
         });
       })
       .catch((error) => {
-        if (this._rankingRequestSequence !== sequence) return;
+        if (this._unloaded || this._rankingRequestSequence !== sequence) return;
         this.setData({ isLoadingActivityMore: false });
         wx.showToast({ title: (error && error.message) || "加载更多失败", icon: "none" });
       });

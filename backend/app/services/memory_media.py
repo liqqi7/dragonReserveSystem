@@ -19,7 +19,8 @@ VIDEO_MAX_BYTES = 20 * 1024**2
 IMAGE_OUTPUT_MAX_BYTES = 10 * 1024**2
 MAX_DURATION = 30
 MAX_FILES = 10
-MAX_IMAGE_PIXELS = 40_000_000
+MAX_IMAGE_PIXELS = 60_000_000
+MAX_VIDEO_PIXELS = 40_000_000
 
 
 @dataclass(frozen=True)
@@ -58,10 +59,18 @@ def file_digest(path: Path) -> str:
 
 
 def private_path(root: Path, key: str) -> Path:
+    root = root.resolve()
     path = (root / key).resolve()
-    if not key or not path.is_relative_to(root.resolve()) or path == root.resolve():
+    if not key or not path.is_relative_to(root) or path == root:
         reject("文件路径无效")
     return path
+
+
+def validate_static_image(image) -> None:
+    if image.format not in {"JPEG", "PNG"} or getattr(image, "n_frames", 1) != 1:
+        reject("目前支持静态 JPEG、PNG 图片")
+    if image.width * image.height > MAX_IMAGE_PIXELS:
+        reject("图片分辨率过大")
 
 
 def _save_image(image: Image.Image, path: Path, transparent: bool, quality: int = 85) -> None:
@@ -79,10 +88,7 @@ def compress_image(source: Path, directory: Path, *, original: bool = True) -> P
         with warnings.catch_warnings():
             warnings.simplefilter("error", Image.DecompressionBombWarning)
             with Image.open(source) as opened:
-                if opened.format not in {"JPEG", "PNG"} or getattr(opened, "n_frames", 1) != 1:
-                    reject("目前支持静态 JPEG、PNG 图片")
-                if opened.width * opened.height > MAX_IMAGE_PIXELS:
-                    reject("图片分辨率过大")
+                validate_static_image(opened)
                 image = ImageOps.exif_transpose(opened)
                 image.load()
                 transparent = "A" in image.getbands() or "transparency" in image.info
@@ -144,7 +150,7 @@ def inspect_video(source: Path, ffprobe: str) -> dict:
         width, height = int(video["width"]), int(video["height"])
         if not math.isfinite(duration) or not 0 < duration <= MAX_DURATION:
             reject("视频时长不能超过 30 秒")
-        if min(width, height) <= 0 or width * height > MAX_IMAGE_PIXELS:
+        if min(width, height) <= 0 or width * height > MAX_VIDEO_PIXELS:
             reject("视频分辨率不支持")
         return {"width": width, "height": height, "duration": duration, "video": video,
                 "audio": [s for s in payload["streams"] if s.get("codec_type") == "audio"]}

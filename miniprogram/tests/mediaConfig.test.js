@@ -21,7 +21,7 @@ test('production config and restoration template expose the same media helpers',
   const localHelpers = fs.readFileSync(configPath, 'utf8')
     .replace(/const API_BASE_URL = "[^"]+";/, 'const API_BASE_URL = "https://dragon.liqqihome.top/api/v1";')
     .replace(/const API_ENVIRONMENT = "[^"]+";/, 'const API_ENVIRONMENT = "production";');
-  assert.equal(localHelpers, configSource);
+  assert.equal(localHelpers.replace(/\r\n/g, '\n'), configSource.replace(/\r\n/g, '\n'));
   assert.equal(loadConfig().getMediaUrl('images/card-bg-other-v2-lg.jpg'),
     'https://dragon.liqqihome.top/media/images/card-bg-other-v2-lg.jpg');
 });

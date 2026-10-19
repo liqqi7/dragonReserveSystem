@@ -1077,6 +1077,18 @@ test("worklet slot visuals use shared values bound through applyAnimatedStyle", 
   });
 });
 
+test("WebView uses ordinary Chwazi positions even if worklet APIs are exposed", () => {
+  withGlobalWx({worklet: {shared() {assert.fail("WebView cannot use shared UI bindings");}}}, () => {
+    const page = createPageContext(loadPageDefinition());
+    page.renderer = "webview";
+    page.applyAnimatedStyle = () => assert.fail("WebView cannot bind animated styles");
+    page.data.status = "touching";
+    page._initSlotVisuals();
+    page._syncTouches(makeRawTouches(2));
+    assert.equal(page.data.slotStyles.filter(style => style.transform !== "translate(-9999rpx, -9999rpx)").length, 2);
+  });
+});
+
 test("ring render loop prefers canvas requestAnimationFrame and cancels it on stop", (t) => {
   t.mock.timers.enable({ apis: ["setTimeout"] });
   const rafCallbacks = [];

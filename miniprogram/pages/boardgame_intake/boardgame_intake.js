@@ -1,8 +1,9 @@
 const base = require('./controller');
+const {getBottomContentInsetRpx} = require('../../utils/safeArea');
 // Independent page: retain the proven intake transaction and recovery contract.
 Page({
   ...base,
-  data: {...base.data, stage:'intro', cameraOpen:false, versionsOpen:false, ownersOpen:false, statusBarHeight:0, navHeight:44},
+  data: {...base.data, stage:'intro', cameraOpen:false, versionsOpen:false, ownersOpen:false, statusBarHeight:0, navHeight:44, footerPaddingRpx:null},
   onLoad(options = {}) {
     const role = String(wx.getStorageSync('userRole') || '');
     const hasSession = !!wx.getStorageSync('accessToken');
@@ -13,6 +14,7 @@ Page({
       return;
     }
     base.onLoad.call(this, options);
+    this.onResize();
     try {
       const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
       const capsule = wx.getMenuButtonBoundingClientRect();
@@ -21,6 +23,7 @@ Page({
     } catch (_) {}
     if (this.data.stage !== 'recover') this.setData({stage:options.name ? 'search' : 'intro', searchFocus:!!options.name});
   },
+  onResize() { if(this.renderer === 'webview')this.setData({footerPaddingRpx:getBottomContentInsetRpx()}); },
   openSearch() { if (!this.locked()) this.setData({stage:'search', searchFocus:true, cameraOpen:false}); },
   openCamera() { wx.showToast({title:'子奇正在加班，别催',icon:'none'}); },
   closeCamera() { this.setData({cameraOpen:false}); },

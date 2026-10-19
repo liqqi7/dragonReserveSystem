@@ -3,7 +3,7 @@ const activityService = require("../../services/activity");
 const { logPageError } = require("../../services/logger");
 const { buildEditForm, validateActivityForm, buildActivityPayload, normalizeSubItems } = require("../../utils/activityForm");
 const { adaptActivity } = require("../../utils/activityEnrich");
-const { getWindowInfoCompat, getBottomSafeAreaRpx } = require("../../utils/safeArea");
+const { getWindowInfoCompat, getBottomSafeAreaRpx, getBottomContentInsetRpx } = require("../../utils/safeArea");
 
 function formatDateLabel(dateValue, timeValue) {
   if (!dateValue || !timeValue) return "";
@@ -47,12 +47,8 @@ Page({
       wx.navigateBack();
       return;
     }
-    const info = getWindowInfoCompat();
-    this.setData({
-      activityId,
-      statusBarHeight: info.statusBarHeight || 20,
-      footerSafeAreaRpx: Math.max(0, getBottomSafeAreaRpx() - 9.62)
-    });
+    this.onResize();
+    this.setData({activityId});
     const channel = this.getOpenerEventChannel && this.getOpenerEventChannel();
     if (channel && typeof channel.on === "function") {
       channel.on("initActivityEdit", ({ activity } = {}) => {
@@ -68,6 +64,11 @@ Page({
     if (!this._unloaded && !this._prefilled && this.data.activityId) {
       return this.loadActivity(this.data.activityId);
     }
+  },
+  onResize() {
+    const info = getWindowInfoCompat();
+    this.setData({statusBarHeight: info.statusBarHeight || 20,
+      footerSafeAreaRpx: this.renderer === "webview" ? getBottomContentInsetRpx() : Math.max(0, getBottomSafeAreaRpx() - 9.62)});
   },
 
   onUnload() {

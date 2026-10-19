@@ -9,6 +9,7 @@ const source = fs.readFileSync(path.join(pageDir, "history.js"), "utf8");
 
 function loadRankingInternals(statsServiceOverrides = {}) {
   let pageConfig = null;
+  const app = {globalData: {userRole: "user", userId: "100", accessToken: "token"}};
   const statsService = {
     getActivityRanking: async () => [],
     getPigeonRanking: async () => [],
@@ -19,9 +20,9 @@ function loadRankingInternals(statsServiceOverrides = {}) {
     exports: {},
     console,
     Promise,
-    getApp: () => ({ globalData: { userRole: "user" } }),
+    getApp: () => app,
     Page: (config) => { pageConfig = config; },
-    wx: {},
+    wx: {showToast() {}},
     require(request) {
       if (request === "../../services/stats") {
         return statsService;
@@ -40,8 +41,41 @@ function loadRankingInternals(statsServiceOverrides = {}) {
     sandbox,
     { filename: "history.js" }
   );
-  return { ...sandbox.module.exports.__rankingTest, pageConfig, statsService };
+  return { ...sandbox.module.exports.__rankingTest, pageConfig, statsService, app };
 }
+
+function rankingPage(h) {
+  return {...h.pageConfig, data: structuredClone(h.pageConfig.data),
+    setData(patch) {Object.assign(this.data, patch);}};
+}
+
+test("anonymous visitors can view both rankings, switch tabs and load more members", async () => {
+  const requests = [];
+  const h = loadRankingInternals({getActivityRanking: async options => {
+    requests.push(options);
+    return options.offset ? [{user_id:21, checkin_count:1}] :
+      Array.from({length:20}, (_, i) => ({user_id:i+1, nickname:`成员${i+1}`, checkin_count:1}));
+  }, getPigeonRanking: async () => [{user_id:1, nickname:"测试成员", pigeon_count:1}]});
+  h.app.globalData = {userRole:"guest", isAuthenticated:false, accessToken:"", userId:""};
+  const p = rankingPage(h); p.onShow(); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(p.data.activityRanking.length, 20); assert.equal(p.data.pigeonLeader.name, "测试成员");
+  await p.loadMoreActivityRanking();
+  assert.equal(p.data.activityRanking.length, 21); assert.equal(requests[1].offset, 20);
+  p.switchRankingTab({currentTarget: {dataset: {tab:"pigeon"}}});
+  assert.equal(p.data.activeTab, "pigeon");
+  assert.doesNotMatch(fs.readFileSync(path.join(pageDir, "history.wxml"), "utf8"), /login-empty|canView|登录后查看排行榜/);
+  p.onUnload();
+});
+
+test("ranking responses after unload cannot mutate page data", async () => {
+  let finish;
+  const h = loadRankingInternals({getActivityRanking: () => new Promise(resolve => {finish = resolve;})});
+  const p = rankingPage(h), pending = p.loadRankings();
+  p.onUnload();
+  p.setData = () => assert.fail("Unloaded page must not receive setData");
+  finish([{user_id: 1, nickname: "测试成员", checkin_count: 1}]);
+  await pending;
+});
 
 test("activity ranking keeps absolute ranks across segmented pages", () => {
   const { formatActivityRanking, ACTIVITY_RANKING_PAGE_SIZE } = loadRankingInternals();
@@ -79,6 +113,7 @@ test("activity ranking loads later segments and appends every remaining member",
   }));
   const initialRanking = formatActivityRanking(initialPayload);
   const context = {
+    ...pageConfig,
     _rankingRequestSequence: 1,
     data: {
       activeTab: "activity",

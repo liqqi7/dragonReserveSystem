@@ -10,6 +10,7 @@ Run with APP_ENV=test and --expected-database dragon_reserve_test; back up first
 from __future__ import annotations
 
 import argparse
+from contextlib import ExitStack
 import importlib.util
 from pathlib import Path
 import sys
@@ -36,8 +37,14 @@ def migrate(expected_database: str, *, apply: bool = False):
     if (settings.environment != "test" or url.get_backend_name() != "mysql" or
             url.database != expected_database or not expected_database.endswith("_test")):
         raise RuntimeError("Refusing migration: APP_ENV=test and the explicitly named MySQL test database are required")
-    engine = create_engine(url, pool_pre_ping=True)
+    from scripts.test_environment import read_environment, database_tunnel
+
+    resources = ExitStack()
+    engine = None
     try:
+        values = read_environment(Path(__file__).resolve().parents[1] / ".env.test")
+        tunnel_url, _ = resources.enter_context(database_tunnel(values))
+        engine = create_engine(tunnel_url, pool_pre_ping=True)
         with engine.connect() as connection:
             actual = connection.scalar(text("SELECT DATABASE()"))
             if actual != expected_database:
@@ -60,7 +67,9 @@ def migrate(expected_database: str, *, apply: bool = False):
             finally:
                 connection.execute(text("SELECT RELEASE_LOCK(:name)"), {"name": lock_name})
     finally:
-        engine.dispose()
+        if engine is not None:
+            engine.dispose()
+        resources.close()
 
 
 def main():

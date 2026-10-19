@@ -17,7 +17,9 @@ class MemoryPreupload {
   }
 
   state(entry, state, progress = 0) {
+    if (entry.state === state && entry.progress === progress) return;
     entry.state = state;
+    entry.progress = progress;
     if (!this.closed && this.entries.get(entry.file.id) === entry)
       this.onState(entry.file.id, state, progress);
   }
@@ -85,8 +87,13 @@ class MemoryPreupload {
         this.state(entry, "uploading");
         let settled = false;
         const task = memory.upload(this.draft.id, entry.slot, entry.file, (event) => {
-          if (!settled) this.state(entry, "uploading", Math.min(99,
-            Math.floor(Math.max(0, Number(event.totalBytesSent) || 0) / entry.file.size * 100)));
+          if (settled) return;
+          // Native totals include multipart overhead; the original file size does not.
+          const expected = Number(event.totalBytesExpectedToSend);
+          const value = Number.isFinite(event.progress) ? event.progress :
+            (expected > 0 ? Number(event.totalBytesSent) / expected * 100 : entry.progress);
+          const progress = Math.max(entry.progress, Math.min(99, Math.floor(value) || 0));
+          this.state(entry, "uploading", progress);
         });
         entry.task = task;
         try { await task.promise; }
@@ -115,7 +122,8 @@ class MemoryPreupload {
         await this.transfer(entry);
       }
     };
-    this.running = Promise.all([run(), run()]).then(() => {
+    // The server serializes writes per draft; do not queue declarations behind its upload lock.
+    this.running = run().then(() => {
       this.running = null;
       if (!this.closed && Array.from(this.entries.values()).some((entry) => entry.state === "waiting"))
         return this.start();

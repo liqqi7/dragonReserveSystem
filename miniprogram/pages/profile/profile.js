@@ -7,7 +7,7 @@ const { resolveLocalMediaUrl, isLocalTestMediaUrl } = require("../../services/co
 const { isTemporaryAvatarUrl } = require("../../utils/profileUtils");
 const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
 const { patchTabBarIfNeeded } = require("../../utils/tabBarSync");
-const { getBottomSafeAreaRpx } = require("../../utils/safeArea");
+const { getBottomContentInsetRpx } = require("../../utils/safeArea");
 const { getProfileSubtitle } = require("../../utils/profilePresentation");
 const DEFAULT_AVATAR = "/images/default-avatar.svg";
 const LOCAL_TEST_AVATAR_PREFIX = "/images/avatars";
@@ -78,8 +78,11 @@ Page({
     this.setData({ statusBarHeight });
   },
 
+  onResize() {
+    this.setData({bottomSafeAreaRpx: getBottomContentInsetRpx()});
+  },
   onShow() {
-    this.setData({ bottomSafeAreaRpx: getBottomSafeAreaRpx() });
+    this.setData({ bottomSafeAreaRpx: getBottomContentInsetRpx() });
     patchTabBarIfNeeded(this, {
       selected: 3,
       hidden: false

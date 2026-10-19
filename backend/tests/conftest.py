@@ -11,6 +11,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 os.environ["APP_ENV"] = "test"
+os.environ["DATABASE_URL"] = "sqlite://"
+os.environ["ALLOW_LOCAL_TEST_DATABASE"] = "true"
 
 from app.core.database import Base, get_db
 from app.core.security import create_access_token

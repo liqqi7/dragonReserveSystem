@@ -66,8 +66,8 @@
       <view wx:if="{{loading && games.length}}" class="library-loading-more"><text>正在加载更多…</text></view>
     </view>
   </view>
-  <view class="library-safe-bottom"></view></scroll-view>
-  <view class="library-add" role="button" bindtap="openEntry" aria-label="录入桌游"><view></view><view></view></view>
+  <view class="library-safe-bottom" style="{{bottomContentInsetRpx !== null ? 'height:calc(123.07692rpx + ' + bottomContentInsetRpx + 'rpx);' : ''}}"></view></scroll-view>
+  <view class="library-add" style="{{bottomContentInsetRpx !== null ? 'bottom:' + bottomContentInsetRpx + 'rpx;' : ''}}" role="button" bindtap="openEntry" aria-label="录入桌游"><view></view><view></view></view>
 </view>
 
 <boardgame-sheet visible="{{filterOpen}}" title="全部筛选" show-close="{{false}}" kind="form" size="high" bindclose="closeFilter">
