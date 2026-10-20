@@ -266,3 +266,15 @@ test("a recycled temporary path cannot inherit native readiness from different c
   h.use(lease,url,"new-content");h.finish(1,"recycled");
   assert.equal(lease.photoReady(url),false);h.pool.dispose();
 });
+
+
+test("public preview binds neighboring media to each submission's resource identity", () => {
+  const {bindPreviewResources} = require("../services/memoryPreviewSession");
+  let resources;
+  const page = {data: {index: 1, memory: {id: 5, revision: 9},
+    viewerMedia: [9, 8, 7].map(id => ({id, url: `https://test.invalid/${id}`}))},
+    _publicQueue: [{memory_id: 6, revision: 2}, {memory_id: 5, revision: 9}, {memory_id: 4, revision: 3}],
+    _mediaSession: {bindResources: value => {resources = value;}}};
+  bindPreviewResources(page);
+  assert.deepEqual(resources.map(item => item.key), ["5:9:8:display", "4:3:7:display", "6:2:9:display"]);
+});

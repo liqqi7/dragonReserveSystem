@@ -147,6 +147,11 @@ page {
   line-height: 1.2;
   word-break: break-all;
 }
+.viewer-caption-emoji {
+  width: 30.76923rpx;
+  height: 30.76923rpx;
+  vertical-align: middle;
+}
 .viewer-meta {
   display: flex;
   align-items: center;

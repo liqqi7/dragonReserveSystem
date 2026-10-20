@@ -7,11 +7,13 @@ const {memoryShareImage} = require("../../services/memoryShareImage");
 const {workletRuntime} = require("../../utils/workletCompat");
 const {shared, runOnJS, timing, cancelAnimation, Easing} = workletRuntime(wx.worklet);
 
+const {captionParts} = require("../../utils/wechatEmoji");
+
 const timeLabel = memory.durationLabel;
 
 function slideInfo(submission) {
   const {author, caption = "", activity_name = "", activityTime = "", location_name = "", status = "", statusLabel = ""} = submission;
-  return {author, caption, activity_name, activityTime, location_name, status, statusLabel};
+  return {author, caption, captionParts: captionParts(caption), activity_name, activityTime, location_name, status, statusLabel};
 }
 
 function doubleTapPhoto(scale, photo, frame, x, y) {
@@ -84,7 +86,9 @@ Page({
     this._admin = options.admin === "1";
     this._mediaId = this._admin ? Number(options.media_id) || null : null;
     this._initialMediaId = !this._admin ? Number(options.media_id) || null : null;
-    if (!this._admin) this.getOpenerEventChannel?.().on("memoryEntry", entry => {
+    // Shared links have no opener; the channel is only an optional thumbnail handoff.
+    const opener = !this._admin && this.getOpenerEventChannel?.();
+    if (opener && typeof opener.on === "function") opener.on("memoryEntry", entry => {
       if (this._unloaded || this.data.memory || entry.id !== this._id || entry.mediaId !== this._initialMediaId) return;
       this.setViewerData({entrySource: entry.source || ""});
     });
@@ -268,11 +272,14 @@ Page({
     const reviewed = this.data.reviewed;
     const cached = preferCached === true && !this._admin ? this._previewLease?.detail(this._id) : null;
     const cachedResult = cached && memory.presentation(cached);
-    const target = this._initialMediaId || this._resumeState?.mediaId || previous?.media?.[this.data.index]?.id;
+    const target = this._initialMediaId || this._resumeState?.mediaId || this.data.current?.id;
     const cachedIndex = cachedResult ? target ? cachedResult.media.findIndex(item => item.id === target) : 0 : -1;
     const cachedCurrent = cachedResult?.media[cachedIndex];
     const warm = cachedCurrent && this._mediaSession.source(cachedCurrent.url);
     const generation = (this._generation = (this._generation || 0) + 1);
+    this._publicQueue = null;
+    this._publicCursor = null;
+    this._publicQueueLoading = false;
     this._reviewQueue = null;
     this._reviewCursor = null;
     this._queueLoading = false;
@@ -319,8 +326,8 @@ Page({
         index = viewerMedia.findIndex(item => item.id === this.data.current?.id);
         if (index < 0) throw Object.assign(new Error("这份内容已不可用或已下架"), {statusCode: 404});
       }
-      if (this._initialMediaId) {
-        index = viewerMedia.findIndex(item => item.id === this._initialMediaId);
+      if (!this._admin && target && !warm) {
+        index = viewerMedia.findIndex(item => item.id === target);
         if (index < 0) throw Object.assign(new Error("这份内容已不可用或已下架"), {statusCode: 404});
       }
       if (this._mediaId && result.status === "pending") {
@@ -385,6 +392,7 @@ Page({
       );
       if (!this._admin && typeof wx.showShareMenu === "function")
         wx.showShareMenu({ menus: ["shareAppMessage"] });
+      if (!this._admin) await this.loadPublicContent(submission, generation);
     } catch (error) {
       if (!this._unloaded && generation === this._generation) {
         const revoked = [401, 403, 404, 410].includes(error.statusCode);
@@ -430,11 +438,12 @@ Page({
   revalidate() {return this.load(true);},
   change(e) {
     if (this.data.zoomed || this.data.fullScreen || this.data.seeking || this.data.selectionOpen || this.data.busy) return;
-    this.pause();
     const index = e.detail.current;
     const items = this.data.viewerMedia.length ? this.data.viewerMedia : this.data.memory.media;
     const current = items[index];
     if (!current) return;
+    if (index === this.data.index && current.id === this.data.current?.id) return;
+    this.pause();
     // Commit index, current media and generation together before cached images can emit bindload.
     this.activate(index);
   },
@@ -442,13 +451,13 @@ Page({
     if (this._unloaded || !this.data.memory) return;
     this.clearTimers();
     this.restorePhoto();
-    const queueCard = this._reviewQueue && this._reviewQueue[index];
+    const queueCard = (this._reviewQueue || this._publicQueue)?.[index];
     const current = queueCard ? queueCard.media[0] : this.data.memory.media[index];
     if (!current) return;
-    const changed = queueCard && current.id !== this._mediaId;
+    const changed = this._reviewQueue && current.id !== this._mediaId;
     if (queueCard) {
       this._id = queueCard.memory_id;
-      this._mediaId = current.id;
+      if (this._admin) this._mediaId = current.id;
     }
     const resume = this._resumeState?.mediaId === current.id ? this._resumeState : null;
     this._resumeState = null;
@@ -507,7 +516,8 @@ Page({
         this.armMediaDeadline();
       },
     );
-    if (queueCard && this.data.index >= this._reviewQueue.length - 2) this.moreReviewContent();
+    if (this._reviewQueue && index >= this._reviewQueue.length - 2) this.moreReviewContent();
+    if (this._publicQueue && index >= this._publicQueue.length - 2) this.morePublicContent();
   },
   preparePreviewMedia() {
     bindPreviewResources(this);
@@ -642,9 +652,10 @@ Page({
         const renewed = {...current, ...memory.presentation(fresh).media.find(item => item.id === current.id)};
         const viewerMedia = this.data.viewerMedia.map(item => item.id === current.id ? renewed : item);
         const media = this.data.memory.media.map(item => item.id === current.id ? renewed : item);
-        if (this._reviewQueue) {
-          const card = this._reviewQueue[this.data.index];
-          this._reviewQueue[this.data.index] = {...card, media};
+        const queue = this._reviewQueue || this._publicQueue;
+        if (queue) {
+          const card = queue[this.data.index];
+          queue[this.data.index] = {...card, media};
         }
         this.setViewerData({current: renewed, viewerMedia, "memory.media": media,
           videoPoster: /^https:\/\//i.test(renewed.thumbnail_url || "") ? renewed.thumbnail_url : ""});
@@ -655,6 +666,81 @@ Page({
           this.setViewerData({error: "媒体加载失败，请刷新重试", playing: false, videoLoading: false, controlsVisible: true});
       }
     });
+  },
+  async loadPublicContent(submission, generation) {
+    this._publicQueueLoading = true;
+    try {
+      const queue = [], seen = new Set(), cursors = new Set();
+      const target = this.data.current?.id;
+      let cursor;
+      do {
+        const batch = await memory.list({individual: true, cursor});
+        if (this._unloaded || generation !== this._generation) return;
+        (batch.items || []).flatMap(memory.mediaCards).forEach(card => {
+          if (!seen.has(card.id)) {queue.push(card); seen.add(card.id);}
+        });
+        cursor = batch.cursor;
+        if (cursors.has(cursor)) {cursor = null; break;}
+        cursors.add(cursor);
+      } while (cursor && !seen.has(target));
+      // Keep the fresh detail authoritative, including all files from this submission.
+      const fresh = memory.mediaCards(submission);
+      const byId = new Map(fresh.map(card => [card.id, card]));
+      for (let i = 0; i < queue.length; i++) {
+        if (byId.has(queue[i].id)) queue[i] = byId.get(queue[i].id);
+      }
+      const currentId = this.data.current?.id;
+      let index = queue.findIndex(card => card.id === currentId);
+      if (index < 0) {
+        // A temporarily inconsistent list must not remove the visible, authorized detail.
+        queue.unshift(...fresh.filter(card => !seen.has(card.id)));
+        index = queue.findIndex(card => card.id === currentId);
+      }
+      if (index < 0) return;
+      this._publicQueue = queue;
+      this._publicCursor = cursor;
+      const card = queue[index];
+      this.setViewerData({memory: {...card, id: card.memory_id}, index,
+        viewerMedia: queue.map(item => item.media[0]), viewerInfo: queue.map(slideInfo)},
+      () => this.preparePreviewMedia());
+    } catch (error) {
+      // List availability must not interrupt a successfully loaded image or video.
+      if (!this._unloaded && generation === this._generation)
+        logPageError("memory_public_feed", error);
+    } finally {
+      if (generation === this._generation) this._publicQueueLoading = false;
+    }
+    if (!this._unloaded && generation === this._generation && this._publicQueue &&
+        this.data.index >= this._publicQueue.length - 2) this.morePublicContent();
+  },
+  async morePublicContent() {
+    if (this._publicQueueLoading || !this._publicCursor || !this._publicQueue) return;
+    const generation = this._generation;
+    this._publicQueueLoading = true;
+    try {
+      const queue = this._publicQueue.slice();
+      const seen = new Set(queue.map(card => card.id)), cursors = new Set();
+      let cursor = this._publicCursor;
+      const length = queue.length;
+      do {
+        cursors.add(cursor);
+        const batch = await memory.list({individual: true, cursor});
+        if (this._unloaded || generation !== this._generation) return;
+        (batch.items || []).flatMap(memory.mediaCards).forEach(card => {
+          if (!seen.has(card.id)) {queue.push(card); seen.add(card.id);}
+        });
+        cursor = cursors.has(batch.cursor) ? null : batch.cursor;
+      } while (cursor && queue.length === length);
+      this._publicQueue = queue;
+      this._publicCursor = cursor;
+      this.setViewerData({viewerMedia: queue.map(card => card.media[0]), viewerInfo: queue.map(slideInfo)},
+        () => this.preparePreviewMedia());
+    } catch (error) {
+      if (!this._unloaded && generation === this._generation)
+        logPageError("memory_public_feed_more", error);
+    } finally {
+      if (generation === this._generation) this._publicQueueLoading = false;
+    }
   },
   async moreReviewContent() {
     if (this._queueLoading || !this._reviewCursor || !this._reviewQueue) return;
@@ -711,6 +797,8 @@ Page({
   photoScale(event) {
     "worklet";
     if (event.state === 1) {
+      // Skyline scale gestures also recognize single-finger pans.
+      if (!(event.pointerCount >= 2)) return;
       cancelAnimation(this._scale);
       cancelAnimation(this._x);
       cancelAnimation(this._y);
@@ -724,7 +812,7 @@ Page({
         focalY: event.focalY - this._frame.value.height / 2,
       };
       runOnJS(this.syncZoom.bind(this))(true);
-    } else if (event.state === 2) {
+    } else if (event.state === 2 && this._pinching.value) {
       const base = this._pinchBase.value;
       const scale = Math.max(1, Math.min(4, base.scale * event.scale));
       const ratio = scale / base.scale;
@@ -748,7 +836,7 @@ Page({
         -maxY,
         Math.min(maxY, focalY - (base.focalY - base.y) * ratio),
       );
-    } else if (event.state === 3 || event.state === 4) {
+    } else if ((event.state === 3 || event.state === 4) && this._pinching.value) {
       this._pinching.value = false;
       if (this._scale.value <= 1.02) {
         this._scale.value = 1;

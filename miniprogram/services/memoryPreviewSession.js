@@ -83,7 +83,7 @@ function bindPreviewResources(page, unchanged = false, currentIndex = page.data.
   const media = page.data.viewerMedia.length ? page.data.viewerMedia : page.data.memory?.media || [];
   const resources = [];
   for (const index of [currentIndex, currentIndex + 1, currentIndex - 1]) {
-    const item = media[index], parent = page._reviewQueue?.[index] || page.data.memory;
+    const item = media[index], parent = page._reviewQueue?.[index] || page._publicQueue?.[index] || page.data.memory;
     if (!item || !parent) continue;
     const key = `${parent.memory_id || parent.id}:${item.content_version || parent.revision || 0}:${item.id}`;
     for (const [field, variant] of [["url", "display"], ["thumbnail_url", "thumbnail"]]) {

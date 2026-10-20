@@ -88,7 +88,7 @@ test("individual detail scopes preview and review to one file in a partially pub
 
 test("pending viewer pages across submissions but reviews only the visible file", async () => {
   const api = service();
-  const first = {id: 7, status: "pending", caption: "first", revision: 3, author: {nickname: "A"},
+  const first = {id: 7, status: "pending", caption: "first[耶]", revision: 3, author: {nickname: "A"},
     media: [{id: 20, kind: "image", state: "ready", publication_status: "unreviewed"}]};
   const second = {id: 8, status: "pending", caption: "second", revision: 6, author: {nickname: "B"},
     media: [{id: 21, kind: "video", state: "ready", publication_status: "unreviewed", duration: 8}]};
@@ -109,7 +109,9 @@ test("pending viewer pages across submissions but reviews only the visible file"
   assert.equal(instance.data.index, 1);
   assert.deepEqual(Array.from(instance.data.viewerMedia, item => item.id), [20, 21]);
   assert.deepEqual(Array.from(instance.data.viewerInfo, item => item.author.nickname), ["A", "B"]);
-  assert.deepEqual(Array.from(instance.data.viewerInfo, item => item.caption), ["first", "second"]);
+  assert.deepEqual(Array.from(instance.data.viewerInfo, item => item.caption), ["first[耶]", "second"]);
+  assert.equal(instance.data.viewerInfo[0].captionParts[1].type, "emoji");
+  assert.deepEqual(instance.data.viewerInfo[1].captionParts, [{type: "text", offset: 0, text: "second"}]);
   instance.moreReviewContent();
   assert.equal(calls.length, 2, "only one prefetch at a time");
   next({items: [second, third], cursor: null});
@@ -121,7 +123,7 @@ test("pending viewer pages across submissions but reviews only the visible file"
   instance.change({detail: {current: 0}});
   assert.equal(instance.data.memory.id, 7);
   assert.equal(instance.data.memory.author.nickname, "A");
-  assert.equal(instance.data.memory.caption, "first");
+  assert.equal(instance.data.memory.caption, "first[耶]");
   assert.equal(instance.data.viewerInfo[1].caption, "second", "neighbour metadata does not change with the active page");
   assert.equal(instance.data.current.id, 20);
   assert.equal(instance.data.playing, false);
@@ -674,6 +676,7 @@ function page(name, memory, wx = {}, thumbnails = {}, sharedMediaModules) {
       timers.delete(id);
     },
     require(name) {
+      if (name.endsWith("/wechatEmoji")) return require("../utils/wechatEmoji");
       if (name.endsWith("/memoryCardPresentation")) {
         const module = {exports: {}};
         vm.runInNewContext(source("utils/memoryCardPresentation.js"), {
@@ -1491,6 +1494,158 @@ test("public detail and sharing start with the selected published file and rejec
   assert.equal(missing.data.current, null);
 });
 
+function publishedMemory(id, ids, extra = {}) {
+  return {id, revision: 1, caption: `备注${id}`, author: {nickname: `作者${id}`},
+    media: ids.map(mediaId => ({id: mediaId, kind: "image", publication_status: "published",
+      url: `https://test.invalid/${mediaId}.jpg`, thumbnail_url: `https://test.invalid/${mediaId}-thumb.jpg`})), ...extra};
+}
+
+test("public preview swipes across submissions and keeps author, emoji and sharing aligned", async () => {
+  const submissions = [publishedMemory(6, [9]), publishedMemory(5, [8, 10], {caption: "新备注[耶]"}),
+    publishedMemory(4, [7], {media: [{id: 7, kind: "video", duration: 3}]})];
+  const queries = [];
+  const instance = page("memory_detail", {detail: async () => submissions[1], list: async (query, admin) => {
+    queries.push({query, admin}); return {items: submissions, cursor: null};
+  }}, {createVideoContext: () => ({play() {}, pause() {}})}).instance;
+  instance.onLoad({id: "5", media_id: "8"});
+  await instance.load();
+  assert.deepEqual(Array.from(instance.data.viewerMedia, media => media.id), [9, 8, 10, 7]);
+  assert.equal(instance.data.index, 1);
+  assert.equal(queries[0].query.individual, true);
+  assert.equal(queries[0].admin, undefined, "public browsing must not request the moderation feed");
+  instance.change({detail: {current: 0}});
+  assert.equal(instance.data.current.id, 9);
+  assert.equal(instance.data.memory.author.nickname, "作者6");
+  assert.equal(instance.data.viewerInfo[0].caption, "备注6");
+  assert.equal(instance.onShareAppMessage().path, "/pages/memory_detail/memory_detail?id=6&media_id=9");
+  instance.change({detail: {current: 2}});
+  assert.equal(instance.data.memory.caption, "新备注[耶]");
+  assert.ok(instance.data.viewerInfo[2].captionParts.some(part => part.type === "emoji"));
+  assert.equal(instance._mediaId, null, "public navigation must stay separate from per-file moderation");
+  instance.change({detail: {current: 3}});
+  assert.equal(instance.data.current.kind, "video");
+  assert.equal(instance.onShareAppMessage().path, "/pages/memory_detail/memory_detail?id=4&media_id=7");
+  instance.change({detail: {current: 1}});
+  assert.equal(instance.data.current.id, 8);
+  instance.onUnload();
+});
+
+test("public share entry locates an older submission through cursor pages", async () => {
+  const items = [publishedMemory(6, [9]), publishedMemory(5, [8]), publishedMemory(4, [7])];
+  const cursors = [];
+  const instance = page("memory_detail", {detail: async () => items[2], list: async query => {
+    cursors.push(query.cursor);
+    return query.cursor ? {items: [items[0], items[1], items[2]], cursor: null} : {items: [items[0]], cursor: "older"};
+  }}).instance;
+  instance.onLoad({id: "4", media_id: "7"});
+  await instance.load();
+  assert.deepEqual(cursors, [undefined, "older"]);
+  assert.deepEqual(Array.from(instance.data.viewerMedia, media => media.id), [9, 8, 7]);
+  assert.equal(instance.data.index, 2);
+  instance.change({detail: {current: 1}});
+  assert.equal(instance._id, 5);
+  instance.onUnload();
+});
+
+test("public preview appends pages, skips duplicate pages and retries without interrupting visible content", async () => {
+  const items = [6, 5, 4, 3, 2].map(id => publishedMemory(id, [id + 10]));
+  let fail = true;
+  const cursors = [];
+  const instance = page("memory_detail", {detail: async () => items[0], list: async query => {
+    cursors.push(query.cursor);
+    if (!query.cursor) return {items: items.slice(0, 3), cursor: "next"};
+    if (fail) throw new Error("temporary list failure");
+    if (query.cursor === "next") return {items: [items[2]], cursor: "duplicate"};
+    return {items: items.slice(2), cursor: null};
+  }}).instance;
+  instance.onLoad({id: "6", media_id: "16"}); await instance.load();
+  instance.change({detail: {current: 2}}); await tick();
+  assert.equal(instance.data.error, "");
+  assert.equal(instance.data.current.id, 14);
+  assert.equal(instance._publicCursor, "next");
+  fail = false;
+  await instance.morePublicContent();
+  assert.deepEqual(Array.from(instance.data.viewerMedia, media => media.id), [16, 15, 14, 13, 12]);
+  assert.deepEqual(cursors, [undefined, "next", "next", "duplicate"]);
+  instance.change({detail: {current: 4}});
+  assert.equal(instance.onShareAppMessage().path, "/pages/memory_detail/memory_detail?id=2&media_id=12");
+  instance.onUnload();
+});
+
+test("feed loading keeps the detail usable and preserves a swipe made before the list responds", async () => {
+  const detail = publishedMemory(5, [8, 10]);
+  let respond;
+  const instance = page("memory_detail", {detail: async () => detail,
+    list: () => new Promise(resolve => {respond = resolve;})}).instance;
+  instance.onLoad({id: "5", media_id: "8"});
+  const loading = instance.load(); await tick();
+  assert.equal(instance.data.current.id, 8);
+  instance.change({detail: {current: 1}});
+  respond({items: [publishedMemory(6, [9]), detail], cursor: null});
+  await loading;
+  assert.equal(instance.data.current.id, 10);
+  assert.equal(instance.data.index, 2);
+  assert.equal(instance.data.memory.id, 5);
+  instance.onUnload();
+});
+
+test("public queue reindex events do not pause or restart the visible video", async () => {
+  let pauses = 0;
+  const detail = publishedMemory(5, [8], {media: [{id: 8, kind: "video", duration: 5}]});
+  const instance = page("memory_detail", {detail: async () => detail,
+    list: async () => ({items: [publishedMemory(6, [9]), detail], cursor: null})},
+    {createVideoContext: () => ({pause() {pauses++;}, play() {}})}).instance;
+  instance.onLoad({id: "5", media_id: "8"}); await instance.load();
+  assert.equal(instance.data.index, 1);
+  const generation = instance.data.videoGeneration, paused = pauses;
+  instance.change({detail: {current: 1, source: ""}});
+  assert.equal(pauses, paused);
+  assert.equal(instance.data.videoGeneration, generation);
+  instance.onUnload();
+});
+
+test("failed public feed leaves the fresh detail and its share target usable", async () => {
+  const instance = page("memory_detail", {detail: async () => publishedMemory(5, [8]),
+    list: async () => {throw new Error("offline");}}).instance;
+  instance.onLoad({id: "5", media_id: "8"}); await instance.load();
+  assert.equal(instance.data.error, "");
+  assert.equal(instance.data.loading, false);
+  assert.equal(instance.data.current.id, 8);
+  assert.equal(instance.onShareAppMessage().path, "/pages/memory_detail/memory_detail?id=5&media_id=8");
+  instance.onUnload();
+});
+
+for (const lifecycle of ["onHide", "onUnload"]) test(`late public feed response is ignored after ${lifecycle}`, async () => {
+  let respond;
+  const detail = publishedMemory(5, [8]);
+  const instance = page("memory_detail", {detail: async () => detail,
+    list: () => new Promise(resolve => {respond = resolve;})}).instance;
+  instance.onLoad({id: "5", media_id: "8"});
+  const loading = instance.load(); await tick();
+  instance[lifecycle]();
+  respond({items: [publishedMemory(6, [9]), detail], cursor: null}); await loading;
+  assert.equal(instance._publicQueue, null);
+  assert.deepEqual(Array.from(instance.data.viewerMedia, media => media.id), [8]);
+  if (lifecycle === "onHide") instance.onUnload();
+});
+
+test("refresh after cross-submission navigation keeps the selected file within its original submission", async () => {
+  const items = [publishedMemory(6, [9, 11, 12]), publishedMemory(5, [8, 10, 13])];
+  const requested = [];
+  const instance = page("memory_detail", {detail: async id => {
+    requested.push(id); return items.find(item => item.id === id);
+  }, list: async () => ({items, cursor: null})}).instance;
+  instance.onLoad({id: "6", media_id: "9"}); await instance.load();
+  instance.change({detail: {current: 4}});
+  assert.equal(instance.data.current.id, 10);
+  await instance.load();
+  assert.deepEqual(requested, [6, 5]);
+  assert.equal(instance.data.current.id, 10);
+  assert.equal(instance.data.index, 4);
+  assert.equal(instance.onShareAppMessage().path, "/pages/memory_detail/memory_detail?id=5&media_id=10");
+  instance.onUnload();
+});
+
 for (const kind of ["image", "video"]) test(`memory ${kind} share crops the current photo or poster, with a stable target`, async () => {
   const {mediaModules} = page("memory_detail", service());
   let source;
@@ -1645,10 +1800,63 @@ test("caption counts Unicode code points and original mixed selections can be pr
   assert.equal(preview.sources[1].poster, "cover");
 });
 
+test("single-finger scale callbacks leave fit photos available for paging in both directions", () => {
+  const {instance} = viewer();
+  instance.renderer = "skyline";
+  instance.data.memory.media.push({id: 11, kind: "image", width: 390, height: 844});
+  for (const target of [1, 0]) {
+    instance.photoScale({state: 1, pointerCount: 1, focalX: 195, focalY: 422});
+    instance.photoScale({state: 2, pointerCount: 1, focalX: 195, focalY: 200, scale: 1});
+    assert.equal(instance.data.zoomed, false, "single-finger drags must not disable swiper touch");
+    assert.equal(instance.pagerAllowed(), true, "single-finger drags must not lock the native pager");
+    assert.equal(instance.photoPanAllowed(), false);
+    instance.change({detail: {current: target}});
+    assert.equal(instance.data.index, target);
+    assert.equal(instance.data.current.id, target ? 11 : 10);
+    instance.photoScale({state: 3, pointerCount: 0});
+  }
+  const markup = source("pages/memory_detail/memory_detail.wxml");
+  const pager = markup.match(/<vertical-drag-gesture-handler[^>]*native-view="swiper"[^>]*>/)[0];
+  const scale = markup.match(/<scale-gesture-handler[^>]*>/)[0];
+  assert.match(pager, /tag="memory-pager"/);
+  assert.match(pager, /simultaneous-handlers="\{\{\['memory-scale'\]\}\}"/);
+  assert.match(scale, /simultaneous-handlers="[^"\n]*'memory-pager'/);
+});
+
+test("lifting one finger after a pinch cannot relock a restored photo's pager", () => {
+  const {instance} = viewer();
+  instance.photoScale({state: 1, pointerCount: 2, focalX: 195, focalY: 422});
+  assert.equal(instance.pagerAllowed(), false);
+  instance.photoScale({state: 2, pointerCount: 2, focalX: 195, focalY: 422, scale: 1.01});
+  instance.photoScale({state: 3, pointerCount: 1});
+  assert.equal(instance.pagerAllowed(), true);
+  instance.photoScale({state: 1, pointerCount: 1, focalX: 195, focalY: 422});
+  instance.photoScale({state: 2, pointerCount: 1, focalX: 195, focalY: 400, scale: 1});
+  assert.equal(instance.pagerAllowed(), true);
+  assert.equal(instance.data.zoomed, false);
+  instance.photoScale({state: 4, pointerCount: 0});
+  assert.equal(instance.pagerAllowed(), true);
+});
+
+test("single-finger scale callbacks do not interrupt a double-tap zoom animation", () => {
+  const clock = createWorkletClock();
+  const {instance} = viewer("image", {worklet: clock.api});
+  instance.renderer = "skyline";
+  instance.photoDoubleTap({state: 1, absoluteX: 100, absoluteY: 300});
+  clock.advance(100);
+  instance.photoScale({state: 1, pointerCount: 1, focalX: 195, focalY: 422});
+  instance.photoScale({state: 2, pointerCount: 1, focalX: 195, focalY: 400, scale: 1});
+  instance.photoScale({state: 3, pointerCount: 0});
+  clock.advance(240);
+  assert.equal(instance._scale.value, 2);
+  assert.equal(instance.data.zoomed, true);
+  instance.onUnload();
+});
+
 test("photo pinch is anchored, bounded and locks paging until restored", () => {
   const { instance } = viewer();
   assert.equal(instance.pagerAllowed(), true);
-  instance.photoScale({ state: 1, focalX: 195, focalY: 422 });
+  instance.photoScale({ state: 1, pointerCount: 2, focalX: 195, focalY: 422 });
   assert.equal(instance.pagerAllowed(), false);
   instance.photoScale({ state: 2, focalX: 195, focalY: 422, scale: 8 });
   instance.photoScale({ state: 3 });
@@ -1680,7 +1888,7 @@ test("double tap toggles 200 percent zoom; near-fit cancelled pinch releases pag
   instance.photoDoubleTap({state: 1, absoluteX: 195, absoluteY: 422});
   instance.back();
   assert.equal(instance.data.zoomed, false);
-  instance.photoScale({ state: 1, focalX: 195, focalY: 422 });
+  instance.photoScale({ state: 1, pointerCount: 2, focalX: 195, focalY: 422 });
   instance.photoScale({ state: 2, focalX: 195, focalY: 422, scale: 1.01 });
   instance.photoScale({ state: 4 });
   assert.equal(instance._scale.value, 1);
@@ -1729,7 +1937,7 @@ test("photo zoom interpolates scale and position, reverses from the live frame a
   assert.equal(instance._x.value, 0);
   instance.photoDoubleTap({state: 1, absoluteX: 100, absoluteY: 300});
   clock.advance(100);
-  instance.photoScale({state: 1, focalX: 195, focalY: 422});
+  instance.photoScale({state: 1, pointerCount: 2, focalX: 195, focalY: 422});
   const held = instance._scale.value;
   clock.advance(300);
   assert.equal(instance._scale.value, held, "pinch cancels the in-flight tween");
@@ -2739,7 +2947,7 @@ test("offscreen portrait metadata cannot start seeking the active PC video", () 
 
 test("public preview keeps submission metadata attached to every media page", async () => {
   const api = service();
-  api.detail = async () => ({id: 7, caption: "今晚的桌游局", author: {nickname: "小雨"},
+  api.detail = async () => ({id: 7, caption: "今晚的桌游局[耶]🎉\n第二行", author: {nickname: "小雨"},
     activity_name: "周末桌游夜", location_name: "龙城桌游馆", media: [
       {id: 20, kind: "image", state: "ready", publication_status: "published"},
       {id: 21, kind: "video", state: "ready", publication_status: "published", duration: 8}]});
@@ -2747,7 +2955,11 @@ test("public preview keeps submission metadata attached to every media page", as
   instance.onLoad({id: "7"});
   await instance.load();
   assert.equal(instance.data.viewerInfo.length, 2);
-  assert.deepEqual(Array.from(instance.data.viewerInfo, item => item.caption), ["今晚的桌游局", "今晚的桌游局"]);
+  assert.deepEqual(Array.from(instance.data.viewerInfo, item => item.caption), ["今晚的桌游局[耶]🎉\n第二行", "今晚的桌游局[耶]🎉\n第二行"]);
+  for (const info of instance.data.viewerInfo) {
+    assert.equal(info.captionParts.map(part => part.text).join(""), info.caption);
+    assert.equal(info.captionParts.find(part => part.type === "emoji").src, "/images/wechat-emoji/211.png");
+  }
   instance.change({detail: {current: 1}});
   assert.equal(instance.data.current.id, 21);
   assert.equal(instance.data.viewerInfo[0].author.nickname, "小雨");
@@ -3202,6 +3414,39 @@ test("a ready cached PC image can be double-clicked while metadata revalidation 
   assert.equal(p.data.zoomed,true);
   finish(structuredClone(h.submission));await tick();assert.equal(p.data.zoomed,true);p.onUnload();
 });
+
+for (const kind of ["image", "video"]) {
+  for (const [entry, channel] of [["empty", {}], ["null", null], ["undefined", undefined]]) {
+    test(`shared ${kind} initializes without an opener (${entry} event channel)`, async () => {
+      const api = service(), jobs = [];
+      let requested;
+      api.detail = async (id, admin) => {
+        requested = {id, admin};
+        return {id: 7, media: [{id: 1, kind: "image"},
+          {id: 2, kind, url: "https://test.invalid/shared", width: 800, height: 600, duration: 8}]};
+      };
+      const {instance: p} = page("memory_detail", api, {
+        downloadFile(options) {jobs.push(options); return {abort() {}};},
+        createVideoContext: () => ({play() {}, pause() {}}),
+      });
+      p.getOpenerEventChannel = () => channel;
+      p.onLoad({id: "7", media_id: "2"});
+      p.onShow(); await tick();
+      assert.deepEqual(requested, {id: 7, admin: false});
+      assert.equal(p.data.index, 1);
+      assert.equal(p.data.current.id, 2);
+      assert.equal(p.data.error, "");
+      assert.ok(p._frame && p._portraitDragging, "shared values initialized before loading media");
+      if (kind === "image") assert.equal(jobs.length, 1, "shared photo download starts");
+      else {
+        assert.equal(p.data.videoMounted, true);
+        assert.equal(p.data.videoSource, "https://test.invalid/shared");
+      }
+      assert.equal(p.onShareAppMessage().path, "/pages/memory_detail/memory_detail?id=7&media_id=2");
+      p.onUnload();
+    });
+  }
+}
 
 test("entry thumbnail handoff is transient, ID-scoped and removed on confirmed unavailability", async () => {
   const api=service(); let receive,fail;
