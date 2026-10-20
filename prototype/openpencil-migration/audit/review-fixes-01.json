@@ -1,0 +1,26 @@
+[
+  [
+    "import path from 'node:path';",
+    "import path from 'node:path';\nimport {createHash} from 'node:crypto';"
+  ],
+  [
+    "const seenAssets=new Set();",
+    "const seenAssets=new Set();\nconst embeddedImages={};"
+  ],
+  [
+    "return url.replaceAll('\\\\','/');",
+    "let actual=absolute;\n if(!fs.existsSync(actual)){\n  if(url==='generated-1.png'&&fs.existsSync('audit/source-missing-asset.png/qAMWN.png')){\n   actual=path.resolve('audit/source-missing-asset.png/qAMWN.png');\n   note(id,'missing_asset_placeholder','Source itself shows missing-image checkerboard. Preserve its rendered placeholder, not a recovered original.');\n  }else return url.replaceAll('\\\\','/');\n }\n const bytes=fs.readFileSync(actual),hash=createHash('sha256').update(bytes).digest('hex');\n const mime={'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.gif':'image/gif','.webp':'image/webp'}[path.extname(actual).toLowerCase()]??'application/octet-stream';\n embeddedImages[hash]??='data:'+mime+';base64,'+bytes.toString('base64');\n return 'op-image:'+hash;"
+  ],
+  [
+    "type:'image',url:imageUrl(v.url,id),mode:",
+    "type:'image',src:'',url:imageUrl(v.url,id),mode:"
+  ],
+  [
+    "if(Object.keys(rootOverride).length)out.descendants[n.ref]={...(out.descendants[n.ref]??{}),...rootOverride};",
+    "if(!own(out,'x'))rootOverride.x=null;\n  if(!own(out,'y'))rootOverride.y=null;\n  if(Object.keys(rootOverride).length)out.descendants[n.ref]={...(out.descendants[n.ref]??{}),...rootOverride};"
+  ],
+  [
+    "const document={version:'0.8.4',name:'龙城小程序',variables:source.variables.variables??{},children};",
+    "const document={version:'1.2',formatVersion:'1.2',name:'龙城小程序',variables:source.variables.variables??{},images:embeddedImages,children};"
+  ]
+]

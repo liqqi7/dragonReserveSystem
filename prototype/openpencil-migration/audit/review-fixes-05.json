@@ -1,0 +1,18 @@
+[
+  [
+    "if(k==='fill'){out.fill=fills(v,base.id);continue;}",
+    "if(k==='fill'){out.fill=fills(v,base.id);continue;}\n  if(k==='enabled'){out.enabled=v;if(typeof v==='boolean')out.visible=v;continue;}\n  if((k==='width'||k==='height')&&typeof v==='string'&&/^(fit_content|fill_container)\\([\\d.]+\\)$/.test(v)){\n   const [,kind,size]=v.match(/^(fit_content|fill_container)\\(([\\d.]+)\\)$/);\n   out[k]=kind;out[k==='width'?'minWidth':'minHeight']=Number(size);\n   continue;\n  }"
+  ],
+  [
+    "if(value.type){converted.type=value.type==='icon'?'icon_font':value.type;if(value.id)converted.id=value.id;}\n  if(value.children)converted.children=value.children.map(child=>convertInline(child));",
+    "if(value.type){converted=convertInline(value);}\n  else if(value.children)converted.children=value.children.map(child=>convertInline(child));"
+  ],
+  [
+    "if(Object.keys(rootOverride).length)out.descendants[n.ref]={...(out.descendants[n.ref]??{}),...rootOverride};",
+    "if(Object.keys(rootOverride).length)out.descendants[n.ref]={...(out.descendants[n.ref]??{}),...rootOverride};\n  if(rows.get(n.ref)?.node.reusable&&rows.get(n.ref)?.node.type==='ref'){\n   const root=out.descendants[n.ref];\n   const nested=Object.fromEntries(Object.entries(out.descendants).filter(([id])=>id!==n.ref));\n   const derived=rows.get(n.ref).node;\n   const inherited=overrides(derived);\n   out.descendants={...(root?{[n.ref]:root}:{}),[n.ref+'__derived_reference']:{descendants:{...inherited,...nested}}};\n  }"
+  ],
+  [
+    "if(n.type==='text')out.content??='';",
+    "if(n.type==='text')out.content??='';\n // Native v0.8.4 applies paint alpha twice. For plain rectangle leaves,\n // use opaque paint plus equivalent node alpha (verified by render probes).\n if(n.type==='rectangle'&&!n.effect&&!n.stroke&&out.fill?.length===1&&out.fill[0].type==='solid'){\n  const f=out.fill[0],m=f.color?.match(/^#([a-f0-9]{6})([a-f0-9]{2})$/i);\n  if(m){const alpha=parseInt(m[2],16)/255*(f.opacity??1);f.color='#'+m[1];delete f.opacity;out.opacity=(out.opacity??1)*alpha;}\n }"
+  ]
+]

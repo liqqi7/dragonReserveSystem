@@ -1,0 +1,114 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "check": "header width change propagates to fill text",
+      "actual": 70.0,
+      "expected": 70,
+      "pass": true
+    },
+    {
+      "check": "header action follows right edge",
+      "actual": 70.0,
+      "expected": 70,
+      "pass": true
+    },
+    {
+      "check": "card173__cover width",
+      "actual": 173.0,
+      "expected": 173,
+      "pass": true
+    },
+    {
+      "check": "card173__cover height",
+      "actual": 156.0,
+      "expected": 156,
+      "pass": true
+    },
+    {
+      "check": "card173__information height",
+      "actual": 74.0,
+      "expected": 74,
+      "pass": true
+    },
+    {
+      "check": "card173__title width",
+      "actual": 157.0,
+      "expected": 157,
+      "pass": true
+    },
+    {
+      "check": "card240__cover width",
+      "actual": 240.0,
+      "expected": 240,
+      "pass": true
+    },
+    {
+      "check": "card240__cover height",
+      "actual": 156.0,
+      "expected": 156,
+      "pass": true
+    },
+    {
+      "check": "card240__information height",
+      "actual": 74.0,
+      "expected": 74,
+      "pass": true
+    },
+    {
+      "check": "card240__title width",
+      "actual": 224.0,
+      "expected": 224,
+      "pass": true
+    },
+    {
+      "check": "alpha120 bounds",
+      "actual": [
+        120,
+        40
+      ],
+      "expected": [
+        120,
+        40
+      ],
+      "pass": true
+    },
+    {
+      "check": "alpha120 paint fills resized bounds",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "check": "alpha120 alpha kept",
+      "actual": 204,
+      "expected": 204,
+      "pass": true
+    },
+    {
+      "check": "alpha200 bounds",
+      "actual": [
+        200,
+        70
+      ],
+      "expected": [
+        200,
+        70
+      ],
+      "pass": true
+    },
+    {
+      "check": "alpha200 paint fills resized bounds",
+      "actual": 1,
+      "expected": 1,
+      "pass": true
+    },
+    {
+      "check": "alpha200 alpha kept",
+      "actual": 204,
+      "expected": 204,
+      "pass": true
+    }
+  ],
+  "scope": "Representative title and library-card instances plus resized translucent fills. This does not prove every editing behavior; hidden-node limitation is tested separately."
+}

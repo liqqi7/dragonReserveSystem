@@ -1,0 +1,219 @@
+{
+  "previousRootCount": 2,
+  "originalLibraryHeight": 17072,
+  "promoted": [
+    {
+      "id": "lnq9c",
+      "name": "设计规范 · 组件模板库",
+      "x": 40,
+      "y": 40,
+      "width": 2400,
+      "originalWidth": 2400,
+      "baselineHeight": 17072
+    },
+    {
+      "id": "ltOwn",
+      "name": "一级分类 · 品牌规范",
+      "x": 40,
+      "y": 230,
+      "width": 2352,
+      "originalWidth": "fill_container",
+      "baselineHeight": 790
+    },
+    {
+      "id": "aogjX",
+      "name": "一级分类 · 基础规范",
+      "x": 40,
+      "y": 1176,
+      "width": 2352,
+      "originalWidth": "fill_container",
+      "baselineHeight": 2482
+    },
+    {
+      "id": "gaXht",
+      "name": "一级分类 · 通用组件",
+      "x": 2592,
+      "y": 230,
+      "width": 2352,
+      "originalWidth": "fill_container",
+      "baselineHeight": 4846
+    },
+    {
+      "id": "cDpKr",
+      "name": "一级分类 · 业务组件",
+      "x": 5144,
+      "y": 230,
+      "width": 2352,
+      "originalWidth": "fill_container",
+      "baselineHeight": 8746
+    },
+    {
+      "id": "F0QBC",
+      "name": "基础规范 / 色彩",
+      "x": 40,
+      "y": 1441,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 769
+    },
+    {
+      "id": "Airog",
+      "name": "基础规范 / 字号",
+      "x": 40,
+      "y": 2366,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 585
+    },
+    {
+      "id": "BZNBM",
+      "name": "基础规范 / 间距",
+      "x": 40,
+      "y": 3107,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 545
+    },
+    {
+      "id": "D6s6mJ",
+      "name": "基础规范 / 圆角",
+      "x": 40,
+      "y": 3808,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 215
+    },
+    {
+      "id": "mtFmg",
+      "name": "基础规范 / 阴影",
+      "x": 40,
+      "y": 4179,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 179
+    },
+    {
+      "id": "o93HK",
+      "name": "通用组件 / 导航与页面结构",
+      "x": 2592,
+      "y": 497,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 1549
+    },
+    {
+      "id": "ghmzx",
+      "name": "通用组件 / 底部抽屉",
+      "x": 2592,
+      "y": 2202,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 2653
+    },
+    {
+      "id": "G0WeS6",
+      "name": "通用组件 / 居中弹窗",
+      "x": 2592,
+      "y": 5011,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 485
+    },
+    {
+      "id": "KEgi8",
+      "name": "业务组件 / 活动卡片",
+      "x": 5144,
+      "y": 497,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 720
+    },
+    {
+      "id": "VAvG5",
+      "name": "业务组件 / 活动表单 · 新建与编辑",
+      "x": 7696,
+      "y": 497,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 1821
+    },
+    {
+      "id": "vrUqe",
+      "name": "业务组件 / 活动封面",
+      "x": 5144,
+      "y": 1373,
+      "width": 2304,
+      "originalWidth": 2304,
+      "baselineHeight": 889
+    },
+    {
+      "id": "MjPfo",
+      "name": "业务组件 / 活动详情",
+      "x": 5144,
+      "y": 2418,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 2117
+    },
+    {
+      "id": "OxSjB",
+      "name": "业务组件 / 日历",
+      "x": 7696,
+      "y": 2474,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 804
+    },
+    {
+      "id": "m9URt",
+      "name": "业务组件 / 工具入口卡片",
+      "x": 7696,
+      "y": 3434,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 250
+    },
+    {
+      "id": "P8DGF",
+      "name": "业务组件 / 桌游库",
+      "x": 7696,
+      "y": 3840,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 1104
+    },
+    {
+      "id": "t5ov9",
+      "name": "业务组件 / 记忆",
+      "x": 5144,
+      "y": 4691,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 480
+    },
+    {
+      "id": "nLVsJ",
+      "name": "业务组件 / 排行榜",
+      "x": 7696,
+      "y": 5100,
+      "width": 2304,
+      "originalWidth": "fill_container",
+      "baselineHeight": 308
+    },
+    {
+      "id": "qCoEK",
+      "name": "归档 / 旧版表单控件",
+      "x": 40,
+      "y": 4514,
+      "width": 2304,
+      "originalWidth": 2304,
+      "baselineHeight": 4973
+    }
+  ],
+  "columns": 4,
+  "columnGap": 200,
+  "sectionGap": 156,
+  "rootCount": 23,
+  "designHeight": 5522,
+  "designWidth": 10048
+}

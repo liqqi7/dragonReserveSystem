@@ -1,0 +1,5433 @@
+{
+  "fontAdvanceEngineValidation": {
+    "fontSize": 48,
+    "samples": [
+      {
+        "family": "Inter",
+        "text": "AVAVAVAVAV",
+        "gposKerningPx": -29.53125,
+        "sourceInkWidth": 300,
+        "nativeInkWidth": 329,
+        "predictedShapedWidth": 299.203125,
+        "predictedUnkernedWidth": 328.734375,
+        "sourcePredictionError": 0.796875,
+        "nativePredictionError": 0.265625
+      },
+      {
+        "family": "Inter",
+        "text": "ToToToToTo",
+        "gposKerningPx": -33.75,
+        "sourceInkWidth": 261,
+        "nativeInkWidth": 294,
+        "predictedShapedWidth": 260.34375,
+        "predictedUnkernedWidth": 294.09375,
+        "sourcePredictionError": 0.65625,
+        "nativePredictionError": -0.09375
+      },
+      {
+        "family": "Inter",
+        "text": "iiiiiiiiii",
+        "gposKerningPx": 0,
+        "sourceInkWidth": 110,
+        "nativeInkWidth": 111,
+        "predictedShapedWidth": 110.5078125,
+        "predictedUnkernedWidth": 110.5078125,
+        "sourcePredictionError": -0.5078125,
+        "nativePredictionError": 0.4921875
+      },
+      {
+        "family": "Inter",
+        "text": "WWWWWWWW",
+        "gposKerningPx": 8.203125,
+        "sourceInkWidth": 384,
+        "nativeInkWidth": 376,
+        "predictedShapedWidth": 384.140625,
+        "predictedUnkernedWidth": 375.9375,
+        "sourcePredictionError": -0.140625,
+        "nativePredictionError": 0.0625
+      },
+      {
+        "family": "Geist",
+        "text": "AVAVAVAVAV",
+        "gposKerningPx": -45.792,
+        "sourceInkWidth": 273,
+        "nativeInkWidth": 318,
+        "predictedShapedWidth": 272.688,
+        "predictedUnkernedWidth": 318.48,
+        "sourcePredictionError": 0.3120000000000118,
+        "nativePredictionError": -0.4800000000000182
+      },
+      {
+        "family": "Geist",
+        "text": "ToToToToTo",
+        "gposKerningPx": -32.64,
+        "sourceInkWidth": 235,
+        "nativeInkWidth": 266,
+        "predictedShapedWidth": 234.672,
+        "predictedUnkernedWidth": 267.312,
+        "sourcePredictionError": 0.32800000000000296,
+        "nativePredictionError": -1.3120000000000118
+      },
+      {
+        "family": "Geist",
+        "text": "iiiiiiiiii",
+        "gposKerningPx": -8.64,
+        "sourceInkWidth": 101,
+        "nativeInkWidth": 109,
+        "predictedShapedWidth": 100.992,
+        "predictedUnkernedWidth": 109.632,
+        "sourcePredictionError": 0.007999999999995566,
+        "nativePredictionError": -0.632000000000005
+      },
+      {
+        "family": "Geist",
+        "text": "WWWWWWWW",
+        "gposKerningPx": -3.36,
+        "sourceInkWidth": 356,
+        "nativeInkWidth": 359,
+        "predictedShapedWidth": 355.87199999999996,
+        "predictedUnkernedWidth": 359.23199999999997,
+        "sourcePredictionError": 0.12800000000004275,
+        "nativePredictionError": -0.2319999999999709
+      },
+      {
+        "family": "Noto Sans SC",
+        "text": "AVAVAVAVAV",
+        "gposKerningPx": -7.776,
+        "sourceInkWidth": 276,
+        "nativeInkWidth": 283,
+        "predictedShapedWidth": 275.952,
+        "predictedUnkernedWidth": 283.728,
+        "sourcePredictionError": 0.04800000000000182,
+        "nativePredictionError": -0.7280000000000086
+      },
+      {
+        "family": "Noto Sans SC",
+        "text": "ToToToToTo",
+        "gposKerningPx": -31.104000000000003,
+        "sourceInkWidth": 255,
+        "nativeInkWidth": 284,
+        "predictedShapedWidth": 254.11200000000002,
+        "predictedUnkernedWidth": 285.216,
+        "sourcePredictionError": 0.8879999999999768,
+        "nativePredictionError": -1.2160000000000082
+      },
+      {
+        "family": "Noto Sans SC",
+        "text": "iiiiiiiiii",
+        "gposKerningPx": 0,
+        "sourceInkWidth": 124,
+        "nativeInkWidth": 124,
+        "predictedShapedWidth": 124.608,
+        "predictedUnkernedWidth": 124.608,
+        "sourcePredictionError": -0.6080000000000041,
+        "nativePredictionError": -0.6080000000000041
+      },
+      {
+        "family": "Noto Sans SC",
+        "text": "WWWWWWWW",
+        "gposKerningPx": 0,
+        "sourceInkWidth": 335,
+        "nativeInkWidth": 335,
+        "predictedShapedWidth": 334.608,
+        "predictedUnkernedWidth": 334.608,
+        "sourcePredictionError": 0.3919999999999959,
+        "nativePredictionError": 0.3919999999999959
+      }
+    ],
+    "allSourcePredictionsWithinTwoPixels": true,
+    "allNativePredictionsWithinTwoPixels": true
+  },
+  "currentTextStyleValidation": {
+    "checkedSurvivingRawSourceTextNodes": 2916,
+    "checkedProperties": [
+      "fontFamily",
+      "fontSize",
+      "fontWeight",
+      "fontStyle",
+      "lineHeight",
+      "letterSpacing",
+      "textAlign"
+    ],
+    "errors": [],
+    "sourceImplicitInterLineHeightMadeExplicit": 227,
+    "targetSha256": "098f78d35183b82bb2ea59a8c6d8d529ff862ae7b7b020cdc99a7a0e0129ea12",
+    "sourcePenSha256": "6547e5b84f0bec07def8444c35cddd05c01da8f32d47282b753e96c422da1b82",
+    "scope": "Raw source text nodes that remain after authorized Tools retirement; centered text styles checked on editable inner text; inline replacement nodes not included."
+  },
+  "currentTextAndLayoutRepair": {
+    "structure": {
+      "schemaValid": true,
+      "schemaErrors": null,
+      "oldNodeCount": 9632,
+      "nodeCount": 9756,
+      "wrappedTextBoxes": 124,
+      "allTextBoxHeightsAndContentPreserved": true,
+      "invalidTextBoxes": [],
+      "sourceIdsUnexpectedlyMissing": [],
+      "checkedOverrideDictionaries": 17,
+      "overrideErrors": [],
+      "components": 93,
+      "references": 419,
+      "danglingRefs": [],
+      "overlapPairs": [],
+      "fixedHeightAutoLayoutFramesChecked": 1929,
+      "fixedHeightMismatches": [
+        {
+          "id": "uns076",
+          "name": "参与人头像 · 黑黑",
+          "sourceHeight": 19.03448275862069,
+          "targetHeight": 20
+        },
+        {
+          "id": "uns078",
+          "name": "参与人头像 · 灯子",
+          "sourceHeight": 19.03448275862069,
+          "targetHeight": 20
+        },
+        {
+          "id": "uns080",
+          "name": "其余参与人数量",
+          "sourceHeight": 19.03448275862069,
+          "targetHeight": 20
+        }
+      ],
+      "sourcePenSha256": "6547e5b84f0bec07def8444c35cddd05c01da8f32d47282b753e96c422da1b82"
+    },
+    "visual": {
+      "compared": 160,
+      "meanBefore": 4.673877099728593,
+      "meanAfter": 4.4510377709218645,
+      "improvedOverPointOne": 32,
+      "regressedOverPointOne": 1,
+      "sizeChanges": [],
+      "details": [
+        {
+          "id": "verUnselected01",
+          "name": "流程 03.名称搜索结果 · 版本未选择",
+          "before": 7.046927532709523,
+          "after": 4.116032729776806,
+          "change": -2.930894802932717,
+          "sameSize": true
+        },
+        {
+          "id": "CObGD",
+          "name": "流程 03.7 · 名称搜索结果 · 首位拥有者",
+          "before": 7.509741969457609,
+          "after": 4.6807469518369995,
+          "change": -2.82899501762061,
+          "sameSize": true
+        },
+        {
+          "id": "folfG",
+          "name": "流程 03 · 名称搜索结果",
+          "before": 6.748057682180905,
+          "after": 4.413776481548993,
+          "change": -2.334281200631912,
+          "sameSize": true
+        },
+        {
+          "id": "Nz8RY",
+          "name": "流程 03 · 名称搜索结果",
+          "before": 6.748057682180905,
+          "after": 4.413776481548993,
+          "change": -2.334281200631912,
+          "sameSize": true
+        },
+        {
+          "id": "wziuQ",
+          "name": "流程 03 · 名称搜索结果",
+          "before": 6.587280755053267,
+          "after": 4.277903349941265,
+          "change": -2.309377405112002,
+          "sameSize": true
+        },
+        {
+          "id": "fEinP",
+          "name": "流程 03 · 名称搜索结果",
+          "before": 6.587280755053267,
+          "after": 4.277903349941265,
+          "change": -2.309377405112002,
+          "sameSize": true
+        },
+        {
+          "id": "qvafH",
+          "name": "页面 · 活动详情 · 默认 · 管理员",
+          "before": 7.523558958156115,
+          "after": 5.619884959695386,
+          "change": -1.9036739984607287,
+          "sameSize": true
+        },
+        {
+          "id": "X9GgXl",
+          "name": "状态 · 活动详情 · 进行中 · 已签到",
+          "before": 7.474804553003605,
+          "after": 5.571130554542877,
+          "change": -1.9036739984607287,
+          "sameSize": true
+        },
+        {
+          "id": "rRXcj",
+          "name": "状态 · 活动详情 · 进行中 · 未报名",
+          "before": 7.4799408595617125,
+          "after": 5.576266861100985,
+          "change": -1.9036739984607278,
+          "sameSize": true
+        },
+        {
+          "id": "vJwP7",
+          "name": "状态 · 活动详情 · 进行中 · 副标题折叠 · 待签到",
+          "before": 7.56565398792887,
+          "after": 5.663251913962815,
+          "change": -1.902402073966055,
+          "sameSize": true
+        },
+        {
+          "id": "L7TUb",
+          "name": "状态 · 活动详情 · 未开始 · 已满员",
+          "before": 7.470798395916879,
+          "after": 5.568396321950824,
+          "change": -1.902402073966055,
+          "sameSize": true
+        },
+        {
+          "id": "TC0km",
+          "name": "流程 01 · 录入桌游入口",
+          "before": 3.8629967189208894,
+          "after": 2.0087414428646655,
+          "change": -1.8542552760562239,
+          "sameSize": true
+        },
+        {
+          "id": "sZ3AN",
+          "name": "状态 · 活动详情 · 已结束 · 副标题展开",
+          "before": 11.534637663547617,
+          "after": 9.712468100619759,
+          "change": -1.8221695629278578,
+          "sameSize": true
+        },
+        {
+          "id": "sNAax",
+          "name": "页面 · 活动详情 · 多子项目 · 管理员",
+          "before": 6.436006478407979,
+          "after": 4.928782412084476,
+          "change": -1.507224066323503,
+          "sameSize": true
+        },
+        {
+          "id": "nhpZv",
+          "name": "状态 · 活动详情 · 报名中 · 橙色头像主视觉 · 已报名",
+          "before": 5.823927573216673,
+          "after": 4.4513306598614655,
+          "change": -1.3725969133552072,
+          "sameSize": true
+        },
+        {
+          "id": "FDMKv",
+          "name": "状态 · 活动详情 · 多子项目 · 立即报名抽屉 · 未勾选",
+          "before": 4.094960910600721,
+          "after": 3.036999230364159,
+          "change": -1.0579616802365623,
+          "sameSize": true
+        },
+        {
+          "id": "MaM8Q",
+          "name": "状态 · 参与人抽屉 · 报名中 · 默认",
+          "before": 3.9180094786729858,
+          "after": 2.9427674484546524,
+          "change": -0.9752420302183333,
+          "sameSize": true
+        },
+        {
+          "id": "qMC0v",
+          "name": "状态 · 参与人抽屉 · 进行中 · 左滑取签与删除",
+          "before": 4.478478551464334,
+          "after": 3.5046259164742577,
+          "change": -0.973852634990076,
+          "sameSize": true
+        },
+        {
+          "id": "D3GuQ",
+          "name": "状态 · 参与人抽屉 · 进行中 · 默认",
+          "before": 4.521047514886377,
+          "after": 3.5471948798963018,
+          "change": -0.9738526349900756,
+          "sameSize": true
+        },
+        {
+          "id": "a7h8g",
+          "name": "状态 · 参与人抽屉 · 报名中 · 左滑仅删除",
+          "before": 3.899894681411269,
+          "after": 2.9260420464211934,
+          "change": -0.9738526349900756,
+          "sameSize": true
+        },
+        {
+          "id": "V0cp3",
+          "name": "状态 · 参与人抽屉 · 现场点名 · 无人报名",
+          "before": 3.039757767245919,
+          "after": 2.0925466844898124,
+          "change": -0.9472110827561067,
+          "sameSize": true
+        },
+        {
+          "id": "S6jwOA",
+          "name": "状态 · 参与人抽屉 · 现场点名 · 活动已结束 · 左滑补卡与删除",
+          "before": 3.3049661765301575,
+          "after": 2.358634098918459,
+          "change": -0.9463320776116984,
+          "sameSize": true
+        },
+        {
+          "id": "mGkc2",
+          "name": "状态 · 活动详情 · 退出确认弹窗",
+          "before": 4.546149795438895,
+          "after": 3.698837444809009,
+          "change": -0.8473123506298861,
+          "sameSize": true
+        },
+        {
+          "id": "U9Ou4F",
+          "name": "状态 · 活动详情 · 多子项目 · 报名前置提示弹窗",
+          "before": 3.382391542107182,
+          "after": 2.951464333454855,
+          "change": -0.43092720865232703,
+          "sameSize": true
+        },
+        {
+          "id": "RQKdZ",
+          "name": "页面 · 排行榜 · 活动榜",
+          "before": 6.314971442459594,
+          "after": 5.988240774496699,
+          "change": -0.3267306679628952,
+          "sameSize": true
+        },
+        {
+          "id": "ju7YZ",
+          "name": "标题测试 · 04字 · 单行 · 电影海报",
+          "before": 7.624729614777008,
+          "after": 7.332073560983513,
+          "change": -0.292656053793495,
+          "sameSize": true
+        },
+        {
+          "id": "BjPyU",
+          "name": "标题测试 · 超限省略 · 蓝色头像",
+          "before": 6.458852837525823,
+          "after": 6.181727224855187,
+          "change": -0.27712561267063585,
+          "sameSize": true
+        },
+        {
+          "id": "nQ5CV",
+          "name": "流程 02 · 名称搜索入口",
+          "before": 2.375744318872281,
+          "after": 2.117738080771256,
+          "change": -0.2580062381010251,
+          "sameSize": true
+        },
+        {
+          "id": "lLJSd",
+          "name": "流程 04 · 加入成功",
+          "before": 2.092340098027302,
+          "after": 1.8735933892331997,
+          "change": -0.21874670879410218,
+          "sameSize": true
+        },
+        {
+          "id": "L6hnE",
+          "name": "探索 · 活动详情 A · 标题03字 · 单行",
+          "before": 4.482845222181715,
+          "after": 4.273544780653785,
+          "change": -0.2093004415279296,
+          "sameSize": true
+        },
+        {
+          "id": "tF3N2",
+          "name": "流程 02 · 空结果页",
+          "before": 2.79816097541216,
+          "after": 2.6017661117187183,
+          "change": -0.19639486369344183,
+          "sameSize": true
+        },
+        {
+          "id": "j8v7l5",
+          "name": "探索 · 多活动详情方案 C · 分段报名",
+          "before": 3.56984647790335,
+          "after": 3.3925952930692267,
+          "change": -0.17725118483412317,
+          "sameSize": true
+        },
+        {
+          "id": "H2Bhy",
+          "name": "页面 · 排行榜 · 鸽子榜",
+          "before": 4.799133147000446,
+          "after": 4.701458257382428,
+          "change": -0.09767488961801796,
+          "sameSize": true
+        },
+        {
+          "id": "QNVEQ",
+          "name": "探索 · 桌游库列表 12 · 最近购入与全部馆藏",
+          "before": 9.108152146748639,
+          "after": 9.025936922077273,
+          "change": -0.08221522467136566,
+          "sameSize": true
+        },
+        {
+          "id": "mJzbF",
+          "name": "桌游库列表  · 最近购入与全部馆藏",
+          "before": 9.103747688309092,
+          "after": 9.021532463637726,
+          "change": -0.08221522467136566,
+          "sameSize": true
+        },
+        {
+          "id": "fUXwp",
+          "name": "流程 03.5 · 搜索结果页 · 版本抽屉展开",
+          "before": 2.83962409365253,
+          "after": 2.7632559646777657,
+          "change": -0.0763681289747642,
+          "sameSize": true
+        },
+        {
+          "id": "nllxZ",
+          "name": "流程 03.6 · 搜索结果页 · 拥有者抽屉",
+          "before": 2.0673269332037103,
+          "after": 1.9909588042289463,
+          "change": -0.07636812897476397,
+          "sameSize": true
+        },
+        {
+          "id": "B88jpv",
+          "name": "状态 · 排行榜 · 鸽王概率 · 高中低风险",
+          "before": 5.346700692672257,
+          "after": 5.297294122412606,
+          "change": -0.04940657025965045,
+          "sameSize": true
+        },
+        {
+          "id": "FmcXP",
+          "name": "流程 · 桌游库搜索结果页 · 筛选抽屉",
+          "before": 1.5986875683558148,
+          "after": 1.5512942034269048,
+          "change": -0.04739336492891,
+          "sameSize": true
+        },
+        {
+          "id": "K8qZPJ",
+          "name": "状态 · 排行榜 · 鸽子榜 · 未发红包空状态",
+          "before": 3.565986146554867,
+          "after": 3.52112447847045,
+          "change": -0.04486166808441716,
+          "sameSize": true
+        },
+        {
+          "id": "mkGDF",
+          "name": "页面 · 我的 · 彩虹会员融合",
+          "before": 2.6435411350103295,
+          "after": 2.633167254020335,
+          "change": -0.0103738809899947,
+          "sameSize": true
+        },
+        {
+          "id": "j7GSCo",
+          "name": "页面 · 我的 · 彩虹会员融合",
+          "before": 2.6650261271114353,
+          "after": 2.6546522461214406,
+          "change": -0.0103738809899947,
+          "sameSize": true
+        },
+        {
+          "id": "lRVYf",
+          "name": "页面 · 我的 · 管理员",
+          "before": 2.758508526754972,
+          "after": 2.7481346457649773,
+          "change": -0.0103738809899947,
+          "sameSize": true
+        },
+        {
+          "id": "c8mlk",
+          "name": "分区标识 · 首页 Tab",
+          "before": 0.4453662815766389,
+          "after": 0.4453662815766389,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "OiE3G",
+          "name": "分区标识 · 我的 Tab",
+          "before": 0.4606360676212142,
+          "after": 0.4606360676212142,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "EHxFK",
+          "name": "分区标识 · 排行榜 Tab",
+          "before": 1.0240421071412642,
+          "after": 1.0240421071412642,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "aDnxZ",
+          "name": "页面 · 首页 · 管理员",
+          "before": 6.858804228946409,
+          "after": 6.858804228946409,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "HBRMQ",
+          "name": "探索 · 原日程表 · 时间网格（旧版/Skyline受限）",
+          "before": 2.275634949568599,
+          "after": 2.275634949568599,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "XiWkQ",
+          "name": "状态 · Chwazi · 触摸中",
+          "before": 1.1147081459877668,
+          "after": 1.1147081459877668,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "QtAWX",
+          "name": "状态 · Chwazi · 已选中",
+          "before": 0.533005225422287,
+          "after": 0.533005225422287,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "AHJRA",
+          "name": "状态 · Chwazi · 超过五指",
+          "before": 5.430299347834893,
+          "after": 5.430299347834893,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "S3QXHL",
+          "name": "探索 · 工具 · 桌游库列表 · 当前方案",
+          "before": 4.4799327581318105,
+          "after": 4.4799327581318105,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "X7JPq",
+          "name": "探索 · 桌游库列表 01 · 沉浸焦点",
+          "before": 6.224239478267914,
+          "after": 6.224239478267914,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "G7P0U",
+          "name": "探索 · 桌游库列表 02 · 卡牌画廊",
+          "before": 6.012970389273707,
+          "after": 6.012970389273707,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "OsLw5",
+          "name": "探索 · 桌游库列表 03 · 拼贴图鉴",
+          "before": 6.57983149025803,
+          "after": 6.57983149025803,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "ftPtS",
+          "name": "探索 · 桌游库列表 04 · 排名杂志",
+          "before": 5.848430347956414,
+          "after": 5.848430347956414,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "ye5zL",
+          "name": "探索 · 桌游库列表 05 · 收藏书架",
+          "before": 6.31229797059181,
+          "after": 6.31229797059181,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "Ev1C5",
+          "name": "探索 · 桌游库列表 06 · 扇形牌阵",
+          "before": 5.68794102159031,
+          "after": 5.68794102159031,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "Gnsno",
+          "name": "探索 · 桌游库列表 08 · 游戏星图",
+          "before": 10.95921335115648,
+          "after": 10.95921335115648,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "C5Z41z",
+          "name": "探索 · 首页 · 管理员方案一",
+          "before": 6.50572366022603,
+          "after": 6.50572366022603,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "w8KoUh",
+          "name": "子分区标识 · 首页 · 封面预览",
+          "before": 1.1366549206774017,
+          "after": 1.1366549206774017,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "eDEJs",
+          "name": "子分区标识 · 首页 · 活动详情",
+          "before": 1.101015507679498,
+          "after": 1.101015507679498,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "i0BOQg",
+          "name": "状态 · 活动封面 · 全屏预览 · 竖图默认",
+          "before": 8.10544821160935,
+          "after": 8.10544821160935,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "UHfn0",
+          "name": "状态 · 活动封面 · 全屏预览 · 横图默认适宽",
+          "before": 2.1171507271033336,
+          "after": 2.1171507271033336,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "YKzDp",
+          "name": "状态 · 活动封面 · 全屏预览 · 横图放大 200%",
+          "before": 2.6827074978733747,
+          "after": 2.6827074978733747,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "ILtIN",
+          "name": "子分区标识 · 首页 · 编辑活动",
+          "before": 1.1387513567361018,
+          "after": 1.1387513567361018,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "nAXow",
+          "name": "子分区标识 · 首页 · 参与人页",
+          "before": 0.8113802280803485,
+          "after": 0.8113802280803485,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "gR6Hh",
+          "name": "探索分区标识 · 首页方案",
+          "before": 1.0280862958502461,
+          "after": 1.0280862958502461,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "pcOG2",
+          "name": "探索分区标识 · 工具 · 桌游库一",
+          "before": 0.9790059027313142,
+          "after": 0.9790059027313142,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "gEUIQ",
+          "name": "探索分区标识 · 工具 · 桌游库二",
+          "before": 1.0024830129205882,
+          "after": 1.0024830129205882,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "g5HIUN",
+          "name": "探索分区标识 · 工具 · 桌游库三",
+          "before": 0.5352826510721248,
+          "after": 0.5352826510721248,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "ZKEe4",
+          "name": "探索分区标识 · 日历方案",
+          "before": 1.0600978336827394,
+          "after": 1.0600978336827394,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "GVHq9",
+          "name": "探索 · 日历 01 · 上下联动 · 4月15日今天",
+          "before": 2.899335682748005,
+          "after": 2.899335682748005,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "WI0bt",
+          "name": "探索 · 日历 02 · 上下联动 · 4月16日选中",
+          "before": 2.9030744926479524,
+          "after": 2.9030744926479524,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "b4RBx",
+          "name": "状态 · 活动详情 · 骨架屏加载中",
+          "before": 0.559703487665573,
+          "after": 0.559703487665573,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "sE1zi",
+          "name": "探索 · 底部导航 · 5等分中央新建入口 · 首页",
+          "before": 5.219731032527241,
+          "after": 5.219731032527241,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "bxNIN",
+          "name": "状态 · 首页 · 骨架屏加载中",
+          "before": 1.1015838295459148,
+          "after": 1.1015838295459148,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "l8JPT0",
+          "name": "状态 · 活动详情 · 编辑活动抽屉 · 新版现代平铺",
+          "before": 15.981222855233774,
+          "after": 15.981222855233774,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "gua20",
+          "name": "状态 · 新建活动 · 1/3 选择封面 · 未选中",
+          "before": 5.463353181836594,
+          "after": 5.463353181836594,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "dn0Yn",
+          "name": "状态 · 新建活动 · 1/3 选择封面 · 已选中",
+          "before": 5.541714262567343,
+          "after": 5.541714262567343,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "h1eYsQ",
+          "name": "状态 · 新建活动 · 2/3 基础信息 · 未填写",
+          "before": 1.781002146878924,
+          "after": 1.781002146878924,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "P2fmOL",
+          "name": "状态 · 新建活动 · 2/3 基础信息 · 已填写",
+          "before": 2.2238506096326,
+          "after": 2.2238506096326,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "Z3muVA",
+          "name": "状态 · 新建活动 · 3/3 时间与人数 · 单项目默认",
+          "before": 1.7688662048851622,
+          "after": 1.7688662048851622,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "X8rqer",
+          "name": "状态 · 新建活动 · 3/3 时间与人数 · 多项目展开",
+          "before": 2.220334589054968,
+          "after": 2.220334589054968,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "w7iTYn",
+          "name": "状态 · 新建活动 · 3/3 时间与人数 · 多项目已输入完成",
+          "before": 2.4616721351318507,
+          "after": 2.4616721351318507,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "styfd",
+          "name": "状态 · 新建活动 · 3/3 时间与人数 · 4个子项目上限",
+          "before": 2.4412362782031027,
+          "after": 2.4412362782031027,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "F2KEFX",
+          "name": "状态 · 编辑活动 · 选择开始时间",
+          "before": 3.3788836229594525,
+          "after": 3.3788836229594525,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "mzb3Z",
+          "name": "状态 · 编辑活动 · 选择结束时间",
+          "before": 3.3869161907076597,
+          "after": 3.3869161907076597,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "v78DZ",
+          "name": "子分区标识 · 首页 · 新建活动",
+          "before": 1.0926595001263808,
+          "after": 1.0926595001263808,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "VG9sB",
+          "name": "状态 · 活动详情 · 编辑活动 · 更换封面抽屉打开",
+          "before": 6.525203548426298,
+          "after": 6.525203548426298,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "WTdTo",
+          "name": "状态 · 活动详情 · 编辑活动 · 未选择封面",
+          "before": 6.455709482723701,
+          "after": 6.455709482723701,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "I2GgZO",
+          "name": "活动分享卡片 · 毛玻璃",
+          "before": 4.646099173553719,
+          "after": 4.646099173553719,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "vFvcH",
+          "name": "状态 · 首页 · 登录提示弹窗",
+          "before": 4.037906590513225,
+          "after": 4.037906590513225,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "P37gp",
+          "name": "状态 · 我的 · 退出登录弹窗",
+          "before": 2.2954915542593266,
+          "after": 2.2954915542593266,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "yl4tW",
+          "name": "状态 · 我的 · 修改个人资料弹窗 · 无提示文案",
+          "before": 3.024968606959128,
+          "after": 3.024968606959128,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "NPxFx",
+          "name": "NPxFx",
+          "before": 3.0475009659638364,
+          "after": 3.0475009659638364,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "eXTHv",
+          "name": "eXTHv",
+          "before": 3.550311111111111,
+          "after": 3.550311111111111,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "f2E2I",
+          "name": "页面 · 我的 · 彩虹会员融合 · 未登录",
+          "before": 2.2427998541742618,
+          "after": 2.2427998541742618,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "D3WX9",
+          "name": "页面 · 记忆",
+          "before": 9.87638838254952,
+          "after": 9.87638838254952,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "je1iX",
+          "name": "页面 · 上传记忆",
+          "before": 3.0340300563049376,
+          "after": 3.0340300563049376,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "LAi4I",
+          "name": "分区标识 · 记忆 Tab",
+          "before": 0.4371886941136239,
+          "after": 0.4371886941136239,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "ptSzf",
+          "name": "状态 · 记忆 · 图片预览",
+          "before": 8.547539190667154,
+          "after": 8.547539190667154,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "U8Nbr",
+          "name": "状态 · 记忆 · 视频预览 · 暂停 · 松手后小进度条 3秒",
+          "before": 7.60821079920606,
+          "after": 7.60821079920606,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "WdzA7",
+          "name": "状态 · 记忆 · 视频预览 · 播放中 · 默认隐藏进度条",
+          "before": 7.229144894073804,
+          "after": 7.229144894073804,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "TVIe9",
+          "name": "状态 · 记忆 · 图片预览 · 横图上下黑边",
+          "before": 5.214590675254183,
+          "after": 5.214590675254183,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "A0ClSv",
+          "name": "状态 · 记忆 · 视频预览 · 横视频上下黑边 · 默认隐藏进度条",
+          "before": 5.817114270668773,
+          "after": 5.817114270668773,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "DEAKm",
+          "name": "子分区标识 · 记忆 · 图片预览",
+          "before": 1.096406322018526,
+          "after": 1.096406322018526,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "WpiZu",
+          "name": "子分区标识 · 记忆 · 竖屏视频",
+          "before": 1.1576787546277711,
+          "after": 1.1576787546277711,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "wyXo4",
+          "name": "子分区标识 · 首页 · 多子项目",
+          "before": 0.9592458777525016,
+          "after": 0.9592458777525016,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "Q45pd",
+          "name": "子分区标识 · 我的 · 管理员",
+          "before": 0.8111869396494045,
+          "after": 0.8111869396494045,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "ZDNWD",
+          "name": "页面 · 内容审核 · 待审批列表",
+          "before": 5.341402357516102,
+          "after": 5.341402357516102,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "yxYd9",
+          "name": "状态 · 内容审核 · 视频预览 · 默认隐藏进度条",
+          "before": 5.4569611536436184,
+          "after": 5.4569611536436184,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "Z2hAqy",
+          "name": "子分区标识 · 我的 · 弹窗状态",
+          "before": 1.0715464561309604,
+          "after": 1.0715464561309604,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "ZG2ZJ",
+          "name": "状态 · 内容审核 · 备注展开",
+          "before": 6.250832421922469,
+          "after": 6.250832421922469,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "Qg9ug",
+          "name": "状态 · 内容审核 · 空状态",
+          "before": 1.2126989913719772,
+          "after": 1.2126989913719772,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "qAMWN",
+          "name": "素材 · 缺省图 · 翻找东西的小龙（插图）",
+          "before": 2.17875,
+          "after": 2.17875,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "sDA8t",
+          "name": "子分区标识 · 内容审核",
+          "before": 1.0265399884026942,
+          "after": 1.0265399884026942,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "xuqNi",
+          "name": "状态 · 内容审核 · 图片预览",
+          "before": 5.066727427390934,
+          "after": 5.066727427390934,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "l2Ubhx",
+          "name": "状态 · 记忆 · 图片预览 · 放大 200%",
+          "before": 7.696172074371127,
+          "after": 7.696172074371127,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "qV8N5",
+          "name": "状态 · 记忆 · 视频预览 · 横屏播放 · 播放中",
+          "before": 7.396362457973832,
+          "after": 7.396362457973832,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "VzzYQ",
+          "name": "状态 · 内容审核 · 图片预览 · 放大 200%",
+          "before": 4.442816057034067,
+          "after": 4.442816057034067,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "nOSnP",
+          "name": "状态 · 记忆投稿 · 未完成",
+          "before": 1.475938753189938,
+          "after": 1.475938753189938,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "W9qcw",
+          "name": "状态 · 记忆 · 视频预览 · 横屏播放 · 暂停",
+          "before": 7.381609754121603,
+          "after": 7.381609754121603,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "NKGiz",
+          "name": "状态 · 记忆 · 视频预览 · 横屏播放 · 拖动快进",
+          "before": 7.438408879167173,
+          "after": 7.438408879167173,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "TYBwe",
+          "name": "状态 · 记忆 · 视频预览 · 横屏播放 · 拖动快退",
+          "before": 7.433754607688257,
+          "after": 7.433754607688257,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "PnVau",
+          "name": "探索 · 活动详情 F · 编辑节目单",
+          "before": 5.7386762263539515,
+          "after": 5.7386762263539515,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "rnJW6",
+          "name": "探索 · 活动详情 G · 适配推荐",
+          "before": 4.122813626605096,
+          "after": 4.122813626605096,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "fLHGc",
+          "name": "探索 · 活动详情 I · 系列仪式",
+          "before": 4.945995868270749,
+          "after": 4.945995868270749,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "sRdvt",
+          "name": "探索 · 活动详情 B · 高效决策",
+          "before": 4.8305788471665245,
+          "after": 4.8305788471665245,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "ImTfR",
+          "name": "探索 · 活动详情 C · 社交参与",
+          "before": 5.33349131121643,
+          "after": 5.33349131121643,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "ITk5L",
+          "name": "活动天气 · 五项紧凑长条",
+          "before": 3.9966957153231664,
+          "after": 3.9966957153231664,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "KHPGJ",
+          "name": "活动天气 · 编辑简报卡片 · 方案三",
+          "before": 4.91694306246545,
+          "after": 4.91694306246545,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "jXag2",
+          "name": "活动天气 · 罗盘信息卡片 · 方案四",
+          "before": 5.9608075288403155,
+          "after": 5.9608075288403155,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "Mlljc",
+          "name": "探索分区标识 · 活动详情方案一",
+          "before": 1.0833370504185438,
+          "after": 1.0833370504185438,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "f8NZh",
+          "name": "探索分区标识 · 活动详情方案二",
+          "before": 1.0833370504185438,
+          "after": 1.0833370504185438,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "drX5q",
+          "name": "探索分区标识 · 活动详情方案三",
+          "before": 1.0833370504185438,
+          "after": 1.0833370504185438,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "zyDdb",
+          "name": "分区标识 · 独立探索区（非主流程）",
+          "before": 0.5182211517016816,
+          "after": 0.5182211517016816,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "JwTSh",
+          "name": "JwTSh",
+          "before": 18.90909090909091,
+          "after": 18.90909090909091,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "M6gJo",
+          "name": "M6gJo",
+          "before": 18,
+          "after": 18,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "j9x9uR",
+          "name": "横向桌游切换列表",
+          "before": 20.028303872053872,
+          "after": 20.028303872053872,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "Z4JTyn",
+          "name": "探索分区标识 · 工具 · 桌游库三",
+          "before": 0.5352826510721248,
+          "after": 0.5352826510721248,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "oIcdz",
+          "name": "流程 · 桌游库搜索页 · 默认",
+          "before": 1.782504962125815,
+          "after": 1.782504962125815,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "h5lda",
+          "name": "流程 · 桌游库搜索页 · 输入中",
+          "before": 1.1245918904686678,
+          "after": 1.1245918904686678,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "nvq0n",
+          "name": "流程 · 桌游库搜索结果页 · 有结果",
+          "before": 3.7819743184672094,
+          "after": 3.7819743184672094,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "UKaDX",
+          "name": "流程 · 桌游库搜索结果页 · 无结果",
+          "before": 1.812609875643051,
+          "after": 1.812609875643051,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "i4dBW",
+          "name": "成功桌游卡片",
+          "before": 0.1640307418699187,
+          "after": 0.1640307418699187,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "q8PNm",
+          "name": "成功桌游封面",
+          "before": 13.827149041434756,
+          "after": 13.827149041434756,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "JNn09",
+          "name": "流程 03 · 名称搜索结果 · 骨架加载中",
+          "before": 0.7600275448616681,
+          "after": 0.7600275448616681,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "CXmSf",
+          "name": "状态 · 上传记忆 · 投稿说明弹窗",
+          "before": 2.969583181431523,
+          "after": 2.969583181431523,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "OwoFu",
+          "name": "状态 · 记忆 · 视频预览 · 拖动中大进度条",
+          "before": 5.759513104062867,
+          "after": 5.759513104062867,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "DcdID",
+          "name": "状态 · 记忆 · 视频预览 · 播放中 · 松手后小进度条 3秒",
+          "before": 7.529306922671852,
+          "after": 7.529306922671852,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "m5AESz",
+          "name": "状态 · 记忆 · 视频预览 · 横视频上下黑边 · 松手后小进度条 3秒",
+          "before": 6.052659294365456,
+          "after": 6.052659294365456,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "bJi5P",
+          "name": "状态 · 内容审核 · 视频预览 · 松手后小进度条 3秒",
+          "before": 5.481836594158869,
+          "after": 5.481836594158869,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "qyZEu",
+          "name": "状态 · 内容审核 · 视频预览 · 拖动中大进度条",
+          "before": 4.255150484060437,
+          "after": 4.255150484060437,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "UCCFa",
+          "name": "子分区标识 · 记忆 · 适宽视频",
+          "before": 1.1610092629763444,
+          "after": 1.1610092629763444,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "GSa57",
+          "name": "子分区标识 · 记忆 · 横屏播放",
+          "before": 2.406783468104223,
+          "after": 2.406783468104223,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "FpujU",
+          "name": "子分区标识 · 内容审核 · 图片预览",
+          "before": 1.0472069821728593,
+          "after": 1.0472069821728593,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "bKxXm",
+          "name": "子分区标识 · 内容审核 · 视频预览",
+          "before": 1.1459327653627132,
+          "after": 1.1459327653627132,
+          "change": 0,
+          "sameSize": true
+        },
+        {
+          "id": "aFkLU",
+          "name": "活动天气 · 气象信号台 · 方案五",
+          "before": 4.277140255009107,
+          "after": 4.301396478445659,
+          "change": 0.024256223436551316,
+          "sameSize": true
+        },
+        {
+          "id": "R06j1",
+          "name": "成功桌游名称",
+          "before": 40.23364197530864,
+          "after": 46.34475308641975,
+          "change": 6.111111111111107,
+          "sameSize": true
+        }
+      ]
+    },
+    "components": {
+      "componentsCompared": 93,
+      "improvedOverPointOne": 5,
+      "regressedOverPointOne": 0,
+      "normalizedTransparentMarginCount": 2,
+      "details": [
+        {
+          "id": "nX3OK",
+          "name": "component/二级页面一级标题",
+          "before": 25.98777777777778,
+          "after": 12.024444444444445,
+          "change": -13.963333333333335,
+          "beforeSize": [
+            350,
+            24
+          ],
+          "afterRawSize": [
+            350,
+            28
+          ],
+          "afterNormalizedSize": [
+            350,
+            24
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            2
+          ]
+        },
+        {
+          "id": "O5XQF",
+          "name": "component/基本信息组件 · 默认状态",
+          "before": 4.98135310420899,
+          "after": 4.268535777698657,
+          "change": -0.7128173265103328,
+          "beforeSize": [
+            359,
+            399
+          ],
+          "afterRawSize": [
+            359,
+            401
+          ],
+          "afterNormalizedSize": [
+            359,
+            399
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            2
+          ]
+        },
+        {
+          "id": "BWQQm",
+          "name": "component/基本信息组件 · 无定位且天气不可用",
+          "before": 4.824151837346384,
+          "after": 4.1349031818171245,
+          "change": -0.6892486555292594,
+          "beforeSize": [
+            358,
+            398
+          ],
+          "afterRawSize": [
+            358,
+            398
+          ],
+          "afterNormalizedSize": [
+            358,
+            398
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "IkwrC",
+          "name": "component/基本信息组件 · 空气质量缺失",
+          "before": 4.824240266404172,
+          "after": 4.134991610874913,
+          "change": -0.6892486555292594,
+          "beforeSize": [
+            358,
+            398
+          ],
+          "afterRawSize": [
+            358,
+            398
+          ],
+          "afterNormalizedSize": [
+            358,
+            398
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "fKzdh",
+          "name": "component/第一名近12周活跃图",
+          "before": 2.228909657320872,
+          "after": 2.0752492211838005,
+          "change": -0.1536604361370717,
+          "beforeSize": [
+            214,
+            200
+          ],
+          "afterRawSize": [
+            214,
+            200
+          ],
+          "afterNormalizedSize": [
+            214,
+            200
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "aAmUO",
+          "name": "component/可选子项目 · 4项上限",
+          "before": 0.761344475512625,
+          "after": 0.761344475512625,
+          "change": 0,
+          "beforeSize": [
+            1124,
+            280
+          ],
+          "afterRawSize": [
+            1124,
+            280
+          ],
+          "afterNormalizedSize": [
+            1124,
+            280
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "AHpS7",
+          "name": "component/活动封面 · 已选中",
+          "before": 3.090213675213675,
+          "after": 3.090213675213675,
+          "change": 0,
+          "beforeSize": [
+            390,
+            300
+          ],
+          "afterRawSize": [
+            390,
+            300
+          ],
+          "afterNormalizedSize": [
+            390,
+            300
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "APCln",
+          "name": "component/记忆底部信息 · 无活动 · 无位置",
+          "before": 0.785747982619491,
+          "after": 0.785747982619491,
+          "change": 0,
+          "beforeSize": [
+            358,
+            75
+          ],
+          "afterRawSize": [
+            358,
+            75
+          ],
+          "afterNormalizedSize": [
+            358,
+            75
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "ArOej",
+          "name": "component/活动备注 · 新版",
+          "before": 0.8052370351702509,
+          "after": 0.8052370351702509,
+          "change": 0,
+          "beforeSize": [
+            744,
+            128
+          ],
+          "afterRawSize": [
+            744,
+            128
+          ],
+          "afterNormalizedSize": [
+            744,
+            128
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "B7oWX",
+          "name": "component/活动大卡-桌游蓝色头像",
+          "before": 4.235898789768346,
+          "after": 4.235898789768346,
+          "change": 0,
+          "beforeSize": [
+            244,
+            326
+          ],
+          "afterRawSize": [
+            244,
+            326
+          ],
+          "afterNormalizedSize": [
+            244,
+            326
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "byNdW",
+          "name": "component/记忆底部信息 · 有活动 · 无位置",
+          "before": 0.5953200534206121,
+          "after": 0.5953200534206121,
+          "change": 0,
+          "beforeSize": [
+            358,
+            99
+          ],
+          "afterRawSize": [
+            358,
+            99
+          ],
+          "afterNormalizedSize": [
+            358,
+            99
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "c852G",
+          "name": "component/记忆底部信息 · 展开态",
+          "before": 0.3328419201324229,
+          "after": 0.3328419201324229,
+          "change": 0,
+          "beforeSize": [
+            358,
+            180
+          ],
+          "afterRawSize": [
+            358,
+            180
+          ],
+          "afterNormalizedSize": [
+            358,
+            180
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "COYbV",
+          "name": "component/居中弹窗 · 黄色警告 · 双按钮",
+          "before": 7.7417764857881135,
+          "after": 7.7417764857881135,
+          "change": 0,
+          "beforeSize": [
+            300,
+            172
+          ],
+          "afterRawSize": [
+            300,
+            172
+          ],
+          "afterNormalizedSize": [
+            300,
+            172
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "cp7i1",
+          "name": "component/小程序底部功能栏 · 单主按钮",
+          "before": 0.9894751244566533,
+          "after": 0.9894751244566533,
+          "change": 0,
+          "beforeSize": [
+            391,
+            81
+          ],
+          "afterRawSize": [
+            391,
+            81
+          ],
+          "afterNormalizedSize": [
+            391,
+            81
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "d468yw",
+          "name": "component/沉浸主视觉信息 · 副标题展开",
+          "before": 0.10227513227513227,
+          "after": 0.10227513227513227,
+          "change": 0,
+          "beforeSize": [
+            350,
+            216
+          ],
+          "afterRawSize": [
+            350,
+            216
+          ],
+          "afterNormalizedSize": [
+            350,
+            216
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "d647D3",
+          "name": "component/双项切换 Tab · 鸽子榜选中",
+          "before": 1.7905027932960893,
+          "after": 1.7905027932960893,
+          "change": 0,
+          "beforeSize": [
+            358,
+            40
+          ],
+          "afterRawSize": [
+            358,
+            40
+          ],
+          "afterNormalizedSize": [
+            358,
+            40
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "d8jLH",
+          "name": "component/活动地点选择项 · 未完成",
+          "before": 0.19739390472749896,
+          "after": 0.19739390472749896,
+          "change": 0,
+          "beforeSize": [
+            1126,
+            59
+          ],
+          "afterRawSize": [
+            1126,
+            59
+          ],
+          "afterNormalizedSize": [
+            1126,
+            59
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "diyU1",
+          "name": "component/小程序二级页标题栏 · 深色主视觉",
+          "before": 0.3664918414918415,
+          "after": 0.3664918414918415,
+          "change": 0,
+          "beforeSize": [
+            390,
+            88
+          ],
+          "afterRawSize": [
+            390,
+            88
+          ],
+          "afterNormalizedSize": [
+            390,
+            88
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "e9gGO",
+          "name": "component/Bento Input",
+          "before": 0.2792660318939328,
+          "after": 0.2792660318939328,
+          "change": 0,
+          "beforeSize": [
+            1126,
+            61
+          ],
+          "afterRawSize": [
+            1126,
+            61
+          ],
+          "afterNormalizedSize": [
+            1126,
+            61
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "EoArr",
+          "name": "component/小程序底部导航/我的选中",
+          "before": 5.385873246250605,
+          "after": 5.385873246250605,
+          "change": 0,
+          "beforeSize": [
+            390,
+            53
+          ],
+          "afterRawSize": [
+            390,
+            53
+          ],
+          "afterNormalizedSize": [
+            390,
+            53
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "FJeaK",
+          "name": "component/活动名称 · 新版",
+          "before": 0.48631985174323883,
+          "after": 0.48631985174323883,
+          "change": 0,
+          "beforeSize": [
+            744,
+            88
+          ],
+          "afterRawSize": [
+            744,
+            88
+          ],
+          "afterNormalizedSize": [
+            744,
+            88
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "G2zar",
+          "name": "component/现场点名表内容 · 默认状态",
+          "before": 1.7709880483739404,
+          "after": 1.7709880483739404,
+          "change": 0,
+          "beforeSize": [
+            390,
+            482
+          ],
+          "afterRawSize": [
+            390,
+            482
+          ],
+          "afterNormalizedSize": [
+            390,
+            482
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "GUfJu",
+          "name": "component/活动大卡-桌游黄色头像",
+          "before": 3.201657782694693,
+          "after": 3.201657782694693,
+          "change": 0,
+          "beforeSize": [
+            244,
+            326
+          ],
+          "afterRawSize": [
+            244,
+            326
+          ],
+          "afterNormalizedSize": [
+            244,
+            326
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "GzQbp",
+          "name": "component/活动时间 · 新版",
+          "before": 0.2725655127790359,
+          "after": 0.2725655127790359,
+          "change": 0,
+          "beforeSize": [
+            1124,
+            88
+          ],
+          "afterRawSize": [
+            1124,
+            88
+          ],
+          "afterNormalizedSize": [
+            1124,
+            88
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "Hae5C",
+          "name": "component/页面底部安全区 · Touch Bar",
+          "before": 0.007827260458839407,
+          "after": 0.007827260458839407,
+          "change": 0,
+          "beforeSize": [
+            390,
+            38
+          ],
+          "afterRawSize": [
+            390,
+            38
+          ],
+          "afterNormalizedSize": [
+            390,
+            38
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "hyWsK",
+          "name": "component/记忆底部信息 · 超长活动名",
+          "before": 0.4431724516897152,
+          "after": 0.4431724516897152,
+          "change": 0,
+          "beforeSize": [
+            358,
+            122
+          ],
+          "afterRawSize": [
+            358,
+            122
+          ],
+          "afterNormalizedSize": [
+            358,
+            122
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "I9dt5U",
+          "name": "component/活动封面 · 未选中状态",
+          "before": 4.850956981407219,
+          "after": 4.850956981407219,
+          "change": 0,
+          "beforeSize": [
+            390,
+            844
+          ],
+          "afterRawSize": [
+            390,
+            844
+          ],
+          "afterNormalizedSize": [
+            390,
+            844
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "IcR7J",
+          "name": "component/Bento Stepper",
+          "before": 0.45339754975634194,
+          "after": 0.45339754975634194,
+          "change": 0,
+          "beforeSize": [
+            1126,
+            52
+          ],
+          "afterRawSize": [
+            1126,
+            52
+          ],
+          "afterNormalizedSize": [
+            1126,
+            52
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "ihvbF",
+          "name": "component/小程序顶部导航",
+          "before": 3.103321678321678,
+          "after": 3.103321678321678,
+          "change": 0,
+          "beforeSize": [
+            390,
+            88
+          ],
+          "afterRawSize": [
+            390,
+            88
+          ],
+          "afterNormalizedSize": [
+            390,
+            88
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "jJtH9",
+          "name": "component/活动封面选择项 · 未完成",
+          "before": 2.213346941698897,
+          "after": 2.213346941698897,
+          "change": 0,
+          "beforeSize": [
+            358,
+            52
+          ],
+          "afterRawSize": [
+            358,
+            52
+          ],
+          "afterNormalizedSize": [
+            358,
+            52
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "JTKXJ",
+          "name": "component/天气 Icon · 雾霾",
+          "before": 0.5485711353958237,
+          "after": 0.5485711353958237,
+          "change": 0,
+          "beforeSize": [
+            365,
+            89
+          ],
+          "afterRawSize": [
+            365,
+            89
+          ],
+          "afterNormalizedSize": [
+            365,
+            89
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "jwoRQ",
+          "name": "component/Bento Textarea · 已填写",
+          "before": 4.285962834855048,
+          "after": 4.285962834855048,
+          "change": 0,
+          "beforeSize": [
+            1126,
+            171
+          ],
+          "afterRawSize": [
+            1126,
+            171
+          ],
+          "afterNormalizedSize": [
+            1126,
+            171
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "k8TO1",
+          "name": "component/参与人数 · 新版",
+          "before": 0.19391310794780545,
+          "after": 0.19391310794780545,
+          "change": 0,
+          "beforeSize": [
+            1124,
+            88
+          ],
+          "afterRawSize": [
+            1124,
+            88
+          ],
+          "afterNormalizedSize": [
+            1124,
+            88
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "Ki394",
+          "name": "component/日历周选择器",
+          "before": 1.5774647887323943,
+          "after": 1.5774647887323943,
+          "change": 0,
+          "beforeSize": [
+            390,
+            71
+          ],
+          "afterRawSize": [
+            390,
+            71
+          ],
+          "afterNormalizedSize": [
+            390,
+            71
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "kj9i8",
+          "name": "component/天气 Icon · 下雨",
+          "before": 0.49809655738545994,
+          "after": 0.49809655738545994,
+          "change": 0,
+          "beforeSize": [
+            365,
+            89
+          ],
+          "afterRawSize": [
+            365,
+            89
+          ],
+          "afterNormalizedSize": [
+            365,
+            89
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "klCrN",
+          "name": "component/Picker View Date · 5项居中",
+          "before": 1.1478761978761978,
+          "after": 1.1478761978761978,
+          "change": 0,
+          "beforeSize": [
+            390,
+            396
+          ],
+          "afterRawSize": [
+            390,
+            396
+          ],
+          "afterNormalizedSize": [
+            390,
+            396
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "kRcAz",
+          "name": "component/Picker View Time · 5项居中",
+          "before": 0.7988927738927739,
+          "after": 0.7988927738927739,
+          "change": 0,
+          "beforeSize": [
+            390,
+            396
+          ],
+          "afterRawSize": [
+            390,
+            396
+          ],
+          "afterNormalizedSize": [
+            390,
+            396
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "L1Y8qc",
+          "name": "component/沉浸主视觉信息 · 副标题折叠",
+          "before": 0.12359605911330049,
+          "after": 0.12359605911330049,
+          "change": 0,
+          "beforeSize": [
+            350,
+            116
+          ],
+          "afterRawSize": [
+            350,
+            116
+          ],
+          "afterNormalizedSize": [
+            350,
+            116
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "L38Nln",
+          "name": "component/活动地点选择项 · 已完成",
+          "before": 0.6036078092028359,
+          "after": 0.6036078092028359,
+          "change": 0,
+          "beforeSize": [
+            1126,
+            78
+          ],
+          "afterRawSize": [
+            1126,
+            78
+          ],
+          "afterNormalizedSize": [
+            1126,
+            78
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "Li595",
+          "name": "component/现场点名表内容 · 左滑取签删除",
+          "before": 1.7746302798170017,
+          "after": 1.7746302798170017,
+          "change": 0,
+          "beforeSize": [
+            390,
+            482
+          ],
+          "afterRawSize": [
+            390,
+            482
+          ],
+          "afterNormalizedSize": [
+            390,
+            482
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "lzf0Z",
+          "name": "component/Bento Date Time · 已填写",
+          "before": 0.9011057030595219,
+          "after": 0.9011057030595219,
+          "change": 0,
+          "beforeSize": [
+            1126,
+            77
+          ],
+          "afterRawSize": [
+            1126,
+            77
+          ],
+          "afterNormalizedSize": [
+            1126,
+            77
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "m6VmVP",
+          "name": "component/小程序底部导航/排行选中",
+          "before": 5.24936300596678,
+          "after": 5.24936300596678,
+          "change": 0,
+          "beforeSize": [
+            390,
+            53
+          ],
+          "afterRawSize": [
+            390,
+            53
+          ],
+          "afterNormalizedSize": [
+            390,
+            53
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "MaprC",
+          "name": "component/沉浸主视觉信息 · 未开始",
+          "before": 0.11160919540229886,
+          "after": 0.11160919540229886,
+          "change": 0,
+          "beforeSize": [
+            350,
+            116
+          ],
+          "afterRawSize": [
+            350,
+            116
+          ],
+          "afterNormalizedSize": [
+            350,
+            116
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "mHmfV",
+          "name": "component/小程序底部功能栏 · 详情操作 · 无编辑 · 报名不可用",
+          "before": 2.484113247863248,
+          "after": 2.484113247863248,
+          "change": 0,
+          "beforeSize": [
+            390,
+            80
+          ],
+          "afterRawSize": [
+            390,
+            80
+          ],
+          "afterNormalizedSize": [
+            390,
+            80
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "mkywX",
+          "name": "component/小程序底部功能栏 · 详情操作 · 无编辑",
+          "before": 1.022702156546999,
+          "after": 1.022702156546999,
+          "change": 0,
+          "beforeSize": [
+            391,
+            81
+          ],
+          "afterRawSize": [
+            391,
+            81
+          ],
+          "afterNormalizedSize": [
+            391,
+            81
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "MYEZj",
+          "name": "component/视频拖动进度 · 间距36",
+          "before": 0,
+          "after": 0,
+          "change": 0,
+          "beforeSize": [
+            390,
+            82
+          ],
+          "afterRawSize": [
+            390,
+            82
+          ],
+          "afterNormalizedSize": [
+            390,
+            82
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "n6MtSK",
+          "name": "component/沉浸主视觉信息 · 默认状态",
+          "before": 0.1690065681444992,
+          "after": 0.1690065681444992,
+          "change": 0,
+          "beforeSize": [
+            350,
+            116
+          ],
+          "afterRawSize": [
+            350,
+            116
+          ],
+          "afterNormalizedSize": [
+            350,
+            116
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "NbwxR",
+          "name": "component/小程序底部功能栏 · 详情操作 · 无编辑 · 取消报名",
+          "before": 4.839594017094017,
+          "after": 4.839594017094017,
+          "change": 0,
+          "beforeSize": [
+            390,
+            80
+          ],
+          "afterRawSize": [
+            390,
+            80
+          ],
+          "afterNormalizedSize": [
+            390,
+            80
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "O0IYzo",
+          "name": "component/一级抽屉页 · 最低高度",
+          "before": 0.6319349477682811,
+          "after": 0.6319349477682811,
+          "change": 0,
+          "beforeSize": [
+            390,
+            360
+          ],
+          "afterRawSize": [
+            390,
+            360
+          ],
+          "afterNormalizedSize": [
+            390,
+            360
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "O4ah4",
+          "name": "component/Bento Switch Row",
+          "before": 0.27067108439222115,
+          "after": 0.27067108439222115,
+          "change": 0,
+          "beforeSize": [
+            1126,
+            52
+          ],
+          "afterRawSize": [
+            1126,
+            52
+          ],
+          "afterNormalizedSize": [
+            1126,
+            52
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "O6lYf",
+          "name": "component/活动封面选择抽屉",
+          "before": 3.2561348528015195,
+          "after": 3.2561348528015195,
+          "change": 0,
+          "beforeSize": [
+            390,
+            720
+          ],
+          "afterRawSize": [
+            390,
+            720
+          ],
+          "afterNormalizedSize": [
+            390,
+            720
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "ofy7y",
+          "name": "component/天气 Icon · 多云",
+          "before": 0.4635164947924683,
+          "after": 0.4635164947924683,
+          "change": 0,
+          "beforeSize": [
+            365,
+            89
+          ],
+          "afterRawSize": [
+            365,
+            89
+          ],
+          "afterNormalizedSize": [
+            365,
+            89
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "OKWLZ",
+          "name": "component/记忆关联活动行",
+          "before": 0,
+          "after": 0,
+          "change": 0,
+          "beforeSize": [
+            358,
+            16
+          ],
+          "afterRawSize": [
+            358,
+            16
+          ],
+          "afterNormalizedSize": [
+            358,
+            16
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "pArzx",
+          "name": "component/双项切换 Tab · 活动榜选中",
+          "before": 1.7464385474860336,
+          "after": 1.7464385474860336,
+          "change": 0,
+          "beforeSize": [
+            358,
+            40
+          ],
+          "afterRawSize": [
+            358,
+            40
+          ],
+          "afterNormalizedSize": [
+            358,
+            40
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "pbfyp",
+          "name": "component/Bento Input · 已填写",
+          "before": 0.43277135563773306,
+          "after": 0.43277135563773306,
+          "change": 0,
+          "beforeSize": [
+            1126,
+            61
+          ],
+          "afterRawSize": [
+            1126,
+            61
+          ],
+          "afterNormalizedSize": [
+            1126,
+            61
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "pSBh3",
+          "name": "component/可选子项目 · 多项目已填写",
+          "before": 0.7381491722136884,
+          "after": 0.7381491722136884,
+          "change": 0,
+          "beforeSize": [
+            1125,
+            217
+          ],
+          "afterRawSize": [
+            1125,
+            217
+          ],
+          "afterNormalizedSize": [
+            1125,
+            217
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "PuzNk",
+          "name": "component/记忆底部信息 · 短文案",
+          "before": 0.4909866593399884,
+          "after": 0.4909866593399884,
+          "change": 0,
+          "beforeSize": [
+            358,
+            122
+          ],
+          "afterRawSize": [
+            358,
+            122
+          ],
+          "afterNormalizedSize": [
+            358,
+            122
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "Q5Y4or",
+          "name": "component/Bento Date Time",
+          "before": 0.5310104342075923,
+          "after": 0.5310104342075923,
+          "change": 0,
+          "beforeSize": [
+            1126,
+            77
+          ],
+          "afterRawSize": [
+            1126,
+            77
+          ],
+          "afterNormalizedSize": [
+            1126,
+            77
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "RMrYv",
+          "name": "component/活动小卡-桌游黄色头像",
+          "before": 2.5967461340206186,
+          "after": 2.5967461340206186,
+          "change": 0,
+          "beforeSize": [
+            160,
+            194
+          ],
+          "afterRawSize": [
+            160,
+            194
+          ],
+          "afterNormalizedSize": [
+            160,
+            194
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "S2b7nH",
+          "name": "component/天气 Icon · 晴天",
+          "before": 0.579611102560156,
+          "after": 0.579611102560156,
+          "change": 0,
+          "beforeSize": [
+            365,
+            89
+          ],
+          "afterRawSize": [
+            365,
+            89
+          ],
+          "afterNormalizedSize": [
+            365,
+            89
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "s6Szm",
+          "name": "component/记忆底部信息 · 两行截断",
+          "before": 0.17733717197335802,
+          "after": 0.17733717197335802,
+          "change": 0,
+          "beforeSize": [
+            358,
+            163
+          ],
+          "afterRawSize": [
+            358,
+            163
+          ],
+          "afterNormalizedSize": [
+            358,
+            163
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "sA8B2",
+          "name": "component/活动大卡-电影图片",
+          "before": 4.949675651211908,
+          "after": 4.949675651211908,
+          "change": 0,
+          "beforeSize": [
+            244,
+            326
+          ],
+          "afterRawSize": [
+            244,
+            326
+          ],
+          "afterNormalizedSize": [
+            244,
+            326
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "sEQR9",
+          "name": "component/Picker View Date Time · 5项居中",
+          "before": 1.3257187257187257,
+          "after": 1.3257187257187257,
+          "change": 0,
+          "beforeSize": [
+            390,
+            396
+          ],
+          "afterRawSize": [
+            390,
+            396
+          ],
+          "afterNormalizedSize": [
+            390,
+            396
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "SirYI",
+          "name": "component/现场点名表内容 · 左滑补卡删除",
+          "before": 1.1075149838635316,
+          "after": 1.1075149838635316,
+          "change": 0,
+          "beforeSize": [
+            390,
+            482
+          ],
+          "afterRawSize": [
+            390,
+            482
+          ],
+          "afterNormalizedSize": [
+            390,
+            482
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "SUsjV",
+          "name": "工具列表 · 可扩展",
+          "before": 5.329649517149517,
+          "after": 5.329649517149517,
+          "change": 0,
+          "beforeSize": [
+            572,
+            140
+          ],
+          "afterRawSize": [
+            572,
+            140
+          ],
+          "afterNormalizedSize": [
+            572,
+            140
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "SvQjt",
+          "name": "component/小程序底部导航/首页选中",
+          "before": 5.384260603128528,
+          "after": 5.384260603128528,
+          "change": 0,
+          "beforeSize": [
+            390,
+            53
+          ],
+          "afterRawSize": [
+            390,
+            53
+          ],
+          "afterNormalizedSize": [
+            390,
+            53
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "syhHC",
+          "name": "component/Bento Textarea",
+          "before": 0.34729164084982167,
+          "after": 0.34729164084982167,
+          "change": 0,
+          "beforeSize": [
+            1126,
+            86
+          ],
+          "afterRawSize": [
+            1126,
+            86
+          ],
+          "afterNormalizedSize": [
+            1126,
+            86
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "ThcXR",
+          "name": "component/活动封面选择项 · 已完成",
+          "before": 3.512874230053001,
+          "after": 3.512874230053001,
+          "change": 0,
+          "beforeSize": [
+            358,
+            52
+          ],
+          "afterRawSize": [
+            358,
+            52
+          ],
+          "afterNormalizedSize": [
+            358,
+            52
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "ti8tC",
+          "name": "component/活动地点 · 新版",
+          "before": 0.527482486151841,
+          "after": 0.527482486151841,
+          "change": 0,
+          "beforeSize": [
+            744,
+            88
+          ],
+          "afterRawSize": [
+            744,
+            88
+          ],
+          "afterNormalizedSize": [
+            744,
+            88
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "TidBI",
+          "name": "component/天气 Icon · 沙尘",
+          "before": 0.6503617054024935,
+          "after": 0.6503617054024935,
+          "change": 0,
+          "beforeSize": [
+            365,
+            89
+          ],
+          "afterRawSize": [
+            365,
+            89
+          ],
+          "afterNormalizedSize": [
+            365,
+            89
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "tsZk3",
+          "name": "component/居中弹窗 · 红色报警 · 双按钮",
+          "before": 7.614308785529715,
+          "after": 7.614308785529715,
+          "change": 0,
+          "beforeSize": [
+            300,
+            172
+          ],
+          "afterRawSize": [
+            300,
+            172
+          ],
+          "afterNormalizedSize": [
+            300,
+            172
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "TUv2Z",
+          "name": "component/居中弹窗 · 绿色提示 · 单按钮",
+          "before": 7.017978036175711,
+          "after": 7.017978036175711,
+          "change": 0,
+          "beforeSize": [
+            300,
+            172
+          ],
+          "afterRawSize": [
+            300,
+            172
+          ],
+          "afterNormalizedSize": [
+            300,
+            172
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "U08cIO",
+          "name": "component/一级抽屉页 · 最高高度",
+          "before": 0.3177207977207977,
+          "after": 0.3177207977207977,
+          "change": 0,
+          "beforeSize": [
+            390,
+            720
+          ],
+          "afterRawSize": [
+            390,
+            720
+          ],
+          "afterNormalizedSize": [
+            390,
+            720
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "uE5GP",
+          "name": "component/小程序底部功能栏 · 双按钮",
+          "before": 1.767252902234431,
+          "after": 1.767252902234431,
+          "change": 0,
+          "beforeSize": [
+            391,
+            81
+          ],
+          "afterRawSize": [
+            391,
+            81
+          ],
+          "afterNormalizedSize": [
+            391,
+            81
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "uPX7C",
+          "name": "component/天气 Icon · 降雪",
+          "before": 0.6073675029500796,
+          "after": 0.6073675029500796,
+          "change": 0,
+          "beforeSize": [
+            365,
+            89
+          ],
+          "afterRawSize": [
+            365,
+            89
+          ],
+          "afterNormalizedSize": [
+            365,
+            89
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "V9wMS0",
+          "name": "component/桌游扇形牌阵舞台",
+          "before": 6.406377668308703,
+          "after": 6.406377668308703,
+          "change": 0,
+          "beforeSize": [
+            350,
+            435
+          ],
+          "afterRawSize": [
+            350,
+            435
+          ],
+          "afterNormalizedSize": [
+            350,
+            435
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "vt7j2",
+          "name": "component/一级页面一级标题",
+          "before": 2.7489880952380954,
+          "after": 2.7489880952380954,
+          "change": 0,
+          "beforeSize": [
+            200,
+            28
+          ],
+          "afterRawSize": [
+            200,
+            28
+          ],
+          "afterNormalizedSize": [
+            200,
+            28
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "vtT8F",
+          "name": "component/小程序底部导航/记忆选中",
+          "before": 4.4252539912917275,
+          "after": 4.4252539912917275,
+          "change": 0,
+          "beforeSize": [
+            390,
+            53
+          ],
+          "afterRawSize": [
+            390,
+            53
+          ],
+          "afterNormalizedSize": [
+            390,
+            53
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "VXHpi",
+          "name": "component/活动小卡-图片素材",
+          "before": 6.475332903780068,
+          "after": 6.475332903780068,
+          "change": 0,
+          "beforeSize": [
+            160,
+            194
+          ],
+          "afterRawSize": [
+            160,
+            194
+          ],
+          "afterNormalizedSize": [
+            160,
+            194
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "WFlgF",
+          "name": "component/活动小卡-桌游蓝色头像",
+          "before": 2.190012886597938,
+          "after": 2.190012886597938,
+          "change": 0,
+          "beforeSize": [
+            160,
+            194
+          ],
+          "afterRawSize": [
+            160,
+            194
+          ],
+          "afterNormalizedSize": [
+            160,
+            194
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "wg9gj",
+          "name": "component/桌游库馆藏卡片",
+          "before": 7.986780779884228,
+          "after": 7.986780779884228,
+          "change": 0,
+          "beforeSize": [
+            174,
+            231
+          ],
+          "afterRawSize": [
+            174,
+            231
+          ],
+          "afterNormalizedSize": [
+            174,
+            231
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "wWw3d",
+          "name": "component/小程序二级页标题栏",
+          "before": 6.684644522144522,
+          "after": 6.684644522144522,
+          "change": 0,
+          "beforeSize": [
+            390,
+            88
+          ],
+          "afterRawSize": [
+            390,
+            88
+          ],
+          "afterNormalizedSize": [
+            390,
+            88
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "WZKV3",
+          "name": "component/活动类型单选抽屉",
+          "before": 0.89616211745244,
+          "after": 0.89616211745244,
+          "change": 0,
+          "beforeSize": [
+            390,
+            465
+          ],
+          "afterRawSize": [
+            390,
+            465
+          ],
+          "afterNormalizedSize": [
+            390,
+            465
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "XqTYC",
+          "name": "component/二级抽屉页 · 最高高度",
+          "before": 0.5316903441903442,
+          "after": 0.5316903441903442,
+          "change": 0,
+          "beforeSize": [
+            390,
+            592
+          ],
+          "afterRawSize": [
+            390,
+            592
+          ],
+          "afterNormalizedSize": [
+            390,
+            592
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "y1PEWA",
+          "name": "component/日历日程表",
+          "before": 0.6004388658580275,
+          "after": 0.6004388658580275,
+          "change": 0,
+          "beforeSize": [
+            390,
+            668
+          ],
+          "afterRawSize": [
+            390,
+            668
+          ],
+          "afterNormalizedSize": [
+            390,
+            668
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "y8kYn",
+          "name": "component/Bento Select · 已选择",
+          "before": 0.4546443047775197,
+          "after": 0.4546443047775197,
+          "change": 0,
+          "beforeSize": [
+            1126,
+            52
+          ],
+          "afterRawSize": [
+            1126,
+            52
+          ],
+          "afterNormalizedSize": [
+            1126,
+            52
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "y8ZQV",
+          "name": "component/一级抽屉页",
+          "before": 0.3897374628557424,
+          "after": 0.3897374628557424,
+          "change": 0,
+          "beforeSize": [
+            390,
+            558
+          ],
+          "afterRawSize": [
+            390,
+            558
+          ],
+          "afterNormalizedSize": [
+            390,
+            558
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "y93vNK",
+          "name": "component/双项文字 Tab · 基本信息选中",
+          "before": 3.587740533829919,
+          "after": 3.587740533829919,
+          "change": 0,
+          "beforeSize": [
+            358,
+            30
+          ],
+          "afterRawSize": [
+            358,
+            30
+          ],
+          "afterNormalizedSize": [
+            358,
+            30
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "YOiEh",
+          "name": "component/记忆底部信息 · 无活动 · 保留位置",
+          "before": 0.6110572720708395,
+          "after": 0.6110572720708395,
+          "change": 0,
+          "beforeSize": [
+            358,
+            98
+          ],
+          "afterRawSize": [
+            358,
+            98
+          ],
+          "afterNormalizedSize": [
+            358,
+            98
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "zbByR",
+          "name": "component/小程序底部功能栏 · 详情操作",
+          "before": 1.155641859535011,
+          "after": 1.155641859535011,
+          "change": 0,
+          "beforeSize": [
+            391,
+            81
+          ],
+          "afterRawSize": [
+            391,
+            81
+          ],
+          "afterNormalizedSize": [
+            391,
+            81
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "zMleb",
+          "name": "component/Bento Select",
+          "before": 0.3988989843785581,
+          "after": 0.3988989843785581,
+          "change": 0,
+          "beforeSize": [
+            1126,
+            52
+          ],
+          "afterRawSize": [
+            1126,
+            52
+          ],
+          "afterNormalizedSize": [
+            1126,
+            52
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "ZO6SQ",
+          "name": "component/现场点名表内容 · 无人报名",
+          "before": 0.782638223924531,
+          "after": 0.782638223924531,
+          "change": 0,
+          "beforeSize": [
+            390,
+            482
+          ],
+          "afterRawSize": [
+            390,
+            482
+          ],
+          "afterNormalizedSize": [
+            390,
+            482
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        },
+        {
+          "id": "zRtfm",
+          "name": "component/居中弹窗 · 输入框 · 双按钮",
+          "before": 4.141446360153257,
+          "after": 4.141446360153257,
+          "change": 0,
+          "beforeSize": [
+            300,
+            232
+          ],
+          "afterRawSize": [
+            300,
+            232
+          ],
+          "afterNormalizedSize": [
+            300,
+            232
+          ],
+          "transparentOnlyCropOffset": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    "controlledBehavior": {
+      "sourceSingleShift": 3,
+      "sourceMultiShift": 4,
+      "native": [
+        {
+          "phase": "before",
+          "cases": [
+            {
+              "case": "singleTop",
+              "inkBounds": [
+                1,
+                4,
+                139,
+                20
+              ],
+              "meanError": 13.524074074074074
+            },
+            {
+              "case": "singleMiddle",
+              "inkBounds": [
+                1,
+                4,
+                139,
+                20
+              ],
+              "meanError": 34.55925925925926
+            },
+            {
+              "case": "multiTop",
+              "inkBounds": [
+                1,
+                4,
+                226,
+                29
+              ],
+              "meanError": 23.843447113358618
+            },
+            {
+              "case": "multiMiddle",
+              "inkBounds": [
+                1,
+                4,
+                226,
+                29
+              ],
+              "meanError": 41.819637589549096
+            }
+          ],
+          "singleShift": 0,
+          "multiShift": 0
+        },
+        {
+          "phase": "after",
+          "cases": [
+            {
+              "case": "singleTop",
+              "inkBounds": [
+                1,
+                4,
+                139,
+                20
+              ],
+              "meanError": 13.524074074074074
+            },
+            {
+              "case": "singleMiddle",
+              "inkBounds": [
+                1,
+                7,
+                139,
+                23
+              ],
+              "meanError": 13.524074074074074
+            },
+            {
+              "case": "multiTop",
+              "inkBounds": [
+                1,
+                4,
+                226,
+                29
+              ],
+              "meanError": 23.843447113358618
+            },
+            {
+              "case": "multiMiddle",
+              "inkBounds": [
+                1,
+                8,
+                226,
+                33
+              ],
+              "meanError": 23.843447113358618
+            }
+          ],
+          "singleShift": 3,
+          "multiShift": 4
+        }
+      ],
+      "sourceEvidence": "source-text-alignment-behavior.json",
+      "sourceFileUnchanged": true
+    },
+    "editableBehavior": {
+      "passed": true,
+      "cases": [
+        {
+          "phase": "before",
+          "root": "header350",
+          "heightPreserved": true,
+          "centered": true,
+          "boxWidth": 272,
+          "textHeight": 28
+        },
+        {
+          "phase": "before",
+          "root": "header420",
+          "heightPreserved": true,
+          "centered": true,
+          "boxWidth": 342,
+          "textHeight": 28
+        },
+        {
+          "phase": "before",
+          "root": "fontOverride",
+          "heightPreserved": true,
+          "centered": true,
+          "boxWidth": 272,
+          "textHeight": 40
+        },
+        {
+          "phase": "before",
+          "root": "contentOverride",
+          "heightPreserved": true,
+          "centered": true,
+          "boxWidth": 272,
+          "textHeight": 28
+        },
+        {
+          "phase": "after",
+          "root": "header350",
+          "heightPreserved": true,
+          "centered": true,
+          "boxWidth": 272,
+          "textHeight": 34
+        },
+        {
+          "phase": "after",
+          "root": "header420",
+          "heightPreserved": true,
+          "centered": true,
+          "boxWidth": 342,
+          "textHeight": 34
+        },
+        {
+          "phase": "after",
+          "root": "fontOverride",
+          "heightPreserved": true,
+          "centered": true,
+          "boxWidth": 272,
+          "textHeight": 40
+        },
+        {
+          "phase": "after",
+          "root": "contentOverride",
+          "heightPreserved": true,
+          "centered": true,
+          "boxWidth": 272,
+          "textHeight": 34
+        }
+      ],
+      "widthChange70": true,
+      "masterFontSizeUpdatesInheritedInstances": true,
+      "localFontOverridePreserved": true
+    }
+  },
+  "componentRuntimeSummary": {
+    "registryCount": 93,
+    "usedOutsideTemplates": 53,
+    "totalReferences": 419,
+    "formalFileUnchangedByTest": true
+  },
+  "templateSplitSummary": {
+    "templateSections": 23,
+    "componentsAtTemplateSplit": 94,
+    "nativeRoundingChangesWithinOnePixel": 667,
+    "unexpectedInternalGeometryChanges": [],
+    "templateRoundtrip": {
+      "compared": 23,
+      "exactMatches": 23,
+      "changedRegionIds": []
+    }
+  },
+  "visualComparisonSnapshot": "before_template_split",
+  "pageOrganization": {
+    "generatedAt": "2026-10-20T18:00:10.580Z",
+    "pageCount": 7,
+    "pages": [
+      {
+        "id": "dragon-page-home",
+        "name": "首页",
+        "rootCount": 49
+      },
+      {
+        "id": "dragon-page-memory",
+        "name": "记忆",
+        "rootCount": 22
+      },
+      {
+        "id": "dragon-page-ranking",
+        "name": "排行榜",
+        "rootCount": 5
+      },
+      {
+        "id": "dragon-page-profile",
+        "name": "我的",
+        "rootCount": 20
+      },
+      {
+        "id": "dragon-page-exploration",
+        "name": "探索",
+        "rootCount": 62
+      },
+      {
+        "id": "dragon-page-templates",
+        "name": "模板",
+        "rootCount": 23
+      },
+      {
+        "id": "dragon-page-assets",
+        "name": "素材",
+        "rootCount": 3
+      }
+    ],
+    "rawNodes": 9756,
+    "templates": 93,
+    "referencesIncludingOverrides": 419,
+    "unresolvedReferences": 0,
+    "allExpectedOriginalNodeIdsPreserved": true,
+    "authorizedRemovedOriginalNodeIds": 40,
+    "templateSections": 23,
+    "templateColumns": 4,
+    "currentRegionsRendered": 184,
+    "currentRoundtripExactMatches": 184,
+    "toolsRetirement": {
+      "removedIds": [
+        "x2L4V5",
+        "yI9dz",
+        "eCByC",
+        "YlxNe",
+        "C7y3Xq",
+        "wSrJ4",
+        "cPz8L",
+        "JlFit",
+        "z1W6xq",
+        "DXFPn",
+        "e5B0Y",
+        "OpJUa",
+        "d0njZU",
+        "DoYlQ",
+        "s6olL9",
+        "P6hf4",
+        "ZlRpW",
+        "PbiZY",
+        "t1VNh",
+        "OImtc",
+        "yqArW",
+        "IKaEF",
+        "bl4IC",
+        "u30Cl",
+        "lxYBe",
+        "hQbcs",
+        "h7RoNv",
+        "h7RoNv__glyph",
+        "X4F5U6",
+        "sGMRq",
+        "LBgNz",
+        "LBgNz__glyph",
+        "FR9OK",
+        "HAZ5n",
+        "dxlCk",
+        "TOAHk",
+        "n7ERHF",
+        "Iag0o",
+        "Iag0o__glyph",
+        "kjtAV",
+        "eULFR",
+        "jizim",
+        "jizim__glyph",
+        "JATOf"
+      ],
+      "movedStates": [
+        "XiWkQ",
+        "QtAWX",
+        "AHJRA"
+      ],
+      "updatedNavigationSlots": [
+        "kaeBY",
+        "tIpHO",
+        "d1Fr5",
+        "tvGt5",
+        "uUh3w",
+        "vHyow"
+      ],
+      "removedMaster": "u30Cl",
+      "homeEntryRef": "SUsjV",
+      "templateReflow": {
+        "navigationHeight": 1488,
+        "drawerY": 2141,
+        "dialogY": 4950
+      },
+      "newIds": [
+        "home-chwazi-section",
+        "home-chwazi-label-0",
+        "home-chwazi-label-1",
+        "home-chwazi-label-2",
+        "home-chwazi-label-3"
+      ],
+      "pages": [
+        {
+          "id": "dragon-page-home",
+          "name": "首页",
+          "roots": 49
+        },
+        {
+          "id": "dragon-page-memory",
+          "name": "记忆",
+          "roots": 22
+        },
+        {
+          "id": "dragon-page-ranking",
+          "name": "排行榜",
+          "roots": 5
+        },
+        {
+          "id": "dragon-page-profile",
+          "name": "我的",
+          "roots": 20
+        },
+        {
+          "id": "dragon-page-exploration",
+          "name": "探索",
+          "roots": 62
+        },
+        {
+          "id": "dragon-page-templates",
+          "name": "模板",
+          "roots": 23
+        },
+        {
+          "id": "dragon-page-assets",
+          "name": "素材",
+          "roots": 3
+        }
+      ]
+    },
+    "targetSha256": "098f78d35183b82bb2ea59a8c6d8d529ff862ae7b7b020cdc99a7a0e0129ea12",
+    "addedCompatibilityNodes": 320
+  },
+  "generatedAt": "2026-10-20T18:16:00.849Z",
+  "source": "D:/VibeCoding Project/dragonReserveSystem/prototype/龙城小程序.pen",
+  "target": "D:/VibeCoding Project/dragonReserveSystem/prototype/龙城小程序.op",
+  "targetSha256": "098f78d35183b82bb2ea59a8c6d8d529ff862ae7b7b020cdc99a7a0e0129ea12",
+  "targetBytes": 82965750,
+  "appVersion": "0.8.4",
+  "sourceFormat": "2.21",
+  "targetFormat": "1.2",
+  "status": "editable_migration_generated_strict_1_to_1_not_accepted",
+  "strictOneToOneAccepted": false,
+  "sourceModifiedByMigration": false,
+  "completionAudit": {
+    "generatedAt": "2026-10-20T18:15:57.847Z",
+    "objectiveAchieved": false,
+    "strictOneToOneAccepted": false,
+    "targetSha256": "098f78d35183b82bb2ea59a8c6d8d529ff862ae7b7b020cdc99a7a0e0129ea12",
+    "requirements": [
+      {
+        "requirement": "确认并保留原设计",
+        "state": "verified",
+        "evidence": [
+          "source-current-validation.json",
+          "source-current-check-result.json"
+        ]
+      },
+      {
+        "requirement": "全部顶层区域和原始图层身份",
+        "state": "verified_except_user_authorized_removals",
+        "evidence": [
+          "structure-validation.json",
+          "semantic-validation.json"
+        ],
+        "note": "40 source nodes removed for retired Tools home, divider and Tools-selected component; 5 Home section-label nodes added."
+      },
+      {
+        "requirement": "源素材完整迁移",
+        "state": "verified_with_original_source_missing_asset",
+        "evidence": [
+          "embedded-assets-validation.json",
+          "current-delivery-audit.json"
+        ],
+        "limitation": "generated-1.png 在源稿已缺失，保留源渲染的棋盘格占位。"
+      },
+      {
+        "requirement": "Auto Layout 完整编辑行为 1:1",
+        "state": "not_achieved",
+        "evidence": [
+          "resize-probe-validation.json",
+          "fixed-flow-edit-probe-validation.json",
+          "visibility-edit-probe-validation.json"
+        ],
+        "limitation": "3404 个原框架方向保留，代表性拉伸检查通过；隐藏节点重新显示以及数值后缀尺寸仍有行为差异。"
+      },
+      {
+        "requirement": "可复用组件及全部实例引用",
+        "state": "verified_structurally_and_snapshot_reviewed",
+        "evidence": [
+          "semantic-validation.json",
+          "component-visual-comparison.json",
+          "current-delivery-audit.json"
+        ]
+      },
+      {
+        "requirement": "全画布排列检查",
+        "state": "verified",
+        "evidence": [
+          "semantic-validation.json",
+          "review/canvas-source.png",
+          "review/canvas-target.png",
+          "centered-text-structure-validation.json"
+        ]
+      },
+      {
+        "requirement": "逐区域、逐组件视觉 1:1",
+        "state": "not_achieved",
+        "evidence": [
+          "visual-comparison.json",
+          "component-visual-comparison.json",
+          "auto-width-shrink-validation.json",
+          "centered-text-visual-validation.json",
+          "components-centering-validation.json",
+          "font-advance-engine-validation.json",
+          "current-text-style-validation.json"
+        ],
+        "limitation": "全部164区域和94组件均已对照；目标文字绘制、图片采样、阴影/模糊仍不同。 当前业务调整后160个存续源区域重新比较；93组件复核，32区域和5组件改善。独立文字导出裁切例外另有源受控实验，仍不代表全量像素一致。"
+      },
+      {
+        "requirement": "实际载入、保存与重开",
+        "state": "verified",
+        "evidence": [
+          "save-roundtrip-validation.json",
+          "native-font-render-validation.json",
+          "centering-roundtrip-validation.json"
+        ]
+      },
+      {
+        "requirement": "持续复查转换代码并修复差异",
+        "state": "verified",
+        "evidence": [
+          "review-fixes-01.json",
+          "review-fixes-02.json",
+          "review-fixes-03.json",
+          "review-fixes-04.json",
+          "review-fixes-05.json",
+          "review-fixes-06.json",
+          "review-fixes-07.json",
+          "review-fixes-08.json",
+          "review-fixes-09.json",
+          "review-fixes-10.json",
+          "review-fixes-11.json",
+          "review-fixes-12.json",
+          "review-fixes-13.json",
+          "review-fixes-14.json",
+          "review-fixes-15.json",
+          "review-fixes-16.json",
+          "review-fixes-17.json",
+          "review-fixes-18.json",
+          "centered-text-structure-validation.json",
+          "centered-text-visual-validation.json",
+          "components-centering-validation.json",
+          "centered-text-edit-validation.json"
+        ],
+        "latestChanges": [
+          "固定高度溢出保护扩展到14个框架",
+          "两处进度条恢复动态填满",
+          "14个旋转元素原点换算",
+          "六处实例透明填充覆盖",
+          "源版本5字族19字重导入",
+          "124处固定文字框以额外一层 Auto Layout 尺寸容器恢复垂直居中，深层实例覆盖同步路由",
+          "固定/Fill 高度及底部内边距溢出保护扩展到42个框架，修复排行榜30px膨胀"
+        ]
+      },
+      {
+        "requirement": "交付可编辑.op并明确限制",
+        "state": "delivered_with_strict_acceptance_not_passed",
+        "evidence": [
+          "../../龙城小程序.op",
+          "acceptance-report.json",
+          "../迁移核对.html"
+        ]
+      },
+      {
+        "requirement": "按业务划分 Pages，独立探索、模板并保留跨页引用",
+        "state": "verified",
+        "evidence": [
+          "page-organization-validation.json",
+          "page-visual-validation.json",
+          "native-pages-validation.json",
+          "pages-reproducibility-validation.json",
+          "save-roundtrip-validation.json"
+        ]
+      },
+      {
+        "requirement": "取消工具 Tab，Chwazi 状态移到首页，统一记忆导航",
+        "state": "verified",
+        "evidence": [
+          "tools-retirement-validation.json",
+          "tools-retirement-roundtrip-validation.json",
+          "tools-retirement-reproducibility.json"
+        ]
+      }
+    ],
+    "previousGoalTurnClassification": "progress_evidence_and_blocked_audit",
+    "remainingBlocker": "Native OpenPencil omits GPOS kerning in simple-script paint, shrinks some auto-width text, does not reflow hidden nodes identically, and differs in image/effect sampling. File-level layout repairs are applied and verified; these remaining behaviors require engine changes for strict 1:1.",
+    "consecutiveGoalTurnsObservingSameBlocker": [],
+    "evidenceBaseDirectory": "D:/VibeCoding Project/dragonReserveSystem/prototype/openpencil-migration/audit",
+    "pageOrganization": {
+      "generatedAt": "2026-10-20T18:00:10.580Z",
+      "pageCount": 7,
+      "pages": [
+        {
+          "id": "dragon-page-home",
+          "name": "首页",
+          "rootCount": 49
+        },
+        {
+          "id": "dragon-page-memory",
+          "name": "记忆",
+          "rootCount": 22
+        },
+        {
+          "id": "dragon-page-ranking",
+          "name": "排行榜",
+          "rootCount": 5
+        },
+        {
+          "id": "dragon-page-profile",
+          "name": "我的",
+          "rootCount": 20
+        },
+        {
+          "id": "dragon-page-exploration",
+          "name": "探索",
+          "rootCount": 62
+        },
+        {
+          "id": "dragon-page-templates",
+          "name": "模板",
+          "rootCount": 23
+        },
+        {
+          "id": "dragon-page-assets",
+          "name": "素材",
+          "rootCount": 3
+        }
+      ],
+      "rawNodes": 9756,
+      "templates": 93,
+      "referencesIncludingOverrides": 419,
+      "unresolvedReferences": 0,
+      "allExpectedOriginalNodeIdsPreserved": true,
+      "authorizedRemovedOriginalNodeIds": 40,
+      "templateSections": 23,
+      "templateColumns": 4,
+      "currentRegionsRendered": 184,
+      "currentRoundtripExactMatches": 184,
+      "toolsRetirement": {
+        "removedIds": [
+          "x2L4V5",
+          "yI9dz",
+          "eCByC",
+          "YlxNe",
+          "C7y3Xq",
+          "wSrJ4",
+          "cPz8L",
+          "JlFit",
+          "z1W6xq",
+          "DXFPn",
+          "e5B0Y",
+          "OpJUa",
+          "d0njZU",
+          "DoYlQ",
+          "s6olL9",
+          "P6hf4",
+          "ZlRpW",
+          "PbiZY",
+          "t1VNh",
+          "OImtc",
+          "yqArW",
+          "IKaEF",
+          "bl4IC",
+          "u30Cl",
+          "lxYBe",
+          "hQbcs",
+          "h7RoNv",
+          "h7RoNv__glyph",
+          "X4F5U6",
+          "sGMRq",
+          "LBgNz",
+          "LBgNz__glyph",
+          "FR9OK",
+          "HAZ5n",
+          "dxlCk",
+          "TOAHk",
+          "n7ERHF",
+          "Iag0o",
+          "Iag0o__glyph",
+          "kjtAV",
+          "eULFR",
+          "jizim",
+          "jizim__glyph",
+          "JATOf"
+        ],
+        "movedStates": [
+          "XiWkQ",
+          "QtAWX",
+          "AHJRA"
+        ],
+        "updatedNavigationSlots": [
+          "kaeBY",
+          "tIpHO",
+          "d1Fr5",
+          "tvGt5",
+          "uUh3w",
+          "vHyow"
+        ],
+        "removedMaster": "u30Cl",
+        "homeEntryRef": "SUsjV",
+        "templateReflow": {
+          "navigationHeight": 1488,
+          "drawerY": 2141,
+          "dialogY": 4950
+        },
+        "newIds": [
+          "home-chwazi-section",
+          "home-chwazi-label-0",
+          "home-chwazi-label-1",
+          "home-chwazi-label-2",
+          "home-chwazi-label-3"
+        ],
+        "pages": [
+          {
+            "id": "dragon-page-home",
+            "name": "首页",
+            "roots": 49
+          },
+          {
+            "id": "dragon-page-memory",
+            "name": "记忆",
+            "roots": 22
+          },
+          {
+            "id": "dragon-page-ranking",
+            "name": "排行榜",
+            "roots": 5
+          },
+          {
+            "id": "dragon-page-profile",
+            "name": "我的",
+            "roots": 20
+          },
+          {
+            "id": "dragon-page-exploration",
+            "name": "探索",
+            "roots": 62
+          },
+          {
+            "id": "dragon-page-templates",
+            "name": "模板",
+            "roots": 23
+          },
+          {
+            "id": "dragon-page-assets",
+            "name": "素材",
+            "roots": 3
+          }
+        ]
+      },
+      "targetSha256": "098f78d35183b82bb2ea59a8c6d8d529ff862ae7b7b020cdc99a7a0e0129ea12",
+      "addedCompatibilityNodes": 320
+    },
+    "templateSplit": {
+      "verified": true,
+      "scope": "User-authorized flattening of outer template library into 23 independent sections, four columns",
+      "evidence": [
+        "template-split-validation.json",
+        "template-split-other-pages-visual.json",
+        "template-split-roundtrip-validation.json",
+        "template-split-reproducibility.json"
+      ]
+    },
+    "componentReferenceRuntime": {
+      "registryCount": 93,
+      "totalRefs": 419,
+      "componentsUsedOutsideTemplatePage": 53,
+      "evidence": [
+        "component-reference-runtime-audit.json",
+        "live-component-reference-validation.json"
+      ]
+    },
+    "latestTextAndConstrainedLayoutRepair": {
+      "wrappedTextBoxes": 124,
+      "compatibilityNodes": 320,
+      "structure": "centered-text-structure-validation.json",
+      "visual": "centered-text-visual-validation.json",
+      "components": "components-centering-validation.json",
+      "editableBehavior": "centered-text-edit-validation.json",
+      "sourceControlledBehavior": "controlled-alignment-validation.json",
+      "largeFontBehavior": "large-text-edit-behavior-validation.json",
+      "roundtrip": "centering-roundtrip-validation.json"
+    },
+    "fontEngineInvestigation": {
+      "textStyles": "current-text-style-validation.json",
+      "boldHypothesis": "Unproven: native 599 and 600 raster rows identical; keep authored canonical weights.",
+      "kerning": "font-advance-engine-validation.json",
+      "scope": "12 source/native fixed-width text samples, three families at 48px; native draw_str follows unkerned font advances; all predictions within 2px.",
+      "formalFileChanged": false,
+      "sourceFileChanged": false
+    },
+    "goalStatus": "blocked",
+    "currentDelivery": "current-delivery-audit.json",
+    "blockedAudit": {
+      "sameCondition": "Strict 1:1 requires native OpenPencil engine behavior that is not exposed by .op properties.",
+      "observations": [
+        {
+          "turn": "centering_promotion",
+          "evidence": [
+            "centering-promotion.json",
+            "centered-text-structure-validation.json",
+            "visibility-edit-probe-validation.json",
+            "auto-width-shrink-validation.json"
+          ],
+          "conclusion": "File-level text/height repairs applied; native text painting and hidden-flow parity remain."
+        },
+        {
+          "turn": "font_engine_investigation",
+          "evidence": [
+            "font-advance-engine-validation.json",
+            "current-text-style-validation.json"
+          ],
+          "conclusion": "Exact authored font parameters retained; native simple-script paint does not apply GPOS kerning. No file-level parameter repairs this for changing text."
+        },
+        {
+          "turn": "current_release_and_delivery_audit",
+          "evidence": [
+            "current-delivery-audit.json",
+            "current-final-editor-snapshot.op"
+          ],
+          "conclusion": "Current deliverable and live editor match. Official release list still tops at v0.8.4; no newer published binary provides an upgrade path."
+        }
+      ],
+      "consecutiveGoalTurns": 3,
+      "meaningfulRemainingFileLevelActionIdentified": false,
+      "nextDependency": "A native engine fix/update, or an explicit user decision to accept documented fidelity/behavior differences. Building and maintaining a custom editor is a separate implementation scope.",
+      "officialReleaseUrl": "https://github.com/ZSeven-W/openpencil/releases/tag/v0.8.4",
+      "goalNotCompleted": true
+    }
+  },
+  "sourceRevalidation": {
+    "baselineNodes": 9471,
+    "currentNodes": 9471,
+    "changedNodes": [],
+    "variablesIdentical": true,
+    "freshExportChecks": [
+      {
+        "baseline": "audit/source-previews/Gnsno.png",
+        "current": "audit/source-current-font-check/Gnsno.png",
+        "byteIdentical": true
+      },
+      {
+        "baseline": "audit/source-components/nX3OK.png",
+        "current": "audit/source-current-font-check/nX3OK.png",
+        "byteIdentical": true
+      }
+    ]
+  },
+  "embeddedAssetsValidation": {
+    "checked": 88,
+    "allByteIdentical": true
+  },
+  "fixedFlowProbeValidation": {
+    "passed": true,
+    "checks": [
+      {
+        "case": "heading22",
+        "pass": true,
+        "container": {
+          "id": "heading22",
+          "x": 0,
+          "y": 0,
+          "w": 350,
+          "h": 22
+        },
+        "text": {
+          "id": "heading22__f356O",
+          "x": 0,
+          "y": -3,
+          "w": 350,
+          "h": 28
+        }
+      },
+      {
+        "case": "heading40",
+        "pass": true,
+        "container": {
+          "id": "heading40",
+          "x": 0,
+          "y": 0,
+          "w": 420,
+          "h": 40
+        },
+        "text": {
+          "id": "heading40__f356O",
+          "x": 0,
+          "y": 6,
+          "w": 420,
+          "h": 28
+        }
+      },
+      {
+        "case": "progress358",
+        "pass": true,
+        "container": {
+          "id": "progress358",
+          "x": 0,
+          "y": 0,
+          "w": 358,
+          "h": 92
+        },
+        "track": {
+          "id": "progress358__R6Lle",
+          "x": 0,
+          "y": 115,
+          "w": 358,
+          "h": 4
+        }
+      },
+      {
+        "case": "progress460",
+        "pass": true,
+        "container": {
+          "id": "progress460",
+          "x": 0,
+          "y": 0,
+          "w": 460,
+          "h": 92
+        },
+        "track": {
+          "id": "progress460__R6Lle",
+          "x": 0,
+          "y": 115,
+          "w": 460,
+          "h": 4
+        }
+      }
+    ],
+    "allRegionsCompared": 164,
+    "changedRegionIds": [
+      "OiE3G",
+      "lnq9c",
+      "yqArW",
+      "aDnxZ",
+      "HBRMQ",
+      "RQKdZ",
+      "H2Bhy",
+      "K8qZPJ",
+      "B88jpv",
+      "x2L4V5",
+      "S3QXHL",
+      "X7JPq",
+      "G7P0U",
+      "OsLw5",
+      "ftPtS",
+      "ye5zL",
+      "Ev1C5",
+      "Gnsno",
+      "QNVEQ",
+      "C5Z41z",
+      "qvafH",
+      "vJwP7",
+      "sZ3AN",
+      "eDEJs",
+      "D3GuQ",
+      "qMC0v",
+      "S6jwOA",
+      "V0cp3",
+      "nhpZv",
+      "i0BOQg",
+      "UHfn0",
+      "YKzDp",
+      "ILtIN",
+      "nAXow",
+      "gR6Hh",
+      "gEUIQ",
+      "g5HIUN",
+      "MaM8Q",
+      "a7h8g",
+      "ZKEe4",
+      "GVHq9",
+      "WI0bt",
+      "X9GgXl",
+      "rRXcj",
+      "L7TUb",
+      "sE1zi",
+      "bxNIN",
+      "sNAax",
+      "FDMKv",
+      "U9Ou4F",
+      "qCoEK",
+      "l8JPT0",
+      "gua20",
+      "dn0Yn",
+      "h1eYsQ",
+      "P2fmOL",
+      "Z3muVA",
+      "X8rqer",
+      "w7iTYn",
+      "styfd",
+      "F2KEFX",
+      "mzb3Z",
+      "v78DZ",
+      "VG9sB",
+      "WTdTo",
+      "I2GgZO",
+      "vFvcH",
+      "mGkc2",
+      "P37gp",
+      "yl4tW",
+      "mkGDF",
+      "f2E2I",
+      "j7GSCo",
+      "D3WX9",
+      "je1iX",
+      "LAi4I",
+      "ptSzf",
+      "U8Nbr",
+      "WdzA7",
+      "TVIe9",
+      "A0ClSv",
+      "DEAKm",
+      "WpiZu",
+      "Q45pd",
+      "lRVYf",
+      "ZDNWD",
+      "Z2hAqy",
+      "ZG2ZJ",
+      "Qg9ug",
+      "xuqNi",
+      "qV8N5",
+      "VzzYQ",
+      "nOSnP",
+      "W9qcw",
+      "NKGiz",
+      "TYBwe",
+      "PnVau",
+      "rnJW6",
+      "fLHGc",
+      "sRdvt",
+      "ImTfR",
+      "L6hnE",
+      "ju7YZ",
+      "BjPyU",
+      "j8v7l5",
+      "ITk5L",
+      "KHPGJ",
+      "jXag2",
+      "aFkLU",
+      "Mlljc",
+      "f8NZh",
+      "drX5q",
+      "zyDdb",
+      "j9x9uR",
+      "TC0km",
+      "tF3N2",
+      "nQ5CV",
+      "folfG",
+      "Nz8RY",
+      "wziuQ",
+      "fEinP",
+      "lLJSd",
+      "mJzbF",
+      "Z4JTyn",
+      "oIcdz",
+      "h5lda",
+      "nvq0n",
+      "FmcXP",
+      "UKaDX",
+      "verUnselected01",
+      "CObGD",
+      "nllxZ",
+      "fUXwp",
+      "JNn09",
+      "CXmSf",
+      "OwoFu",
+      "DcdID",
+      "m5AESz",
+      "qyZEu",
+      "UCCFa",
+      "FpujU",
+      "bKxXm"
+    ]
+  },
+  "rotationOriginValidation": {
+    "checked": 14,
+    "allPassed": true,
+    "checks": [
+      {
+        "id": "fVjP6",
+        "maxError": 0,
+        "pass": true
+      },
+      {
+        "id": "ssGgf",
+        "maxError": 3.552713678800501e-15,
+        "pass": true
+      },
+      {
+        "id": "m6oukW",
+        "maxError": 6.217248937900877e-15,
+        "pass": true
+      },
+      {
+        "id": "I3mn1",
+        "maxError": 0,
+        "pass": true
+      },
+      {
+        "id": "MtOEX",
+        "maxError": 1.4210854715202004e-14,
+        "pass": true
+      },
+      {
+        "id": "U4rYm",
+        "maxError": 2.842170943040401e-14,
+        "pass": true
+      },
+      {
+        "id": "LMs9I",
+        "maxError": 6.217248937900877e-15,
+        "pass": true
+      },
+      {
+        "id": "hE9LC",
+        "maxError": 0,
+        "pass": true
+      },
+      {
+        "id": "K7Y5R",
+        "maxError": 1.4210854715202004e-14,
+        "pass": true
+      },
+      {
+        "id": "q6cyEn",
+        "maxError": 2.842170943040401e-14,
+        "pass": true
+      },
+      {
+        "id": "Y87t5",
+        "maxError": 8.881784197001252e-16,
+        "pass": true
+      },
+      {
+        "id": "All42",
+        "maxError": 0,
+        "pass": true
+      },
+      {
+        "id": "hoFd9",
+        "maxError": 1.4210854715202004e-14,
+        "pass": true
+      },
+      {
+        "id": "NtBqz",
+        "maxError": 2.842170943040401e-14,
+        "pass": true
+      }
+    ]
+  },
+  "autoWidthShrinkValidation": {
+    "fontSizeForBothNativeCases": 112,
+    "fontFamilyForAll": "Anton",
+    "samples": [
+      {
+        "case": "source",
+        "imageSize": [
+          104,
+          99
+        ],
+        "inkBounds": [
+          0,
+          0,
+          104,
+          99
+        ],
+        "inkHeight": 99
+      },
+      {
+        "case": "nativeAuto",
+        "imageSize": [
+          107,
+          101
+        ],
+        "inkBounds": [
+          2,
+          0,
+          92,
+          86
+        ],
+        "inkHeight": 86
+      },
+      {
+        "case": "nativeExplicitWidth",
+        "imageSize": [
+          200,
+          101
+        ],
+        "inkBounds": [
+          2,
+          1,
+          107,
+          99
+        ],
+        "inkHeight": 98
+      },
+      {
+        "case": "nativeFixedWidth",
+        "imageSize": [
+          200,
+          101
+        ],
+        "inkBounds": [
+          2,
+          1,
+          107,
+          99
+        ],
+        "inkHeight": 98
+      }
+    ],
+    "observation": "At the same font size112 and familyAnton, auto-width and fixed-width cases paint different glyph sizes. Fixed width disables the target painter shrink path, but changes authored sizing behavior. The original source remains auto-width. See samples for measured bounds; minWidth was ineffective in the first probe and is not claimed as a fix."
+  },
+  "nativeFontRenderValidation": {
+    "nativeSize": [
+      390,
+      844
+    ],
+    "headlessSize": [
+      390,
+      844
+    ],
+    "sameSize": true,
+    "maxChannelDifference": 0
+  },
+  "fontSources": [
+    {
+      "family": "Geist",
+      "file": "Geist-400.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Geist-400.ttf",
+      "weight": 400,
+      "sourceUrl": "https://fonts.gstatic.com/s/geist/v4/gyByhwUxId8gMHwbElSvO5Tc.ttf",
+      "sha256": "8fbad7d8f2e46658267edb56da18a6b15d54eb7f508da8da6db4deefab759cc5",
+      "bytes": 77708
+    },
+    {
+      "family": "Geist",
+      "file": "Geist-500.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Geist-500.ttf",
+      "weight": 500,
+      "sourceUrl": "https://fonts.gstatic.com/s/geist/v4/gyByhwUxId8gMHwbElSvO5Tc.ttf",
+      "sha256": "9344d311124da9df44ac661e19cef5b3939fba53995dcc67ece97e19d00b2e91",
+      "bytes": 77668
+    },
+    {
+      "family": "Geist",
+      "file": "Geist-600.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Geist-600.ttf",
+      "weight": 600,
+      "sourceUrl": "https://fonts.gstatic.com/s/geist/v4/gyByhwUxId8gMHwbElSvO5Tc.ttf",
+      "sha256": "7ff5c00ea731cb4690514849b8d9e0abe574c00d465562d90d92f08070ee9db5",
+      "bytes": 77688
+    },
+    {
+      "family": "Geist",
+      "file": "Geist-700.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Geist-700.ttf",
+      "weight": 700,
+      "sourceUrl": "https://fonts.gstatic.com/s/geist/v4/gyByhwUxId8gMHwbElSvO5Tc.ttf",
+      "sha256": "e6a9b5db06f55a1c2669b5b9a7826d87239138594d1085f9b5dc992caa888bc0",
+      "bytes": 77704
+    },
+    {
+      "family": "Geist Mono",
+      "file": "GeistMono-400.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\GeistMono-400.ttf",
+      "weight": 400,
+      "sourceUrl": "https://fonts.gstatic.com/s/geistmono/v4/or3nQ6H-1_WfwkMZI_qYJrAXmzPnnks.ttf",
+      "sha256": "4e9065bfe711459cb80206187327939f78dbdee2f74be72028e28cb4d5e1beaa",
+      "bytes": 77664
+    },
+    {
+      "family": "Geist Mono",
+      "file": "GeistMono-500.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\GeistMono-500.ttf",
+      "weight": 500,
+      "sourceUrl": "https://fonts.gstatic.com/s/geistmono/v4/or3nQ6H-1_WfwkMZI_qYJrAXmzPnnks.ttf",
+      "sha256": "ba199dfa79f5b04b01822c15d839080a90f9ac57c21070a9a7b483b90dd26d28",
+      "bytes": 77768
+    },
+    {
+      "family": "Geist Mono",
+      "file": "GeistMono-600.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\GeistMono-600.ttf",
+      "weight": 600,
+      "sourceUrl": "https://fonts.gstatic.com/s/geistmono/v4/or3nQ6H-1_WfwkMZI_qYJrAXmzPnnks.ttf",
+      "sha256": "0f07ae0ae6ad07c28a180c30ae40898cdba325b5d37ccd59e97543a525fb6588",
+      "bytes": 77780
+    },
+    {
+      "family": "Geist Mono",
+      "file": "GeistMono-700.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\GeistMono-700.ttf",
+      "weight": 700,
+      "sourceUrl": "https://fonts.gstatic.com/s/geistmono/v4/or3nQ6H-1_WfwkMZI_qYJrAXmzPnnks.ttf",
+      "sha256": "fd3e54951cd86db75511417af35ed41b75bbfd69720f7c8d65ed2a9378d579f2",
+      "bytes": 77744
+    },
+    {
+      "family": "Anton",
+      "file": "Anton-400.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Anton-400.ttf",
+      "weight": 400,
+      "sourceUrl": "https://fonts.gstatic.com/s/anton/v27/1Ptgg87LROyAm0K08i4gS7lu.ttf",
+      "sha256": "848b52107207ee8bc7caca3f8fa57f63d23d0d13e391c5b514d2dcdd262b9026",
+      "bytes": 161588
+    },
+    {
+      "family": "Inter",
+      "file": "Inter-400.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Inter-400.ttf",
+      "weight": 400,
+      "sourceUrl": "https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTfvlaQc78lA2.ttf",
+      "sha256": "d1124cfb7bbf2d70225b6df47e0435661c7dfb487933a09952e5fcc507b33509",
+      "bytes": 340556
+    },
+    {
+      "family": "Inter",
+      "file": "Inter-500.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Inter-500.ttf",
+      "weight": 500,
+      "sourceUrl": "https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTfvlaQc78lA2.ttf",
+      "sha256": "6e389c098aa106ba985a26b333b308e6d53df8e33da59a56d774e90394cba6ed",
+      "bytes": 341112
+    },
+    {
+      "family": "Inter",
+      "file": "Inter-600.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Inter-600.ttf",
+      "weight": 600,
+      "sourceUrl": "https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTfvlaQc78lA2.ttf",
+      "sha256": "c2a79f6e809119a4fc90d1bc4fb90c5042c316c787748cce6450ab81348f16ae",
+      "bytes": 341780
+    },
+    {
+      "family": "Inter",
+      "file": "Inter-700.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Inter-700.ttf",
+      "weight": 700,
+      "sourceUrl": "https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTfvlaQc78lA2.ttf",
+      "sha256": "0f6c806afe8f965994306bac05cf36a547b7fc05e79d2c8f081b756595d5ac8b",
+      "bytes": 342232
+    },
+    {
+      "family": "Inter",
+      "file": "Inter-800.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Inter-800.ttf",
+      "weight": 800,
+      "sourceUrl": "https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTfvlaQc78lA2.ttf",
+      "sha256": "ff6857b798791ac03ed2518baa4eae30dd725bf209981f88afd52ce6e7b6a196",
+      "bytes": 343084
+    },
+    {
+      "family": "Noto Sans SC",
+      "file": "NotoSansSC-400.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\NotoSansSC-400.ttf",
+      "weight": 400,
+      "sourceUrl": "https://fonts.gstatic.com/s/notosanssc/v39/k3kXo84MPvpLmixcA63oeALhKYiJ-Q7m8w.ttf",
+      "sha256": "5a662cdca1ffdd26c2c8310d07ce79047a0fc3a314376826b908d4cc72dc60a8",
+      "bytes": 10559684
+    },
+    {
+      "family": "Noto Sans SC",
+      "file": "NotoSansSC-500.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\NotoSansSC-500.ttf",
+      "weight": 500,
+      "sourceUrl": "https://fonts.gstatic.com/s/notosanssc/v39/k3kXo84MPvpLmixcA63oeALhKYiJ-Q7m8w.ttf",
+      "sha256": "96afff054251fd104666229700186b490870dee1f54f1b077d2bd86d62270b04",
+      "bytes": 10552840
+    },
+    {
+      "family": "Noto Sans SC",
+      "file": "NotoSansSC-600.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\NotoSansSC-600.ttf",
+      "weight": 600,
+      "sourceUrl": "https://fonts.gstatic.com/s/notosanssc/v39/k3kXo84MPvpLmixcA63oeALhKYiJ-Q7m8w.ttf",
+      "sha256": "cec2d169d2ae2d35171e06dafa16a07377c1a0e07cf2079b6d2026b76fe84904",
+      "bytes": 10549332
+    },
+    {
+      "family": "Noto Sans SC",
+      "file": "NotoSansSC-700.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\NotoSansSC-700.ttf",
+      "weight": 700,
+      "sourceUrl": "https://fonts.gstatic.com/s/notosanssc/v39/k3kXo84MPvpLmixcA63oeALhKYiJ-Q7m8w.ttf",
+      "sha256": "4e7ec81db32b8315088befd837b1bd6fa4342570626d7ee9b5dc7d7615d6214f",
+      "bytes": 10549184
+    },
+    {
+      "family": "Noto Sans SC",
+      "file": "NotoSansSC-800.ttf",
+      "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\NotoSansSC-800.ttf",
+      "weight": 800,
+      "sourceUrl": "https://fonts.gstatic.com/s/notosanssc/v39/k3kXo84MPvpLmixcA63oeALhKYiJ-Q7m8w.ttf",
+      "sha256": "cdca1e644a808204d0dda4c302499ade0f0d8e5f72286dd64bc27df4beabc20f",
+      "bytes": 10544144
+    }
+  ],
+  "editingProbeValidation": {
+    "passed": true,
+    "checks": [
+      {
+        "check": "header width change propagates to fill text",
+        "actual": 70,
+        "expected": 70,
+        "pass": true
+      },
+      {
+        "check": "header action follows right edge",
+        "actual": 70,
+        "expected": 70,
+        "pass": true
+      },
+      {
+        "check": "card173__cover width",
+        "actual": 173,
+        "expected": 173,
+        "pass": true
+      },
+      {
+        "check": "card173__cover height",
+        "actual": 156,
+        "expected": 156,
+        "pass": true
+      },
+      {
+        "check": "card173__information height",
+        "actual": 74,
+        "expected": 74,
+        "pass": true
+      },
+      {
+        "check": "card173__title width",
+        "actual": 157,
+        "expected": 157,
+        "pass": true
+      },
+      {
+        "check": "card240__cover width",
+        "actual": 240,
+        "expected": 240,
+        "pass": true
+      },
+      {
+        "check": "card240__cover height",
+        "actual": 156,
+        "expected": 156,
+        "pass": true
+      },
+      {
+        "check": "card240__information height",
+        "actual": 74,
+        "expected": 74,
+        "pass": true
+      },
+      {
+        "check": "card240__title width",
+        "actual": 224,
+        "expected": 224,
+        "pass": true
+      },
+      {
+        "check": "alpha120 bounds",
+        "actual": [
+          120,
+          40
+        ],
+        "expected": [
+          120,
+          40
+        ],
+        "pass": true
+      },
+      {
+        "check": "alpha120 paint fills resized bounds",
+        "actual": 1,
+        "expected": 1,
+        "pass": true
+      },
+      {
+        "check": "alpha120 alpha kept",
+        "actual": 204,
+        "expected": 204,
+        "pass": true
+      },
+      {
+        "check": "alpha200 bounds",
+        "actual": [
+          200,
+          70
+        ],
+        "expected": [
+          200,
+          70
+        ],
+        "pass": true
+      },
+      {
+        "check": "alpha200 paint fills resized bounds",
+        "actual": 1,
+        "expected": 1,
+        "pass": true
+      },
+      {
+        "check": "alpha200 alpha kept",
+        "actual": 204,
+        "expected": 204,
+        "pass": true
+      }
+    ],
+    "scope": "Representative title and library-card instances plus resized translucent fills. This does not prove every editing behavior; hidden-node limitation is tested separately."
+  },
+  "visibilityProbeValidation": {
+    "cases": [
+      {
+        "kind": "native",
+        "shown": false,
+        "expectedHeight": 40,
+        "actualHeight": 60,
+        "expectedBlueY": 20,
+        "actualBlueY": 40,
+        "passes": false
+      },
+      {
+        "kind": "native",
+        "shown": true,
+        "expectedHeight": 60,
+        "actualHeight": 60,
+        "expectedBlueY": 40,
+        "actualBlueY": 40,
+        "passes": true
+      },
+      {
+        "kind": "absolute",
+        "shown": false,
+        "expectedHeight": 40,
+        "actualHeight": 40,
+        "expectedBlueY": 20,
+        "actualBlueY": 20,
+        "passes": true
+      },
+      {
+        "kind": "absolute",
+        "shown": true,
+        "expectedHeight": 60,
+        "actualHeight": 40,
+        "expectedBlueY": 40,
+        "actualBlueY": 20,
+        "passes": false
+      },
+      {
+        "kind": "role",
+        "shown": false,
+        "expectedHeight": 40,
+        "actualHeight": 60,
+        "expectedBlueY": 20,
+        "actualBlueY": 20,
+        "passes": false
+      },
+      {
+        "kind": "role",
+        "shown": true,
+        "expectedHeight": 60,
+        "actualHeight": 60,
+        "expectedBlueY": 40,
+        "actualBlueY": 20,
+        "passes": false
+      },
+      {
+        "kind": "absent",
+        "shown": false,
+        "expectedHeight": 40,
+        "actualHeight": 40,
+        "expectedBlueY": 20,
+        "actualBlueY": 20,
+        "passes": true
+      },
+      {
+        "kind": "absent",
+        "shown": true,
+        "expectedHeight": 60,
+        "actualHeight": 60,
+        "expectedBlueY": 40,
+        "actualBlueY": 40,
+        "passes": true
+      }
+    ],
+    "conclusion": "Native hidden nodes still occupy layout; absolute positioning preserves the current hidden snapshot but showing it again requires removing the constraints. Neither overlay role nor visibility alone preserves both behaviors.",
+    "strictBehaviorParity": false
+  },
+  "saveRoundtripValidation": {
+    "compared": 184,
+    "exactImageMatches": 184,
+    "sizeMismatches": 0,
+    "maxChannelDifference": 0
+  },
+  "structuralChecks": {
+    "authorizedMissingIds": [
+      "u30Cl",
+      "lxYBe",
+      "hQbcs",
+      "h7RoNv",
+      "X4F5U6",
+      "sGMRq",
+      "LBgNz",
+      "FR9OK",
+      "HAZ5n",
+      "dxlCk",
+      "TOAHk",
+      "n7ERHF",
+      "Iag0o",
+      "kjtAV",
+      "eULFR",
+      "jizim",
+      "JATOf",
+      "yqArW",
+      "IKaEF",
+      "bl4IC",
+      "x2L4V5",
+      "OImtc",
+      "C7y3Xq",
+      "wSrJ4",
+      "cPz8L",
+      "JlFit",
+      "z1W6xq",
+      "DXFPn",
+      "e5B0Y",
+      "OpJUa",
+      "d0njZU",
+      "DoYlQ",
+      "s6olL9",
+      "P6hf4",
+      "ZlRpW",
+      "PbiZY",
+      "t1VNh",
+      "YlxNe",
+      "eCByC",
+      "yI9dz"
+    ],
+    "unexpectedMissingIds": [],
+    "unexpectedMissingComponents": [],
+    "schemaTitle": "PenDocument",
+    "schemaValid": true,
+    "errors": null,
+    "sourceNodes": 9471,
+    "targetNodes": 9756,
+    "sourceRoots": 164,
+    "targetRoots": 184,
+    "missingIds": [
+      "u30Cl",
+      "lxYBe",
+      "hQbcs",
+      "h7RoNv",
+      "X4F5U6",
+      "sGMRq",
+      "LBgNz",
+      "FR9OK",
+      "HAZ5n",
+      "dxlCk",
+      "TOAHk",
+      "n7ERHF",
+      "Iag0o",
+      "kjtAV",
+      "eULFR",
+      "jizim",
+      "JATOf",
+      "yqArW",
+      "IKaEF",
+      "bl4IC",
+      "x2L4V5",
+      "OImtc",
+      "C7y3Xq",
+      "wSrJ4",
+      "cPz8L",
+      "JlFit",
+      "z1W6xq",
+      "DXFPn",
+      "e5B0Y",
+      "OpJUa",
+      "d0njZU",
+      "DoYlQ",
+      "s6olL9",
+      "P6hf4",
+      "ZlRpW",
+      "PbiZY",
+      "t1VNh",
+      "YlxNe",
+      "eCByC",
+      "yI9dz"
+    ],
+    "dangling": [],
+    "duplicates": 0,
+    "sourceComponents": 94,
+    "targetComponents": 93,
+    "missingComponents": [
+      "u30Cl"
+    ],
+    "sourceRefs": 416,
+    "targetRefs": 413
+  },
+  "semanticChecks": {
+    "authorizedRemovedSourceIds": [
+      "u30Cl",
+      "lxYBe",
+      "hQbcs",
+      "h7RoNv",
+      "X4F5U6",
+      "sGMRq",
+      "LBgNz",
+      "FR9OK",
+      "HAZ5n",
+      "dxlCk",
+      "TOAHk",
+      "n7ERHF",
+      "Iag0o",
+      "kjtAV",
+      "eULFR",
+      "jizim",
+      "JATOf",
+      "yqArW",
+      "IKaEF",
+      "bl4IC",
+      "x2L4V5",
+      "OImtc",
+      "C7y3Xq",
+      "wSrJ4",
+      "cPz8L",
+      "JlFit",
+      "z1W6xq",
+      "DXFPn",
+      "e5B0Y",
+      "OpJUa",
+      "d0njZU",
+      "DoYlQ",
+      "s6olL9",
+      "P6hf4",
+      "ZlRpW",
+      "PbiZY",
+      "t1VNh",
+      "YlxNe",
+      "eCByC",
+      "yI9dz"
+    ],
+    "unexpectedMissingSourceIds": [],
+    "sourceRawNodes": 9471,
+    "targetRawNodes": 9756,
+    "sourceIdsIncludingReplacementNodes": 9808,
+    "missingSourceIdsIncludingReplacementNodes": [
+      "u30Cl",
+      "lxYBe",
+      "hQbcs",
+      "h7RoNv",
+      "X4F5U6",
+      "sGMRq",
+      "LBgNz",
+      "FR9OK",
+      "HAZ5n",
+      "dxlCk",
+      "TOAHk",
+      "n7ERHF",
+      "Iag0o",
+      "kjtAV",
+      "eULFR",
+      "jizim",
+      "JATOf",
+      "yqArW",
+      "IKaEF",
+      "bl4IC",
+      "x2L4V5",
+      "OImtc",
+      "C7y3Xq",
+      "wSrJ4",
+      "cPz8L",
+      "JlFit",
+      "z1W6xq",
+      "DXFPn",
+      "e5B0Y",
+      "OpJUa",
+      "d0njZU",
+      "DoYlQ",
+      "s6olL9",
+      "P6hf4",
+      "ZlRpW",
+      "PbiZY",
+      "t1VNh",
+      "YlxNe",
+      "eCByC",
+      "yI9dz"
+    ],
+    "sourceRoots": 164,
+    "targetRoots": 184,
+    "changedRootCoordinates": [],
+    "autoLayoutSourceFrames": 3404,
+    "changedAutoLayout": [],
+    "sourceComponents": 94,
+    "targetComponents": 93,
+    "linkedReferences": 413,
+    "unresolvedRefs": [],
+    "originalCanvasOverlapPairs": 0,
+    "targetCanvasOverlapPairs": 0,
+    "newCanvasOverlapPairs": [],
+    "resolvedCanvasOverlapPairs": [],
+    "addedCompatibilityNodes": 320,
+    "allSourceReferencesIncludingReplacementNodes": 422,
+    "allTargetReferencesIncludingReplacementNodes": 419,
+    "unresolvedAllRefs": [],
+    "topLevelScreensReplacedByBitmap": []
+  },
+  "topLevelPreviewsCompared": 164,
+  "componentPreviewsCompared": 94,
+  "unresolved": [
+    {
+      "kind": "文字引擎",
+      "title": "字偶间距未被保留",
+      "detail": "受控实验验证：相同字体文件、48px Inter 的 AVAVAVAVAV，源稿字形宽300px，OpenPencil为329px。12组样本分别匹配字体GPOS字偶调整模型与无字偶调整模型，误差均不超过2px；目标绘制代码使用 draw_str。当前.op的字体参数未丢失，但文件里没有可切换字偶调整的属性。统一压缩字距会使其他字符串和后续编辑偏离源稿，因此未作为修复。"
+    },
+    {
+      "kind": "视觉",
+      "title": "严格 1:1 视觉验收尚未通过",
+      "detail": "已比较全部页面与组件。字重、文字换行与抗锯齿、图片采样、阴影和背景模糊仍存在差异。文件可编辑，但不能称为完全 1:1 终稿。"
+    },
+    {
+      "kind": "文字引擎",
+      "title": "自动宽度文字可能被错误缩小",
+      "detail": "已补齐源版本字体，但 OpenPencil 的自动宽度绘制用默认字体测量，再缩小字号。112px Anton 的独立测试中，源字形高99px，原生自动宽度字形仅86px；加宽节点可恢复字形大小，却改变了原稿边界，因此未把它当作 1:1 修复。"
+    },
+    {
+      "kind": "字体环境",
+      "title": "字体需要随使用环境准备",
+      "detail": "本机已导入源版本 Anton、Geist、Geist Mono、Inter、Noto Sans SC，共19个字重文件，原始字体和许可证保留在 D:\\Applications\\OpenPencil\\design-fonts。字体不嵌在 .op 中，其他电脑需要准备相同字体。原稿另有1处 PingFang SC 名称，本机依赖平台后备字体。"
+    },
+    {
+      "kind": "布局行为",
+      "title": "隐藏节点重新显示时需要恢复流式布局",
+      "detail": "当前原生引擎仍为隐藏节点分配空间。迁移保留隐藏状态，并添加绝对定位约束以避免占位；重新显示这些节点时需移除对应约束，才能重新参与 Auto Layout。这项交互编辑行为尚未做到 1:1。"
+    },
+    {
+      "kind": "填充编辑",
+      "title": "部分渐变采用可编辑网格兼容",
+      "detail": "已将椭圆径向和非默认方向、尺寸的线性渐变转换为网格填充，修复先前的几何差异；源参数保存在填充 explain 中。网格仍有离散采样误差，后续编辑也不同于原来的双轴渐变控件。"
+    },
+    {
+      "kind": "来源资产",
+      "title": "原设计已缺失 generated-1.png",
+      "detail": "节点 qAMWN 在 Pencil 中也显示缺图棋盘格。目标稿保留了源文件当前显示的棋盘格，不代表找回了原插画。"
+    },
+    {
+      "kind": "格式语义",
+      "title": "兼容包装及授权的业务结构调整",
+      "detail": "当前保留 320 个兼容包装或矢量节点，其中124个是文字尺寸容器：保留原ID和高度，内部文字仍可编辑；修改字体、内容和实例覆盖均有验证，但比源稿多一层。按要求删除40个旧工具原始节点，新增5个首页Chwazi标识节点。数值后缀尺寸和填充编辑属性仍有兼容差异。"
+    },
+    {
+      "kind": "图层顺序",
+      "title": "2 个重叠布局使用镜像顺序兼容",
+      "detail": "Wqvlc 与 HT6ol 通过反转子节点顺序并双重镜像保留原稿的视觉排列及遮挡关系，仍保留垂直 Auto Layout。此处图层树插入顺序与源稿不同，不能据此宣称所有编辑行为一致。"
+    }
+  ],
+  "notes": [
+    "像素误差均值为 RGB 通道绝对差，范围 0–255，不是还原度百分比。",
+    "组件对照仅校正不同导出器的透明阴影边界平移裁切，未拉伸或变形；原导出尺寸和裁切偏移保存在 component-visual-comparison.json。",
+    "独立文字与无裁切容器的两个导出器边界定义不同，尺寸差异不必然意味着设计尺寸被改变。",
+    "164 个区域全量渲染，超长组件库采用 0.5 倍原生导出后缩小到与源图相同比例；组件另以 1 倍截图核对。"
+  ]
+}

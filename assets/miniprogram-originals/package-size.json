@@ -1,0 +1,147 @@
+{
+  "date": "2026-10-20",
+  "method": "miniprogram-ci 2.1.48 getCompiledResult (production) + official ci/utils/pack",
+  "scope": "Local production-format wxapkg; no upload, server acceptance, or native device test",
+  "settings": "Existing project.config.json settings; no source maps in code package; no subpackages",
+  "remote_project_attributes": "Unavailable without access_token; compiler defaults used in both builds",
+  "before": {
+    "files": 432,
+    "bytes": 1934716,
+    "packageBytes": 1953482,
+    "validSize": 1948280
+  },
+  "after": {
+    "files": 429,
+    "bytes": 1596714,
+    "packageBytes": 1615387,
+    "validSize": 1610221
+  },
+  "package_bytes_saved": 338095,
+  "package_reduction_percent": 17.31,
+  "changed_files": [
+    "images/activity-home-logo.png",
+    "images/home-tool-boardgames.png",
+    "images/home-tool-chwazi.png",
+    "images/icon-activity-map-marker.png",
+    "images/profile-guest-avatar.png",
+    "pages/boardgame_intake/empty-art.png",
+    "pages/boardgame_intake/initial-art.png",
+    "pages/boardgame_intake/success-art.png"
+  ],
+  "removed_from_package": [
+    "README.md",
+    "images/README.md",
+    "images/wechat-emoji/README.md"
+  ],
+  "all_other_compiled_files_byte_identical": true,
+  "verification": {
+    "frontend_tests_passed": 1003,
+    "frontend_tests_skipped": 0,
+    "asset_tests_passed": 4
+  },
+  "package_sha256": {
+    "before": "20a9f43f9269b6befe5fec975aa321736763573a9e41379461e06cf1b9cc7e57",
+    "after": "452b43a620d69356db04ab8c02438519410eac054605f966add42174c5cff538",
+    "after_lossless": "4cd493d2a23ffc8c23d83f8e39a928c924a2ede49699cda4b70183c2aa4ef5d3",
+    "after_indexed_1080": "15c775f14f72a933e47b5d9eb8b57f644b4c8775041494afdc63073199e96e2b"
+  },
+  "after_lossless": {
+    "files": 429,
+    "bytes": 1721429,
+    "packageBytes": 1740102,
+    "validSize": 1734936
+  },
+  "avatar_palette_stage": {
+    "method": "Replace only the PNG in the previous production compile; repack with official miniprogram-ci 2.1.48 packer. No JS/style/template changes or new full compile.",
+    "before_avatar_bytes": 178170,
+    "after_avatar_bytes": 85217,
+    "extra_bytes_saved": 92953,
+    "device_validation": "Existing WeChat DevTools simulator: native PNG decode, export SHA-256, 100x100 display and before/after screenshots checked; not a physical phone test",
+    "quality_metrics": {
+      "#545454@100": {
+        "mae": 0.1216,
+        "psnr": 57.0700284161895
+      },
+      "#545454@160": {
+        "mae": 0.15170572916666666,
+        "psnr": 55.74035181154393
+      },
+      "#545454@300": {
+        "mae": 0.18088518518518518,
+        "psnr": 54.41499451304491
+      },
+      "#545454@480": {
+        "mae": 0.19696469907407407,
+        "psnr": 53.428198076293896
+      },
+      "#f8fafc@100": {
+        "mae": 0.12026666666666667,
+        "psnr": 57.14782824373213
+      },
+      "#f8fafc@160": {
+        "mae": 0.15087239583333334,
+        "psnr": 55.82797791229481
+      },
+      "#f8fafc@300": {
+        "mae": 0.1832851851851852,
+        "psnr": 54.38189513092948
+      },
+      "#f8fafc@480": {
+        "mae": 0.20023003472222223,
+        "psnr": 53.31846392873487
+      }
+    }
+  },
+  "after_indexed_1080": {
+    "files": 429,
+    "bytes": 1628476,
+    "packageBytes": 1647149,
+    "validSize": 1641983
+  },
+  "avatar_resize_stage": {
+    "method": "Replace only the PNG in the previous production compile; repack with official miniprogram-ci 2.1.48 packer. No JS/style/template changes or new full compile.",
+    "before_avatar_bytes": 85217,
+    "after_avatar_bytes": 53455,
+    "extra_bytes_saved": 31762,
+    "dimensions": [
+      512,
+      512
+    ],
+    "regenerated_from_original": true,
+    "device_validation": "Existing WeChat DevTools simulator: native PNG decode, export SHA-256, 100x100 display and before/after screenshots checked; not a physical phone test",
+    "quality_metrics": {
+      "#545454@100": {
+        "mae": 0.20166666666666666,
+        "psnr": 54.26403076907072
+      },
+      "#545454@160": {
+        "mae": 0.239375,
+        "psnr": 52.92719666335236
+      },
+      "#545454@300": {
+        "mae": 0.2886518518518519,
+        "psnr": 51.00655158848646
+      },
+      "#545454@480": {
+        "mae": 0.3744155092592592,
+        "psnr": 47.621378875687014
+      },
+      "#f8fafc@100": {
+        "mae": 0.21306666666666665,
+        "psnr": 53.94006205133362
+      },
+      "#f8fafc@160": {
+        "mae": 0.25580729166666666,
+        "psnr": 52.46225667149368
+      },
+      "#f8fafc@300": {
+        "mae": 0.31912592592592587,
+        "psnr": 49.959755057599395
+      },
+      "#f8fafc@480": {
+        "mae": 0.42775607638888885,
+        "psnr": 45.97392550071591
+      }
+    }
+  }
+}

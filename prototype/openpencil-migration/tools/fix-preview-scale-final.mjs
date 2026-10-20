@@ -1,0 +1,1 @@
+import fs from 'node:fs';let code=fs.readFileSync('tools/compare-previews.py','utf8');code=code.replace('tp=Path("audit/target-previews" if item["scale"]==1 else "audit/target-previews-small")/(item["id"]+".png")','tp=Path("audit/review")/(item["id"]+"-target.png")');code=code.replace('if False: pass','');fs.writeFileSync('tools/compare-previews.py',code);

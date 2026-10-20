@@ -1,0 +1,2 @@
+import fs from 'node:fs';
+fs.writeFileSync('audit/flip-probe.op',JSON.stringify({version:'1.2',formatVersion:'1.2',children:[{type:'frame',id:'flip',width:50,height:100,layout:'none',flipY:true,fill:[{type:'solid',color:'#fff'}],children:[{type:'rectangle',id:'red',x:0,y:0,width:50,height:20,fill:[{type:'solid',color:'#f00'}]},{type:'rectangle',id:'blue',x:0,y:70,width:50,height:30,fill:[{type:'solid',color:'#00f'}]}]}]}));

@@ -1,1 +1,4 @@
 backend/scripts/*.sh text eol=lf
+
+# Preserve native OpenPencil files without line-ending conversion or text merges.
+*.op binary

@@ -1,0 +1,107 @@
+{
+  "mutations": [
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"count\":\"1\",\"wrote\":\"true\"}"
+        }
+      ]
+    },
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"count\":\"1\",\"wrote\":\"true\"}"
+        }
+      ]
+    },
+    {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"count\":\"1\",\"wrote\":\"true\"}"
+        }
+      ]
+    }
+  ],
+  "finalRefs": [
+    {
+      "type": "ref",
+      "id": "u3hZO",
+      "name": "基本信息 · 轻量信息卡组",
+      "x": 0,
+      "y": 0,
+      "ref": "O5XQF",
+      "descendants": {
+        "KccYm": {
+          "content": "24 "
+        },
+        "O5XQF": {
+          "width": 358,
+          "x": null,
+          "y": null
+        },
+        "Vb4Ql": {
+          "descendants": {
+            "e7YZJ": {
+              "content": "基本信息"
+            },
+            "Q3a1B": {
+              "enabled": false,
+              "visible": false,
+              "x": 0,
+              "y": 0,
+              "constraints": {
+                "h": "left",
+                "v": "top"
+              },
+              "width": 67
+            },
+            "fkRJY": {
+              "content": "报名进行中",
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#FF9800"
+                }
+              ],
+              "fontWeight": "600"
+            },
+            "yQQN8": {
+              "enabled": false,
+              "visible": false,
+              "x": 0,
+              "y": 0,
+              "constraints": {
+                "h": "left",
+                "v": "top"
+              },
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#9CA3AF"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "ref",
+      "id": "zPws2",
+      "name": "ref · zPws2",
+      "x": 500,
+      "y": 0,
+      "ref": "O5XQF",
+      "descendants": {
+        "O5XQF": {
+          "x": null,
+          "y": null
+        }
+      }
+    }
+  ],
+  "formalFileUnchanged": true
+}

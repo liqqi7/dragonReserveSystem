@@ -1,0 +1,36 @@
+{
+  "sameCondition": "Strict 1:1 requires native OpenPencil engine behavior that is not exposed by .op properties.",
+  "observations": [
+    {
+      "turn": "centering_promotion",
+      "evidence": [
+        "centering-promotion.json",
+        "centered-text-structure-validation.json",
+        "visibility-edit-probe-validation.json",
+        "auto-width-shrink-validation.json"
+      ],
+      "conclusion": "File-level text/height repairs applied; native text painting and hidden-flow parity remain."
+    },
+    {
+      "turn": "font_engine_investigation",
+      "evidence": [
+        "font-advance-engine-validation.json",
+        "current-text-style-validation.json"
+      ],
+      "conclusion": "Exact authored font parameters retained; native simple-script paint does not apply GPOS kerning. No file-level parameter repairs this for changing text."
+    },
+    {
+      "turn": "current_release_and_delivery_audit",
+      "evidence": [
+        "current-delivery-audit.json",
+        "current-final-editor-snapshot.op"
+      ],
+      "conclusion": "Current deliverable and live editor match. Official release list still tops at v0.8.4; no newer published binary provides an upgrade path."
+    }
+  ],
+  "consecutiveGoalTurns": 3,
+  "meaningfulRemainingFileLevelActionIdentified": false,
+  "nextDependency": "A native engine fix/update, or an explicit user decision to accept documented fidelity/behavior differences. Building and maintaining a custom editor is a separate implementation scope.",
+  "officialReleaseUrl": "https://github.com/ZSeven-W/openpencil/releases/tag/v0.8.4",
+  "goalNotCompleted": true
+}

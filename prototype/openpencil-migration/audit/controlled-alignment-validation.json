@@ -1,0 +1,102 @@
+{
+  "sourceSingleShift": 3,
+  "sourceMultiShift": 4,
+  "native": [
+    {
+      "phase": "before",
+      "cases": [
+        {
+          "case": "singleTop",
+          "inkBounds": [
+            1,
+            4,
+            139,
+            20
+          ],
+          "meanError": 13.524074074074074
+        },
+        {
+          "case": "singleMiddle",
+          "inkBounds": [
+            1,
+            4,
+            139,
+            20
+          ],
+          "meanError": 34.55925925925926
+        },
+        {
+          "case": "multiTop",
+          "inkBounds": [
+            1,
+            4,
+            226,
+            29
+          ],
+          "meanError": 23.843447113358618
+        },
+        {
+          "case": "multiMiddle",
+          "inkBounds": [
+            1,
+            4,
+            226,
+            29
+          ],
+          "meanError": 41.819637589549096
+        }
+      ],
+      "singleShift": 0,
+      "multiShift": 0
+    },
+    {
+      "phase": "after",
+      "cases": [
+        {
+          "case": "singleTop",
+          "inkBounds": [
+            1,
+            4,
+            139,
+            20
+          ],
+          "meanError": 13.524074074074074
+        },
+        {
+          "case": "singleMiddle",
+          "inkBounds": [
+            1,
+            7,
+            139,
+            23
+          ],
+          "meanError": 13.524074074074074
+        },
+        {
+          "case": "multiTop",
+          "inkBounds": [
+            1,
+            4,
+            226,
+            29
+          ],
+          "meanError": 23.843447113358618
+        },
+        {
+          "case": "multiMiddle",
+          "inkBounds": [
+            1,
+            8,
+            226,
+            33
+          ],
+          "meanError": 23.843447113358618
+        }
+      ],
+      "singleShift": 3,
+      "multiShift": 4
+    }
+  ],
+  "sourceEvidence": "source-text-alignment-behavior.json",
+  "sourceFileUnchanged": true
+}

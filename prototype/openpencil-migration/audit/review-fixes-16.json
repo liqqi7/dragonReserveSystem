@@ -1,0 +1,8 @@
+{
+  "change": "Preserve live fill_container sizing for fallback strings when the Auto Layout parent has a definite numeric size on the same axis. Remaining indeterminate/non-flow fallback sizes remain explicit and disclosed.",
+  "nodes": [
+    "R6Lle",
+    "XdIEF"
+  ],
+  "verification": "Compare all source regions and resize the progress-bar parent from358 to460; child must follow the new width."
+}

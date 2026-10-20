@@ -1,0 +1,58 @@
+{
+  "generatedAt": "2026-10-20T18:47:20.480Z",
+  "target": "../龙城小程序.op",
+  "targetSha256": "8f0bdc068d0cb4b184ee87b70531bc0ce50dfbc0953fefce54f827dc4d8cc398",
+  "targetBytes": 81840063,
+  "pages": [
+    {
+      "id": "dragon-page-home",
+      "name": "首页",
+      "roots": 49
+    },
+    {
+      "id": "dragon-page-memory",
+      "name": "记忆",
+      "roots": 22
+    },
+    {
+      "id": "dragon-page-ranking",
+      "name": "排行榜",
+      "roots": 5
+    },
+    {
+      "id": "dragon-page-profile",
+      "name": "我的",
+      "roots": 20
+    },
+    {
+      "id": "dragon-page-exploration",
+      "name": "探索",
+      "roots": 62
+    },
+    {
+      "id": "dragon-page-templates",
+      "name": "模板",
+      "roots": 23
+    },
+    {
+      "id": "dragon-page-assets",
+      "name": "素材",
+      "roots": 3
+    }
+  ],
+  "structureCheck": "structure-validation.json",
+  "assetTests": {
+    "command": "python tools/test_miniprogram_assets.py",
+    "passed": 4
+  },
+  "nativeEmbeddedAssetCount": 86,
+  "sourceAssetsByteIdenticalInNativeImageStore": 85,
+  "sourceAssetsWithoutIdenticalNativeBytes": [
+    "../backend/app/assets/activity-covers/patryk-wojciechowicz/avatar.jpg",
+    "图片素材/image-18.png",
+    "图片素材/image-26.png"
+  ],
+  "imageByteCheckNote": "Native saves use generated image keys rather than original SHA-256 keys. Compare decoded bytes; three source images have no byte-identical entry in the native image store. Pixel equality was not rechecked for this archive.",
+  "historicalReportsNote": "Other audit reports and gallery screenshots describe earlier migration revisions. Use this snapshot hash for the archived file; strict one-to-one acceptance remains false.",
+  "strictOneToOneAccepted": false
+}

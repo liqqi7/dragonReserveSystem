@@ -1,0 +1,2626 @@
+[
+  {
+    "id": "R06j1",
+    "name": "成功桌游名称",
+    "sourceSize": [
+      138,
+      16
+    ],
+    "targetSize": [
+      180,
+      24
+    ],
+    "sizeMatch": false,
+    "meanError": 47.464,
+    "within10Percent": 66.2,
+    "within25Percent": 67.78
+  },
+  {
+    "id": "j9x9uR",
+    "name": "横向桌游切换列表",
+    "sourceSize": [
+      350,
+      106
+    ],
+    "targetSize": [
+      351,
+      108
+    ],
+    "sizeMatch": false,
+    "meanError": 25.281,
+    "within10Percent": 57.97,
+    "within25Percent": 72.17
+  },
+  {
+    "id": "JwTSh",
+    "name": "JwTSh",
+    "sourceSize": [
+      18,
+      12
+    ],
+    "targetSize": [
+      44,
+      28
+    ],
+    "sizeMatch": false,
+    "meanError": 22.388,
+    "within10Percent": 83.93,
+    "within25Percent": 85.06
+  },
+  {
+    "id": "M6gJo",
+    "name": "M6gJo",
+    "sourceSize": [
+      1,
+      1
+    ],
+    "targetSize": [
+      1,
+      1
+    ],
+    "sizeMatch": true,
+    "meanError": 18.0,
+    "within10Percent": 0.0,
+    "within25Percent": 100.0
+  },
+  {
+    "id": "l8JPT0",
+    "name": "状态 · 活动详情 · 编辑活动抽屉 · 新版现代平铺",
+    "sourceSize": [
+      426,
+      1423
+    ],
+    "targetSize": [
+      391,
+      1409
+    ],
+    "sizeMatch": false,
+    "meanError": 16.192,
+    "within10Percent": 80.06,
+    "within25Percent": 86.19
+  },
+  {
+    "id": "sZ3AN",
+    "name": "状态 · 活动详情 · 已结束 · 副标题展开",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 9.818,
+    "within10Percent": 89.29,
+    "within25Percent": 91.53
+  },
+  {
+    "id": "Gnsno",
+    "name": "探索 · 桌游库列表 08 · 游戏星图",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 8.018,
+    "within10Percent": 89.19,
+    "within25Percent": 93.58
+  },
+  {
+    "id": "q8PNm",
+    "name": "成功桌游封面",
+    "sourceSize": [
+      88,
+      98
+    ],
+    "targetSize": [
+      88,
+      98
+    ],
+    "sizeMatch": true,
+    "meanError": 7.376,
+    "within10Percent": 80.54,
+    "within25Percent": 93.46
+  },
+  {
+    "id": "CObGD",
+    "name": "流程 03.7 · 名称搜索结果 · 首位拥有者",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 7.099,
+    "within10Percent": 89.77,
+    "within25Percent": 92.7
+  },
+  {
+    "id": "ju7YZ",
+    "name": "标题测试 · 04字 · 单行 · 电影海报",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 6.58,
+    "within10Percent": 91.41,
+    "within25Percent": 93.48
+  },
+  {
+    "id": "verUnselected01",
+    "name": "流程 03.名称搜索结果 · 版本未选择",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 6.569,
+    "within10Percent": 91.39,
+    "within25Percent": 93.9
+  },
+  {
+    "id": "jXag2",
+    "name": "活动天气 · 罗盘信息卡片 · 方案四",
+    "sourceSize": [
+      359,
+      121
+    ],
+    "targetSize": [
+      359,
+      121
+    ],
+    "sizeMatch": true,
+    "meanError": 6.302,
+    "within10Percent": 89.59,
+    "within25Percent": 91.8
+  },
+  {
+    "id": "BjPyU",
+    "name": "标题测试 · 超限省略 · 蓝色头像",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 6.301,
+    "within10Percent": 92.0,
+    "within25Percent": 93.51
+  },
+  {
+    "id": "folfG",
+    "name": "流程 03 · 名称搜索结果",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 6.102,
+    "within10Percent": 91.15,
+    "within25Percent": 94.17
+  },
+  {
+    "id": "Nz8RY",
+    "name": "流程 03 · 名称搜索结果",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 6.102,
+    "within10Percent": 91.15,
+    "within25Percent": 94.17
+  },
+  {
+    "id": "wziuQ",
+    "name": "流程 03 · 名称搜索结果",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 5.947,
+    "within10Percent": 91.52,
+    "within25Percent": 94.57
+  },
+  {
+    "id": "fEinP",
+    "name": "流程 03 · 名称搜索结果",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 5.947,
+    "within10Percent": 91.52,
+    "within25Percent": 94.57
+  },
+  {
+    "id": "vJwP7",
+    "name": "状态 · 活动详情 · 进行中 · 副标题折叠 · 待签到",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 5.933,
+    "within10Percent": 92.32,
+    "within25Percent": 94.73
+  },
+  {
+    "id": "rRXcj",
+    "name": "状态 · 活动详情 · 进行中 · 未报名",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 5.916,
+    "within10Percent": 92.41,
+    "within25Percent": 94.82
+  },
+  {
+    "id": "L7TUb",
+    "name": "状态 · 活动详情 · 未开始 · 已满员",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 5.915,
+    "within10Percent": 92.41,
+    "within25Percent": 94.78
+  },
+  {
+    "id": "X9GgXl",
+    "name": "状态 · 活动详情 · 进行中 · 已签到",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 5.913,
+    "within10Percent": 92.41,
+    "within25Percent": 94.81
+  },
+  {
+    "id": "qvafH",
+    "name": "页面 · 活动详情 · 默认 · 管理员",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 5.887,
+    "within10Percent": 92.37,
+    "within25Percent": 94.73
+  },
+  {
+    "id": "AHJRA",
+    "name": "状态 · Chwazi · 超过五指",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 5.781,
+    "within10Percent": 96.23,
+    "within25Percent": 96.36
+  },
+  {
+    "id": "ZG2ZJ",
+    "name": "状态 · 内容审核 · 备注展开",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 5.529,
+    "within10Percent": 87.94,
+    "within25Percent": 94.03
+  },
+  {
+    "id": "QNVEQ",
+    "name": "探索 · 桌游库列表 12 · 最近购入与全部馆藏",
+    "sourceSize": [
+      390,
+      1709
+    ],
+    "targetSize": [
+      390,
+      1709
+    ],
+    "sizeMatch": true,
+    "meanError": 5.36,
+    "within10Percent": 84.51,
+    "within25Percent": 94.17
+  },
+  {
+    "id": "aFkLU",
+    "name": "活动天气 · 气象信号台 · 方案五",
+    "sourceSize": [
+      359,
+      121
+    ],
+    "targetSize": [
+      359,
+      121
+    ],
+    "sizeMatch": true,
+    "meanError": 5.334,
+    "within10Percent": 90.22,
+    "within25Percent": 93.02
+  },
+  {
+    "id": "mJzbF",
+    "name": "桌游库列表  · 最近购入与全部馆藏",
+    "sourceSize": [
+      390,
+      1709
+    ],
+    "targetSize": [
+      390,
+      1709
+    ],
+    "sizeMatch": true,
+    "meanError": 5.32,
+    "within10Percent": 84.56,
+    "within25Percent": 94.23
+  },
+  {
+    "id": "RQKdZ",
+    "name": "页面 · 排行榜 · 活动榜",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 5.273,
+    "within10Percent": 91.74,
+    "within25Percent": 93.7
+  },
+  {
+    "id": "KHPGJ",
+    "name": "活动天气 · 编辑简报卡片 · 方案三",
+    "sourceSize": [
+      359,
+      133
+    ],
+    "targetSize": [
+      359,
+      133
+    ],
+    "sizeMatch": true,
+    "meanError": 5.261,
+    "within10Percent": 91.65,
+    "within25Percent": 93.85
+  },
+  {
+    "id": "sNAax",
+    "name": "页面 · 活动详情 · 多子项目 · 管理员",
+    "sourceSize": [
+      390,
+      1066
+    ],
+    "targetSize": [
+      390,
+      1066
+    ],
+    "sizeMatch": true,
+    "meanError": 5.022,
+    "within10Percent": 93.25,
+    "within25Percent": 95.32
+  },
+  {
+    "id": "nhpZv",
+    "name": "状态 · 活动详情 · 报名中 · 橙色头像主视觉 · 已报名",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 4.924,
+    "within10Percent": 91.8,
+    "within25Percent": 95.2
+  },
+  {
+    "id": "D3WX9",
+    "name": "页面 · 记忆",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 4.634,
+    "within10Percent": 84.72,
+    "within25Percent": 94.08
+  },
+  {
+    "id": "OsLw5",
+    "name": "探索 · 桌游库列表 03 · 拼贴图鉴",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 4.593,
+    "within10Percent": 89.78,
+    "within25Percent": 95.28
+  },
+  {
+    "id": "TVIe9",
+    "name": "状态 · 记忆 · 图片预览 · 横图上下黑边",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 4.406,
+    "within10Percent": 88.4,
+    "within25Percent": 95.75
+  },
+  {
+    "id": "ye5zL",
+    "name": "探索 · 桌游库列表 05 · 收藏书架",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 4.339,
+    "within10Percent": 91.01,
+    "within25Percent": 94.94
+  },
+  {
+    "id": "PnVau",
+    "name": "探索 · 活动详情 F · 编辑节目单",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 4.242,
+    "within10Percent": 93.62,
+    "within25Percent": 94.5
+  },
+  {
+    "id": "ITk5L",
+    "name": "活动天气 · 五项紧凑长条",
+    "sourceSize": [
+      359,
+      101
+    ],
+    "targetSize": [
+      359,
+      101
+    ],
+    "sizeMatch": true,
+    "meanError": 4.098,
+    "within10Percent": 91.76,
+    "within25Percent": 94.33
+  },
+  {
+    "id": "TC0km",
+    "name": "流程 01 · 录入桌游入口",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 4.063,
+    "within10Percent": 96.0,
+    "within25Percent": 96.24
+  },
+  {
+    "id": "X7JPq",
+    "name": "探索 · 桌游库列表 01 · 沉浸焦点",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 4.051,
+    "within10Percent": 91.54,
+    "within25Percent": 95.47
+  },
+  {
+    "id": "I2GgZO",
+    "name": "活动分享卡片 · 毛玻璃",
+    "sourceSize": [
+      550,
+      440
+    ],
+    "targetSize": [
+      550,
+      440
+    ],
+    "sizeMatch": true,
+    "meanError": 4.002,
+    "within10Percent": 91.88,
+    "within25Percent": 95.47
+  },
+  {
+    "id": "U8Nbr",
+    "name": "状态 · 记忆 · 视频预览 · 暂停 · 松手后小进度条 3秒",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.985,
+    "within10Percent": 93.72,
+    "within25Percent": 97.38
+  },
+  {
+    "id": "ZDNWD",
+    "name": "页面 · 内容审核 · 待审批列表",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.976,
+    "within10Percent": 90.2,
+    "within25Percent": 95.2
+  },
+  {
+    "id": "xuqNi",
+    "name": "状态 · 内容审核 · 图片预览",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.965,
+    "within10Percent": 88.55,
+    "within25Percent": 95.92
+  },
+  {
+    "id": "C5Z41z",
+    "name": "探索 · 首页 · 管理员方案一",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.946,
+    "within10Percent": 90.97,
+    "within25Percent": 95.93
+  },
+  {
+    "id": "sRdvt",
+    "name": "探索 · 活动详情 B · 高效决策",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.94,
+    "within10Percent": 93.58,
+    "within25Percent": 95.06
+  },
+  {
+    "id": "G7P0U",
+    "name": "探索 · 桌游库列表 02 · 卡牌画廊",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.938,
+    "within10Percent": 90.49,
+    "within25Percent": 95.44
+  },
+  {
+    "id": "DcdID",
+    "name": "状态 · 记忆 · 视频预览 · 播放中 · 松手后小进度条 3秒",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.902,
+    "within10Percent": 93.71,
+    "within25Percent": 97.38
+  },
+  {
+    "id": "l2Ubhx",
+    "name": "状态 · 记忆 · 图片预览 · 放大 200%",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.72,
+    "within10Percent": 91.26,
+    "within25Percent": 98.68
+  },
+  {
+    "id": "ftPtS",
+    "name": "探索 · 桌游库列表 04 · 排名杂志",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.617,
+    "within10Percent": 92.13,
+    "within25Percent": 95.85
+  },
+  {
+    "id": "WdzA7",
+    "name": "状态 · 记忆 · 视频预览 · 播放中 · 默认隐藏进度条",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.605,
+    "within10Percent": 93.94,
+    "within25Percent": 97.61
+  },
+  {
+    "id": "H2Bhy",
+    "name": "页面 · 排行榜 · 鸽子榜",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.562,
+    "within10Percent": 94.06,
+    "within25Percent": 96.04
+  },
+  {
+    "id": "Ev1C5",
+    "name": "探索 · 桌游库列表 06 · 扇形牌阵",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.559,
+    "within10Percent": 91.2,
+    "within25Percent": 96.32
+  },
+  {
+    "id": "ptSzf",
+    "name": "状态 · 记忆 · 图片预览",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.416,
+    "within10Percent": 92.95,
+    "within25Percent": 97.5
+  },
+  {
+    "id": "fLHGc",
+    "name": "探索 · 活动详情 I · 系列仪式",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.411,
+    "within10Percent": 94.32,
+    "within25Percent": 95.35
+  },
+  {
+    "id": "D3GuQ",
+    "name": "状态 · 参与人抽屉 · 进行中 · 默认",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.406,
+    "within10Percent": 94.11,
+    "within25Percent": 96.16
+  },
+  {
+    "id": "ImTfR",
+    "name": "探索 · 活动详情 C · 社交参与",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.389,
+    "within10Percent": 93.81,
+    "within25Percent": 95.81
+  },
+  {
+    "id": "qMC0v",
+    "name": "状态 · 参与人抽屉 · 进行中 · 左滑取签与删除",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.333,
+    "within10Percent": 94.13,
+    "within25Percent": 96.2
+  },
+  {
+    "id": "mGkc2",
+    "name": "状态 · 活动详情 · 退出确认弹窗",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.217,
+    "within10Percent": 93.99,
+    "within25Percent": 96.13
+  },
+  {
+    "id": "VG9sB",
+    "name": "状态 · 活动详情 · 编辑活动 · 更换封面抽屉打开",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.21,
+    "within10Percent": 90.45,
+    "within25Percent": 95.79
+  },
+  {
+    "id": "B88jpv",
+    "name": "状态 · 排行榜 · 鸽王概率 · 高中低风险",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.206,
+    "within10Percent": 92.4,
+    "within25Percent": 96.02
+  },
+  {
+    "id": "WTdTo",
+    "name": "状态 · 活动详情 · 编辑活动 · 未选择封面",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.195,
+    "within10Percent": 90.47,
+    "within25Percent": 95.8
+  },
+  {
+    "id": "sE1zi",
+    "name": "探索 · 底部导航 · 5等分中央新建入口 · 首页",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.094,
+    "within10Percent": 90.98,
+    "within25Percent": 96.53
+  },
+  {
+    "id": "MaM8Q",
+    "name": "状态 · 参与人抽屉 · 报名中 · 默认",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.044,
+    "within10Percent": 95.22,
+    "within25Percent": 96.69
+  },
+  {
+    "id": "S3QXHL",
+    "name": "探索 · 工具 · 桌游库列表 · 当前方案",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.035,
+    "within10Percent": 94.49,
+    "within25Percent": 96.59
+  },
+  {
+    "id": "a7h8g",
+    "name": "状态 · 参与人抽屉 · 报名中 · 左滑仅删除",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 3.012,
+    "within10Percent": 95.22,
+    "within25Percent": 96.7
+  },
+  {
+    "id": "rnJW6",
+    "name": "探索 · 活动详情 G · 适配推荐",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.983,
+    "within10Percent": 94.53,
+    "within25Percent": 95.77
+  },
+  {
+    "id": "FDMKv",
+    "name": "状态 · 活动详情 · 多子项目 · 立即报名抽屉 · 未勾选",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.976,
+    "within10Percent": 94.83,
+    "within25Percent": 96.72
+  },
+  {
+    "id": "L6hnE",
+    "name": "探索 · 活动详情 A · 标题03字 · 单行",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.936,
+    "within10Percent": 95.1,
+    "within25Percent": 96.58
+  },
+  {
+    "id": "aDnxZ",
+    "name": "页面 · 首页 · 管理员",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.926,
+    "within10Percent": 93.41,
+    "within25Percent": 96.72
+  },
+  {
+    "id": "m5AESz",
+    "name": "状态 · 记忆 · 视频预览 · 横视频上下黑边 · 松手后小进度条 3秒",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.916,
+    "within10Percent": 96.25,
+    "within25Percent": 97.72
+  },
+  {
+    "id": "tF3N2",
+    "name": "流程 02 · 空结果页",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.86,
+    "within10Percent": 96.86,
+    "within25Percent": 97.18
+  },
+  {
+    "id": "K8qZPJ",
+    "name": "状态 · 排行榜 · 鸽子榜 · 未发红包空状态",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.703,
+    "within10Percent": 95.53,
+    "within25Percent": 97.24
+  },
+  {
+    "id": "A0ClSv",
+    "name": "状态 · 记忆 · 视频预览 · 横视频上下黑边 · 默认隐藏进度条",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.681,
+    "within10Percent": 96.47,
+    "within25Percent": 97.94
+  },
+  {
+    "id": "i0BOQg",
+    "name": "状态 · 活动封面 · 全屏预览 · 竖图默认",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.66,
+    "within10Percent": 90.55,
+    "within25Percent": 98.1
+  },
+  {
+    "id": "S6jwOA",
+    "name": "状态 · 参与人抽屉 · 现场点名 · 活动已结束 · 左滑补卡与删除",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.615,
+    "within10Percent": 96.12,
+    "within25Percent": 96.95
+  },
+  {
+    "id": "j8v7l5",
+    "name": "探索 · 多活动详情方案 C · 分段报名",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.547,
+    "within10Percent": 95.98,
+    "within25Percent": 97.07
+  },
+  {
+    "id": "CXmSf",
+    "name": "状态 · 上传记忆 · 投稿说明弹窗",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.53,
+    "within10Percent": 95.45,
+    "within25Percent": 96.87
+  },
+  {
+    "id": "lRVYf",
+    "name": "页面 · 我的 · 管理员",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.484,
+    "within10Percent": 97.08,
+    "within25Percent": 97.87
+  },
+  {
+    "id": "j7GSCo",
+    "name": "页面 · 我的 · 彩虹会员融合",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.422,
+    "within10Percent": 97.3,
+    "within25Percent": 98.02
+  },
+  {
+    "id": "V0cp3",
+    "name": "状态 · 参与人抽屉 · 现场点名 · 无人报名",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.419,
+    "within10Percent": 96.63,
+    "within25Percent": 97.24
+  },
+  {
+    "id": "bJi5P",
+    "name": "状态 · 内容审核 · 视频预览 · 松手后小进度条 3秒",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.417,
+    "within10Percent": 97.31,
+    "within25Percent": 98.2
+  },
+  {
+    "id": "yxYd9",
+    "name": "状态 · 内容审核 · 视频预览 · 默认隐藏进度条",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.416,
+    "within10Percent": 97.32,
+    "within25Percent": 98.2
+  },
+  {
+    "id": "mkGDF",
+    "name": "页面 · 我的 · 彩虹会员融合",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.411,
+    "within10Percent": 97.27,
+    "within25Percent": 98.01
+  },
+  {
+    "id": "nQ5CV",
+    "name": "流程 02 · 名称搜索入口",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.351,
+    "within10Percent": 97.02,
+    "within25Percent": 97.5
+  },
+  {
+    "id": "U9Ou4F",
+    "name": "状态 · 活动详情 · 多子项目 · 报名前置提示弹窗",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.329,
+    "within10Percent": 95.61,
+    "within25Percent": 97.24
+  },
+  {
+    "id": "nvq0n",
+    "name": "流程 · 桌游库搜索结果页 · 有结果",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.322,
+    "within10Percent": 94.37,
+    "within25Percent": 97.27
+  },
+  {
+    "id": "yl4tW",
+    "name": "状态 · 我的 · 修改个人资料弹窗 · 无提示文案",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.318,
+    "within10Percent": 96.87,
+    "within25Percent": 97.66
+  },
+  {
+    "id": "TYBwe",
+    "name": "状态 · 记忆 · 视频预览 · 横屏播放 · 拖动快退",
+    "sourceSize": [
+      844,
+      390
+    ],
+    "targetSize": [
+      844,
+      390
+    ],
+    "sizeMatch": true,
+    "meanError": 2.306,
+    "within10Percent": 94.75,
+    "within25Percent": 98.91
+  },
+  {
+    "id": "OwoFu",
+    "name": "状态 · 记忆 · 视频预览 · 拖动中大进度条",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.305,
+    "within10Percent": 95.31,
+    "within25Percent": 98.87
+  },
+  {
+    "id": "NKGiz",
+    "name": "状态 · 记忆 · 视频预览 · 横屏播放 · 拖动快进",
+    "sourceSize": [
+      844,
+      390
+    ],
+    "targetSize": [
+      844,
+      390
+    ],
+    "sizeMatch": true,
+    "meanError": 2.3,
+    "within10Percent": 94.75,
+    "within25Percent": 98.92
+  },
+  {
+    "id": "WI0bt",
+    "name": "探索 · 日历 02 · 上下联动 · 4月16日选中",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.297,
+    "within10Percent": 96.38,
+    "within25Percent": 97.5
+  },
+  {
+    "id": "qV8N5",
+    "name": "状态 · 记忆 · 视频预览 · 横屏播放 · 播放中",
+    "sourceSize": [
+      844,
+      390
+    ],
+    "targetSize": [
+      844,
+      390
+    ],
+    "sizeMatch": true,
+    "meanError": 2.262,
+    "within10Percent": 94.68,
+    "within25Percent": 99.0
+  },
+  {
+    "id": "W9qcw",
+    "name": "状态 · 记忆 · 视频预览 · 横屏播放 · 暂停",
+    "sourceSize": [
+      844,
+      390
+    ],
+    "targetSize": [
+      844,
+      390
+    ],
+    "sizeMatch": true,
+    "meanError": 2.26,
+    "within10Percent": 94.7,
+    "within25Percent": 99.0
+  },
+  {
+    "id": "dn0Yn",
+    "name": "状态 · 新建活动 · 1/3 选择封面 · 已选中",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.256,
+    "within10Percent": 93.68,
+    "within25Percent": 95.95
+  },
+  {
+    "id": "GVHq9",
+    "name": "探索 · 日历 01 · 上下联动 · 4月15日今天",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.182,
+    "within10Percent": 96.56,
+    "within25Percent": 97.48
+  },
+  {
+    "id": "gua20",
+    "name": "状态 · 新建活动 · 1/3 选择封面 · 未选中",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.168,
+    "within10Percent": 93.91,
+    "within25Percent": 96.23
+  },
+  {
+    "id": "f2E2I",
+    "name": "页面 · 我的 · 彩虹会员融合 · 未登录",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.067,
+    "within10Percent": 98.06,
+    "within25Percent": 98.51
+  },
+  {
+    "id": "YKzDp",
+    "name": "状态 · 活动封面 · 全屏预览 · 横图放大 200%",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.062,
+    "within10Percent": 96.19,
+    "within25Percent": 98.42
+  },
+  {
+    "id": "P2fmOL",
+    "name": "状态 · 新建活动 · 2/3 基础信息 · 已填写",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 2.014,
+    "within10Percent": 96.68,
+    "within25Percent": 97.85
+  },
+  {
+    "id": "lLJSd",
+    "name": "流程 04 · 加入成功",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.961,
+    "within10Percent": 97.63,
+    "within25Percent": 98.0
+  },
+  {
+    "id": "w7iTYn",
+    "name": "状态 · 新建活动 · 3/3 时间与人数 · 多项目已输入完成",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.954,
+    "within10Percent": 96.37,
+    "within25Percent": 97.75
+  },
+  {
+    "id": "styfd",
+    "name": "状态 · 新建活动 · 3/3 时间与人数 · 4个子项目上限",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.936,
+    "within10Percent": 96.14,
+    "within25Percent": 97.96
+  },
+  {
+    "id": "vFvcH",
+    "name": "状态 · 首页 · 登录提示弹窗",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.931,
+    "within10Percent": 95.91,
+    "within25Percent": 98.17
+  },
+  {
+    "id": "HBRMQ",
+    "name": "探索 · 原日程表 · 时间网格（旧版/Skyline受限）",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.899,
+    "within10Percent": 96.77,
+    "within25Percent": 97.73
+  },
+  {
+    "id": "je1iX",
+    "name": "页面 · 上传记忆",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.866,
+    "within10Percent": 95.36,
+    "within25Percent": 97.32
+  },
+  {
+    "id": "P37gp",
+    "name": "状态 · 我的 · 退出登录弹窗",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.803,
+    "within10Percent": 97.09,
+    "within25Percent": 97.97
+  },
+  {
+    "id": "lnq9c",
+    "name": "设计规范 · 组件模板库",
+    "sourceSize": [
+      601,
+      4269
+    ],
+    "targetSize": [
+      601,
+      4269
+    ],
+    "sizeMatch": true,
+    "meanError": 1.652,
+    "within10Percent": 95.7,
+    "within25Percent": 97.66
+  },
+  {
+    "id": "X8rqer",
+    "name": "状态 · 新建活动 · 3/3 时间与人数 · 多项目展开",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.613,
+    "within10Percent": 96.46,
+    "within25Percent": 97.97
+  },
+  {
+    "id": "mzb3Z",
+    "name": "状态 · 编辑活动 · 选择结束时间",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.61,
+    "within10Percent": 96.28,
+    "within25Percent": 98.35
+  },
+  {
+    "id": "F2KEFX",
+    "name": "状态 · 编辑活动 · 选择开始时间",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.597,
+    "within10Percent": 96.29,
+    "within25Percent": 98.36
+  },
+  {
+    "id": "eXTHv",
+    "name": "eXTHv",
+    "sourceSize": [
+      300,
+      300
+    ],
+    "targetSize": [
+      300,
+      300
+    ],
+    "sizeMatch": true,
+    "meanError": 1.447,
+    "within10Percent": 96.88,
+    "within25Percent": 97.74
+  },
+  {
+    "id": "GSa57",
+    "name": "子分区标识 · 记忆 · 横屏播放",
+    "sourceSize": [
+      105,
+      391
+    ],
+    "targetSize": [
+      105,
+      391
+    ],
+    "sizeMatch": true,
+    "meanError": 1.397,
+    "within10Percent": 97.58,
+    "within25Percent": 97.72
+  },
+  {
+    "id": "UHfn0",
+    "name": "状态 · 活动封面 · 全屏预览 · 横图默认适宽",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.372,
+    "within10Percent": 97.82,
+    "within25Percent": 98.82
+  },
+  {
+    "id": "qyZEu",
+    "name": "状态 · 内容审核 · 视频预览 · 拖动中大进度条",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.371,
+    "within10Percent": 98.43,
+    "within25Percent": 99.21
+  },
+  {
+    "id": "fUXwp",
+    "name": "流程 03.5 · 搜索结果页 · 版本抽屉展开",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.356,
+    "within10Percent": 96.53,
+    "within25Percent": 98.23
+  },
+  {
+    "id": "VzzYQ",
+    "name": "状态 · 内容审核 · 图片预览 · 放大 200%",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.344,
+    "within10Percent": 98.32,
+    "within25Percent": 99.47
+  },
+  {
+    "id": "h1eYsQ",
+    "name": "状态 · 新建活动 · 2/3 基础信息 · 未填写",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.276,
+    "within10Percent": 97.05,
+    "within25Percent": 98.39
+  },
+  {
+    "id": "oIcdz",
+    "name": "流程 · 桌游库搜索页 · 默认",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.253,
+    "within10Percent": 97.64,
+    "within25Percent": 98.58
+  },
+  {
+    "id": "UKaDX",
+    "name": "流程 · 桌游库搜索结果页 · 无结果",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.242,
+    "within10Percent": 98.19,
+    "within25Percent": 98.63
+  },
+  {
+    "id": "Qg9ug",
+    "name": "状态 · 内容审核 · 空状态",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.219,
+    "within10Percent": 98.7,
+    "within25Percent": 98.95
+  },
+  {
+    "id": "FmcXP",
+    "name": "流程 · 桌游库搜索结果页 · 筛选抽屉",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.217,
+    "within10Percent": 98.51,
+    "within25Percent": 98.75
+  },
+  {
+    "id": "Z3muVA",
+    "name": "状态 · 新建活动 · 3/3 时间与人数 · 单项目默认",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.106,
+    "within10Percent": 97.84,
+    "within25Percent": 98.75
+  },
+  {
+    "id": "x2L4V5",
+    "name": "页面 · 工具",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 1.031,
+    "within10Percent": 98.79,
+    "within25Percent": 99.22
+  },
+  {
+    "id": "nllxZ",
+    "name": "流程 03.6 · 搜索结果页 · 拥有者抽屉",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 0.986,
+    "within10Percent": 97.38,
+    "within25Percent": 98.73
+  },
+  {
+    "id": "bxNIN",
+    "name": "状态 · 首页 · 骨架屏加载中",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 0.905,
+    "within10Percent": 99.15,
+    "within25Percent": 99.39
+  },
+  {
+    "id": "EHxFK",
+    "name": "分区标识 · 排行榜 Tab",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.895,
+    "within10Percent": 98.65,
+    "within25Percent": 98.69
+  },
+  {
+    "id": "nOSnP",
+    "name": "状态 · 记忆投稿 · 未完成",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 0.829,
+    "within10Percent": 97.96,
+    "within25Percent": 98.76
+  },
+  {
+    "id": "h5lda",
+    "name": "流程 · 桌游库搜索页 · 输入中",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 0.815,
+    "within10Percent": 98.74,
+    "within25Percent": 99.09
+  },
+  {
+    "id": "XiWkQ",
+    "name": "状态 · Chwazi · 触摸中",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 0.802,
+    "within10Percent": 98.57,
+    "within25Percent": 99.01
+  },
+  {
+    "id": "zyDdb",
+    "name": "分区标识 · 独立探索区（非主流程）",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.698,
+    "within10Percent": 98.99,
+    "within25Percent": 99.05
+  },
+  {
+    "id": "Mlljc",
+    "name": "探索分区标识 · 活动详情方案一",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.676,
+    "within10Percent": 98.82,
+    "within25Percent": 98.91
+  },
+  {
+    "id": "f8NZh",
+    "name": "探索分区标识 · 活动详情方案二",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.676,
+    "within10Percent": 98.82,
+    "within25Percent": 98.91
+  },
+  {
+    "id": "drX5q",
+    "name": "探索分区标识 · 活动详情方案三",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.676,
+    "within10Percent": 98.82,
+    "within25Percent": 98.91
+  },
+  {
+    "id": "UCCFa",
+    "name": "子分区标识 · 记忆 · 适宽视频",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.669,
+    "within10Percent": 98.81,
+    "within25Percent": 98.87
+  },
+  {
+    "id": "WpiZu",
+    "name": "子分区标识 · 记忆 · 竖屏视频",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.665,
+    "within10Percent": 98.83,
+    "within25Percent": 98.89
+  },
+  {
+    "id": "w8KoUh",
+    "name": "子分区标识 · 首页 · 封面预览",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.655,
+    "within10Percent": 98.81,
+    "within25Percent": 98.86
+  },
+  {
+    "id": "v78DZ",
+    "name": "子分区标识 · 首页 · 新建活动",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.65,
+    "within10Percent": 98.86,
+    "within25Percent": 98.9
+  },
+  {
+    "id": "ILtIN",
+    "name": "子分区标识 · 首页 · 编辑活动",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.648,
+    "within10Percent": 98.87,
+    "within25Percent": 98.92
+  },
+  {
+    "id": "gR6Hh",
+    "name": "探索分区标识 · 首页方案",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.646,
+    "within10Percent": 98.85,
+    "within25Percent": 98.91
+  },
+  {
+    "id": "DEAKm",
+    "name": "子分区标识 · 记忆 · 图片预览",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.63,
+    "within10Percent": 98.87,
+    "within25Percent": 98.93
+  },
+  {
+    "id": "eDEJs",
+    "name": "子分区标识 · 首页 · 活动详情",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.628,
+    "within10Percent": 98.96,
+    "within25Percent": 99.02
+  },
+  {
+    "id": "bKxXm",
+    "name": "子分区标识 · 内容审核 · 视频预览",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.626,
+    "within10Percent": 98.86,
+    "within25Percent": 98.94
+  },
+  {
+    "id": "Z2hAqy",
+    "name": "子分区标识 · 我的 · 弹窗状态",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.618,
+    "within10Percent": 98.87,
+    "within25Percent": 98.94
+  },
+  {
+    "id": "OiE3G",
+    "name": "分区标识 · 我的 Tab",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.602,
+    "within10Percent": 99.09,
+    "within25Percent": 99.13
+  },
+  {
+    "id": "JNn09",
+    "name": "流程 03 · 名称搜索结果 · 骨架加载中",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 0.602,
+    "within10Percent": 99.51,
+    "within25Percent": 99.58
+  },
+  {
+    "id": "ZKEe4",
+    "name": "探索分区标识 · 日历方案",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.593,
+    "within10Percent": 98.94,
+    "within25Percent": 99.01
+  },
+  {
+    "id": "FpujU",
+    "name": "子分区标识 · 内容审核 · 图片预览",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.582,
+    "within10Percent": 98.98,
+    "within25Percent": 99.04
+  },
+  {
+    "id": "gEUIQ",
+    "name": "探索分区标识 · 工具 · 桌游库二",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.575,
+    "within10Percent": 99.04,
+    "within25Percent": 99.08
+  },
+  {
+    "id": "sDA8t",
+    "name": "子分区标识 · 内容审核",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.574,
+    "within10Percent": 99.0,
+    "within25Percent": 99.08
+  },
+  {
+    "id": "pcOG2",
+    "name": "探索分区标识 · 工具 · 桌游库一",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.544,
+    "within10Percent": 99.11,
+    "within25Percent": 99.15
+  },
+  {
+    "id": "Q45pd",
+    "name": "子分区标识 · 我的 · 管理员",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.522,
+    "within10Percent": 99.11,
+    "within25Percent": 99.13
+  },
+  {
+    "id": "LAi4I",
+    "name": "分区标识 · 记忆 Tab",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.52,
+    "within10Percent": 99.22,
+    "within25Percent": 99.26
+  },
+  {
+    "id": "c8mlk",
+    "name": "分区标识 · 首页 Tab",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.513,
+    "within10Percent": 99.19,
+    "within25Percent": 99.21
+  },
+  {
+    "id": "wyXo4",
+    "name": "子分区标识 · 首页 · 多子项目",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.49,
+    "within10Percent": 99.16,
+    "within25Percent": 99.22
+  },
+  {
+    "id": "nAXow",
+    "name": "子分区标识 · 首页 · 参与人页",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.466,
+    "within10Percent": 99.15,
+    "within25Percent": 99.21
+  },
+  {
+    "id": "QtAWX",
+    "name": "状态 · Chwazi · 已选中",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 0.382,
+    "within10Percent": 99.24,
+    "within25Percent": 99.51
+  },
+  {
+    "id": "yqArW",
+    "name": "分区标识 · 工具 Tab",
+    "sourceSize": [
+      105,
+      845
+    ],
+    "targetSize": [
+      105,
+      845
+    ],
+    "sizeMatch": true,
+    "meanError": 0.367,
+    "within10Percent": 99.38,
+    "within25Percent": 99.4
+  },
+  {
+    "id": "qCoEK",
+    "name": "弃用",
+    "sourceSize": [
+      1205,
+      1244
+    ],
+    "targetSize": [
+      1205,
+      1244
+    ],
+    "sizeMatch": true,
+    "meanError": 0.356,
+    "within10Percent": 99.41,
+    "within25Percent": 99.66
+  },
+  {
+    "id": "b4RBx",
+    "name": "状态 · 活动详情 · 骨架屏加载中",
+    "sourceSize": [
+      390,
+      844
+    ],
+    "targetSize": [
+      390,
+      844
+    ],
+    "sizeMatch": true,
+    "meanError": 0.31,
+    "within10Percent": 99.52,
+    "within25Percent": 99.67
+  },
+  {
+    "id": "g5HIUN",
+    "name": "探索分区标识 · 工具 · 桌游库三",
+    "sourceSize": [
+      105,
+      1710
+    ],
+    "targetSize": [
+      105,
+      1710
+    ],
+    "sizeMatch": true,
+    "meanError": 0.145,
+    "within10Percent": 99.71,
+    "within25Percent": 99.73
+  },
+  {
+    "id": "Z4JTyn",
+    "name": "探索分区标识 · 工具 · 桌游库三",
+    "sourceSize": [
+      105,
+      1710
+    ],
+    "targetSize": [
+      105,
+      1710
+    ],
+    "sizeMatch": true,
+    "meanError": 0.145,
+    "within10Percent": 99.71,
+    "within25Percent": 99.73
+  },
+  {
+    "id": "i4dBW",
+    "name": "成功桌游卡片",
+    "sourceSize": [
+      327,
+      127
+    ],
+    "targetSize": [
+      327,
+      127
+    ],
+    "sizeMatch": true,
+    "meanError": 0.017,
+    "within10Percent": 99.99,
+    "within25Percent": 100.0
+  },
+  {
+    "id": "NPxFx",
+    "name": "NPxFx",
+    "sourceSize": [
+      646,
+      422
+    ],
+    "targetSize": [
+      646,
+      422
+    ],
+    "sizeMatch": true,
+    "meanError": 0.0,
+    "within10Percent": 100.0,
+    "within25Percent": 100.0
+  },
+  {
+    "id": "qAMWN",
+    "name": "素材 · 缺省图 · 翻找东西的小龙（插图）",
+    "sourceSize": [
+      480,
+      380
+    ],
+    "targetSize": [
+      480,
+      380
+    ],
+    "sizeMatch": true,
+    "meanError": 0.0,
+    "within10Percent": 100.0,
+    "within25Percent": 100.0
+  }
+]

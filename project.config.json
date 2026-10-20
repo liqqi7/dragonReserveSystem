@@ -36,6 +36,10 @@
       {
         "type": "folder",
         "value": "tests"
+      },
+      {
+        "type": "suffix",
+        "value": ".md"
       }
     ],
     "include": []

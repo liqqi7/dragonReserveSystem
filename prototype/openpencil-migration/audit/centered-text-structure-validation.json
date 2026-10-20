@@ -1,0 +1,38 @@
+{
+  "schemaValid": true,
+  "schemaErrors": null,
+  "oldNodeCount": 9632,
+  "nodeCount": 9756,
+  "wrappedTextBoxes": 124,
+  "allTextBoxHeightsAndContentPreserved": true,
+  "invalidTextBoxes": [],
+  "sourceIdsUnexpectedlyMissing": [],
+  "checkedOverrideDictionaries": 17,
+  "overrideErrors": [],
+  "components": 93,
+  "references": 419,
+  "danglingRefs": [],
+  "overlapPairs": [],
+  "fixedHeightAutoLayoutFramesChecked": 1929,
+  "fixedHeightMismatches": [
+    {
+      "id": "uns076",
+      "name": "参与人头像 · 黑黑",
+      "sourceHeight": 19.03448275862069,
+      "targetHeight": 20
+    },
+    {
+      "id": "uns078",
+      "name": "参与人头像 · 灯子",
+      "sourceHeight": 19.03448275862069,
+      "targetHeight": 20
+    },
+    {
+      "id": "uns080",
+      "name": "其余参与人数量",
+      "sourceHeight": 19.03448275862069,
+      "targetHeight": 20
+    }
+  ],
+  "sourcePenSha256": "6547e5b84f0bec07def8444c35cddd05c01da8f32d47282b753e96c422da1b82"
+}

@@ -1,0 +1,541 @@
+{
+  "checkedExistingAssets": 88,
+  "allByteIdentical": true,
+  "originalMissingAssets": [
+    {
+      "id": "qAMWN",
+      "url": "generated-1.png",
+      "absolute": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\generated-1.png"
+    }
+  ],
+  "checks": [
+    {
+      "source": "图片素材/原型导入/image-28.png",
+      "sha256": "0d174d29e0cd092c006724bb9c99dd0f887b69404c5f81f8ee48bee236f1d78d",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/原型导入/image-29.png",
+      "sha256": "a9de894e4c88a570ed7cba75f92a834ca1a32abfb3389ba4daf33e064662a6ec",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/原型导入/image-33.png",
+      "sha256": "c178bcad3fe9b5003846e4ca4f400f9b1befeee6abb2cfaa654b7b20f5e5b5d9",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/原型导入/image-36.png",
+      "sha256": "c03de4b3ea01142ada0a739fb10f8d38526c8a8b99b4df8063107e94c51ce955",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image.png",
+      "sha256": "377b83274462c7d6e632dcf25c7807ddedd7103b6d9789c8b4bca77709e058ff",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image-2.png",
+      "sha256": "0388021277e39f8f68313658eb5e61386e7ea21f0c2f7d8260fbc9e270fa405d",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image-3.png",
+      "sha256": "a7e6d534a734afab5245cfc4062ca63a1ea5358cd1577d2819ea01138ed9a0ef",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image-4.png",
+      "sha256": "796b38fcf4e22100302a556498718e7fbeaceac6ca3bf0b20d2ea31e6e8fe5a9",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image-11.png",
+      "sha256": "3a8d0fa66f78c89139ff777fe30707f6c3ccfd1f20b134198e93fc91ce132082",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image-7.png",
+      "sha256": "6e3ba1499acc740ac21200fe0f1d54c237e618ee5761b7f52f8bde3cc5c86ea6",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image-5.png",
+      "sha256": "dda04d11fb882117f75b2a12e62d5c13afaa99d293f030a740bbe555041d2e4f",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image-6.png",
+      "sha256": "fc8d841a5d5c65919cae048c43f17b8c05604dd0d60c7a5bb006b89191f1e8cb",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image-10.png",
+      "sha256": "5035a828070b1f01e8b71e320a458947249638bc6a32346c81aebb88567e3053",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image-9.png",
+      "sha256": "1d8643da116dd0e80381aeebfc12ef11b46a5327dada7c9657189a256760a6ca",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/01-224517.jpg",
+      "sha256": "fa0a4528acf31ede9d2565e2a1b1368912f6f0fa00ae8569809f3243efd828ee",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/03-161936.jpg",
+      "sha256": "f1d76e1c143b4da4322e3a96e0ab34b184e0b17ce51de3ac742313f4de9d2e3d",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/02-342942.jpg",
+      "sha256": "3dc0543dcae343c0ce970dac408eac4fed8250b9ea0489ea68d636ed2aa8a6a2",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/04-174430.jpg",
+      "sha256": "bca22e27b550cb74f6fd8c0d3d222097b5f7522dfbed505ca2f95f75e6fe4e8f",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/05-397598.jpg",
+      "sha256": "cc5b84f2aa219c0a016f594a71c3ae9e269c909d4fe682458c914c3956e4c451",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/aleksey-rico/avatar.jpg",
+      "sha256": "799e3f367fede178007c7b0c15ce7d2baae800fb45c2703a4ab3a0a5ce9ff7f6",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/ardhira-putra-001.jpg",
+      "sha256": "46beb1f20c2dd30e90728ebba99257b4d552d2dc210272158a713630c6d1689a",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/ardhira-putra-002.jpg",
+      "sha256": "06577c8aac168a56450f2f63870e45904d5ef0ed18bc9f2790a4c452fced6b4e",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/natasha-spivak-001.jpg",
+      "sha256": "1904f5c3f62cb6d549a7208b9df032c713aa5b57263275b5c8dcb2337791227e",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/natasha-spivak-002.jpg",
+      "sha256": "2e1dcb7a6b37ea497a18261b18b26aa32931365962dd4ea1933dc61d071a1158",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/clemence-thune-001.jpg",
+      "sha256": "dcc44ad13a54fb0b36c66ece45084158743a4c840b3c7ffa6c97bcb7d16a51da",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/coen-pohl-001.jpg",
+      "sha256": "a74ffe51f18f3f7172385020584cf61834a0330f4cef7917220071e87dc389ce",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/lam/avatar.jpg",
+      "sha256": "48498597d0810baf95fb6c2d2526c07089d94991791075d06bf0328d2e6ee118",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/patryk-wojciechowicz-010.jpg",
+      "sha256": "4663ed1ed4a55114f56d2db6fae14212e8833f0b23a63e2dd387bac9d0e66a79",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/hiroaki-seto-001.jpg",
+      "sha256": "d880278c6a2c5185fcacda531dbbc92a00a697b48da7ab8033ed25c0de3b481e",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/gasp-art-001.jpg",
+      "sha256": "1140e245fc796dd46d73df196221298930300d95d9baf06f71ca2bebf578953e",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-007.jpg",
+      "sha256": "0abfdd69132724bd59e7aca31938588613abd586d40008f2982359fc65ed0a4f",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-009.jpg",
+      "sha256": "8467920aef1050bd55945efb94e1e641a6f6c6e294bf6093bdf41f015ad1a483",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/ardhira-putra/avatar.jpg",
+      "sha256": "0975d17893c1d60424632efc67c6e7435d52549bec5930932d1871ff683c4909",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/patryk-wojciechowicz-006.jpg",
+      "sha256": "b92d79c6c26ad1e0b6aee7a22fd791c0866817452c51b6a4e08a768162666dba",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/patryk-wojciechowicz-007.jpg",
+      "sha256": "5e2943923d8c1002d773082418e666b5a883418f1561fe68f640072b3def8a1d",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/ardhira-putra-004.jpg",
+      "sha256": "e7d00fe9db6b0ff652555c3b34a6378fdbbd4703f999bf093a0f18465a1a411b",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/magoyama-008.jpg",
+      "sha256": "5da4278af34b861d447f53fde5fb9d6925731d606e520a05d1b4cafb788f3468",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/venmen-011.jpg",
+      "sha256": "11f1cbec635c772496e029d44ad3e99c3323d8efcaa359d39f8bbf252d4a8e48",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/tatsuro-kiuchi-001.jpg",
+      "sha256": "4177761b0f2b292642da454fed2581af7b89fef72f317a1e7e5d97057c555591",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-001.jpg",
+      "sha256": "61e99f02095331af1d146389ab460f3f226a81df9624d74965e355c1de5f7f71",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-002.jpg",
+      "sha256": "3f945fd385af725c7ae2e139271e6c8090843378ba4849d9d50b978bf6fbce86",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-008.jpg",
+      "sha256": "51552b70411bf0f2e2402c2d628a4dbd8f13053c468751b99ef2cbf77c739685",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/pasoputi-001.jpg",
+      "sha256": "8286c49a4cc755e191994298ec02066d3bd0518923dd6999b74105f899547535",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/magoyama/avatar.jpg",
+      "sha256": "b04a542978cacba44edda0ea758c7d1bbd005673380053452d40aad3d37e58b7",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/ardhira-putra-008.jpg",
+      "sha256": "fbaaff79d891354d0492c4e47e3ddae9862898ae0b38be72e2f44017d04880f4",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/ilya-shapko-001.jpg",
+      "sha256": "c28bd0565c853bf5ec9ff375c5e03313ddbc2ee71a4a83bb3a9a00a5e95c448f",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/coen-pohl-003.jpg",
+      "sha256": "52ab2d418bb95a79fcfd5a2d97e7194bf962c31304b33a8601438b0f20d41693",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/yoneyama-mai/avatar.jpg",
+      "sha256": "842028d6fdabe5926c29b4d10d31e7daf87de6d180d8fb55a348421c2742421a",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/aleksey-rico-001.jpg",
+      "sha256": "36c51f3812b4adb39cc013a2b21d791c5c54008a0db531902527f4d57927c821",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/aleksey-rico-002.jpg",
+      "sha256": "10ef54654a62ca66bc60e44da83e5ae626aed45681283bc7a4671a84bf88d8a5",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/aleksey-rico-003.jpg",
+      "sha256": "fc364be63709fd9a398e0665aaae07b95dafe8d21a3506a17ee8f8a9b487fb33",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/aleksey-rico-006.jpg",
+      "sha256": "0b71c33dd3153b4eb8b2fb88b2252a52d5a006dbd02f4750257ce76521bbb883",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/aleksey-rico-009.jpg",
+      "sha256": "4951275fafebd78f1cdc251d831dd1ebfc866132c0a675ed5fa4590efa9eba43",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/our-own-night-001.jpg",
+      "sha256": "9a91f0e58cb856fb54a16975771ba48de03dcf7a7adeff47f2fd011d1bc0e64b",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/原型导入/benjamin-flouw-avatar.jpg",
+      "sha256": "5f56429e34323c4b58918edb7c23b5ffd33fffe1adede93b05a5623786f91d48",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-004.jpg",
+      "sha256": "d0a43ac64caeef1cd62b7a3522ef40d8b73170ca0c89bdc1189812687b4fda91",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-010.jpg",
+      "sha256": "7f49e709a74f98dceade15158717706f106bfe46ba939d57ad8fb169dbe97068",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/venmen/avatar.jpg",
+      "sha256": "72987eb479bd8dc2a8d40cc27d12fc5b2714eceaea25815bec7291a2f54c4b54",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/hiroaki-seto-002.jpg",
+      "sha256": "c4ba9ec730339bb01907c39ecabed070a3e17ef38e712c783ebd14fc5059dc87",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-005.jpg",
+      "sha256": "6b135bcb22e11e4bcc244fa0fb1f2a466740c0816d088a4053bcd3fa7a3ad0d7",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-006.jpg",
+      "sha256": "7887a95b8641e15d0bc137968bfc38e7ff6714c64adabc27a787ac98fc35546e",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/dongkyu-lim-001.jpg",
+      "sha256": "816014f1d30d9e8f35f61814c2cbf23d65910e2385cadb2ec447d44ec65ff2d6",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/meyoco-001.jpg",
+      "sha256": "7e73fa80ef1b4346383f88e89eb9c6d7d24111b0e35aa4569002517876f7753a",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/coen-pohl-002.jpg",
+      "sha256": "d551cf36a2e18a727297db157a8ab62f1f3c293141b008e7b6b70817ad02d813",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/patryk-wojciechowicz/avatar.jpg",
+      "sha256": "3ffeb0b397465b06435b80fe9390aee1fa4ba0b01bb64b6d99ba29f7b63542c0",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/yoneyama-mai-016.jpg",
+      "sha256": "a95c265995e1e0682c2bc162ff9e8d5c7de3f12c34ba1726cab418f7ee4420f4",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/lam-002.jpg",
+      "sha256": "a1f07de496e4285448619a59655a8b44529f69feaf321a4570341de739120033",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/lam-007.jpg",
+      "sha256": "45bef343dab4c43719407fd9298240855f9224a494bf129ff1c243c70bb08809",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/magoyama-001.jpg",
+      "sha256": "5296d05538ee18840749faca4e0928b5b227fa6478ec4659acb12ed63d89c09a",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/magoyama-003.jpg",
+      "sha256": "92653dd186fc191fe6d1c5532c7a1b89ef882be5d2300817bdec9b25d9d5c230",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/magoyama-004.jpg",
+      "sha256": "a40b9f139c91a473e49fbda0e91d0233af55f22c4bdb8e5301c075b453d6db78",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image-17.png",
+      "sha256": "feb9cd11b11c38bd705d81918cedd2359345b8b304a689ddb9b76ea169ca54ba",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image-20.png",
+      "sha256": "9b62fe152235e6cbae065447d45e40b2a3613fcb39c15db087433c8d7d8a0bb5",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/07-233078.jpg",
+      "sha256": "4fd3b937c51807e100235256facd7efe932af17b6df31c33d8fd8c8d4be5e140",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image-18.png",
+      "sha256": "a3ffc74d53ff512107b5434fdb59bdd789f415b46f6aa3ad1c989e5aa377766f",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image-26.png",
+      "sha256": "cf4b9ffca8405b151ae27016134aee3204cb87df900130054a7971735fa3eb76",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/image-8.png",
+      "sha256": "9e2857c858a96ea0952fac91a14c624367538f0aa9811920bce7297a4405bf9a",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/06-316554.jpg",
+      "sha256": "621d36e5ff95029a8d2a430b6c9132c23b354d3c6ebe627359d398c8c7fdd17c",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/08-115746.jpg",
+      "sha256": "41e2e41e35f5343fab191d9bdfc98d717f767eac139953723b0d22ba649c4b5a",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/activity-orange-avatar-hero-final.png",
+      "sha256": "92df90e5d0af3c5684ba5494867d0c5a6e2ab422fa2467dd311766a638cff6da",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/aleksey-rico/images/aleksey-rico-001.jpg",
+      "sha256": "de7afc450bdc5d5f5cb93e4d0a827fa351552e6f9cb1ab1991c9c8574b769177",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/categories/派对/images/clemence-thune-001.gif",
+      "sha256": "0de16fee064af03c7ea29a6a019bf54613332b7b2526484778d7f907d0606a54",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/categories/派对/images/coen-pohl-001.jpg",
+      "sha256": "7d57e014d43a780657c129fa24a8ec844b85313400f31b8b94bce8fb20c7d6ba",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/categories/派对/images/natasha-spivak-001.gif",
+      "sha256": "f7ce6e4fc10defc25c70e5c02c8c8006389d096bce1917e39fc9ffd92ac826d3",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/categories/派对/images/natasha-spivak-002.jpg",
+      "sha256": "1404172115b8680902dc1c74ffa0c7dcc479a67716a20a2606c08e45d198de2e",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/原型导入/image-5.png",
+      "sha256": "70ada75a1c5044d2502007156813c4e9d5ce69e03fb4804f6232b5861f02f8c5",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/原型导入/image-17.png",
+      "sha256": "31536cffa097ae85e12069189674fc00fcf3fcc7f2f52659583399dab06d3959",
+      "embedded": true,
+      "byteIdentical": true
+    },
+    {
+      "source": "图片素材/原型导入/image-25.png",
+      "sha256": "d6ea96b93d00c5696cf452f0e477108ed3165cb258c13cfec2eb6d9fb9d8a5d0",
+      "embedded": true,
+      "byteIdentical": true
+    }
+  ]
+}

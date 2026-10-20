@@ -1,0 +1,17 @@
+{
+  "checkedSurvivingRawSourceTextNodes": 2916,
+  "checkedProperties": [
+    "fontFamily",
+    "fontSize",
+    "fontWeight",
+    "fontStyle",
+    "lineHeight",
+    "letterSpacing",
+    "textAlign"
+  ],
+  "errors": [],
+  "sourceImplicitInterLineHeightMadeExplicit": 227,
+  "targetSha256": "098f78d35183b82bb2ea59a8c6d8d529ff862ae7b7b020cdc99a7a0e0129ea12",
+  "sourcePenSha256": "6547e5b84f0bec07def8444c35cddd05c01da8f32d47282b753e96c422da1b82",
+  "scope": "Raw source text nodes that remain after authorized Tools retirement; centered text styles checked on editable inner text; inline replacement nodes not included."
+}

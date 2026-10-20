@@ -1,0 +1,26 @@
+import fs from 'node:fs';
+const source=JSON.parse(fs.readFileSync('audit/source.json','utf8')),target=JSON.parse(fs.readFileSync('../龙城小程序.op','utf8'));
+const targetRootsArray=target.pages?.length?target.pages.flatMap(p=>p.children):target.children;
+const retirement=target.pages?.some(p=>p.name==='工具')?{removedIds:[],newIds:[]}:JSON.parse(fs.readFileSync('audit/tools-retirement-intent.json','utf8'));const authorizedRemovals=new Set(retirement.removedIds);
+const nodes=[];function walk(n){nodes.push(n);for(const c of n.children??[])walk(c);}targetRootsArray.forEach(walk);const byId=new Map(nodes.map(n=>[n.id,n]));
+function ids(v,out=new Set()){if(!v||typeof v!=='object')return out;if(v.type&&typeof v.id==='string')out.add(v.id);for(const x of Object.values(v))ids(x,out);return out;}
+const allSourceIds=ids(source.nodes.map(r=>r.node)),allTargetIds=ids(target);
+function typed(v,out=[]){if(!v||typeof v!=='object')return out;if(v.type&&typeof v.id==='string')out.push(v);for(const x of Object.values(v))typed(x,out);return out;}
+const allSourceTyped=typed(source.nodes.map(r=>r.node)),allTargetTyped=typed(target);
+const allRefs=allTargetTyped.filter(n=>n.type==='ref');
+const unresolvedAllRefs=allRefs.filter(n=>!byId.get(n.ref)?.reusable).map(n=>({id:n.id,target:n.ref}));
+const sourceRoots=source.nodes.filter(r=>r.parent===null),targetRoots=new Map(targetRootsArray.map(n=>[n.id,n]));
+const pageAssignment=new Map((target.pages?.length?JSON.parse(fs.readFileSync('audit/page-organization.json','utf8')).assignments:[]).map(r=>[r.id,r]));
+const changedRootCoordinates=sourceRoots.filter(r=>!authorizedRemovals.has(r.node.id)).flatMap(r=>{const t=targetRoots.get(r.node.id);return !t||(t.x??0)!==(r.node.x??0)+(pageAssignment.get(r.node.id)?.dx??0)||(t.y??0)!==(r.node.y??0)+(pageAssignment.get(r.node.id)?.dy??0)?[{id:r.node.id,source:[r.node.x??0,r.node.y??0],target:t?[t.x??0,t.y??0]:null}]:[];});
+const autoFrames=source.nodes.filter(r=>r.node.type==='frame'&&(r.node.layout??'horizontal')!=='none');
+const changedAutoLayout=autoFrames.filter(r=>!authorizedRemovals.has(r.node.id)).filter(r=>byId.get(r.node.id)?.layout!==(r.node.layout??'horizontal')).map(r=>({id:r.node.id,source:r.node.layout??'horizontal',target:byId.get(r.node.id)?.layout}));
+const components=source.nodes.filter(r=>r.node.reusable);const refs=nodes.filter(n=>n.type==='ref');
+const unresolvedRefs=refs.filter(n=>!byId.get(n.ref)?.reusable).map(n=>({id:n.id,target:n.ref}));
+const topNative=fs.readFileSync('audit/target-layout.jsonl','utf8').replace(/^\uFEFF/,'').split(/\r?\n/).flatMap(l=>{try{return [JSON.parse(l)]}catch{return []}});const nat=new Map(topNative.map(n=>[n.id,n]));
+const rootPage=new Map((target.pages??[]).flatMap(p=>p.children.map(n=>[n.id,p.id])));
+function overlaps(boxes){const pairs=[];for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){let a=boxes[i],b=boxes[j];if(rootPage.size&&rootPage.get(a.id)!==rootPage.get(b.id))continue;if(Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x)>.5&&Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y)>.5)pairs.push([a.id,b.id].sort().join('/'));}return new Set(pairs);}
+const sb=sourceRoots.map(r=>({id:r.node.id,x:r.bounds.x,y:r.bounds.y,w:r.bounds.width,h:r.bounds.height})),tb=sourceRoots.map(r=>nat.get(r.node.id)).filter(Boolean);const sc=overlaps(sb),tc=overlaps(tb);
+const authorizedMissingSourceIds=[...allSourceIds].filter(id=>!allTargetIds.has(id)&&authorizedRemovals.has(id)),unexpectedMissingSourceIds=[...allSourceIds].filter(id=>!allTargetIds.has(id)&&!authorizedRemovals.has(id));
+const checks={authorizedRemovedSourceIds:authorizedMissingSourceIds,unexpectedMissingSourceIds,sourceRawNodes:source.nodes.length,targetRawNodes:nodes.length,sourceIdsIncludingReplacementNodes:allSourceIds.size,missingSourceIdsIncludingReplacementNodes:[...allSourceIds].filter(id=>!allTargetIds.has(id)),sourceRoots:sourceRoots.length,targetRoots:targetRootsArray.length,changedRootCoordinates,autoLayoutSourceFrames:autoFrames.length,changedAutoLayout,sourceComponents:components.length,targetComponents:nodes.filter(n=>n.reusable).length,linkedReferences:refs.length,unresolvedRefs,originalCanvasOverlapPairs:sc.size,targetCanvasOverlapPairs:tc.size,newCanvasOverlapPairs:[...tc].filter(p=>!sc.has(p)),resolvedCanvasOverlapPairs:[...sc].filter(p=>!tc.has(p)),addedCompatibilityNodes:nodes.length-source.nodes.length+source.nodes.filter(r=>authorizedRemovals.has(r.node.id)).length-retirement.newIds.length,allSourceReferencesIncludingReplacementNodes:allSourceTyped.filter(n=>n.type==='ref').length,allTargetReferencesIncludingReplacementNodes:allRefs.length,unresolvedAllRefs,topLevelScreensReplacedByBitmap:sourceRoots.filter(r=>r.children.length>0&&targetRoots.get(r.node.id)?.children?.length===0&&targetRoots.get(r.node.id)?.fill?.some(f=>f.type==='image')).map(r=>r.node.id)};
+fs.writeFileSync('audit/semantic-validation.json',JSON.stringify(checks,null,2));console.log(JSON.stringify(checks,null,2));
+if(checks.unexpectedMissingSourceIds.length||changedRootCoordinates.length||changedAutoLayout.length||unresolvedRefs.length)process.exitCode=1;

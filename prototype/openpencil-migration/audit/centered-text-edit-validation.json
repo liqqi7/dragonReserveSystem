@@ -1,0 +1,72 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "phase": "before",
+      "root": "header350",
+      "heightPreserved": true,
+      "centered": true,
+      "boxWidth": 272.0,
+      "textHeight": 28.0
+    },
+    {
+      "phase": "before",
+      "root": "header420",
+      "heightPreserved": true,
+      "centered": true,
+      "boxWidth": 342.0,
+      "textHeight": 28.0
+    },
+    {
+      "phase": "before",
+      "root": "fontOverride",
+      "heightPreserved": true,
+      "centered": true,
+      "boxWidth": 272.0,
+      "textHeight": 40.0
+    },
+    {
+      "phase": "before",
+      "root": "contentOverride",
+      "heightPreserved": true,
+      "centered": true,
+      "boxWidth": 272.0,
+      "textHeight": 28.0
+    },
+    {
+      "phase": "after",
+      "root": "header350",
+      "heightPreserved": true,
+      "centered": true,
+      "boxWidth": 272.0,
+      "textHeight": 34.0
+    },
+    {
+      "phase": "after",
+      "root": "header420",
+      "heightPreserved": true,
+      "centered": true,
+      "boxWidth": 342.0,
+      "textHeight": 34.0
+    },
+    {
+      "phase": "after",
+      "root": "fontOverride",
+      "heightPreserved": true,
+      "centered": true,
+      "boxWidth": 272.0,
+      "textHeight": 40.0
+    },
+    {
+      "phase": "after",
+      "root": "contentOverride",
+      "heightPreserved": true,
+      "centered": true,
+      "boxWidth": 272.0,
+      "textHeight": 34.0
+    }
+  ],
+  "widthChange70": true,
+  "masterFontSizeUpdatesInheritedInstances": true,
+  "localFontOverridePreserved": true
+}

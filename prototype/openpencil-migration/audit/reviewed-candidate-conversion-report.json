@@ -1,0 +1,1952 @@
+{
+  "sourceNodes": 9471,
+  "mappedProperties": {
+    "type": 9873,
+    "id": 9873,
+    "x": 2619,
+    "y": 2619,
+    "name": 9909,
+    "clip": 565,
+    "width": 6905,
+    "height": 5672,
+    "fill": 7276,
+    "stroke": 996,
+    "strokeWidth": 786,
+    "layout": 2373,
+    "gap": 1986,
+    "padding": 1151,
+    "justifyContent": 1607,
+    "alignItems": 2202,
+    "content": 3397,
+    "fontFamily": 3092,
+    "fontSize": 3092,
+    "fontWeight": 3107,
+    "cornerRadius": 2065,
+    "textGrowth": 702,
+    "lineHeight": 998,
+    "textAlignVertical": 213,
+    "effect": 272,
+    "reusable": 94,
+    "layoutPosition": 186,
+    "enabled": 193,
+    "textAlign": 216,
+    "letterSpacing": 121,
+    "geometry": 130,
+    "viewBox": 94,
+    "opacity": 58,
+    "strokeAlignment": 222,
+    "sweepAngle": 15,
+    "icon": 751,
+    "library": 746,
+    "weight": 279,
+    "ref": 429,
+    "descendants": 237,
+    "strokeLinecap": 53,
+    "rotation": 17,
+    "children": 204,
+    "strokeLinejoin": 46,
+    "context": 29,
+    "flipX": 2,
+    "flipY": 2,
+    "innerRadius": 7,
+    "startAngle": 3
+  },
+  "notices": [
+    {
+      "id": "f2MiU0",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "izW20",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "yHqL1",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "Bqg9n",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "cx5VK",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "a50aOR",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "sGMRq",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "lxYBe",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "vfGrN",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "EYqQZ",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "d0XIhT",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "j3xxAh",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "K9oIvF",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "d9JBm",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "O0IYzo",
+      "feature": "derived_component_wrapper",
+      "detail": "Reusable ref represented by a reusable frame containing a linked ref."
+    },
+    {
+      "id": "U08cIO",
+      "feature": "derived_component_wrapper",
+      "detail": "Reusable ref represented by a reusable frame containing a linked ref."
+    },
+    {
+      "id": "fRU6t",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 2×2 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "AkrJ5",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 2×2 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "KI9Xb",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "DCsbz",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "ssGgf",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "BWQQm",
+      "feature": "derived_component_wrapper",
+      "detail": "Reusable ref represented by a reusable frame containing a linked ref."
+    },
+    {
+      "id": "IkwrC",
+      "feature": "derived_component_wrapper",
+      "detail": "Reusable ref represented by a reusable frame containing a linked ref."
+    },
+    {
+      "id": "MaprC",
+      "feature": "derived_component_wrapper",
+      "detail": "Reusable ref represented by a reusable frame containing a linked ref."
+    },
+    {
+      "id": "L1Y8qc",
+      "feature": "derived_component_wrapper",
+      "detail": "Reusable ref represented by a reusable frame containing a linked ref."
+    },
+    {
+      "id": "d468yw",
+      "feature": "derived_component_wrapper",
+      "detail": "Reusable ref represented by a reusable frame containing a linked ref."
+    },
+    {
+      "id": "mHmfV",
+      "feature": "derived_component_wrapper",
+      "detail": "Reusable ref represented by a reusable frame containing a linked ref."
+    },
+    {
+      "id": "NbwxR",
+      "feature": "derived_component_wrapper",
+      "detail": "Reusable ref represented by a reusable frame containing a linked ref."
+    },
+    {
+      "id": "V3pVBu",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "V9wMS0",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "DDZEZ",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "RnPbr",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "ammPa",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "G3gpw",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "b3gBda",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "B14ppw",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "WVK8W",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "Np5k1",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "gGe9d",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "JLvim",
+      "feature": "overlapping_distribution",
+      "detail": "Native space_between clamps negative free space; encode its -6 px gap explicitly."
+    },
+    {
+      "id": "AkrJ5",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 2×2 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "AkrJ5",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 2×2 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "xGi0k",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "HI9d0",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "IiVl7",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "IZ6LN",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "V9ZVx",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "x6051",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "YVDIU",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "h8oqG",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "QrOSE",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "niGaw",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "Qf8p0",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "Pscnc",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "k0E43u",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "nsg4z",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "yEUU7",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "feUma",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "As6JS",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "NZ4IQ",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "u1xY7s",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "zoMWh",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "HsDPm",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "U5P5q",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "EuKtg",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "b5123",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "msZam",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "Kfd95",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "e710Q",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "C4NfzB",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "E60Ui",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "S3pWO",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "JCxAi",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "hDEti",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "dx4Rj",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "Yio8I",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "wrJt7",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "O8NyW",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "R0iwu",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "AkrJ5",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 2×2 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "AkrJ5",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 2×2 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "AkrJ5",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 2×2 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "PvqpQ",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "TEyny",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "lPk75",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "nedqj",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "Q5CAtt",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "YwB34",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "zatHo",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "ZLDQR",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "PeSTc",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "aBcqU",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "Q2N5bR",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "sQpNf",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "a8ZpSW",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "euvzc",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "i7Kgd",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "WR5VL",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "jnQyE",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "ZYsKL",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "jcPuG",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "d19Rip",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "tnUPA",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "BaYme",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "n9V77",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "amuXb",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "Y627g",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "y5t0cQ",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "RMHDB",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "A3cHeS",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "DFG9n",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "nMoaQ",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "U7dvg",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "R2erIc",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "qcyo9",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "A9oGAR",
+      "feature": "cyclic_group_fill",
+      "detail": "Source fill-height group contributes no hug size; preserve its resolved position without expanding the hug parent."
+    },
+    {
+      "id": "wOlLK",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "ppVZk",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "tCxUg",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "vaxeA",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored height fit_content(737) as 737 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "vaxeA",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored height fit_content(737) as 737 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "vaxeA",
+      "feature": "sizing_reference_wrapper",
+      "detail": "Keep layout fallback fit_content(737) while the linked component paints at its intrinsic height."
+    },
+    {
+      "id": "dRVuD",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored height fit_content(748) as 748 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "dRVuD",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored height fit_content(748) as 748 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "dRVuD",
+      "feature": "sizing_reference_wrapper",
+      "detail": "Keep layout fallback fit_content(748) while the linked component paints at its intrinsic height."
+    },
+    {
+      "id": "zt3Ef",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored height fit_content(326) as 326 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "zt3Ef",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored height fit_content(326) as 326 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "zt3Ef",
+      "feature": "sizing_reference_wrapper",
+      "detail": "Keep layout fallback fit_content(326) while the linked component paints at its intrinsic height."
+    },
+    {
+      "id": "IzknT",
+      "feature": "overflow_repair_guard",
+      "detail": "Keep authored 396 px height and overflowing 737/748 px cards; skip native expansion repair."
+    },
+    {
+      "id": "HT6ol",
+      "feature": "flow_paint_order_bridge",
+      "detail": "Double mirror retains vertical Auto Layout and visual ordering for overlapping overflow cards. Tree insertion order is reversed in this compatibility bridge."
+    },
+    {
+      "id": "AkrJ5",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 2×2 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "AkrJ5",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 2×2 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "AkrJ5",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 2×2 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "Wqvlc",
+      "feature": "flow_paint_order_bridge",
+      "detail": "Double mirror retains vertical Auto Layout and visual ordering for overlapping overflow cards. Tree insertion order is reversed in this compatibility bridge."
+    },
+    {
+      "id": "peRUL",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "N5dAhl",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "n24Z7h",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "HExeW",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "rli3I",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "e1n8zK",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "CTjxq",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(2304) as 2304 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "NeLaL",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "AYZUt",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "cHksn",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "n6ZV6z",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "AkrJ5",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 2×2 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "AkrJ5",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 2×2 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "Drq0S",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "YqlP4",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "tyMu9",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "oJ3X8",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "lIAc3",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "hLMWm",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "FQCZt",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "W4jHt",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "SNqZr",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "K4drs",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "c0zye",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "QHz2a",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "gtFSG",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "SzB0f",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "an2Mi",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "oiLk9",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "R6Lle",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(358) as 358 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "svYBG",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "S6E5C7",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "XdIEF",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(358) as 358 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "J20r3X",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "QapCj",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "Ryke5",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "PkAIC",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "Twy8a",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "BJSWP",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "T9ZtKc",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "FSRsN",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "J78O9",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "zV44u",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "lBPBW",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "d3APz",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "qAMWN",
+      "feature": "missing_asset_placeholder",
+      "detail": "Source itself shows missing-image checkerboard. Preserve its rendered placeholder, not a recovered original."
+    },
+    {
+      "id": "JHg3c",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "xpuRe",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "Z13j2",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "hxW93",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "rEegR",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "F9unEL",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "RNfa8",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "Hz6RG",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "gjaSQ",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "Hw4hE",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "w0wmDG",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "QltA1",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "a3gsJN",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "PX5MK",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "X7Z6G",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "iwomc",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "Y2Qh1",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "V2CUP",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "g3464",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "giDOW",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "t0Gpg",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "qlcha",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "rMnfg",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 2×2 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "XqGwb",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "xnY4a",
+      "feature": "elliptical_radial_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "BYr1P",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "aXGvO",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "q92Ux",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "D1Xy4M",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "FhXrX",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "pYo3C",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fit_content(38) as 38 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "pYo3C",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored height fit_content(15) as 15 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "FUkza",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "LhFey",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "vyQjc",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "kJzF4",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fit_content(38) as 38 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "kJzF4",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored height fit_content(15) as 15 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "YyTl1",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "MKE4V",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "BRAbN",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "YUfMg",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "YwEL9",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fit_content(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "u2iKq",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "pWCh2",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "tN1ao",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "lCmO1",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fit_content(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "oCNIK",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "rTP3q",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "CTfJx",
+      "feature": "linear_geometry_mesh",
+      "detail": "Editable 65×65 mesh retains source normalized center, length and aspect ratio. Original gradient parameters are stored in fill.explain."
+    },
+    {
+      "id": "xRMLK",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "T0Sn9R",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "O24kM",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "JtRKp",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "F9UzRx",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "CCFhC",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "RjFhW",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "c5z5t",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "iejOp",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "uns021",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "uns027",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "uns037",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fit_content(38) as 38 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "uns037",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored height fit_content(15) as 15 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "uns082",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "Ug7uH",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "fnZuF",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "A1Tmd",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "OgneQ",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fit_content(38) as 38 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "OgneQ",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored height fit_content(15) as 15 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "ooS7t",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "t7DaF",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "uXvme",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "azXZC",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "QsAyp",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fit_content(38) as 38 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "QsAyp",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored height fit_content(15) as 15 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "X7eju",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "drawerOverlay",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "Vd6Bq",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "b8qI92",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "oJmxl",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "URdZ5",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(350) as 350 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "MK5Na",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(350) as 350 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "MKiYl",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(350) as 350 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "s5Iju",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(350) as 350 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "eaPqW",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fill_container(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "J6vVTI",
+      "feature": "sizing_fallback",
+      "detail": "Preserve authored width fit_content(390) as 390 px; target does not implement the numeric fallback syntax."
+    },
+    {
+      "id": "K7Uoh",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "TPTAb",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "RXCxJ",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "ojCev",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "rTusC",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "F1r8x",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "r5biU",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "hr3nE",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "s59lU",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "LGadd",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "pwkSB",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "xkB41",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "g4kH8c",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    },
+    {
+      "id": "EJlGA",
+      "feature": "constant_alpha_gradient",
+      "detail": "Equivalent constant-color gradient preserves alpha without a detached background layer."
+    }
+  ],
+  "missingAssets": [
+    {
+      "id": "qAMWN",
+      "url": "generated-1.png",
+      "absolute": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\generated-1.png"
+    }
+  ],
+  "sourceAssets": [
+    {
+      "source": "图片素材/原型导入/image-28.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\原型导入\\image-28.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/原型导入/image-29.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\原型导入\\image-29.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/原型导入/image-33.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\原型导入\\image-33.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/原型导入/image-36.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\原型导入\\image-36.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image-2.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image-2.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image-3.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image-3.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image-4.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image-4.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image-11.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image-11.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image-7.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image-7.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image-5.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image-5.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image-6.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image-6.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image-10.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image-10.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image-9.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image-9.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/01-224517.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\bgg-top-50\\01-224517.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/03-161936.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\bgg-top-50\\03-161936.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/02-342942.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\bgg-top-50\\02-342942.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/04-174430.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\bgg-top-50\\04-174430.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/05-397598.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\bgg-top-50\\05-397598.jpg",
+      "exists": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/aleksey-rico/avatar.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\backend\\app\\assets\\activity-covers\\aleksey-rico\\avatar.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/ardhira-putra-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\ardhira-putra-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/ardhira-putra-002.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\ardhira-putra-002.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/natasha-spivak-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\natasha-spivak-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/natasha-spivak-002.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\natasha-spivak-002.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/clemence-thune-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\clemence-thune-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/coen-pohl-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\coen-pohl-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/lam/avatar.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\backend\\app\\assets\\activity-covers\\lam\\avatar.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/patryk-wojciechowicz-010.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\patryk-wojciechowicz-010.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/hiroaki-seto-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\hiroaki-seto-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/gasp-art-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\gasp-art-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-007.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\miguel-angel-camprubi-007.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-009.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\miguel-angel-camprubi-009.jpg",
+      "exists": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/ardhira-putra/avatar.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\backend\\app\\assets\\activity-covers\\ardhira-putra\\avatar.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/patryk-wojciechowicz-006.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\patryk-wojciechowicz-006.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/patryk-wojciechowicz-007.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\patryk-wojciechowicz-007.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/ardhira-putra-004.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\ardhira-putra-004.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/magoyama-008.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\magoyama-008.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/venmen-011.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\venmen-011.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/tatsuro-kiuchi-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\tatsuro-kiuchi-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\miguel-angel-camprubi-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-002.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\miguel-angel-camprubi-002.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-008.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\miguel-angel-camprubi-008.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/pasoputi-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\pasoputi-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/magoyama/avatar.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\backend\\app\\assets\\activity-covers\\magoyama\\avatar.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/ardhira-putra-008.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\ardhira-putra-008.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/ilya-shapko-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\ilya-shapko-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/coen-pohl-003.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\coen-pohl-003.jpg",
+      "exists": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/yoneyama-mai/avatar.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\backend\\app\\assets\\activity-covers\\yoneyama-mai\\avatar.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/aleksey-rico-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\aleksey-rico-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/aleksey-rico-002.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\aleksey-rico-002.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/aleksey-rico-003.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\aleksey-rico-003.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/aleksey-rico-006.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\aleksey-rico-006.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/aleksey-rico-009.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\aleksey-rico-009.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/our-own-night-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\our-own-night-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/原型导入/benjamin-flouw-avatar.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\原型导入\\benjamin-flouw-avatar.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-004.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\miguel-angel-camprubi-004.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-010.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\miguel-angel-camprubi-010.jpg",
+      "exists": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/venmen/avatar.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\backend\\app\\assets\\activity-covers\\venmen\\avatar.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/hiroaki-seto-002.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\hiroaki-seto-002.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-005.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\miguel-angel-camprubi-005.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/miguel-angel-camprubi-006.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\miguel-angel-camprubi-006.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/dongkyu-lim-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\dongkyu-lim-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/meyoco-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\meyoco-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/coen-pohl-002.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\coen-pohl-002.jpg",
+      "exists": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/patryk-wojciechowicz/avatar.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\backend\\app\\assets\\activity-covers\\patryk-wojciechowicz\\avatar.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/yoneyama-mai-016.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\yoneyama-mai-016.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/lam-002.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\lam-002.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/lam-007.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\lam-007.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/magoyama-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\magoyama-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/magoyama-003.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\magoyama-003.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-cover-assets/magoyama-004.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-cover-assets\\magoyama-004.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image-17.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image-17.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image-20.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image-20.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/07-233078.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\bgg-top-50\\07-233078.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image-18.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image-18.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image-26.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image-26.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/image-8.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\image-8.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/06-316554.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\bgg-top-50\\06-316554.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/bgg-top-50/08-115746.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\bgg-top-50\\08-115746.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/activity-orange-avatar-hero-final.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\activity-orange-avatar-hero-final.png",
+      "exists": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/aleksey-rico/images/aleksey-rico-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\backend\\app\\assets\\activity-covers\\aleksey-rico\\images\\aleksey-rico-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/categories/派对/images/clemence-thune-001.gif",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\backend\\app\\assets\\activity-covers\\categories\\派对\\images\\clemence-thune-001.gif",
+      "exists": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/categories/派对/images/coen-pohl-001.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\backend\\app\\assets\\activity-covers\\categories\\派对\\images\\coen-pohl-001.jpg",
+      "exists": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/categories/派对/images/natasha-spivak-001.gif",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\backend\\app\\assets\\activity-covers\\categories\\派对\\images\\natasha-spivak-001.gif",
+      "exists": true
+    },
+    {
+      "source": "../backend/app/assets/activity-covers/categories/派对/images/natasha-spivak-002.jpg",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\backend\\app\\assets\\activity-covers\\categories\\派对\\images\\natasha-spivak-002.jpg",
+      "exists": true
+    },
+    {
+      "source": "图片素材/原型导入/image-5.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\原型导入\\image-5.png",
+      "exists": true
+    },
+    {
+      "source": "图片素材/原型导入/image-17.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\原型导入\\image-17.png",
+      "exists": true
+    },
+    {
+      "source": "generated-1.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\generated-1.png",
+      "exists": false
+    },
+    {
+      "source": "图片素材/原型导入/image-25.png",
+      "resolved": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\图片素材\\原型导入\\image-25.png",
+      "exists": true
+    }
+  ],
+  "derivedComponents": [
+    {
+      "id": "O0IYzo",
+      "base": "y8ZQV",
+      "linkedChildId": "O0IYzo__derived_reference"
+    },
+    {
+      "id": "U08cIO",
+      "base": "y8ZQV",
+      "linkedChildId": "U08cIO__derived_reference"
+    },
+    {
+      "id": "BWQQm",
+      "base": "O5XQF",
+      "linkedChildId": "BWQQm__derived_reference"
+    },
+    {
+      "id": "IkwrC",
+      "base": "O5XQF",
+      "linkedChildId": "IkwrC__derived_reference"
+    },
+    {
+      "id": "MaprC",
+      "base": "n6MtSK",
+      "linkedChildId": "MaprC__derived_reference"
+    },
+    {
+      "id": "L1Y8qc",
+      "base": "n6MtSK",
+      "linkedChildId": "L1Y8qc__derived_reference"
+    },
+    {
+      "id": "d468yw",
+      "base": "n6MtSK",
+      "linkedChildId": "d468yw__derived_reference"
+    },
+    {
+      "id": "mHmfV",
+      "base": "mkywX",
+      "linkedChildId": "mHmfV__derived_reference"
+    },
+    {
+      "id": "NbwxR",
+      "base": "mkywX",
+      "linkedChildId": "NbwxR__derived_reference"
+    }
+  ]
+}

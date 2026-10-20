@@ -1,0 +1,4 @@
+import fs from 'node:fs';let code=fs.readFileSync('tools/convert.mjs','utf8');
+const a="if(!partial){\n  const parent=row.parent?effective(rows.get(row.parent).node):null;";
+const b="if(partial){\n  const parent=row.parent?effective(rows.get(row.parent)?.node??{}):null;\n  const absolute=(input.layoutPosition??base.layoutPosition)==='absolute';\n  if(parent?.type==='frame'&&(parent.layout??'horizontal')!=='none'&&!absolute&&input.enabled!==false){delete out.x;delete out.y;}\n }\n if(!partial){\n  const parent=row.parent?effective(rows.get(row.parent).node):null;";
+if(!code.includes(a))throw new Error('Missing');code=code.replace(a,b);fs.writeFileSync('tools/convert.mjs',code);fs.writeFileSync('audit/review-fixes-08.json',JSON.stringify({a,b},null,2));

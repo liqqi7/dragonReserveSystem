@@ -1,0 +1,1966 @@
+[
+  {
+    "id": "c8mlk",
+    "name": "分区标识 · 首页 Tab",
+    "file": "source-previews/c8mlk.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2633,
+      "y": 292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "OiE3G",
+    "name": "分区标识 · 我的 Tab",
+    "file": "source-previews/OiE3G.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5317,
+      "y": 292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "EHxFK",
+    "name": "分区标识 · 排行榜 Tab",
+    "file": "source-previews/EHxFK.png",
+    "scale": 1,
+    "bounds": {
+      "x": 3117,
+      "y": 292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "lnq9c",
+    "name": "设计规范 · 组件模板库",
+    "file": "source-previews/lnq9c.png",
+    "scale": 0.25,
+    "bounds": {
+      "x": 15526,
+      "y": 529,
+      "width": 2400,
+      "height": 17075
+    }
+  },
+  {
+    "id": "yqArW",
+    "name": "分区标识 · 工具 Tab",
+    "file": "source-previews/yqArW.png",
+    "scale": 1,
+    "bounds": {
+      "x": 1117,
+      "y": 292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "aDnxZ",
+    "name": "页面 · 首页 · 管理员",
+    "file": "source-previews/aDnxZ.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2513,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "HBRMQ",
+    "name": "探索 · 原日程表 · 时间网格（旧版/Skyline受限）",
+    "file": "source-previews/HBRMQ.png",
+    "scale": 1,
+    "bounds": {
+      "x": -7061,
+      "y": 5476,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "RQKdZ",
+    "name": "页面 · 排行榜 · 活动榜",
+    "file": "source-previews/RQKdZ.png",
+    "scale": 1,
+    "bounds": {
+      "x": 3237,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "H2Bhy",
+    "name": "页面 · 排行榜 · 鸽子榜",
+    "file": "source-previews/H2Bhy.png",
+    "scale": 1,
+    "bounds": {
+      "x": 3667,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "K8qZPJ",
+    "name": "状态 · 排行榜 · 鸽子榜 · 未发红包空状态",
+    "file": "source-previews/K8qZPJ.png",
+    "scale": 1,
+    "bounds": {
+      "x": 4097,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "B88jpv",
+    "name": "状态 · 排行榜 · 鸽王概率 · 高中低风险",
+    "file": "source-previews/B88jpv.png",
+    "scale": 1,
+    "bounds": {
+      "x": 4527,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "x2L4V5",
+    "name": "页面 · 工具",
+    "file": "source-previews/x2L4V5.png",
+    "scale": 1,
+    "bounds": {
+      "x": 1237,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "XiWkQ",
+    "name": "状态 · Chwazi · 触摸中",
+    "file": "source-previews/XiWkQ.png",
+    "scale": 1,
+    "bounds": {
+      "x": 1667,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "QtAWX",
+    "name": "状态 · Chwazi · 已选中",
+    "file": "source-previews/QtAWX.png",
+    "scale": 1,
+    "bounds": {
+      "x": 2097,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "AHJRA",
+    "name": "状态 · Chwazi · 超过五指",
+    "file": "source-previews/AHJRA.png",
+    "scale": 1,
+    "bounds": {
+      "x": 2527,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "S3QXHL",
+    "name": "探索 · 工具 · 桌游库列表 · 当前方案",
+    "file": "source-previews/S3QXHL.png",
+    "scale": 1,
+    "bounds": {
+      "x": -7061,
+      "y": 1476,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "X7JPq",
+    "name": "探索 · 桌游库列表 01 · 沉浸焦点",
+    "file": "source-previews/X7JPq.png",
+    "scale": 1,
+    "bounds": {
+      "x": -6631,
+      "y": 1476,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "G7P0U",
+    "name": "探索 · 桌游库列表 02 · 卡牌画廊",
+    "file": "source-previews/G7P0U.png",
+    "scale": 1,
+    "bounds": {
+      "x": -6201,
+      "y": 1476,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "OsLw5",
+    "name": "探索 · 桌游库列表 03 · 拼贴图鉴",
+    "file": "source-previews/OsLw5.png",
+    "scale": 1,
+    "bounds": {
+      "x": -5771,
+      "y": 1476,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "ftPtS",
+    "name": "探索 · 桌游库列表 04 · 排名杂志",
+    "file": "source-previews/ftPtS.png",
+    "scale": 1,
+    "bounds": {
+      "x": -7061,
+      "y": 2476,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "ye5zL",
+    "name": "探索 · 桌游库列表 05 · 收藏书架",
+    "file": "source-previews/ye5zL.png",
+    "scale": 1,
+    "bounds": {
+      "x": -6631,
+      "y": 2476,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "Ev1C5",
+    "name": "探索 · 桌游库列表 06 · 扇形牌阵",
+    "file": "source-previews/Ev1C5.png",
+    "scale": 1,
+    "bounds": {
+      "x": -6201,
+      "y": 2476,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "Gnsno",
+    "name": "探索 · 桌游库列表 08 · 游戏星图",
+    "file": "source-previews/Gnsno.png",
+    "scale": 1,
+    "bounds": {
+      "x": -5771,
+      "y": 2476,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "QNVEQ",
+    "name": "探索 · 桌游库列表 12 · 最近购入与全部馆藏",
+    "file": "source-previews/QNVEQ.png",
+    "scale": 1,
+    "bounds": {
+      "x": -7061,
+      "y": 3476,
+      "width": 390,
+      "height": 1709
+    }
+  },
+  {
+    "id": "C5Z41z",
+    "name": "探索 · 首页 · 管理员方案一",
+    "file": "source-previews/C5Z41z.png",
+    "scale": 1,
+    "bounds": {
+      "x": -7061,
+      "y": 476,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "qvafH",
+    "name": "页面 · 活动详情 · 默认 · 管理员",
+    "file": "source-previews/qvafH.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2513,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "vJwP7",
+    "name": "状态 · 活动详情 · 进行中 · 副标题折叠 · 待签到",
+    "file": "source-previews/vJwP7.png",
+    "scale": 1,
+    "bounds": {
+      "x": -793,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "sZ3AN",
+    "name": "状态 · 活动详情 · 已结束 · 副标题展开",
+    "file": "source-previews/sZ3AN.png",
+    "scale": 1,
+    "bounds": {
+      "x": 497,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "w8KoUh",
+    "name": "子分区标识 · 首页 · 封面预览",
+    "file": "source-previews/w8KoUh.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2633,
+      "y": 6078,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "eDEJs",
+    "name": "子分区标识 · 首页 · 活动详情",
+    "file": "source-previews/eDEJs.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2633,
+      "y": 2292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "D3GuQ",
+    "name": "状态 · 参与人抽屉 · 进行中 · 默认",
+    "file": "source-previews/D3GuQ.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1653,
+      "y": 7078,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "qMC0v",
+    "name": "状态 · 参与人抽屉 · 进行中 · 左滑取签与删除",
+    "file": "source-previews/qMC0v.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1223,
+      "y": 7078,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "S6jwOA",
+    "name": "状态 · 参与人抽屉 · 现场点名 · 活动已结束 · 左滑补卡与删除",
+    "file": "source-previews/S6jwOA.png",
+    "scale": 1,
+    "bounds": {
+      "x": -793,
+      "y": 7078,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "V0cp3",
+    "name": "状态 · 参与人抽屉 · 现场点名 · 无人报名",
+    "file": "source-previews/V0cp3.png",
+    "scale": 1,
+    "bounds": {
+      "x": -363,
+      "y": 7078,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "nhpZv",
+    "name": "状态 · 活动详情 · 报名中 · 橙色头像主视觉 · 已报名",
+    "file": "source-previews/nhpZv.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1653,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "i0BOQg",
+    "name": "状态 · 活动封面 · 全屏预览 · 竖图默认",
+    "file": "source-previews/i0BOQg.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2513,
+      "y": 6078,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "UHfn0",
+    "name": "状态 · 活动封面 · 全屏预览 · 横图默认适宽",
+    "file": "source-previews/UHfn0.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2083,
+      "y": 6078,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "YKzDp",
+    "name": "状态 · 活动封面 · 全屏预览 · 横图放大 200%",
+    "file": "source-previews/YKzDp.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1653,
+      "y": 6078,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "ILtIN",
+    "name": "子分区标识 · 首页 · 编辑活动",
+    "file": "source-previews/ILtIN.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2633,
+      "y": 4514,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "nAXow",
+    "name": "子分区标识 · 首页 · 参与人页",
+    "file": "source-previews/nAXow.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2633,
+      "y": 7078,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "gR6Hh",
+    "name": "探索分区标识 · 首页方案",
+    "file": "source-previews/gR6Hh.png",
+    "scale": 1,
+    "bounds": {
+      "x": -7181,
+      "y": 476,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "pcOG2",
+    "name": "探索分区标识 · 工具 · 桌游库一",
+    "file": "source-previews/pcOG2.png",
+    "scale": 1,
+    "bounds": {
+      "x": -7181,
+      "y": 1476,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "gEUIQ",
+    "name": "探索分区标识 · 工具 · 桌游库二",
+    "file": "source-previews/gEUIQ.png",
+    "scale": 1,
+    "bounds": {
+      "x": -7181,
+      "y": 2476,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "g5HIUN",
+    "name": "探索分区标识 · 工具 · 桌游库三",
+    "file": "source-previews/g5HIUN.png",
+    "scale": 1,
+    "bounds": {
+      "x": -7181,
+      "y": 3476,
+      "width": 104,
+      "height": 1709
+    }
+  },
+  {
+    "id": "MaM8Q",
+    "name": "状态 · 参与人抽屉 · 报名中 · 默认",
+    "file": "source-previews/MaM8Q.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2513,
+      "y": 7078,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "a7h8g",
+    "name": "状态 · 参与人抽屉 · 报名中 · 左滑仅删除",
+    "file": "source-previews/a7h8g.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2083,
+      "y": 7078,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "ZKEe4",
+    "name": "探索分区标识 · 日历方案",
+    "file": "source-previews/ZKEe4.png",
+    "scale": 1,
+    "bounds": {
+      "x": -7181,
+      "y": 5476,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "GVHq9",
+    "name": "探索 · 日历 01 · 上下联动 · 4月15日今天",
+    "file": "source-previews/GVHq9.png",
+    "scale": 1,
+    "bounds": {
+      "x": -6631,
+      "y": 5476,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "WI0bt",
+    "name": "探索 · 日历 02 · 上下联动 · 4月16日选中",
+    "file": "source-previews/WI0bt.png",
+    "scale": 1,
+    "bounds": {
+      "x": -6201,
+      "y": 5476,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "X9GgXl",
+    "name": "状态 · 活动详情 · 进行中 · 已签到",
+    "file": "source-previews/X9GgXl.png",
+    "scale": 1,
+    "bounds": {
+      "x": 67,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "rRXcj",
+    "name": "状态 · 活动详情 · 进行中 · 未报名",
+    "file": "source-previews/rRXcj.png",
+    "scale": 1,
+    "bounds": {
+      "x": -363,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "L7TUb",
+    "name": "状态 · 活动详情 · 未开始 · 已满员",
+    "file": "source-previews/L7TUb.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1223,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "b4RBx",
+    "name": "状态 · 活动详情 · 骨架屏加载中",
+    "file": "source-previews/b4RBx.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2083,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "sE1zi",
+    "name": "探索 · 底部导航 · 5等分中央新建入口 · 首页",
+    "file": "source-previews/sE1zi.png",
+    "scale": 1,
+    "bounds": {
+      "x": -6631,
+      "y": 476,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "bxNIN",
+    "name": "状态 · 首页 · 骨架屏加载中",
+    "file": "source-previews/bxNIN.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2083,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "sNAax",
+    "name": "页面 · 活动详情 · 多子项目 · 管理员",
+    "file": "source-previews/sNAax.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2513,
+      "y": 3292,
+      "width": 390,
+      "height": 1066
+    }
+  },
+  {
+    "id": "FDMKv",
+    "name": "状态 · 活动详情 · 多子项目 · 立即报名抽屉 · 未勾选",
+    "file": "source-previews/FDMKv.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2083,
+      "y": 3292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "U9Ou4F",
+    "name": "状态 · 活动详情 · 多子项目 · 报名前置提示弹窗",
+    "file": "source-previews/U9Ou4F.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1653,
+      "y": 3292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "qCoEK",
+    "name": "弃用",
+    "file": "source-previews/qCoEK.png",
+    "scale": 0.25,
+    "bounds": {
+      "x": 19072,
+      "y": 655,
+      "width": 4818,
+      "height": 4973
+    }
+  },
+  {
+    "id": "l8JPT0",
+    "name": "状态 · 活动详情 · 编辑活动抽屉 · 新版现代平铺",
+    "file": "source-previews/l8JPT0.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2513,
+      "y": 4514,
+      "width": 390,
+      "height": 1408
+    }
+  },
+  {
+    "id": "gua20",
+    "name": "状态 · 新建活动 · 1/3 选择封面 · 未选中",
+    "file": "source-previews/gua20.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2513,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "dn0Yn",
+    "name": "状态 · 新建活动 · 1/3 选择封面 · 已选中",
+    "file": "source-previews/dn0Yn.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2083,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "h1eYsQ",
+    "name": "状态 · 新建活动 · 2/3 基础信息 · 未填写",
+    "file": "source-previews/h1eYsQ.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1653,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "P2fmOL",
+    "name": "状态 · 新建活动 · 2/3 基础信息 · 已填写",
+    "file": "source-previews/P2fmOL.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1223,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "Z3muVA",
+    "name": "状态 · 新建活动 · 3/3 时间与人数 · 单项目默认",
+    "file": "source-previews/Z3muVA.png",
+    "scale": 1,
+    "bounds": {
+      "x": -793,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "X8rqer",
+    "name": "状态 · 新建活动 · 3/3 时间与人数 · 多项目展开",
+    "file": "source-previews/X8rqer.png",
+    "scale": 1,
+    "bounds": {
+      "x": -363,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "w7iTYn",
+    "name": "状态 · 新建活动 · 3/3 时间与人数 · 多项目已输入完成",
+    "file": "source-previews/w7iTYn.png",
+    "scale": 1,
+    "bounds": {
+      "x": 67,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "styfd",
+    "name": "状态 · 新建活动 · 3/3 时间与人数 · 4个子项目上限",
+    "file": "source-previews/styfd.png",
+    "scale": 1,
+    "bounds": {
+      "x": 497,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "F2KEFX",
+    "name": "状态 · 编辑活动 · 选择开始时间",
+    "file": "source-previews/F2KEFX.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2083,
+      "y": 4514,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "mzb3Z",
+    "name": "状态 · 编辑活动 · 选择结束时间",
+    "file": "source-previews/mzb3Z.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1653,
+      "y": 4514,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "v78DZ",
+    "name": "子分区标识 · 首页 · 新建活动",
+    "file": "source-previews/v78DZ.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2633,
+      "y": 1292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "VG9sB",
+    "name": "状态 · 活动详情 · 编辑活动 · 更换封面抽屉打开",
+    "file": "source-previews/VG9sB.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1223,
+      "y": 4514,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "WTdTo",
+    "name": "状态 · 活动详情 · 编辑活动 · 未选择封面",
+    "file": "source-previews/WTdTo.png",
+    "scale": 1,
+    "bounds": {
+      "x": -793,
+      "y": 4514,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "I2GgZO",
+    "name": "活动分享卡片 · 毛玻璃",
+    "file": "source-previews/I2GgZO.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1223,
+      "y": 292,
+      "width": 550,
+      "height": 440
+    }
+  },
+  {
+    "id": "vFvcH",
+    "name": "状态 · 首页 · 登录提示弹窗",
+    "file": "source-previews/vFvcH.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1653,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "mGkc2",
+    "name": "状态 · 活动详情 · 退出确认弹窗",
+    "file": "source-previews/mGkc2.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1223,
+      "y": 3292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "P37gp",
+    "name": "状态 · 我的 · 退出登录弹窗",
+    "file": "source-previews/P37gp.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5437,
+      "y": 3292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "yl4tW",
+    "name": "状态 · 我的 · 修改个人资料弹窗 · 无提示文案",
+    "file": "source-previews/yl4tW.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5867,
+      "y": 3292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "mkGDF",
+    "name": "页面 · 我的 · 彩虹会员融合",
+    "file": "source-previews/mkGDF.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5437,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "NPxFx",
+    "file": "source-previews/NPxFx.png",
+    "scale": 1,
+    "bounds": {
+      "x": 14005,
+      "y": 4989,
+      "width": 646,
+      "height": 422
+    }
+  },
+  {
+    "id": "eXTHv",
+    "file": "source-previews/eXTHv.png",
+    "scale": 1,
+    "bounds": {
+      "x": 15138,
+      "y": 963,
+      "width": 300,
+      "height": 300
+    }
+  },
+  {
+    "id": "f2E2I",
+    "name": "页面 · 我的 · 彩虹会员融合 · 未登录",
+    "file": "source-previews/f2E2I.png",
+    "scale": 1,
+    "bounds": {
+      "x": 6297,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "j7GSCo",
+    "name": "页面 · 我的 · 彩虹会员融合",
+    "file": "source-previews/j7GSCo.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5867,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "D3WX9",
+    "name": "页面 · 记忆",
+    "file": "source-previews/D3WX9.png",
+    "scale": 1,
+    "bounds": {
+      "x": 9187,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "je1iX",
+    "name": "页面 · 上传记忆",
+    "file": "source-previews/je1iX.png",
+    "scale": 1,
+    "bounds": {
+      "x": 10047,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "LAi4I",
+    "name": "分区标识 · 记忆 Tab",
+    "file": "source-previews/LAi4I.png",
+    "scale": 1,
+    "bounds": {
+      "x": 9067,
+      "y": 292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "ptSzf",
+    "name": "状态 · 记忆 · 图片预览",
+    "file": "source-previews/ptSzf.png",
+    "scale": 1,
+    "bounds": {
+      "x": 9187,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "U8Nbr",
+    "name": "状态 · 记忆 · 视频预览 · 暂停 · 松手后小进度条 3秒",
+    "file": "source-previews/U8Nbr.png",
+    "scale": 1,
+    "bounds": {
+      "x": 10477,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "WdzA7",
+    "name": "状态 · 记忆 · 视频预览 · 播放中 · 默认隐藏进度条",
+    "file": "source-previews/WdzA7.png",
+    "scale": 1,
+    "bounds": {
+      "x": 9187,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "TVIe9",
+    "name": "状态 · 记忆 · 图片预览 · 横图上下黑边",
+    "file": "source-previews/TVIe9.png",
+    "scale": 1,
+    "bounds": {
+      "x": 10047,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "A0ClSv",
+    "name": "状态 · 记忆 · 视频预览 · 横视频上下黑边 · 默认隐藏进度条",
+    "file": "source-previews/A0ClSv.png",
+    "scale": 1,
+    "bounds": {
+      "x": 9187,
+      "y": 3292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "DEAKm",
+    "name": "子分区标识 · 记忆 · 图片预览",
+    "file": "source-previews/DEAKm.png",
+    "scale": 1,
+    "bounds": {
+      "x": 9067,
+      "y": 1292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "WpiZu",
+    "name": "子分区标识 · 记忆 · 竖屏视频",
+    "file": "source-previews/WpiZu.png",
+    "scale": 1,
+    "bounds": {
+      "x": 9067,
+      "y": 2292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "wyXo4",
+    "name": "子分区标识 · 首页 · 多子项目",
+    "file": "source-previews/wyXo4.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2633,
+      "y": 3292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "Q45pd",
+    "name": "子分区标识 · 我的 · 管理员",
+    "file": "source-previews/Q45pd.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5317,
+      "y": 1292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "lRVYf",
+    "name": "页面 · 我的 · 管理员",
+    "file": "source-previews/lRVYf.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5437,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "ZDNWD",
+    "name": "页面 · 内容审核 · 待审批列表",
+    "file": "source-previews/ZDNWD.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5437,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "yxYd9",
+    "name": "状态 · 内容审核 · 视频预览 · 默认隐藏进度条",
+    "file": "source-previews/yxYd9.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5437,
+      "y": 5292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "Z2hAqy",
+    "name": "子分区标识 · 我的 · 弹窗状态",
+    "file": "source-previews/Z2hAqy.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5317,
+      "y": 3292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "ZG2ZJ",
+    "name": "状态 · 内容审核 · 备注展开",
+    "file": "source-previews/ZG2ZJ.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5867,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "Qg9ug",
+    "name": "状态 · 内容审核 · 空状态",
+    "file": "source-previews/Qg9ug.png",
+    "scale": 1,
+    "bounds": {
+      "x": 6297,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "qAMWN",
+    "name": "素材 · 缺省图 · 翻找东西的小龙（插图）",
+    "file": "source-previews/qAMWN.png",
+    "scale": 1,
+    "bounds": {
+      "x": 24610,
+      "y": -221,
+      "width": 480,
+      "height": 380
+    }
+  },
+  {
+    "id": "sDA8t",
+    "name": "子分区标识 · 内容审核",
+    "file": "source-previews/sDA8t.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5317,
+      "y": 2292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "xuqNi",
+    "name": "状态 · 内容审核 · 图片预览",
+    "file": "source-previews/xuqNi.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5437,
+      "y": 4292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "l2Ubhx",
+    "name": "状态 · 记忆 · 图片预览 · 放大 200%",
+    "file": "source-previews/l2Ubhx.png",
+    "scale": 1,
+    "bounds": {
+      "x": 9617,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "qV8N5",
+    "name": "状态 · 记忆 · 视频预览 · 横屏播放 · 播放中",
+    "file": "source-previews/qV8N5.png",
+    "scale": 1,
+    "bounds": {
+      "x": 9187,
+      "y": 4292,
+      "width": 844,
+      "height": 390
+    }
+  },
+  {
+    "id": "VzzYQ",
+    "name": "状态 · 内容审核 · 图片预览 · 放大 200%",
+    "file": "source-previews/VzzYQ.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5867,
+      "y": 4292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "nOSnP",
+    "name": "状态 · 记忆投稿 · 未完成",
+    "file": "source-previews/nOSnP.png",
+    "scale": 1,
+    "bounds": {
+      "x": 9617,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "W9qcw",
+    "name": "状态 · 记忆 · 视频预览 · 横屏播放 · 暂停",
+    "file": "source-previews/W9qcw.png",
+    "scale": 1,
+    "bounds": {
+      "x": 10071,
+      "y": 4292,
+      "width": 844,
+      "height": 390
+    }
+  },
+  {
+    "id": "NKGiz",
+    "name": "状态 · 记忆 · 视频预览 · 横屏播放 · 拖动快进",
+    "file": "source-previews/NKGiz.png",
+    "scale": 1,
+    "bounds": {
+      "x": 10955,
+      "y": 4292,
+      "width": 844,
+      "height": 390
+    }
+  },
+  {
+    "id": "TYBwe",
+    "name": "状态 · 记忆 · 视频预览 · 横屏播放 · 拖动快退",
+    "file": "source-previews/TYBwe.png",
+    "scale": 1,
+    "bounds": {
+      "x": 11839,
+      "y": 4292,
+      "width": 844,
+      "height": 390
+    }
+  },
+  {
+    "id": "PnVau",
+    "name": "探索 · 活动详情 F · 编辑节目单",
+    "file": "source-previews/PnVau.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4170,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "rnJW6",
+    "name": "探索 · 活动详情 G · 适配推荐",
+    "file": "source-previews/rnJW6.png",
+    "scale": 1,
+    "bounds": {
+      "x": -3740,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "fLHGc",
+    "name": "探索 · 活动详情 I · 系列仪式",
+    "file": "source-previews/fLHGc.png",
+    "scale": 1,
+    "bounds": {
+      "x": -5030,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "sRdvt",
+    "name": "探索 · 活动详情 B · 高效决策",
+    "file": "source-previews/sRdvt.png",
+    "scale": 1,
+    "bounds": {
+      "x": -3740,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "ImTfR",
+    "name": "探索 · 活动详情 C · 社交参与",
+    "file": "source-previews/ImTfR.png",
+    "scale": 1,
+    "bounds": {
+      "x": -5030,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "L6hnE",
+    "name": "探索 · 活动详情 A · 标题03字 · 单行",
+    "file": "source-previews/L6hnE.png",
+    "scale": 1,
+    "bounds": {
+      "x": -5030,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "ju7YZ",
+    "name": "标题测试 · 04字 · 单行 · 电影海报",
+    "file": "source-previews/ju7YZ.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4600,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "BjPyU",
+    "name": "标题测试 · 超限省略 · 蓝色头像",
+    "file": "source-previews/BjPyU.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4170,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "j8v7l5",
+    "name": "探索 · 多活动详情方案 C · 分段报名",
+    "file": "source-previews/j8v7l5.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4600,
+      "y": 1292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "ITk5L",
+    "name": "活动天气 · 五项紧凑长条",
+    "file": "source-previews/ITk5L.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4600,
+      "y": 2292,
+      "width": 358,
+      "height": 100
+    }
+  },
+  {
+    "id": "KHPGJ",
+    "name": "活动天气 · 编辑简报卡片 · 方案三",
+    "file": "source-previews/KHPGJ.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4600,
+      "y": 2590,
+      "width": 358,
+      "height": 132
+    }
+  },
+  {
+    "id": "jXag2",
+    "name": "活动天气 · 罗盘信息卡片 · 方案四",
+    "file": "source-previews/jXag2.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4600,
+      "y": 2762,
+      "width": 358,
+      "height": 120
+    }
+  },
+  {
+    "id": "aFkLU",
+    "name": "活动天气 · 气象信号台 · 方案五",
+    "file": "source-previews/aFkLU.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4600,
+      "y": 2922,
+      "width": 358,
+      "height": 120
+    }
+  },
+  {
+    "id": "Mlljc",
+    "name": "探索分区标识 · 活动详情方案一",
+    "file": "source-previews/Mlljc.png",
+    "scale": 1,
+    "bounds": {
+      "x": -5150,
+      "y": 292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "f8NZh",
+    "name": "探索分区标识 · 活动详情方案二",
+    "file": "source-previews/f8NZh.png",
+    "scale": 1,
+    "bounds": {
+      "x": -5150,
+      "y": 1292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "drX5q",
+    "name": "探索分区标识 · 活动详情方案三",
+    "file": "source-previews/drX5q.png",
+    "scale": 1,
+    "bounds": {
+      "x": -5150,
+      "y": 2292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "zyDdb",
+    "name": "分区标识 · 独立探索区（非主流程）",
+    "file": "source-previews/zyDdb.png",
+    "scale": 1,
+    "bounds": {
+      "x": -5270,
+      "y": 292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "JwTSh",
+    "file": "source-previews/JwTSh.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4555,
+      "y": 9564,
+      "width": 44,
+      "height": 28
+    }
+  },
+  {
+    "id": "M6gJo",
+    "file": "source-previews/M6gJo.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4117.711437679236,
+      "y": 12241,
+      "width": 0.49495876766741276,
+      "height": 0.9899175353366445
+    }
+  },
+  {
+    "id": "j9x9uR",
+    "name": "横向桌游切换列表",
+    "file": "source-previews/j9x9uR.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2850.9651777723284,
+      "y": 12261.190168229845,
+      "width": 350,
+      "height": 106
+    }
+  },
+  {
+    "id": "TC0km",
+    "name": "流程 01 · 录入桌游入口",
+    "file": "source-previews/TC0km.png",
+    "scale": 1,
+    "bounds": {
+      "x": -5351,
+      "y": 12576,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "tF3N2",
+    "name": "流程 02 · 空结果页",
+    "file": "source-previews/tF3N2.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4392.371133600354,
+      "y": 12576,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "nQ5CV",
+    "name": "流程 02 · 名称搜索入口",
+    "file": "source-previews/nQ5CV.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4861.490339018634,
+      "y": 12576,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "folfG",
+    "name": "流程 03 · 名称搜索结果",
+    "file": "source-previews/folfG.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2554,
+      "y": 13851,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "Nz8RY",
+    "name": "流程 03 · 名称搜索结果",
+    "file": "source-previews/Nz8RY.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2525.9651777723284,
+      "y": 12576.190168229845,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "wziuQ",
+    "name": "流程 03 · 名称搜索结果",
+    "file": "source-previews/wziuQ.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4422,
+      "y": 13671,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "fEinP",
+    "name": "流程 03 · 名称搜索结果",
+    "file": "source-previews/fEinP.png",
+    "scale": 1,
+    "bounds": {
+      "x": -3944,
+      "y": 12576,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "lLJSd",
+    "name": "流程 04 · 加入成功",
+    "file": "source-previews/lLJSd.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1866,
+      "y": 13758,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "mJzbF",
+    "name": "桌游库列表  · 最近购入与全部馆藏",
+    "file": "source-previews/mJzbF.png",
+    "scale": 1,
+    "bounds": {
+      "x": -5761,
+      "y": 12576,
+      "width": 390,
+      "height": 1709
+    }
+  },
+  {
+    "id": "Z4JTyn",
+    "name": "探索分区标识 · 工具 · 桌游库三",
+    "file": "source-previews/Z4JTyn.png",
+    "scale": 1,
+    "bounds": {
+      "x": -5881,
+      "y": 12576,
+      "width": 104,
+      "height": 1709
+    }
+  },
+  {
+    "id": "oIcdz",
+    "name": "流程 · 桌游库搜索页 · 默认",
+    "file": "source-previews/oIcdz.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4942,
+      "y": 14835,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "h5lda",
+    "name": "流程 · 桌游库搜索页 · 输入中",
+    "file": "source-previews/h5lda.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4522,
+      "y": 14835,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "nvq0n",
+    "name": "流程 · 桌游库搜索结果页 · 有结果",
+    "file": "source-previews/nvq0n.png",
+    "scale": 1,
+    "bounds": {
+      "x": -4102,
+      "y": 14835,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "FmcXP",
+    "name": "流程 · 桌游库搜索结果页 · 筛选抽屉",
+    "file": "source-previews/FmcXP.png",
+    "scale": 1,
+    "bounds": {
+      "x": -3682,
+      "y": 14835,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "UKaDX",
+    "name": "流程 · 桌游库搜索结果页 · 无结果",
+    "file": "source-previews/UKaDX.png",
+    "scale": 1,
+    "bounds": {
+      "x": -3262,
+      "y": 14835,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "verUnselected01",
+    "name": "流程 03.名称搜索结果 · 版本未选择",
+    "file": "source-previews/verUnselected01.png",
+    "scale": 1,
+    "bounds": {
+      "x": -3112,
+      "y": 12576,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "i4dBW",
+    "name": "成功桌游卡片",
+    "file": "source-previews/i4dBW.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1167,
+      "y": 13725,
+      "width": 326,
+      "height": 126
+    }
+  },
+  {
+    "id": "q8PNm",
+    "name": "成功桌游封面",
+    "file": "source-previews/q8PNm.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1202,
+      "y": 13882,
+      "width": 88,
+      "height": 98
+    }
+  },
+  {
+    "id": "R06j1",
+    "name": "成功桌游名称",
+    "file": "source-previews/R06j1.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1098,
+      "y": 13888,
+      "width": 180,
+      "height": 24
+    }
+  },
+  {
+    "id": "CObGD",
+    "name": "流程 03.7 · 名称搜索结果 · 首位拥有者",
+    "file": "source-previews/CObGD.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1133,
+      "y": 12576,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "nllxZ",
+    "name": "流程 03.6 · 搜索结果页 · 拥有者抽屉",
+    "file": "source-previews/nllxZ.png",
+    "scale": 1,
+    "bounds": {
+      "x": -1592,
+      "y": 12576,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "fUXwp",
+    "name": "流程 03.5 · 搜索结果页 · 版本抽屉展开",
+    "file": "source-previews/fUXwp.png",
+    "scale": 1,
+    "bounds": {
+      "x": -2098,
+      "y": 12576,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "JNn09",
+    "name": "流程 03 · 名称搜索结果 · 骨架加载中",
+    "file": "source-previews/JNn09.png",
+    "scale": 1,
+    "bounds": {
+      "x": -663,
+      "y": 12576,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "CXmSf",
+    "name": "状态 · 上传记忆 · 投稿说明弹窗",
+    "file": "source-previews/CXmSf.png",
+    "scale": 1,
+    "bounds": {
+      "x": 10477,
+      "y": 292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "OwoFu",
+    "name": "状态 · 记忆 · 视频预览 · 拖动中大进度条",
+    "file": "source-previews/OwoFu.png",
+    "scale": 1,
+    "bounds": {
+      "x": 9617,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "DcdID",
+    "name": "状态 · 记忆 · 视频预览 · 播放中 · 松手后小进度条 3秒",
+    "file": "source-previews/DcdID.png",
+    "scale": 1,
+    "bounds": {
+      "x": 10047,
+      "y": 2292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "m5AESz",
+    "name": "状态 · 记忆 · 视频预览 · 横视频上下黑边 · 松手后小进度条 3秒",
+    "file": "source-previews/m5AESz.png",
+    "scale": 1,
+    "bounds": {
+      "x": 9617,
+      "y": 3292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "bJi5P",
+    "name": "状态 · 内容审核 · 视频预览 · 松手后小进度条 3秒",
+    "file": "source-previews/bJi5P.png",
+    "scale": 1,
+    "bounds": {
+      "x": 6297,
+      "y": 5292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "qyZEu",
+    "name": "状态 · 内容审核 · 视频预览 · 拖动中大进度条",
+    "file": "source-previews/qyZEu.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5867,
+      "y": 5292,
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "id": "UCCFa",
+    "name": "子分区标识 · 记忆 · 适宽视频",
+    "file": "source-previews/UCCFa.png",
+    "scale": 1,
+    "bounds": {
+      "x": 9067,
+      "y": 3292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "GSa57",
+    "name": "子分区标识 · 记忆 · 横屏播放",
+    "file": "source-previews/GSa57.png",
+    "scale": 1,
+    "bounds": {
+      "x": 9067,
+      "y": 4292,
+      "width": 104,
+      "height": 390
+    }
+  },
+  {
+    "id": "FpujU",
+    "name": "子分区标识 · 内容审核 · 图片预览",
+    "file": "source-previews/FpujU.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5317,
+      "y": 4292,
+      "width": 104,
+      "height": 844
+    }
+  },
+  {
+    "id": "bKxXm",
+    "name": "子分区标识 · 内容审核 · 视频预览",
+    "file": "source-previews/bKxXm.png",
+    "scale": 1,
+    "bounds": {
+      "x": 5317,
+      "y": 5292,
+      "width": 104,
+      "height": 844
+    }
+  }
+]

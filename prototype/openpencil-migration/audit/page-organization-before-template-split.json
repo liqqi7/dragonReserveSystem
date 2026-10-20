@@ -1,0 +1,56 @@
+{
+  "generatedAt": "2026-10-20T16:47:10.147Z",
+  "pageCount": 8,
+  "pages": [
+    {
+      "id": "dragon-page-home",
+      "name": "首页",
+      "rootCount": 45
+    },
+    {
+      "id": "dragon-page-tools",
+      "name": "工具",
+      "rootCount": 5
+    },
+    {
+      "id": "dragon-page-ranking",
+      "name": "排行榜",
+      "rootCount": 5
+    },
+    {
+      "id": "dragon-page-memory",
+      "name": "记忆",
+      "rootCount": 22
+    },
+    {
+      "id": "dragon-page-profile",
+      "name": "我的",
+      "rootCount": 20
+    },
+    {
+      "id": "dragon-page-exploration",
+      "name": "探索",
+      "rootCount": 62
+    },
+    {
+      "id": "dragon-page-templates",
+      "name": "模板",
+      "rootCount": 2
+    },
+    {
+      "id": "dragon-page-assets",
+      "name": "素材",
+      "rootCount": 3
+    }
+  ],
+  "rawNodes": 9671,
+  "templates": 94,
+  "allTemplatesOnTemplatesPage": true,
+  "referencesIncludingOverrides": 422,
+  "unresolvedReferences": 0,
+  "originalRootObjectsUnchanged": true,
+  "nativeSavePreservesAllPages": true,
+  "visualRegionsCompared": 164,
+  "exactVisualMatches": 164,
+  "targetSha256": "4545c158da2c6288070d4fb48ba306dc891f594820d0dc3db2c811bade4e5e0d"
+}

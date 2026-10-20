@@ -1,0 +1,78 @@
+{
+  "cases": [
+    {
+      "kind": "native",
+      "shown": false,
+      "expectedHeight": 40,
+      "actualHeight": 60,
+      "expectedBlueY": 20,
+      "actualBlueY": 40,
+      "passes": false
+    },
+    {
+      "kind": "native",
+      "shown": true,
+      "expectedHeight": 60,
+      "actualHeight": 60,
+      "expectedBlueY": 40,
+      "actualBlueY": 40,
+      "passes": true
+    },
+    {
+      "kind": "absolute",
+      "shown": false,
+      "expectedHeight": 40,
+      "actualHeight": 40,
+      "expectedBlueY": 20,
+      "actualBlueY": 20,
+      "passes": true
+    },
+    {
+      "kind": "absolute",
+      "shown": true,
+      "expectedHeight": 60,
+      "actualHeight": 40,
+      "expectedBlueY": 40,
+      "actualBlueY": 20,
+      "passes": false
+    },
+    {
+      "kind": "role",
+      "shown": false,
+      "expectedHeight": 40,
+      "actualHeight": 60,
+      "expectedBlueY": 20,
+      "actualBlueY": 20,
+      "passes": false
+    },
+    {
+      "kind": "role",
+      "shown": true,
+      "expectedHeight": 60,
+      "actualHeight": 60,
+      "expectedBlueY": 40,
+      "actualBlueY": 20,
+      "passes": false
+    },
+    {
+      "kind": "absent",
+      "shown": false,
+      "expectedHeight": 40,
+      "actualHeight": 40,
+      "expectedBlueY": 20,
+      "actualBlueY": 20,
+      "passes": true
+    },
+    {
+      "kind": "absent",
+      "shown": true,
+      "expectedHeight": 60,
+      "actualHeight": 60,
+      "expectedBlueY": 40,
+      "actualBlueY": 40,
+      "passes": true
+    }
+  ],
+  "conclusion": "Native hidden nodes still occupy layout; absolute positioning preserves the current hidden snapshot but showing it again requires removing the constraints. Neither overlay role nor visibility alone preserves both behaviors.",
+  "strictBehaviorParity": false
+}

@@ -1,0 +1,18 @@
+[
+  [
+    "if(value.type){converted=convertInline(value);}",
+    "if(value.type){converted=convertInline(value);converted.fill??=[];converted.stroke??=null;converted.effects??=[];}"
+  ],
+  [
+    "width:'fill_container',height:'fill_container',constraints:{h:'left',v:'top'},fill:[{type:'solid',color:'#'+m[1]}]",
+    "width:typeof out.width==='number'?out.width:row.bounds.width,height:typeof out.height==='number'?out.height:row.bounds.height,constraints:{h:'left_right',v:'top_bottom'},fill:[{type:'solid',color:'#'+m[1]}]"
+  ],
+  [
+    "const allowed=byKind.get(out.type);",
+    "// Preserve fixed unclipped containers: the native repair otherwise grows\n // numeric bounds when a frame has no paint at all. Transparent paint has no visual effect.\n if(['frame','group'].includes(out.type)&&(typeof out.width==='number'||typeof out.height==='number')&&!out.fill&&!out.stroke)out.fill=[{type:'solid',color:'#00000000'}];\n const allowed=byKind.get(out.type);"
+  ],
+  [
+    "const document={version:",
+    "// Embedded op-image tokens in untyped descendant patches are not expanded by\n// the native loader. Inline only those patch assets; regular fills stay deduplicated.\nfunction inlinePatchImages(value,inPatch=false){\n if(!value||typeof value!=='object')return;\n if(inPatch&&value.type==='image'&&value.url?.startsWith('op-image:'))value.url=embeddedImages[value.url.slice(9)];\n for(const [key,v]of Object.entries(value))inlinePatchImages(v,inPatch||key==='descendants');\n}\nchildren.forEach(n=>inlinePatchImages(n));\nconst document={version:"
+  ]
+]

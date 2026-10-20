@@ -1,0 +1,27 @@
+{
+  "compared": 164,
+  "exactMatches": 164,
+  "mismatches": [],
+  "crossPageMasterEditProbe": [
+    {
+      "phase": "before",
+      "sample": [
+        255,
+        0,
+        0,
+        255
+      ],
+      "masterText": "模板"
+    },
+    {
+      "phase": "after",
+      "sample": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "masterText": "同步"
+    }
+  ]
+}

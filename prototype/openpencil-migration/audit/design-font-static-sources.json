@@ -1,0 +1,173 @@
+[
+  {
+    "family": "Geist",
+    "file": "Geist-400.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Geist-400.ttf",
+    "weight": 400,
+    "sourceUrl": "https://fonts.gstatic.com/s/geist/v4/gyByhwUxId8gMHwbElSvO5Tc.ttf",
+    "sha256": "8fbad7d8f2e46658267edb56da18a6b15d54eb7f508da8da6db4deefab759cc5",
+    "bytes": 77708
+  },
+  {
+    "family": "Geist",
+    "file": "Geist-500.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Geist-500.ttf",
+    "weight": 500,
+    "sourceUrl": "https://fonts.gstatic.com/s/geist/v4/gyByhwUxId8gMHwbElSvO5Tc.ttf",
+    "sha256": "9344d311124da9df44ac661e19cef5b3939fba53995dcc67ece97e19d00b2e91",
+    "bytes": 77668
+  },
+  {
+    "family": "Geist",
+    "file": "Geist-600.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Geist-600.ttf",
+    "weight": 600,
+    "sourceUrl": "https://fonts.gstatic.com/s/geist/v4/gyByhwUxId8gMHwbElSvO5Tc.ttf",
+    "sha256": "7ff5c00ea731cb4690514849b8d9e0abe574c00d465562d90d92f08070ee9db5",
+    "bytes": 77688
+  },
+  {
+    "family": "Geist",
+    "file": "Geist-700.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Geist-700.ttf",
+    "weight": 700,
+    "sourceUrl": "https://fonts.gstatic.com/s/geist/v4/gyByhwUxId8gMHwbElSvO5Tc.ttf",
+    "sha256": "e6a9b5db06f55a1c2669b5b9a7826d87239138594d1085f9b5dc992caa888bc0",
+    "bytes": 77704
+  },
+  {
+    "family": "Geist Mono",
+    "file": "GeistMono-400.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\GeistMono-400.ttf",
+    "weight": 400,
+    "sourceUrl": "https://fonts.gstatic.com/s/geistmono/v4/or3nQ6H-1_WfwkMZI_qYJrAXmzPnnks.ttf",
+    "sha256": "4e9065bfe711459cb80206187327939f78dbdee2f74be72028e28cb4d5e1beaa",
+    "bytes": 77664
+  },
+  {
+    "family": "Geist Mono",
+    "file": "GeistMono-500.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\GeistMono-500.ttf",
+    "weight": 500,
+    "sourceUrl": "https://fonts.gstatic.com/s/geistmono/v4/or3nQ6H-1_WfwkMZI_qYJrAXmzPnnks.ttf",
+    "sha256": "ba199dfa79f5b04b01822c15d839080a90f9ac57c21070a9a7b483b90dd26d28",
+    "bytes": 77768
+  },
+  {
+    "family": "Geist Mono",
+    "file": "GeistMono-600.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\GeistMono-600.ttf",
+    "weight": 600,
+    "sourceUrl": "https://fonts.gstatic.com/s/geistmono/v4/or3nQ6H-1_WfwkMZI_qYJrAXmzPnnks.ttf",
+    "sha256": "0f07ae0ae6ad07c28a180c30ae40898cdba325b5d37ccd59e97543a525fb6588",
+    "bytes": 77780
+  },
+  {
+    "family": "Geist Mono",
+    "file": "GeistMono-700.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\GeistMono-700.ttf",
+    "weight": 700,
+    "sourceUrl": "https://fonts.gstatic.com/s/geistmono/v4/or3nQ6H-1_WfwkMZI_qYJrAXmzPnnks.ttf",
+    "sha256": "fd3e54951cd86db75511417af35ed41b75bbfd69720f7c8d65ed2a9378d579f2",
+    "bytes": 77744
+  },
+  {
+    "family": "Anton",
+    "file": "Anton-400.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Anton-400.ttf",
+    "weight": 400,
+    "sourceUrl": "https://fonts.gstatic.com/s/anton/v27/1Ptgg87LROyAm0K08i4gS7lu.ttf",
+    "sha256": "848b52107207ee8bc7caca3f8fa57f63d23d0d13e391c5b514d2dcdd262b9026",
+    "bytes": 161588
+  },
+  {
+    "family": "Inter",
+    "file": "Inter-400.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Inter-400.ttf",
+    "weight": 400,
+    "sourceUrl": "https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTfvlaQc78lA2.ttf",
+    "sha256": "d1124cfb7bbf2d70225b6df47e0435661c7dfb487933a09952e5fcc507b33509",
+    "bytes": 340556
+  },
+  {
+    "family": "Inter",
+    "file": "Inter-500.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Inter-500.ttf",
+    "weight": 500,
+    "sourceUrl": "https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTfvlaQc78lA2.ttf",
+    "sha256": "6e389c098aa106ba985a26b333b308e6d53df8e33da59a56d774e90394cba6ed",
+    "bytes": 341112
+  },
+  {
+    "family": "Inter",
+    "file": "Inter-600.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Inter-600.ttf",
+    "weight": 600,
+    "sourceUrl": "https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTfvlaQc78lA2.ttf",
+    "sha256": "c2a79f6e809119a4fc90d1bc4fb90c5042c316c787748cce6450ab81348f16ae",
+    "bytes": 341780
+  },
+  {
+    "family": "Inter",
+    "file": "Inter-700.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Inter-700.ttf",
+    "weight": 700,
+    "sourceUrl": "https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTfvlaQc78lA2.ttf",
+    "sha256": "0f6c806afe8f965994306bac05cf36a547b7fc05e79d2c8f081b756595d5ac8b",
+    "bytes": 342232
+  },
+  {
+    "family": "Inter",
+    "file": "Inter-800.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\Inter-800.ttf",
+    "weight": 800,
+    "sourceUrl": "https://fonts.gstatic.com/s/inter/v20/UcCo3FwrK3iLTfvlaQc78lA2.ttf",
+    "sha256": "ff6857b798791ac03ed2518baa4eae30dd725bf209981f88afd52ce6e7b6a196",
+    "bytes": 343084
+  },
+  {
+    "family": "Noto Sans SC",
+    "file": "NotoSansSC-400.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\NotoSansSC-400.ttf",
+    "weight": 400,
+    "sourceUrl": "https://fonts.gstatic.com/s/notosanssc/v39/k3kXo84MPvpLmixcA63oeALhKYiJ-Q7m8w.ttf",
+    "sha256": "5a662cdca1ffdd26c2c8310d07ce79047a0fc3a314376826b908d4cc72dc60a8",
+    "bytes": 10559684
+  },
+  {
+    "family": "Noto Sans SC",
+    "file": "NotoSansSC-500.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\NotoSansSC-500.ttf",
+    "weight": 500,
+    "sourceUrl": "https://fonts.gstatic.com/s/notosanssc/v39/k3kXo84MPvpLmixcA63oeALhKYiJ-Q7m8w.ttf",
+    "sha256": "96afff054251fd104666229700186b490870dee1f54f1b077d2bd86d62270b04",
+    "bytes": 10552840
+  },
+  {
+    "family": "Noto Sans SC",
+    "file": "NotoSansSC-600.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\NotoSansSC-600.ttf",
+    "weight": 600,
+    "sourceUrl": "https://fonts.gstatic.com/s/notosanssc/v39/k3kXo84MPvpLmixcA63oeALhKYiJ-Q7m8w.ttf",
+    "sha256": "cec2d169d2ae2d35171e06dafa16a07377c1a0e07cf2079b6d2026b76fe84904",
+    "bytes": 10549332
+  },
+  {
+    "family": "Noto Sans SC",
+    "file": "NotoSansSC-700.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\NotoSansSC-700.ttf",
+    "weight": 700,
+    "sourceUrl": "https://fonts.gstatic.com/s/notosanssc/v39/k3kXo84MPvpLmixcA63oeALhKYiJ-Q7m8w.ttf",
+    "sha256": "4e7ec81db32b8315088befd837b1bd6fa4342570626d7ee9b5dc7d7615d6214f",
+    "bytes": 10549184
+  },
+  {
+    "family": "Noto Sans SC",
+    "file": "NotoSansSC-800.ttf",
+    "local": "D:\\Applications\\OpenPencil\\design-fonts\\source-static\\NotoSansSC-800.ttf",
+    "weight": 800,
+    "sourceUrl": "https://fonts.gstatic.com/s/notosanssc/v39/k3kXo84MPvpLmixcA63oeALhKYiJ-Q7m8w.ttf",
+    "sha256": "cdca1e644a808204d0dda4c302499ade0f0d8e5f72286dd64bc27df4beabc20f",
+    "bytes": 10544144
+  }
+]

@@ -1,0 +1,2147 @@
+{
+  "componentsCompared": 93,
+  "improvedOverPointOne": 5,
+  "regressedOverPointOne": 0,
+  "normalizedTransparentMarginCount": 2,
+  "details": [
+    {
+      "id": "nX3OK",
+      "name": "component/二级页面一级标题",
+      "before": 25.98777777777778,
+      "after": 12.024444444444445,
+      "change": -13.963333333333335,
+      "beforeSize": [
+        350,
+        24
+      ],
+      "afterRawSize": [
+        350,
+        28
+      ],
+      "afterNormalizedSize": [
+        350,
+        24
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        2
+      ]
+    },
+    {
+      "id": "O5XQF",
+      "name": "component/基本信息组件 · 默认状态",
+      "before": 4.98135310420899,
+      "after": 4.268535777698657,
+      "change": -0.7128173265103328,
+      "beforeSize": [
+        359,
+        399
+      ],
+      "afterRawSize": [
+        359,
+        401
+      ],
+      "afterNormalizedSize": [
+        359,
+        399
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        2
+      ]
+    },
+    {
+      "id": "BWQQm",
+      "name": "component/基本信息组件 · 无定位且天气不可用",
+      "before": 4.824151837346384,
+      "after": 4.1349031818171245,
+      "change": -0.6892486555292594,
+      "beforeSize": [
+        358,
+        398
+      ],
+      "afterRawSize": [
+        358,
+        398
+      ],
+      "afterNormalizedSize": [
+        358,
+        398
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "IkwrC",
+      "name": "component/基本信息组件 · 空气质量缺失",
+      "before": 4.824240266404172,
+      "after": 4.134991610874913,
+      "change": -0.6892486555292594,
+      "beforeSize": [
+        358,
+        398
+      ],
+      "afterRawSize": [
+        358,
+        398
+      ],
+      "afterNormalizedSize": [
+        358,
+        398
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "fKzdh",
+      "name": "component/第一名近12周活跃图",
+      "before": 2.228909657320872,
+      "after": 2.0752492211838005,
+      "change": -0.1536604361370717,
+      "beforeSize": [
+        214,
+        200
+      ],
+      "afterRawSize": [
+        214,
+        200
+      ],
+      "afterNormalizedSize": [
+        214,
+        200
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "aAmUO",
+      "name": "component/可选子项目 · 4项上限",
+      "before": 0.761344475512625,
+      "after": 0.761344475512625,
+      "change": 0.0,
+      "beforeSize": [
+        1124,
+        280
+      ],
+      "afterRawSize": [
+        1124,
+        280
+      ],
+      "afterNormalizedSize": [
+        1124,
+        280
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "AHpS7",
+      "name": "component/活动封面 · 已选中",
+      "before": 3.090213675213675,
+      "after": 3.090213675213675,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        300
+      ],
+      "afterRawSize": [
+        390,
+        300
+      ],
+      "afterNormalizedSize": [
+        390,
+        300
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "APCln",
+      "name": "component/记忆底部信息 · 无活动 · 无位置",
+      "before": 0.785747982619491,
+      "after": 0.785747982619491,
+      "change": 0.0,
+      "beforeSize": [
+        358,
+        75
+      ],
+      "afterRawSize": [
+        358,
+        75
+      ],
+      "afterNormalizedSize": [
+        358,
+        75
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ArOej",
+      "name": "component/活动备注 · 新版",
+      "before": 0.8052370351702509,
+      "after": 0.8052370351702509,
+      "change": 0.0,
+      "beforeSize": [
+        744,
+        128
+      ],
+      "afterRawSize": [
+        744,
+        128
+      ],
+      "afterNormalizedSize": [
+        744,
+        128
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "B7oWX",
+      "name": "component/活动大卡-桌游蓝色头像",
+      "before": 4.235898789768346,
+      "after": 4.235898789768346,
+      "change": 0.0,
+      "beforeSize": [
+        244,
+        326
+      ],
+      "afterRawSize": [
+        244,
+        326
+      ],
+      "afterNormalizedSize": [
+        244,
+        326
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "byNdW",
+      "name": "component/记忆底部信息 · 有活动 · 无位置",
+      "before": 0.5953200534206121,
+      "after": 0.5953200534206121,
+      "change": 0.0,
+      "beforeSize": [
+        358,
+        99
+      ],
+      "afterRawSize": [
+        358,
+        99
+      ],
+      "afterNormalizedSize": [
+        358,
+        99
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "c852G",
+      "name": "component/记忆底部信息 · 展开态",
+      "before": 0.3328419201324229,
+      "after": 0.3328419201324229,
+      "change": 0.0,
+      "beforeSize": [
+        358,
+        180
+      ],
+      "afterRawSize": [
+        358,
+        180
+      ],
+      "afterNormalizedSize": [
+        358,
+        180
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "COYbV",
+      "name": "component/居中弹窗 · 黄色警告 · 双按钮",
+      "before": 7.7417764857881135,
+      "after": 7.7417764857881135,
+      "change": 0.0,
+      "beforeSize": [
+        300,
+        172
+      ],
+      "afterRawSize": [
+        300,
+        172
+      ],
+      "afterNormalizedSize": [
+        300,
+        172
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "cp7i1",
+      "name": "component/小程序底部功能栏 · 单主按钮",
+      "before": 0.9894751244566533,
+      "after": 0.9894751244566533,
+      "change": 0.0,
+      "beforeSize": [
+        391,
+        81
+      ],
+      "afterRawSize": [
+        391,
+        81
+      ],
+      "afterNormalizedSize": [
+        391,
+        81
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "d468yw",
+      "name": "component/沉浸主视觉信息 · 副标题展开",
+      "before": 0.10227513227513227,
+      "after": 0.10227513227513227,
+      "change": 0.0,
+      "beforeSize": [
+        350,
+        216
+      ],
+      "afterRawSize": [
+        350,
+        216
+      ],
+      "afterNormalizedSize": [
+        350,
+        216
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "d647D3",
+      "name": "component/双项切换 Tab · 鸽子榜选中",
+      "before": 1.7905027932960893,
+      "after": 1.7905027932960893,
+      "change": 0.0,
+      "beforeSize": [
+        358,
+        40
+      ],
+      "afterRawSize": [
+        358,
+        40
+      ],
+      "afterNormalizedSize": [
+        358,
+        40
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "d8jLH",
+      "name": "component/活动地点选择项 · 未完成",
+      "before": 0.19739390472749896,
+      "after": 0.19739390472749896,
+      "change": 0.0,
+      "beforeSize": [
+        1126,
+        59
+      ],
+      "afterRawSize": [
+        1126,
+        59
+      ],
+      "afterNormalizedSize": [
+        1126,
+        59
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "diyU1",
+      "name": "component/小程序二级页标题栏 · 深色主视觉",
+      "before": 0.3664918414918415,
+      "after": 0.3664918414918415,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        88
+      ],
+      "afterRawSize": [
+        390,
+        88
+      ],
+      "afterNormalizedSize": [
+        390,
+        88
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "e9gGO",
+      "name": "component/Bento Input",
+      "before": 0.2792660318939328,
+      "after": 0.2792660318939328,
+      "change": 0.0,
+      "beforeSize": [
+        1126,
+        61
+      ],
+      "afterRawSize": [
+        1126,
+        61
+      ],
+      "afterNormalizedSize": [
+        1126,
+        61
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "EoArr",
+      "name": "component/小程序底部导航/我的选中",
+      "before": 5.385873246250605,
+      "after": 5.385873246250605,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        53
+      ],
+      "afterRawSize": [
+        390,
+        53
+      ],
+      "afterNormalizedSize": [
+        390,
+        53
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "FJeaK",
+      "name": "component/活动名称 · 新版",
+      "before": 0.48631985174323883,
+      "after": 0.48631985174323883,
+      "change": 0.0,
+      "beforeSize": [
+        744,
+        88
+      ],
+      "afterRawSize": [
+        744,
+        88
+      ],
+      "afterNormalizedSize": [
+        744,
+        88
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "G2zar",
+      "name": "component/现场点名表内容 · 默认状态",
+      "before": 1.7709880483739404,
+      "after": 1.7709880483739404,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        482
+      ],
+      "afterRawSize": [
+        390,
+        482
+      ],
+      "afterNormalizedSize": [
+        390,
+        482
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "GUfJu",
+      "name": "component/活动大卡-桌游黄色头像",
+      "before": 3.201657782694693,
+      "after": 3.201657782694693,
+      "change": 0.0,
+      "beforeSize": [
+        244,
+        326
+      ],
+      "afterRawSize": [
+        244,
+        326
+      ],
+      "afterNormalizedSize": [
+        244,
+        326
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "GzQbp",
+      "name": "component/活动时间 · 新版",
+      "before": 0.2725655127790359,
+      "after": 0.2725655127790359,
+      "change": 0.0,
+      "beforeSize": [
+        1124,
+        88
+      ],
+      "afterRawSize": [
+        1124,
+        88
+      ],
+      "afterNormalizedSize": [
+        1124,
+        88
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "Hae5C",
+      "name": "component/页面底部安全区 · Touch Bar",
+      "before": 0.007827260458839407,
+      "after": 0.007827260458839407,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        38
+      ],
+      "afterRawSize": [
+        390,
+        38
+      ],
+      "afterNormalizedSize": [
+        390,
+        38
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "hyWsK",
+      "name": "component/记忆底部信息 · 超长活动名",
+      "before": 0.4431724516897152,
+      "after": 0.4431724516897152,
+      "change": 0.0,
+      "beforeSize": [
+        358,
+        122
+      ],
+      "afterRawSize": [
+        358,
+        122
+      ],
+      "afterNormalizedSize": [
+        358,
+        122
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "I9dt5U",
+      "name": "component/活动封面 · 未选中状态",
+      "before": 4.850956981407219,
+      "after": 4.850956981407219,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        844
+      ],
+      "afterRawSize": [
+        390,
+        844
+      ],
+      "afterNormalizedSize": [
+        390,
+        844
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "IcR7J",
+      "name": "component/Bento Stepper",
+      "before": 0.45339754975634194,
+      "after": 0.45339754975634194,
+      "change": 0.0,
+      "beforeSize": [
+        1126,
+        52
+      ],
+      "afterRawSize": [
+        1126,
+        52
+      ],
+      "afterNormalizedSize": [
+        1126,
+        52
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ihvbF",
+      "name": "component/小程序顶部导航",
+      "before": 3.103321678321678,
+      "after": 3.103321678321678,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        88
+      ],
+      "afterRawSize": [
+        390,
+        88
+      ],
+      "afterNormalizedSize": [
+        390,
+        88
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "jJtH9",
+      "name": "component/活动封面选择项 · 未完成",
+      "before": 2.213346941698897,
+      "after": 2.213346941698897,
+      "change": 0.0,
+      "beforeSize": [
+        358,
+        52
+      ],
+      "afterRawSize": [
+        358,
+        52
+      ],
+      "afterNormalizedSize": [
+        358,
+        52
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "JTKXJ",
+      "name": "component/天气 Icon · 雾霾",
+      "before": 0.5485711353958237,
+      "after": 0.5485711353958237,
+      "change": 0.0,
+      "beforeSize": [
+        365,
+        89
+      ],
+      "afterRawSize": [
+        365,
+        89
+      ],
+      "afterNormalizedSize": [
+        365,
+        89
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "jwoRQ",
+      "name": "component/Bento Textarea · 已填写",
+      "before": 4.285962834855048,
+      "after": 4.285962834855048,
+      "change": 0.0,
+      "beforeSize": [
+        1126,
+        171
+      ],
+      "afterRawSize": [
+        1126,
+        171
+      ],
+      "afterNormalizedSize": [
+        1126,
+        171
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "k8TO1",
+      "name": "component/参与人数 · 新版",
+      "before": 0.19391310794780545,
+      "after": 0.19391310794780545,
+      "change": 0.0,
+      "beforeSize": [
+        1124,
+        88
+      ],
+      "afterRawSize": [
+        1124,
+        88
+      ],
+      "afterNormalizedSize": [
+        1124,
+        88
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "Ki394",
+      "name": "component/日历周选择器",
+      "before": 1.5774647887323943,
+      "after": 1.5774647887323943,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        71
+      ],
+      "afterRawSize": [
+        390,
+        71
+      ],
+      "afterNormalizedSize": [
+        390,
+        71
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "kj9i8",
+      "name": "component/天气 Icon · 下雨",
+      "before": 0.49809655738545994,
+      "after": 0.49809655738545994,
+      "change": 0.0,
+      "beforeSize": [
+        365,
+        89
+      ],
+      "afterRawSize": [
+        365,
+        89
+      ],
+      "afterNormalizedSize": [
+        365,
+        89
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "klCrN",
+      "name": "component/Picker View Date · 5项居中",
+      "before": 1.1478761978761978,
+      "after": 1.1478761978761978,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        396
+      ],
+      "afterRawSize": [
+        390,
+        396
+      ],
+      "afterNormalizedSize": [
+        390,
+        396
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "kRcAz",
+      "name": "component/Picker View Time · 5项居中",
+      "before": 0.7988927738927739,
+      "after": 0.7988927738927739,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        396
+      ],
+      "afterRawSize": [
+        390,
+        396
+      ],
+      "afterNormalizedSize": [
+        390,
+        396
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "L1Y8qc",
+      "name": "component/沉浸主视觉信息 · 副标题折叠",
+      "before": 0.12359605911330049,
+      "after": 0.12359605911330049,
+      "change": 0.0,
+      "beforeSize": [
+        350,
+        116
+      ],
+      "afterRawSize": [
+        350,
+        116
+      ],
+      "afterNormalizedSize": [
+        350,
+        116
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "L38Nln",
+      "name": "component/活动地点选择项 · 已完成",
+      "before": 0.6036078092028359,
+      "after": 0.6036078092028359,
+      "change": 0.0,
+      "beforeSize": [
+        1126,
+        78
+      ],
+      "afterRawSize": [
+        1126,
+        78
+      ],
+      "afterNormalizedSize": [
+        1126,
+        78
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "Li595",
+      "name": "component/现场点名表内容 · 左滑取签删除",
+      "before": 1.7746302798170017,
+      "after": 1.7746302798170017,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        482
+      ],
+      "afterRawSize": [
+        390,
+        482
+      ],
+      "afterNormalizedSize": [
+        390,
+        482
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "lzf0Z",
+      "name": "component/Bento Date Time · 已填写",
+      "before": 0.9011057030595219,
+      "after": 0.9011057030595219,
+      "change": 0.0,
+      "beforeSize": [
+        1126,
+        77
+      ],
+      "afterRawSize": [
+        1126,
+        77
+      ],
+      "afterNormalizedSize": [
+        1126,
+        77
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "m6VmVP",
+      "name": "component/小程序底部导航/排行选中",
+      "before": 5.24936300596678,
+      "after": 5.24936300596678,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        53
+      ],
+      "afterRawSize": [
+        390,
+        53
+      ],
+      "afterNormalizedSize": [
+        390,
+        53
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "MaprC",
+      "name": "component/沉浸主视觉信息 · 未开始",
+      "before": 0.11160919540229886,
+      "after": 0.11160919540229886,
+      "change": 0.0,
+      "beforeSize": [
+        350,
+        116
+      ],
+      "afterRawSize": [
+        350,
+        116
+      ],
+      "afterNormalizedSize": [
+        350,
+        116
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "mHmfV",
+      "name": "component/小程序底部功能栏 · 详情操作 · 无编辑 · 报名不可用",
+      "before": 2.484113247863248,
+      "after": 2.484113247863248,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        80
+      ],
+      "afterRawSize": [
+        390,
+        80
+      ],
+      "afterNormalizedSize": [
+        390,
+        80
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "mkywX",
+      "name": "component/小程序底部功能栏 · 详情操作 · 无编辑",
+      "before": 1.022702156546999,
+      "after": 1.022702156546999,
+      "change": 0.0,
+      "beforeSize": [
+        391,
+        81
+      ],
+      "afterRawSize": [
+        391,
+        81
+      ],
+      "afterNormalizedSize": [
+        391,
+        81
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "MYEZj",
+      "name": "component/视频拖动进度 · 间距36",
+      "before": 0.0,
+      "after": 0.0,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        82
+      ],
+      "afterRawSize": [
+        390,
+        82
+      ],
+      "afterNormalizedSize": [
+        390,
+        82
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "n6MtSK",
+      "name": "component/沉浸主视觉信息 · 默认状态",
+      "before": 0.1690065681444992,
+      "after": 0.1690065681444992,
+      "change": 0.0,
+      "beforeSize": [
+        350,
+        116
+      ],
+      "afterRawSize": [
+        350,
+        116
+      ],
+      "afterNormalizedSize": [
+        350,
+        116
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "NbwxR",
+      "name": "component/小程序底部功能栏 · 详情操作 · 无编辑 · 取消报名",
+      "before": 4.839594017094017,
+      "after": 4.839594017094017,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        80
+      ],
+      "afterRawSize": [
+        390,
+        80
+      ],
+      "afterNormalizedSize": [
+        390,
+        80
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "O0IYzo",
+      "name": "component/一级抽屉页 · 最低高度",
+      "before": 0.6319349477682811,
+      "after": 0.6319349477682811,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        360
+      ],
+      "afterRawSize": [
+        390,
+        360
+      ],
+      "afterNormalizedSize": [
+        390,
+        360
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "O4ah4",
+      "name": "component/Bento Switch Row",
+      "before": 0.27067108439222115,
+      "after": 0.27067108439222115,
+      "change": 0.0,
+      "beforeSize": [
+        1126,
+        52
+      ],
+      "afterRawSize": [
+        1126,
+        52
+      ],
+      "afterNormalizedSize": [
+        1126,
+        52
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "O6lYf",
+      "name": "component/活动封面选择抽屉",
+      "before": 3.2561348528015195,
+      "after": 3.2561348528015195,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        720
+      ],
+      "afterRawSize": [
+        390,
+        720
+      ],
+      "afterNormalizedSize": [
+        390,
+        720
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ofy7y",
+      "name": "component/天气 Icon · 多云",
+      "before": 0.4635164947924683,
+      "after": 0.4635164947924683,
+      "change": 0.0,
+      "beforeSize": [
+        365,
+        89
+      ],
+      "afterRawSize": [
+        365,
+        89
+      ],
+      "afterNormalizedSize": [
+        365,
+        89
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "OKWLZ",
+      "name": "component/记忆关联活动行",
+      "before": 0.0,
+      "after": 0.0,
+      "change": 0.0,
+      "beforeSize": [
+        358,
+        16
+      ],
+      "afterRawSize": [
+        358,
+        16
+      ],
+      "afterNormalizedSize": [
+        358,
+        16
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "pArzx",
+      "name": "component/双项切换 Tab · 活动榜选中",
+      "before": 1.7464385474860336,
+      "after": 1.7464385474860336,
+      "change": 0.0,
+      "beforeSize": [
+        358,
+        40
+      ],
+      "afterRawSize": [
+        358,
+        40
+      ],
+      "afterNormalizedSize": [
+        358,
+        40
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "pbfyp",
+      "name": "component/Bento Input · 已填写",
+      "before": 0.43277135563773306,
+      "after": 0.43277135563773306,
+      "change": 0.0,
+      "beforeSize": [
+        1126,
+        61
+      ],
+      "afterRawSize": [
+        1126,
+        61
+      ],
+      "afterNormalizedSize": [
+        1126,
+        61
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "pSBh3",
+      "name": "component/可选子项目 · 多项目已填写",
+      "before": 0.7381491722136884,
+      "after": 0.7381491722136884,
+      "change": 0.0,
+      "beforeSize": [
+        1125,
+        217
+      ],
+      "afterRawSize": [
+        1125,
+        217
+      ],
+      "afterNormalizedSize": [
+        1125,
+        217
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "PuzNk",
+      "name": "component/记忆底部信息 · 短文案",
+      "before": 0.4909866593399884,
+      "after": 0.4909866593399884,
+      "change": 0.0,
+      "beforeSize": [
+        358,
+        122
+      ],
+      "afterRawSize": [
+        358,
+        122
+      ],
+      "afterNormalizedSize": [
+        358,
+        122
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "Q5Y4or",
+      "name": "component/Bento Date Time",
+      "before": 0.5310104342075923,
+      "after": 0.5310104342075923,
+      "change": 0.0,
+      "beforeSize": [
+        1126,
+        77
+      ],
+      "afterRawSize": [
+        1126,
+        77
+      ],
+      "afterNormalizedSize": [
+        1126,
+        77
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "RMrYv",
+      "name": "component/活动小卡-桌游黄色头像",
+      "before": 2.5967461340206186,
+      "after": 2.5967461340206186,
+      "change": 0.0,
+      "beforeSize": [
+        160,
+        194
+      ],
+      "afterRawSize": [
+        160,
+        194
+      ],
+      "afterNormalizedSize": [
+        160,
+        194
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "S2b7nH",
+      "name": "component/天气 Icon · 晴天",
+      "before": 0.579611102560156,
+      "after": 0.579611102560156,
+      "change": 0.0,
+      "beforeSize": [
+        365,
+        89
+      ],
+      "afterRawSize": [
+        365,
+        89
+      ],
+      "afterNormalizedSize": [
+        365,
+        89
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "s6Szm",
+      "name": "component/记忆底部信息 · 两行截断",
+      "before": 0.17733717197335802,
+      "after": 0.17733717197335802,
+      "change": 0.0,
+      "beforeSize": [
+        358,
+        163
+      ],
+      "afterRawSize": [
+        358,
+        163
+      ],
+      "afterNormalizedSize": [
+        358,
+        163
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "sA8B2",
+      "name": "component/活动大卡-电影图片",
+      "before": 4.949675651211908,
+      "after": 4.949675651211908,
+      "change": 0.0,
+      "beforeSize": [
+        244,
+        326
+      ],
+      "afterRawSize": [
+        244,
+        326
+      ],
+      "afterNormalizedSize": [
+        244,
+        326
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "sEQR9",
+      "name": "component/Picker View Date Time · 5项居中",
+      "before": 1.3257187257187257,
+      "after": 1.3257187257187257,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        396
+      ],
+      "afterRawSize": [
+        390,
+        396
+      ],
+      "afterNormalizedSize": [
+        390,
+        396
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "SirYI",
+      "name": "component/现场点名表内容 · 左滑补卡删除",
+      "before": 1.1075149838635316,
+      "after": 1.1075149838635316,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        482
+      ],
+      "afterRawSize": [
+        390,
+        482
+      ],
+      "afterNormalizedSize": [
+        390,
+        482
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "SUsjV",
+      "name": "工具列表 · 可扩展",
+      "before": 5.329649517149517,
+      "after": 5.329649517149517,
+      "change": 0.0,
+      "beforeSize": [
+        572,
+        140
+      ],
+      "afterRawSize": [
+        572,
+        140
+      ],
+      "afterNormalizedSize": [
+        572,
+        140
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "SvQjt",
+      "name": "component/小程序底部导航/首页选中",
+      "before": 5.384260603128528,
+      "after": 5.384260603128528,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        53
+      ],
+      "afterRawSize": [
+        390,
+        53
+      ],
+      "afterNormalizedSize": [
+        390,
+        53
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "syhHC",
+      "name": "component/Bento Textarea",
+      "before": 0.34729164084982167,
+      "after": 0.34729164084982167,
+      "change": 0.0,
+      "beforeSize": [
+        1126,
+        86
+      ],
+      "afterRawSize": [
+        1126,
+        86
+      ],
+      "afterNormalizedSize": [
+        1126,
+        86
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ThcXR",
+      "name": "component/活动封面选择项 · 已完成",
+      "before": 3.512874230053001,
+      "after": 3.512874230053001,
+      "change": 0.0,
+      "beforeSize": [
+        358,
+        52
+      ],
+      "afterRawSize": [
+        358,
+        52
+      ],
+      "afterNormalizedSize": [
+        358,
+        52
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ti8tC",
+      "name": "component/活动地点 · 新版",
+      "before": 0.527482486151841,
+      "after": 0.527482486151841,
+      "change": 0.0,
+      "beforeSize": [
+        744,
+        88
+      ],
+      "afterRawSize": [
+        744,
+        88
+      ],
+      "afterNormalizedSize": [
+        744,
+        88
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "TidBI",
+      "name": "component/天气 Icon · 沙尘",
+      "before": 0.6503617054024935,
+      "after": 0.6503617054024935,
+      "change": 0.0,
+      "beforeSize": [
+        365,
+        89
+      ],
+      "afterRawSize": [
+        365,
+        89
+      ],
+      "afterNormalizedSize": [
+        365,
+        89
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "tsZk3",
+      "name": "component/居中弹窗 · 红色报警 · 双按钮",
+      "before": 7.614308785529715,
+      "after": 7.614308785529715,
+      "change": 0.0,
+      "beforeSize": [
+        300,
+        172
+      ],
+      "afterRawSize": [
+        300,
+        172
+      ],
+      "afterNormalizedSize": [
+        300,
+        172
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "TUv2Z",
+      "name": "component/居中弹窗 · 绿色提示 · 单按钮",
+      "before": 7.017978036175711,
+      "after": 7.017978036175711,
+      "change": 0.0,
+      "beforeSize": [
+        300,
+        172
+      ],
+      "afterRawSize": [
+        300,
+        172
+      ],
+      "afterNormalizedSize": [
+        300,
+        172
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "U08cIO",
+      "name": "component/一级抽屉页 · 最高高度",
+      "before": 0.3177207977207977,
+      "after": 0.3177207977207977,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        720
+      ],
+      "afterRawSize": [
+        390,
+        720
+      ],
+      "afterNormalizedSize": [
+        390,
+        720
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "uE5GP",
+      "name": "component/小程序底部功能栏 · 双按钮",
+      "before": 1.767252902234431,
+      "after": 1.767252902234431,
+      "change": 0.0,
+      "beforeSize": [
+        391,
+        81
+      ],
+      "afterRawSize": [
+        391,
+        81
+      ],
+      "afterNormalizedSize": [
+        391,
+        81
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "uPX7C",
+      "name": "component/天气 Icon · 降雪",
+      "before": 0.6073675029500796,
+      "after": 0.6073675029500796,
+      "change": 0.0,
+      "beforeSize": [
+        365,
+        89
+      ],
+      "afterRawSize": [
+        365,
+        89
+      ],
+      "afterNormalizedSize": [
+        365,
+        89
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "V9wMS0",
+      "name": "component/桌游扇形牌阵舞台",
+      "before": 6.406377668308703,
+      "after": 6.406377668308703,
+      "change": 0.0,
+      "beforeSize": [
+        350,
+        435
+      ],
+      "afterRawSize": [
+        350,
+        435
+      ],
+      "afterNormalizedSize": [
+        350,
+        435
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "vt7j2",
+      "name": "component/一级页面一级标题",
+      "before": 2.7489880952380954,
+      "after": 2.7489880952380954,
+      "change": 0.0,
+      "beforeSize": [
+        200,
+        28
+      ],
+      "afterRawSize": [
+        200,
+        28
+      ],
+      "afterNormalizedSize": [
+        200,
+        28
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "vtT8F",
+      "name": "component/小程序底部导航/记忆选中",
+      "before": 4.4252539912917275,
+      "after": 4.4252539912917275,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        53
+      ],
+      "afterRawSize": [
+        390,
+        53
+      ],
+      "afterNormalizedSize": [
+        390,
+        53
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "VXHpi",
+      "name": "component/活动小卡-图片素材",
+      "before": 6.475332903780068,
+      "after": 6.475332903780068,
+      "change": 0.0,
+      "beforeSize": [
+        160,
+        194
+      ],
+      "afterRawSize": [
+        160,
+        194
+      ],
+      "afterNormalizedSize": [
+        160,
+        194
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "WFlgF",
+      "name": "component/活动小卡-桌游蓝色头像",
+      "before": 2.190012886597938,
+      "after": 2.190012886597938,
+      "change": 0.0,
+      "beforeSize": [
+        160,
+        194
+      ],
+      "afterRawSize": [
+        160,
+        194
+      ],
+      "afterNormalizedSize": [
+        160,
+        194
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "wg9gj",
+      "name": "component/桌游库馆藏卡片",
+      "before": 7.986780779884228,
+      "after": 7.986780779884228,
+      "change": 0.0,
+      "beforeSize": [
+        174,
+        231
+      ],
+      "afterRawSize": [
+        174,
+        231
+      ],
+      "afterNormalizedSize": [
+        174,
+        231
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "wWw3d",
+      "name": "component/小程序二级页标题栏",
+      "before": 6.684644522144522,
+      "after": 6.684644522144522,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        88
+      ],
+      "afterRawSize": [
+        390,
+        88
+      ],
+      "afterNormalizedSize": [
+        390,
+        88
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "WZKV3",
+      "name": "component/活动类型单选抽屉",
+      "before": 0.89616211745244,
+      "after": 0.89616211745244,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        465
+      ],
+      "afterRawSize": [
+        390,
+        465
+      ],
+      "afterNormalizedSize": [
+        390,
+        465
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "XqTYC",
+      "name": "component/二级抽屉页 · 最高高度",
+      "before": 0.5316903441903442,
+      "after": 0.5316903441903442,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        592
+      ],
+      "afterRawSize": [
+        390,
+        592
+      ],
+      "afterNormalizedSize": [
+        390,
+        592
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "y1PEWA",
+      "name": "component/日历日程表",
+      "before": 0.6004388658580275,
+      "after": 0.6004388658580275,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        668
+      ],
+      "afterRawSize": [
+        390,
+        668
+      ],
+      "afterNormalizedSize": [
+        390,
+        668
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "y8kYn",
+      "name": "component/Bento Select · 已选择",
+      "before": 0.4546443047775197,
+      "after": 0.4546443047775197,
+      "change": 0.0,
+      "beforeSize": [
+        1126,
+        52
+      ],
+      "afterRawSize": [
+        1126,
+        52
+      ],
+      "afterNormalizedSize": [
+        1126,
+        52
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "y8ZQV",
+      "name": "component/一级抽屉页",
+      "before": 0.3897374628557424,
+      "after": 0.3897374628557424,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        558
+      ],
+      "afterRawSize": [
+        390,
+        558
+      ],
+      "afterNormalizedSize": [
+        390,
+        558
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "y93vNK",
+      "name": "component/双项文字 Tab · 基本信息选中",
+      "before": 3.587740533829919,
+      "after": 3.587740533829919,
+      "change": 0.0,
+      "beforeSize": [
+        358,
+        30
+      ],
+      "afterRawSize": [
+        358,
+        30
+      ],
+      "afterNormalizedSize": [
+        358,
+        30
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "YOiEh",
+      "name": "component/记忆底部信息 · 无活动 · 保留位置",
+      "before": 0.6110572720708395,
+      "after": 0.6110572720708395,
+      "change": 0.0,
+      "beforeSize": [
+        358,
+        98
+      ],
+      "afterRawSize": [
+        358,
+        98
+      ],
+      "afterNormalizedSize": [
+        358,
+        98
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "zbByR",
+      "name": "component/小程序底部功能栏 · 详情操作",
+      "before": 1.155641859535011,
+      "after": 1.155641859535011,
+      "change": 0.0,
+      "beforeSize": [
+        391,
+        81
+      ],
+      "afterRawSize": [
+        391,
+        81
+      ],
+      "afterNormalizedSize": [
+        391,
+        81
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "zMleb",
+      "name": "component/Bento Select",
+      "before": 0.3988989843785581,
+      "after": 0.3988989843785581,
+      "change": 0.0,
+      "beforeSize": [
+        1126,
+        52
+      ],
+      "afterRawSize": [
+        1126,
+        52
+      ],
+      "afterNormalizedSize": [
+        1126,
+        52
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "ZO6SQ",
+      "name": "component/现场点名表内容 · 无人报名",
+      "before": 0.782638223924531,
+      "after": 0.782638223924531,
+      "change": 0.0,
+      "beforeSize": [
+        390,
+        482
+      ],
+      "afterRawSize": [
+        390,
+        482
+      ],
+      "afterNormalizedSize": [
+        390,
+        482
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "zRtfm",
+      "name": "component/居中弹窗 · 输入框 · 双按钮",
+      "before": 4.141446360153257,
+      "after": 4.141446360153257,
+      "change": 0.0,
+      "beforeSize": [
+        300,
+        232
+      ],
+      "afterRawSize": [
+        300,
+        232
+      ],
+      "afterNormalizedSize": [
+        300,
+        232
+      ],
+      "transparentOnlyCropOffset": [
+        0,
+        0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,587 @@
+{
+  "checkedAt": "2026-10-20T17:23:57.613Z",
+  "nativeRegistry": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"components\":\"component/小程序顶部导航|ihvbF;component/一级页面一级标题|vt7j2;component/小程序二级页标题栏|wWw3d;component/小程序二级页标题栏 · 深色主视觉|diyU1;component/双项切换 Tab · 活动榜选中|pArzx;component/双项切换 Tab · 鸽子榜选中|d647D3;component/二级页面一级标题|nX3OK;component/双项文字 Tab · 基本信息选中|y93vNK;component/页面底部安全区 · Touch Bar|Hae5C;component/小程序底部导航/首页选中|SvQjt;component/小程序底部导航/记忆选中|vtT8F;component/小程序底部导航/排行选中|m6VmVP;component/小程序底部导航/我的选中|EoArr;component/一级抽屉页 · 最低高度|O0IYzo;component/一级抽屉页|y8ZQV;component/一级抽屉页 · 最高高度|U08cIO;component/Picker View Date · 5项居中|klCrN;component/Picker View Time · 5项居中|kRcAz;component/Picker View Date Time · 5项居中|sEQR9;component/活动类型单选抽屉|WZKV3;component/二级抽屉页 · 最高高度|XqTYC;component/居中弹窗 · 红色报警 · 双按钮|tsZk3;component/居中弹窗 · 黄色警告 · 双按钮|COYbV;component/居中弹窗 · 绿色提示 · 单按钮|TUv2Z;component/居中弹窗 · 输入框 · 双按钮|zRtfm;component/活动小卡-图片素材|VXHpi;component/活动小卡-桌游蓝色头像|WFlgF;component/活动小卡-桌游黄色头像|RMrYv;component/活动大卡-桌游蓝色头像|B7oWX;component/活动大卡-电影图片|sA8B2;component/活动大卡-桌游黄色头像|GUfJu;component/活动名称 · 新版|FJeaK;component/活动地点 · 新版|ti8tC;component/活动备注 · 新版|ArOej;component/活动时间 · 新版|GzQbp;component/参与人数 · 新版|k8TO1;component/可选子项目 · 多项目已填写|pSBh3;component/可选子项目 · 4项上限|aAmUO;component/活动封面 · 已选中|AHpS7;component/活动封面 · 未选中状态|I9dt5U;component/活动封面选择抽屉|O6lYf;component/基本信息组件 · 默认状态|O5XQF;component/基本信息组件 · 无定位且天气不可用|BWQQm;component/基本信息组件 · 空气质量缺失|IkwrC;component/天气 Icon · 晴天|S2b7nH;component/天气 Icon · 多云|ofy7y;component/天气 Icon · 下雨|kj9i8;component/天气 Icon · 降雪|uPX7C;component/天气 Icon · 雾霾|JTKXJ;component/天气 Icon · 沙尘|TidBI;component/沉浸主视觉信息 · 默认状态|n6MtSK;component/沉浸主视觉信息 · 未开始|MaprC;component/沉浸主视觉信息 · 副标题折叠|L1Y8qc;component/沉浸主视觉信息 · 副标题展开|d468yw;component/小程序底部功能栏 · 详情操作 · 无编辑 · 取消报名|NbwxR;component/小程序底部功能栏 · 详情操作 · 无编辑 · 报名不可用|mHmfV;component/小程序底部功能栏 · 详情操作 · 无编辑|mkywX;component/小程序底部功能栏 · 详情操作|zbByR;component/小程序底部功能栏 · 单主按钮|cp7i1;component/小程序底部功能栏 · 双按钮|uE5GP;component/现场点名表内容 · 默认状态|G2zar;component/现场点名表内容 · 左滑取签删除|Li595;component/现场点名表内容 · 左滑补卡删除|SirYI;component/现场点名表内容 · 无人报名|ZO6SQ;component/日历日程表|y1PEWA;component/日历周选择器|Ki394;component/首页快捷入口 · 可扩展|SUsjV;component/桌游库馆藏卡片|wg9gj;component/桌游扇形牌阵舞台|V9wMS0;component/记忆关联活动行|OKWLZ;component/视频拖动进度 · 间距36|MYEZj;component/记忆底部信息 · 短文案|PuzNk;component/记忆底部信息 · 两行截断|s6Szm;component/记忆底部信息 · 展开态|c852G;component/记忆底部信息 · 超长活动名|hyWsK;component/记忆底部信息 · 无活动 · 保留位置|YOiEh;component/记忆底部信息 · 有活动 · 无位置|byNdW;component/记忆底部信息 · 无活动 · 无位置|APCln;component/第一名近12周活跃图|fKzdh;component/Bento Input|e9gGO;component/Bento Input · 已填写|pbfyp;component/Bento Select|zMleb;component/Bento Select · 已选择|y8kYn;component/Bento Date Time|Q5Y4or;component/Bento Date Time · 已填写|lzf0Z;component/活动地点选择项 · 未完成|d8jLH;component/活动地点选择项 · 已完成|L38Nln;component/Bento Textarea|syhHC;component/Bento Textarea · 已填写|jwoRQ;component/Bento Switch Row|O4ah4;component/Bento Stepper|IcR7J;component/活动封面选择项 · 未完成|jJtH9;component/活动封面选择项 · 已完成|ThcXR\",\"count\":\"93\"}"
+      }
+    ]
+  },
+  "selection": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"selectedIds\":[\"u3hZO\"],\"activePageId\":\"dragon-page-home\",\"nodes\":[{\"type\":\"ref\",\"id\":\"u3hZO\",\"name\":\"基本信息 · 轻量信息卡组\",\"ref\":\"O5XQF\",\"descendants\":{\"KccYm\":{\"content\":\"24 \"},\"O5XQF\":{\"width\":358,\"x\":null,\"y\":null},\"Vb4Ql\":{\"descendants\":{\"e7YZJ\":{\"content\":\"基本信息\"},\"Q3a1B\":{\"enabled\":false,\"visible\":false,\"x\":0,\"y\":0,\"constraints\":{\"h\":\"left\",\"v\":\"top\"},\"width\":67},\"fkRJY\":{\"content\":\"报名进行中\",\"fill\":[{\"type\":\"solid\",\"color\":\"#FF9800\"}],\"fontWeight\":\"600\"},\"yQQN8\":{\"enabled\":false,\"visible\":false,\"x\":0,\"y\":0,\"constraints\":{\"h\":\"left\",\"v\":\"top\"},\"fill\":[{\"type\":\"solid\",\"color\":\"#9CA3AF\"}]}}}}}]}"
+      }
+    ]
+  },
+  "components": 93,
+  "referencesIncludingReplacementNodes": 419,
+  "usedComponents": 55,
+  "usedOutsideTemplates": 53,
+  "unusedComponents": 38,
+  "usage": [
+    {
+      "id": "ihvbF",
+      "name": "component/小程序顶部导航",
+      "instances": 18,
+      "outsideTemplates": 18
+    },
+    {
+      "id": "vt7j2",
+      "name": "component/一级页面一级标题",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "wWw3d",
+      "name": "component/小程序二级页标题栏",
+      "instances": 39,
+      "outsideTemplates": 38
+    },
+    {
+      "id": "diyU1",
+      "name": "component/小程序二级页标题栏 · 深色主视觉",
+      "instances": 39,
+      "outsideTemplates": 39
+    },
+    {
+      "id": "pArzx",
+      "name": "component/双项切换 Tab · 活动榜选中",
+      "instances": 1,
+      "outsideTemplates": 1
+    },
+    {
+      "id": "d647D3",
+      "name": "component/双项切换 Tab · 鸽子榜选中",
+      "instances": 2,
+      "outsideTemplates": 2
+    },
+    {
+      "id": "nX3OK",
+      "name": "component/二级页面一级标题",
+      "instances": 3,
+      "outsideTemplates": 2
+    },
+    {
+      "id": "y93vNK",
+      "name": "component/双项文字 Tab · 基本信息选中",
+      "instances": 3,
+      "outsideTemplates": 3
+    },
+    {
+      "id": "Hae5C",
+      "name": "component/页面底部安全区 · Touch Bar",
+      "instances": 68,
+      "outsideTemplates": 67
+    },
+    {
+      "id": "SvQjt",
+      "name": "component/小程序底部导航/首页选中",
+      "instances": 5,
+      "outsideTemplates": 5
+    },
+    {
+      "id": "vtT8F",
+      "name": "component/小程序底部导航/记忆选中",
+      "instances": 1,
+      "outsideTemplates": 1
+    },
+    {
+      "id": "m6VmVP",
+      "name": "component/小程序底部导航/排行选中",
+      "instances": 3,
+      "outsideTemplates": 3
+    },
+    {
+      "id": "EoArr",
+      "name": "component/小程序底部导航/我的选中",
+      "instances": 6,
+      "outsideTemplates": 6
+    },
+    {
+      "id": "O0IYzo",
+      "name": "component/一级抽屉页 · 最低高度",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "y8ZQV",
+      "name": "component/一级抽屉页",
+      "instances": 10,
+      "outsideTemplates": 8
+    },
+    {
+      "id": "U08cIO",
+      "name": "component/一级抽屉页 · 最高高度",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "klCrN",
+      "name": "component/Picker View Date · 5项居中",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "kRcAz",
+      "name": "component/Picker View Time · 5项居中",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "sEQR9",
+      "name": "component/Picker View Date Time · 5项居中",
+      "instances": 2,
+      "outsideTemplates": 2
+    },
+    {
+      "id": "WZKV3",
+      "name": "component/活动类型单选抽屉",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "XqTYC",
+      "name": "component/二级抽屉页 · 最高高度",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "tsZk3",
+      "name": "component/居中弹窗 · 红色报警 · 双按钮",
+      "instances": 2,
+      "outsideTemplates": 2
+    },
+    {
+      "id": "COYbV",
+      "name": "component/居中弹窗 · 黄色警告 · 双按钮",
+      "instances": 2,
+      "outsideTemplates": 2
+    },
+    {
+      "id": "TUv2Z",
+      "name": "component/居中弹窗 · 绿色提示 · 单按钮",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "zRtfm",
+      "name": "component/居中弹窗 · 输入框 · 双按钮",
+      "instances": 2,
+      "outsideTemplates": 2
+    },
+    {
+      "id": "VXHpi",
+      "name": "component/活动小卡-图片素材",
+      "instances": 12,
+      "outsideTemplates": 12
+    },
+    {
+      "id": "WFlgF",
+      "name": "component/活动小卡-桌游蓝色头像",
+      "instances": 12,
+      "outsideTemplates": 12
+    },
+    {
+      "id": "RMrYv",
+      "name": "component/活动小卡-桌游黄色头像",
+      "instances": 12,
+      "outsideTemplates": 12
+    },
+    {
+      "id": "B7oWX",
+      "name": "component/活动大卡-桌游蓝色头像",
+      "instances": 3,
+      "outsideTemplates": 3
+    },
+    {
+      "id": "sA8B2",
+      "name": "component/活动大卡-电影图片",
+      "instances": 3,
+      "outsideTemplates": 3
+    },
+    {
+      "id": "GUfJu",
+      "name": "component/活动大卡-桌游黄色头像",
+      "instances": 3,
+      "outsideTemplates": 3
+    },
+    {
+      "id": "FJeaK",
+      "name": "component/活动名称 · 新版",
+      "instances": 7,
+      "outsideTemplates": 7
+    },
+    {
+      "id": "ti8tC",
+      "name": "component/活动地点 · 新版",
+      "instances": 7,
+      "outsideTemplates": 7
+    },
+    {
+      "id": "ArOej",
+      "name": "component/活动备注 · 新版",
+      "instances": 7,
+      "outsideTemplates": 7
+    },
+    {
+      "id": "GzQbp",
+      "name": "component/活动时间 · 新版",
+      "instances": 9,
+      "outsideTemplates": 9
+    },
+    {
+      "id": "k8TO1",
+      "name": "component/参与人数 · 新版",
+      "instances": 9,
+      "outsideTemplates": 9
+    },
+    {
+      "id": "pSBh3",
+      "name": "component/可选子项目 · 多项目已填写",
+      "instances": 1,
+      "outsideTemplates": 1
+    },
+    {
+      "id": "aAmUO",
+      "name": "component/可选子项目 · 4项上限",
+      "instances": 6,
+      "outsideTemplates": 6
+    },
+    {
+      "id": "AHpS7",
+      "name": "component/活动封面 · 已选中",
+      "instances": 5,
+      "outsideTemplates": 5
+    },
+    {
+      "id": "I9dt5U",
+      "name": "component/活动封面 · 未选中状态",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "O6lYf",
+      "name": "component/活动封面选择抽屉",
+      "instances": 2,
+      "outsideTemplates": 2
+    },
+    {
+      "id": "O5XQF",
+      "name": "component/基本信息组件 · 默认状态",
+      "instances": 19,
+      "outsideTemplates": 17
+    },
+    {
+      "id": "BWQQm",
+      "name": "component/基本信息组件 · 无定位且天气不可用",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "IkwrC",
+      "name": "component/基本信息组件 · 空气质量缺失",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "S2b7nH",
+      "name": "component/天气 Icon · 晴天",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "ofy7y",
+      "name": "component/天气 Icon · 多云",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "kj9i8",
+      "name": "component/天气 Icon · 下雨",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "uPX7C",
+      "name": "component/天气 Icon · 降雪",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "JTKXJ",
+      "name": "component/天气 Icon · 雾霾",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "TidBI",
+      "name": "component/天气 Icon · 沙尘",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "n6MtSK",
+      "name": "component/沉浸主视觉信息 · 默认状态",
+      "instances": 12,
+      "outsideTemplates": 9
+    },
+    {
+      "id": "MaprC",
+      "name": "component/沉浸主视觉信息 · 未开始",
+      "instances": 1,
+      "outsideTemplates": 1
+    },
+    {
+      "id": "L1Y8qc",
+      "name": "component/沉浸主视觉信息 · 副标题折叠",
+      "instances": 6,
+      "outsideTemplates": 6
+    },
+    {
+      "id": "d468yw",
+      "name": "component/沉浸主视觉信息 · 副标题展开",
+      "instances": 1,
+      "outsideTemplates": 1
+    },
+    {
+      "id": "NbwxR",
+      "name": "component/小程序底部功能栏 · 详情操作 · 无编辑 · 取消报名",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "mHmfV",
+      "name": "component/小程序底部功能栏 · 详情操作 · 无编辑 · 报名不可用",
+      "instances": 3,
+      "outsideTemplates": 3
+    },
+    {
+      "id": "mkywX",
+      "name": "component/小程序底部功能栏 · 详情操作 · 无编辑",
+      "instances": 4,
+      "outsideTemplates": 2
+    },
+    {
+      "id": "zbByR",
+      "name": "component/小程序底部功能栏 · 详情操作",
+      "instances": 14,
+      "outsideTemplates": 14
+    },
+    {
+      "id": "cp7i1",
+      "name": "component/小程序底部功能栏 · 单主按钮",
+      "instances": 8,
+      "outsideTemplates": 2
+    },
+    {
+      "id": "uE5GP",
+      "name": "component/小程序底部功能栏 · 双按钮",
+      "instances": 5,
+      "outsideTemplates": 5
+    },
+    {
+      "id": "G2zar",
+      "name": "component/现场点名表内容 · 默认状态",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "Li595",
+      "name": "component/现场点名表内容 · 左滑取签删除",
+      "instances": 2,
+      "outsideTemplates": 2
+    },
+    {
+      "id": "SirYI",
+      "name": "component/现场点名表内容 · 左滑补卡删除",
+      "instances": 1,
+      "outsideTemplates": 1
+    },
+    {
+      "id": "ZO6SQ",
+      "name": "component/现场点名表内容 · 无人报名",
+      "instances": 1,
+      "outsideTemplates": 1
+    },
+    {
+      "id": "y1PEWA",
+      "name": "component/日历日程表",
+      "instances": 1,
+      "outsideTemplates": 1
+    },
+    {
+      "id": "Ki394",
+      "name": "component/日历周选择器",
+      "instances": 1,
+      "outsideTemplates": 1
+    },
+    {
+      "id": "SUsjV",
+      "name": "component/首页快捷入口 · 可扩展",
+      "instances": 2,
+      "outsideTemplates": 2
+    },
+    {
+      "id": "wg9gj",
+      "name": "component/桌游库馆藏卡片",
+      "instances": 9,
+      "outsideTemplates": 8
+    },
+    {
+      "id": "V9wMS0",
+      "name": "component/桌游扇形牌阵舞台",
+      "instances": 1,
+      "outsideTemplates": 1
+    },
+    {
+      "id": "OKWLZ",
+      "name": "component/记忆关联活动行",
+      "instances": 19,
+      "outsideTemplates": 12
+    },
+    {
+      "id": "MYEZj",
+      "name": "component/视频拖动进度 · 间距36",
+      "instances": 2,
+      "outsideTemplates": 2
+    },
+    {
+      "id": "PuzNk",
+      "name": "component/记忆底部信息 · 短文案",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "s6Szm",
+      "name": "component/记忆底部信息 · 两行截断",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "c852G",
+      "name": "component/记忆底部信息 · 展开态",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "hyWsK",
+      "name": "component/记忆底部信息 · 超长活动名",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "YOiEh",
+      "name": "component/记忆底部信息 · 无活动 · 保留位置",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "byNdW",
+      "name": "component/记忆底部信息 · 有活动 · 无位置",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "APCln",
+      "name": "component/记忆底部信息 · 无活动 · 无位置",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "fKzdh",
+      "name": "component/第一名近12周活跃图",
+      "instances": 1,
+      "outsideTemplates": 1
+    },
+    {
+      "id": "e9gGO",
+      "name": "component/Bento Input",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "pbfyp",
+      "name": "component/Bento Input · 已填写",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "zMleb",
+      "name": "component/Bento Select",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "y8kYn",
+      "name": "component/Bento Select · 已选择",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "Q5Y4or",
+      "name": "component/Bento Date Time",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "lzf0Z",
+      "name": "component/Bento Date Time · 已填写",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "d8jLH",
+      "name": "component/活动地点选择项 · 未完成",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "L38Nln",
+      "name": "component/活动地点选择项 · 已完成",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "syhHC",
+      "name": "component/Bento Textarea",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "jwoRQ",
+      "name": "component/Bento Textarea · 已填写",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "O4ah4",
+      "name": "component/Bento Switch Row",
+      "instances": 1,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "IcR7J",
+      "name": "component/Bento Stepper",
+      "instances": 1,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "jJtH9",
+      "name": "component/活动封面选择项 · 未完成",
+      "instances": 0,
+      "outsideTemplates": 0
+    },
+    {
+      "id": "ThcXR",
+      "name": "component/活动封面选择项 · 已完成",
+      "instances": 0,
+      "outsideTemplates": 0
+    }
+  ],
+  "formalFileUnchanged": true,
+  "directRefFillUpdateIgnoredByMcp": true,
+  "explicitDescendantOverrideApplied": true
+}

@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"context\":\"DOCUMENT SUMMARY:\\n- Total nodes: 9480\\n- Canvas size: 375x812\\n- Nodes (first 20): frame:分区标识 · 首页 Tab, text:竖排文字-1, text:竖排文字-2, frame:分区标识 · 我的 Tab, text:竖排文字-1, text:竖排文字-2, frame:分区标识 · 排行榜 Tab, text:竖排文字-1, text:竖排文字-2, text:竖排文字-3, frame:设计规范 · 组件模板库, frame:规范总标题, text:标题, text:说明, frame:一级分类 · 品牌规范, rectangle:rectangle · r9wqX6, frame:品牌色 · 龙焰金, frame:品牌色 · 活力橙, rectangle:rectangle · mrcsq, frame:品牌色 · 墨黑\",\"designPrompt\":\"Document has existing content. Match your action to the user intent:\\n- READ/INSPECT: Use batch_get (search by type/name/ID) or snapshot_layout to see what is on the canvas.\\n- DELETE/REMOVE: Use batch_get to find the target node ID, then delete_node to remove it.\\n- MODIFY: Use update_node to change properties of existing nodes.\\n- ADD NEW: Use batch_design or insert_node.\\nFor complex multi-section designs, use the layered workflow: design_skeleton -> design_content -> design_refine.\",\"document\":\"{\\\"version\\\":\\\"1.2\\\",\\\"childCount\\\":164,\\\"pageCount\\\":1,\\\"hasVariables\\\":false,\\\"hasThemes\\\":false,\\\"name\\\":\\\"龙城小程序\\\"}\",\"filePath\":\"D:\\\\VibeCoding Project\\\\dragonReserveSystem\\\\prototype\\\\龙城小程序.op\"}"
+    }
+  ]
+}

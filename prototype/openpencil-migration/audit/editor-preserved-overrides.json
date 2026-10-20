@@ -1,0 +1,9 @@
+[
+  {
+    "id": "Sm1mB",
+    "fields": {
+      "visible": true
+    },
+    "reason": "Preserve explicit visibility flag from the live editor snapshot before centering promotion; equivalent to source default."
+  }
+]

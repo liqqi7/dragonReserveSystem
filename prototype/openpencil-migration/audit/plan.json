@@ -1,0 +1,191 @@
+{
+  "source": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\龙城小程序.pen",
+  "target": "D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\龙城小程序.op",
+  "status": "pages_and_links_verified_strict_migration_not_accepted",
+  "constraints": [
+    "Read encrypted .pen only through native Pencil MCP.",
+    "Preserve source .pen and source assets.",
+    "Preserve hierarchy, Auto Layout, components, instances, overrides, variables, fonts and graphics.",
+    "Do not flatten screens to images."
+  ],
+  "acceptance": [
+    "Complete source inventory and property mapping.",
+    "Validate all nodes and references against target.",
+    "Render all top-level sections and compare.",
+    "Review conversion code, correct findings, rerun checks.",
+    "Report unresolved differences; never claim unverified exact equivalence."
+  ],
+  "reviewReport": "迁移核对.html",
+  "structuralValidation": "audit/semantic-validation.json",
+  "visualReview": {
+    "topLevelRegions": 164,
+    "components": 94,
+    "strictOneToOneAccepted": false
+  },
+  "pageOrganization": {
+    "generatedAt": "2026-10-20T18:00:10.580Z",
+    "pageCount": 7,
+    "pages": [
+      {
+        "id": "dragon-page-home",
+        "name": "首页",
+        "rootCount": 49
+      },
+      {
+        "id": "dragon-page-memory",
+        "name": "记忆",
+        "rootCount": 22
+      },
+      {
+        "id": "dragon-page-ranking",
+        "name": "排行榜",
+        "rootCount": 5
+      },
+      {
+        "id": "dragon-page-profile",
+        "name": "我的",
+        "rootCount": 20
+      },
+      {
+        "id": "dragon-page-exploration",
+        "name": "探索",
+        "rootCount": 62
+      },
+      {
+        "id": "dragon-page-templates",
+        "name": "模板",
+        "rootCount": 23
+      },
+      {
+        "id": "dragon-page-assets",
+        "name": "素材",
+        "rootCount": 3
+      }
+    ],
+    "rawNodes": 9756,
+    "templates": 93,
+    "referencesIncludingOverrides": 419,
+    "unresolvedReferences": 0,
+    "allExpectedOriginalNodeIdsPreserved": true,
+    "authorizedRemovedOriginalNodeIds": 40,
+    "templateSections": 23,
+    "templateColumns": 4,
+    "currentRegionsRendered": 184,
+    "currentRoundtripExactMatches": 184,
+    "toolsRetirement": {
+      "removedIds": [
+        "x2L4V5",
+        "yI9dz",
+        "eCByC",
+        "YlxNe",
+        "C7y3Xq",
+        "wSrJ4",
+        "cPz8L",
+        "JlFit",
+        "z1W6xq",
+        "DXFPn",
+        "e5B0Y",
+        "OpJUa",
+        "d0njZU",
+        "DoYlQ",
+        "s6olL9",
+        "P6hf4",
+        "ZlRpW",
+        "PbiZY",
+        "t1VNh",
+        "OImtc",
+        "yqArW",
+        "IKaEF",
+        "bl4IC",
+        "u30Cl",
+        "lxYBe",
+        "hQbcs",
+        "h7RoNv",
+        "h7RoNv__glyph",
+        "X4F5U6",
+        "sGMRq",
+        "LBgNz",
+        "LBgNz__glyph",
+        "FR9OK",
+        "HAZ5n",
+        "dxlCk",
+        "TOAHk",
+        "n7ERHF",
+        "Iag0o",
+        "Iag0o__glyph",
+        "kjtAV",
+        "eULFR",
+        "jizim",
+        "jizim__glyph",
+        "JATOf"
+      ],
+      "movedStates": [
+        "XiWkQ",
+        "QtAWX",
+        "AHJRA"
+      ],
+      "updatedNavigationSlots": [
+        "kaeBY",
+        "tIpHO",
+        "d1Fr5",
+        "tvGt5",
+        "uUh3w",
+        "vHyow"
+      ],
+      "removedMaster": "u30Cl",
+      "homeEntryRef": "SUsjV",
+      "templateReflow": {
+        "navigationHeight": 1488,
+        "drawerY": 2141,
+        "dialogY": 4950
+      },
+      "newIds": [
+        "home-chwazi-section",
+        "home-chwazi-label-0",
+        "home-chwazi-label-1",
+        "home-chwazi-label-2",
+        "home-chwazi-label-3"
+      ],
+      "pages": [
+        {
+          "id": "dragon-page-home",
+          "name": "首页",
+          "roots": 49
+        },
+        {
+          "id": "dragon-page-memory",
+          "name": "记忆",
+          "roots": 22
+        },
+        {
+          "id": "dragon-page-ranking",
+          "name": "排行榜",
+          "roots": 5
+        },
+        {
+          "id": "dragon-page-profile",
+          "name": "我的",
+          "roots": 20
+        },
+        {
+          "id": "dragon-page-exploration",
+          "name": "探索",
+          "roots": 62
+        },
+        {
+          "id": "dragon-page-templates",
+          "name": "模板",
+          "roots": 23
+        },
+        {
+          "id": "dragon-page-assets",
+          "name": "素材",
+          "roots": 3
+        }
+      ]
+    },
+    "targetSha256": "098f78d35183b82bb2ea59a8c6d8d529ff862ae7b7b020cdc99a7a0e0129ea12",
+    "addedCompatibilityNodes": 320
+  },
+  "pageVisualValidation": "audit/page-visual-validation.json"
+}

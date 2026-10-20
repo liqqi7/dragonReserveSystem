@@ -1,0 +1,112 @@
+{
+  "removedIds": [
+    "x2L4V5",
+    "yI9dz",
+    "eCByC",
+    "YlxNe",
+    "C7y3Xq",
+    "wSrJ4",
+    "cPz8L",
+    "JlFit",
+    "z1W6xq",
+    "DXFPn",
+    "e5B0Y",
+    "OpJUa",
+    "d0njZU",
+    "DoYlQ",
+    "s6olL9",
+    "P6hf4",
+    "ZlRpW",
+    "PbiZY",
+    "t1VNh",
+    "OImtc",
+    "yqArW",
+    "IKaEF",
+    "bl4IC",
+    "u30Cl",
+    "lxYBe",
+    "hQbcs",
+    "h7RoNv",
+    "h7RoNv__glyph",
+    "X4F5U6",
+    "sGMRq",
+    "LBgNz",
+    "LBgNz__glyph",
+    "FR9OK",
+    "HAZ5n",
+    "dxlCk",
+    "TOAHk",
+    "n7ERHF",
+    "Iag0o",
+    "Iag0o__glyph",
+    "kjtAV",
+    "eULFR",
+    "jizim",
+    "jizim__glyph",
+    "JATOf"
+  ],
+  "movedStates": [
+    "XiWkQ",
+    "QtAWX",
+    "AHJRA"
+  ],
+  "updatedNavigationSlots": [
+    "kaeBY",
+    "tIpHO",
+    "d1Fr5",
+    "tvGt5",
+    "uUh3w",
+    "vHyow"
+  ],
+  "removedMaster": "u30Cl",
+  "homeEntryRef": "SUsjV",
+  "templateReflow": {
+    "navigationHeight": 1488,
+    "drawerY": 2141,
+    "dialogY": 4950
+  },
+  "newIds": [
+    "home-chwazi-section",
+    "home-chwazi-label-0",
+    "home-chwazi-label-1",
+    "home-chwazi-label-2",
+    "home-chwazi-label-3"
+  ],
+  "pages": [
+    {
+      "id": "dragon-page-home",
+      "name": "首页",
+      "roots": 49
+    },
+    {
+      "id": "dragon-page-memory",
+      "name": "记忆",
+      "roots": 22
+    },
+    {
+      "id": "dragon-page-ranking",
+      "name": "排行榜",
+      "roots": 5
+    },
+    {
+      "id": "dragon-page-profile",
+      "name": "我的",
+      "roots": 20
+    },
+    {
+      "id": "dragon-page-exploration",
+      "name": "探索",
+      "roots": 62
+    },
+    {
+      "id": "dragon-page-templates",
+      "name": "模板",
+      "roots": 23
+    },
+    {
+      "id": "dragon-page-assets",
+      "name": "素材",
+      "roots": 3
+    }
+  ]
+}

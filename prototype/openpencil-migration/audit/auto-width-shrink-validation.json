@@ -1,0 +1,63 @@
+{
+  "fontSizeForBothNativeCases": 112,
+  "fontFamilyForAll": "Anton",
+  "samples": [
+    {
+      "case": "source",
+      "imageSize": [
+        104,
+        99
+      ],
+      "inkBounds": [
+        0,
+        0,
+        104,
+        99
+      ],
+      "inkHeight": 99
+    },
+    {
+      "case": "nativeAuto",
+      "imageSize": [
+        107,
+        101
+      ],
+      "inkBounds": [
+        2,
+        0,
+        92,
+        86
+      ],
+      "inkHeight": 86
+    },
+    {
+      "case": "nativeExplicitWidth",
+      "imageSize": [
+        200,
+        101
+      ],
+      "inkBounds": [
+        2,
+        1,
+        107,
+        99
+      ],
+      "inkHeight": 98
+    },
+    {
+      "case": "nativeFixedWidth",
+      "imageSize": [
+        200,
+        101
+      ],
+      "inkBounds": [
+        2,
+        1,
+        107,
+        99
+      ],
+      "inkHeight": 98
+    }
+  ],
+  "observation": "At the same font size112 and familyAnton, auto-width and fixed-width cases paint different glyph sizes. Fixed width disables the target painter shrink path, but changes authored sizing behavior. The original source remains auto-width. See samples for measured bounds; minWidth was ineffective in the first probe and is not claimed as a fix."
+}

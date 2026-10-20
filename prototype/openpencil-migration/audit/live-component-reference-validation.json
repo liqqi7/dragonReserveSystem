@@ -1,0 +1,31 @@
+{
+  "masterChangesPropagate": true,
+  "instanceOverridesPreserved": true,
+  "refsStayLinked": true,
+  "pixelMeasurements": {
+    "explicit-blue-override": {
+      "u3hZO": {
+        "blue": 30504,
+        "green": 0,
+        "red": 0
+      },
+      "zPws2": {
+        "blue": 0,
+        "green": 0,
+        "red": 30508
+      }
+    },
+    "master-green-override-kept": {
+      "u3hZO": {
+        "blue": 30504,
+        "green": 0,
+        "red": 0
+      },
+      "zPws2": {
+        "blue": 0,
+        "green": 30508,
+        "red": 0
+      }
+    }
+  }
+}

@@ -1,0 +1,3 @@
+import fs from 'node:fs';
+const cases=[{fill:[{type:'solid',color:'#00000099'}]},{fill:[{type:'solid',color:'#000000',opacity:.6}]},{fill:[{type:'solid',color:'#000000'}],opacity:.6},{fill:[{type:'solid',color:'#00000099',opacity:1}]},{fill:[{type:'solid',color:'#000000'}],enabled:false},{fill:[{type:'solid',color:'#000000'}],visible:false}];
+fs.writeFileSync('audit/alpha-probe.op',JSON.stringify({version:'1.2',formatVersion:'1.2',children:cases.map((s,i)=>({id:'case'+i,type:'frame',width:50,height:50,layout:'none',fill:[{type:'solid',color:'#FFFFFF'}],children:[{id:'c'+i,type:'rectangle',x:0,y:0,width:50,height:50,...s}]}))}));

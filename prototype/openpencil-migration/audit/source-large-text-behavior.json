@@ -1,0 +1,16 @@
+[
+  {
+    "alignment": "top",
+    "inkTopRelativeToTextBox": 6,
+    "inkBottomRelativeToTextBox": 33,
+    "boxHeight": 24,
+    "inkOutsideTextBox": true
+  },
+  {
+    "alignment": "middle",
+    "inkTopRelativeToTextBox": 2,
+    "inkBottomRelativeToTextBox": 30,
+    "boxHeight": 24,
+    "inkOutsideTextBox": true
+  }
+]

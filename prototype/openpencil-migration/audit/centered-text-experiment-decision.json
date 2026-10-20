@@ -1,0 +1,7 @@
+{
+  "appliedToFormalFile": false,
+  "reason": "124-box experiment improved 25 regions but regressed 8 by more than 0.1 mean RGB error. It is not accepted; current navigation task uses the previously verified text implementation.",
+  "evidence": "centered-text-visual-validation.json",
+  "improved": 25,
+  "regressed": 8
+}

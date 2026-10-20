@@ -1,0 +1,103 @@
+{
+  "method": "Lossless oxipng exports except the explicitly marked 512x512 indexed-png-256 avatar",
+  "images": [
+    {
+      "path": "images/activity-home-logo.png",
+      "dimensions": [
+        969,
+        633
+      ],
+      "before": 176999,
+      "after": 124663,
+      "source_sha256": "11813dad2a8d8cc3fb35ac98156cbdd3f94c6a436108bd7b0911df7de317ad90",
+      "export_sha256": "e55423a9b5ab8ea1b4e0aebbce63ffc442358209084a3cad2efe1f0e8323a7ff"
+    },
+    {
+      "path": "images/home-tool-boardgames.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "before": 35544,
+      "after": 32298,
+      "source_sha256": "027d9b07e001fbc5e433dbee3f2df4a80b73beda9f8c499525616ddb6d31a750",
+      "export_sha256": "1f73ac166e79a555e702e78f791541fb1e79ff402344fbda7b6f555fa2a59ab6"
+    },
+    {
+      "path": "images/home-tool-chwazi.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "before": 25755,
+      "after": 23425,
+      "source_sha256": "d3a0657dece7f18c38558184469302715e10302d9189b1382cde6d6ff6012360",
+      "export_sha256": "4cbd821f89d7fa2a2fc2435483a17ad3bbc96f83fb0a5bf15b065df4c67d4ca9"
+    },
+    {
+      "path": "images/icon-activity-map-marker.png",
+      "dimensions": [
+        162,
+        162
+      ],
+      "before": 3851,
+      "after": 2400,
+      "source_sha256": "bb5919c1262953d2ea174ea20978cd363339303f26fe4de52c5605c73994906b",
+      "export_sha256": "84221a424dc9c1f1689f56d18283bce9e600ba1b15ea157d00fcd821ff136018"
+    },
+    {
+      "path": "images/profile-guest-avatar.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "source_dimensions": [
+        1080,
+        1080
+      ],
+      "before": 283900,
+      "after": 53455,
+      "source_sha256": "c178bcad3fe9b5003846e4ca4f400f9b1befeee6abb2cfaa654b7b20f5e5b5d9",
+      "export_sha256": "de56c4241a2d93d0f106a601cfbca93ee2a28786bbd8f4954b37613dad5a565f",
+      "encoding": "indexed-png-256",
+      "algorithm": "Original RGBA -> Lanczos 512x512 -> imagequant 1.1.5; max_colors=256; min_quality=95; max_quality=100; dithering_level=0.5; oxipng level 4; sRGB retained"
+    },
+    {
+      "path": "pages/boardgame_intake/empty-art.png",
+      "dimensions": [
+        452,
+        452
+      ],
+      "before": 10228,
+      "after": 6707,
+      "source_sha256": "5e78810e6cc73e5fd8eb19efe3b07522422ac47c998b324cebde1d33eb3642be",
+      "export_sha256": "93d3766101a6032a5485b253f78a4c90c14b11624cb5216b1b3f001e805cbf93"
+    },
+    {
+      "path": "pages/boardgame_intake/initial-art.png",
+      "dimensions": [
+        500,
+        500
+      ],
+      "before": 8232,
+      "after": 5592,
+      "source_sha256": "78cd32e00b674b0c2d14ed678551dcb68edd3e7c9e6ba747f76490f8b337bbbd",
+      "export_sha256": "02320dcda1626b50cf63f77c4d5d78aa9bb61bda4919ee096545e76c5f017d4c"
+    },
+    {
+      "path": "pages/boardgame_intake/success-art.png",
+      "dimensions": [
+        828,
+        570
+      ],
+      "before": 54194,
+      "after": 17520,
+      "source_sha256": "ad43c4c6a670b1f3cf4485fb5fd7a2ce28f451d864990848a10e9fae48fd0803",
+      "export_sha256": "4e2f8677ccee9b4edf6694ee88a4a6bc1c09628c9880e246d7721266af0f1f07"
+    }
+  ],
+  "audio_unchanged": {
+    "audio/chwazi-selection.mp3": "706193f4b0cbf871b5bc8791626530d3f384f46cb6f37e5950e86c127bf8ee1c",
+    "audio/chwazi-touch-down.wav": "294eada80a17994618d6f3c6f8578aed8e42916f07b00055012525c9a8e5e299"
+  }
+}
