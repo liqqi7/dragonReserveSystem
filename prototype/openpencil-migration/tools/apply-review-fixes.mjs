@@ -1,1 +1,0 @@
-import fs from 'node:fs';const patches=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));const file='tools/convert.mjs';let code=fs.readFileSync(file,'utf8');for(const [before,after] of patches){if(!code.includes(before))throw new Error('Patch target missing: '+before.slice(0,90));code=code.replace(before,after);}fs.writeFileSync(file,code);

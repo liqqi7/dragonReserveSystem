@@ -1,8 +1,0 @@
-import fs from 'node:fs';const p='tools/convert.mjs';let s=fs.readFileSync(p,'utf8');const anchor=' return out;\n}\nfunction routePartialRef';if(!s.includes(anchor))throw Error('Patch return not found');s=s.replace(anchor,` if(!partial&&input.rotation&&typeof input.width==='number'&&typeof input.height==='number'&&own(out,'x')&&own(out,'y')){
-  const angle=input.rotation*Math.PI/180,c=Math.cos(angle),sn=Math.sin(angle),w=input.width,h=input.height;
-  out.x+=(c-1)*w/2+sn*h/2;out.y+=-sn*w/2+(c-1)*h/2;
-  note(input.id,'rotation_origin','Translate the native center-based rotation so its paint transform equals Pencil top-left-based rotation. Numeric sizes and editable rotation are retained.');
- }
- return out;
-}
-function routePartialRef`);fs.writeFileSync(p,s);fs.writeFileSync('audit/review-fixes-17.json',JSON.stringify({evidence:'Pencil source fVjP6 x116,y0,w10,h148,rotation-18 has AABB x70.2655,y0. Native rotation18 about center at authored116,0 shifts that AABB by23.112px and2.077px. Same discrepancy is visible in the map and cover-fan previews.',change:'For explicitly positioned numeric-size nodes, use targetPosition = sourcePosition + R(-theta)*halfSize - halfSize. This preserves source top-left rotation using native center rotation, without rasterization or detached geometry.',scope:'14 explicitly positioned source nodes. Three tiny in-flow button rotations keep native layout positioning; changing them to absolute would sacrifice Auto Layout.'},null,2));

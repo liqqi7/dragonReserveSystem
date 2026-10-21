@@ -5,18 +5,18 @@ const path = require('node:path');
 const vm = require('node:vm');
 const root = path.join(__dirname, '..');
 
-function page(name, api, role='user', overrides={}) {
+function page(name, api, role='user', overrides={}, navigationPages=[{},{}]) {
   let definition;
   const storage = {userId:7,userRole:role,accessToken:'test-token',isAuthenticated:role!=='guest',...overrides};
   const app = {globalData:{}};
   const wx = {getStorageSync:k=>storage[k],setStorageSync:(k,v)=>storage[k]=v,removeStorageSync:k=>delete storage[k],
     getWindowInfo:()=>({statusBarHeight:44}),getMenuButtonBoundingClientRect:()=>({top:48,height:32}),
-    showToast:o=>{wx.toast=o;},navigateTo:o=>{wx.navigation=o;},switchTab:o=>{wx.tabNavigation=o;}};
+    showToast:o=>{wx.toast=o;},navigateTo:o=>{wx.navigation=o;},switchTab:o=>{wx.tabNavigation=o;},navigateBack:()=>{wx.backNavigation=true;}};
   const load = file => {
     const module={exports:{}};
     const context={module,exports:module.exports,Page:d=>{definition=d;},wx,getApp:()=>app,
       require:p=>p.includes('services/boardgames')?api:p==='./controller'?load(path.join(path.dirname(file),'controller.js')):{},
-      setTimeout:()=>1,clearTimeout:()=>{},getCurrentPages:()=>[{},{}]};
+      setTimeout:()=>1,clearTimeout:()=>{},getCurrentPages:()=>navigationPages};
     vm.runInNewContext(fs.readFileSync(file,'utf8'),context,{filename:file});return module.exports;
   };
   load(path.join(root,'pages',name,name+'.js'));
@@ -40,6 +40,22 @@ function intakeApi(owned=false) {
     send:async(url,method,data,key)=>{calls.push({url,method,data,key});return url==='/boardgame-intake-previews'?
       {id:'preview-1',state:'ready',items:[item]}:{game_id:1,game:item};}};
 }
+test('library opened directly returns to the registered home tab',()=>{
+  const {instance:p,wx}=page('boardgame_library',{},'user',{},[{}]);
+  p.goBack();
+  assert.equal(wx.tabNavigation.url,'/pages/activity_list/activity_list');
+  const config=JSON.parse(fs.readFileSync(path.join(root,'app.json'),'utf8'));
+  const route=wx.tabNavigation.url.slice(1);
+  assert.ok(config.pages.includes(route));
+  assert.ok(config.tabBar.list.some(tab=>tab.pagePath===route));
+  assert.equal(wx.backNavigation,undefined);
+});
+test('library opened from another page returns through the existing stack',()=>{
+  const {instance:p,wx}=page('boardgame_library',{});
+  p.goBack();
+  assert.equal(wx.backNavigation,true);
+  assert.equal(wx.tabNavigation,undefined);
+});
 test('search selects the first result, preserves stats and saves only own chosen edition',async()=>{
   const api=intakeApi(),{instance:p}=page('boardgame_intake',api);
   p.inputQuery({detail:{value:'伯明翰'}});await p.search();

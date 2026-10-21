@@ -1,9 +1,0 @@
-{
-  "evidence": "mesh-gradient-probe-comparison.json",
-  "changes": [
-    "Map elliptical radial fills to editable 65×65 meshes.",
-    "Map non-default linear geometry to normalized mesh gradients; use 2×2 when the field is exactly planar.",
-    "Retain native circular gradients and native stroke gradients.",
-    "Add isolated output/report options for review candidates."
-  ]
-}

@@ -1,1 +1,0 @@
-{"tool":"execute","arguments":{"filePath":"D:\\VibeCoding Project\\dragonReserveSystem\\prototype\\龙城小程序.pen","input":"Print(JSON.stringify(Get((n,c)=>({id:n.id,parent:c.parentCtx?.node.id??null,depth:c.depth,index:c.index,name:n.name,type:n.type,enabled:n.enabled,bounds:c.bounds}),{resolveInstances:true,resolveVariables:true,includePathGeometry:false})))"}}

@@ -1,5 +1,0 @@
-{
-  "change": "Apply the verified constant-alpha gradient conversion to frame/rectangle fill overrides as well as full nodes.",
-  "evidence": "Six source instance overrides contain partial alpha: three separator izW20 fills and three home-indicator YsLLN fills. The previous full-node-only conversion missed those partial patches.",
-  "fonts": "Use the exact public font versions observed in Pencil cache. Imported source-static faces retain family names and authored weights; original VF files and OFL licenses are retained."
-}

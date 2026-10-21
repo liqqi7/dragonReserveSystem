@@ -1,3 +1,0 @@
-import fs from 'node:fs';
-const cases=[[.6,.6],[0,.6],[1,.6],[.6,1]];
-fs.writeFileSync('audit/gradient-alpha-probe.op',JSON.stringify({version:'1.2',formatVersion:'1.2',children:cases.map(([a,b],i)=>({type:'frame',id:'g'+i,width:50,height:100,layout:'none',fill:[{type:'solid',color:'#fff'}],children:[{type:'rectangle',id:'r'+i,x:0,y:0,width:50,height:100,fill:[{type:'linear_gradient',angle:180,stops:[{offset:0,color:'#000000'+Math.round(a*255).toString(16).padStart(2,'0')},{offset:1,color:'#000000'+Math.round(b*255).toString(16).padStart(2,'0')}]}]}]}))}));

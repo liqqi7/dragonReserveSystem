@@ -27,7 +27,6 @@ test('bottom-space audit covers all registered pages without padding fullscreen 
     'activity_detail', 'boardgame_library', 'boardgame_intake', 'checkin_map', 'memory_detail'];
   const retained = {
     memory: '140px design-scale tail already clears the floating navigation',
-    tools: 'standalone scroll page, no fixed action footer',
     memory_review: 'scrolling card tail and full-width action-sheet rows have their own spacing',
     activity_cover_preview: 'confirmation panel has a separate 115.38rpx bottom reserve',
     chwazi: 'interactive game surface uses actual system inset, not an action footer',

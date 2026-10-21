@@ -1,5 +1,0 @@
-{
-  "a": "if(!partial){\n  const parent=row.parent?effective(rows.get(row.parent).node):null;",
-  "b": "if(['space_between','space_around'].includes(input.justifyContent??base.justifyContent)){out.gap=base.id==='JLvim'?-6:0;}\n if(!partial){\n  const parent=row.parent?effective(rows.get(row.parent).node):null;",
-  "clip": "Explicit false matches Pencil default and avoids target root artboard clipping."
-}

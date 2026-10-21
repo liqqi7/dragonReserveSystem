@@ -1,7 +1,0 @@
-import fs from 'node:fs';
-async function call(name,args={}){const r=await fetch('http://127.0.0.1:3100/mcp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'tools/call',params:{name,arguments:args}}),signal:AbortSignal.timeout(60000)});const j=await r.json();if(j.error||j.result?.isError)throw Error(JSON.stringify(j));return j.result;}
-const reps=['aDnxZ','x2L4V5','RQKdZ','D3WX9','mkGDF','Gnsno','nX3OK','qAMWN'];const out=[];
-for(let i=0;i<8;i++){await call('set_active_page',{index:i});const s=await call('get_screenshot',{nodeId:reps[i]});const im=s.content.find(c=>c.type==='image');if(!im)throw Error('Missing native screenshot '+reps[i]);fs.writeFileSync('audit/native-page-'+i+'.png',Buffer.from(im.data,'base64'));out.push({index:i,nodeId:reps[i],screenshot:true});}
-await call('set_active_page',{index:0});const raw=JSON.parse(fs.readFileSync('audit/pre-pages-viewport.json','utf8')),v=JSON.parse(raw.content.find(c=>c.type==='text').text);await call('set_viewport',Object.fromEntries(Object.entries(v).map(([k,x])=>[k,Number(x)])));
-await call('save_document',{filePath:'D:/VibeCoding Project/dragonReserveSystem/prototype/openpencil-migration/audit/pages-live-roundtrip.op'});
-fs.writeFileSync('audit/native-pages-validation.json',JSON.stringify({pages:await call('list_pages'),screenshots:out,returnedToHome:true,viewportRestored:v},null,2));console.log(JSON.stringify({screenshots:out.length,returnedToHome:true}));

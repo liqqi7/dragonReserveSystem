@@ -1,4 +1,0 @@
-{
-  "a": "if(!partial){\n  const parent=row.parent?effective(rows.get(row.parent).node):null;",
-  "b": "if(partial){\n  const parent=row.parent?effective(rows.get(row.parent)?.node??{}):null;\n  const absolute=(input.layoutPosition??base.layoutPosition)==='absolute';\n  if(parent?.type==='frame'&&(parent.layout??'horizontal')!=='none'&&!absolute&&input.enabled!==false){delete out.x;delete out.y;}\n }\n if(!partial){\n  const parent=row.parent?effective(rows.get(row.parent).node):null;"
-}

@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "@iconify-json/material-symbols": "^1.2.95",
-    "@iconify-json/ph": "^1.2.2",
-    "ajv": "^8.20.0",
-    "svg-path-bounds": "^1.0.2"
-  }
-}

@@ -176,7 +176,7 @@ Page({
 
   goBack() {
     if (getCurrentPages().length > 1) wx.navigateBack();
-    else wx.switchTab({ url: '/pages/tools/tools' });
+    else wx.switchTab({ url: '/pages/activity_list/activity_list' });
   },
 
   retry() {

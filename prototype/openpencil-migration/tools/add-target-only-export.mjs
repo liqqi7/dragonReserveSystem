@@ -1,1 +1,0 @@
-import fs from 'node:fs';const p='tools/export-component-previews.mjs';let c=fs.readFileSync(p,'utf8');c=c.replace('for(let i=0;i<components.length;i+=12){','if(!process.argv.includes(\'--target-only\'))for(let i=0;i<components.length;i+=12){');fs.writeFileSync(p,c);

@@ -1,7 +1,6 @@
 {
   "pages": [
     "pages/activity_list/activity_list",
-    "pages/tools/tools",
     "pages/memory/memory",
     "pages/memory_create/memory_create",
     "pages/memory_detail/memory_detail",

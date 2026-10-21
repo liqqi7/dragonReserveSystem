@@ -66,6 +66,3 @@ backend/secrets/
 *.db
 *.db-*
 *.sqlite*
-
-# OpenPencil migration dependencies (audit has its own evidence allowlist)
-/prototype/openpencil-migration/node_modules/

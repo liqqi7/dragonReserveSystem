@@ -52,7 +52,7 @@ cd backend
 .\.venv\Scripts\python.exe -m pytest tests -q
 ```
 
-完整测试结果按发版清单记录；pytest 使用临时 SQLite 数据库，不连接生产库或服务器测试库。
+完整测试结果按发版清单记录；pytest 使用临时 SQLite 数据库，生成媒体统一写入系统临时目录并在会话结束后清理，不写入仓库中的 storage，也不连接生产库或服务器测试库。
 
 ## 小程序联调测试库
 

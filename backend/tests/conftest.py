@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 import os
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Generator
 
 import pytest
@@ -13,6 +14,11 @@ from sqlalchemy.orm import Session, sessionmaker
 os.environ["APP_ENV"] = "test"
 os.environ["DATABASE_URL"] = "sqlite://"
 os.environ["ALLOW_LOCAL_TEST_DATABASE"] = "true"
+
+# Keep generated test media out of the checkout, including module-level services.
+_test_storage = TemporaryDirectory(prefix="dragon-reserve-pytest-media-")
+os.environ["MEDIA_ROOT"] = str(Path(_test_storage.name) / "public")
+os.environ["MEMORY_STORAGE_ROOT"] = str(Path(_test_storage.name) / "memories")
 
 from app.core.database import Base, get_db
 from app.core.security import create_access_token
@@ -115,3 +121,9 @@ def reset_invite_rate_limit_state():
     yield
     with users._invite_attempts_lock:
         users._invite_attempts.clear()
+
+
+@pytest.hookimpl(trylast=True)
+def pytest_sessionfinish(session, exitstatus):
+    """Remove generated media after fixtures and background work are finished."""
+    _test_storage.cleanup()

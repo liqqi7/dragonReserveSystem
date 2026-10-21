@@ -1,7 +1,0 @@
-from PIL import Image
-from pathlib import Path
-import numpy as np,json
-rows=[]
-for label,file in [('source','audit/source-number-probe/J3lwYH.png'),('nativeAuto','audit/auto-width-shrink-probe-previews/auto.png'),('nativeExplicitWidth','audit/auto-width-shrink-probe-previews/explicitWidth.png'),('nativeFixedWidth','audit/auto-width-shrink-probe-previews/fixedWidth.png')]:
- im=Image.open(file).convert('RGBA');a=np.asarray(im);ys,xs=np.where(a[:,:,3]>32);box=[int(xs.min()),int(ys.min()),int(xs.max()+1),int(ys.max()+1)]if len(xs)else None;rows.append({'case':label,'imageSize':im.size,'inkBounds':box,'inkHeight':box[3]-box[1]if box else 0})
-result={'fontSizeForBothNativeCases':112,'fontFamilyForAll':'Anton','samples':rows,'observation':'At the same font size112 and familyAnton, auto-width and fixed-width cases paint different glyph sizes. Fixed width disables the target painter shrink path, but changes authored sizing behavior. The original source remains auto-width. See samples for measured bounds; minWidth was ineffective in the first probe and is not claimed as a fix.'};Path('audit/auto-width-shrink-validation.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf8');print(result)

@@ -401,14 +401,6 @@ test("all four tab states use one geometry and one selected-state rule", () => {
   }
 });
 
-test("tools tab icon uses the Pencil widgets glyph instead of grid_view", () => {
-  const svg = fs.readFileSync(path.join(imageDir, "tab-tools-material-rounded.svg"), "utf8");
-
-  assert.match(svg, /<path[^>]* d="M648\.4-500\.07 500\.83-647\.63/);
-  assert.match(svg, /671\.23-790 546\.46-665\.23l124\.77 124\.38/);
-  assert.doesNotMatch(svg, /M180-180v-240h240v240H180/);
-});
-
 test("four tab routes and selected states stay aligned", () => {
   const appJson = JSON.parse(fs.readFileSync(path.join(__dirname, "../app.json"), "utf8"));
   const expected = [
@@ -431,11 +423,11 @@ test("four tab routes and selected states stay aligned", () => {
 });
 
 test("secondary tab pages explicitly restore the custom tab bar on show", () => {
-  const toolsJs = fs.readFileSync(path.join(__dirname, "../pages/memory/memory.js"), "utf8");
+  const memoryJs = fs.readFileSync(path.join(__dirname, "../pages/memory/memory.js"), "utf8");
   const historyJs = fs.readFileSync(path.join(__dirname, "../pages/history/history.js"), "utf8");
   const profileJs = fs.readFileSync(path.join(__dirname, "../pages/profile/profile.js"), "utf8");
 
-  assert.match(toolsJs, /patchTabBarIfNeeded\(this,\s*\{\s*selected:\s*1,\s*hidden:\s*false\s*\}\)/);
+  assert.match(memoryJs, /patchTabBarIfNeeded\(this,\s*\{\s*selected:\s*1,\s*hidden:\s*false\s*\}\)/);
   assert.match(historyJs, /patchTabBarIfNeeded\(this,\s*\{\s*selected:\s*2,\s*hidden:\s*false\s*\}\)/);
   assert.match(profileJs, /patchTabBarIfNeeded\(this,\s*\{\s*selected:\s*3,\s*hidden:\s*false\s*\}\)/);
 });
@@ -629,7 +621,7 @@ test("central create entry follows the four-state identity matrix", () => {
     definition.methods.onCreateActivityTap.call(ctx);
     assert.equal(currentPage.showCreateModalCalls, 1, "普通用户可直接打开首页抽屉");
 
-    currentPage = { route: "pages/tools/tools" };
+    currentPage = { route: "pages/history/history" };
     Object.assign(app.globalData, { userRole: "admin", isAuthenticated: true, accessToken: "admin-token" });
     definition.methods.onCreateActivityTap.call(ctx);
     assert.equal(switchedUrl, "/pages/activity_list/activity_list");

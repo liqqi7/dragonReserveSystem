@@ -1,4 +1,0 @@
-{
-  "evidence": "alpha-probe + gradient-alpha-probe native rendering",
-  "change": "Replace detached semi-transparent background rectangles and rectangle node-opacity folding with equivalent constant-color native gradients; preserve parent sizing behavior."
-}

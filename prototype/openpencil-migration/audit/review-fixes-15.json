@@ -1,5 +1,0 @@
-{
-  "evidence": "Native layout expands GJ7w0 from source height22 to25, KfjhU254to257, and aO3Fi666to702. The source deliberately allows children outside fixed frame bounds.",
-  "change": "Generalize the existing IzknT repair guard to numeric, unclipped Auto Layout frames whose visible flow children exceed the original height. Native flex layout remains enabled; only target post-layout expansion is skipped.",
-  "reviewRequired": "Render all 164 regions, inspect rank pages and changed regions, verify no new errors or component regressions."
-}
