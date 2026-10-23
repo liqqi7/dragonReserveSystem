@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="shadow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dee3f0"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <linearGradient id="left" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#dce0e6"/><stop offset="1" stop-color="#dfe3eb"/></linearGradient>
+    <linearGradient id="leftFront" x1="1" y1="0" x2="0" y2="0"><stop stop-color="#b3bdc9"/><stop offset="1" stop-color="#d7dae0"/></linearGradient>
+    <linearGradient id="right" x1="1" y1="0" x2="0" y2="0"><stop stop-color="#ccd3db"/><stop offset="1" stop-color="#d6dae3"/></linearGradient>
+    <linearGradient id="rightFront" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#dce0e6"/><stop offset="1" stop-color="#d3d8e3"/></linearGradient>
+    <linearGradient id="flapL" x1="1" y1="0" x2="0" y2="0"><stop stop-color="#c1c8d1"/><stop offset="1" stop-color="#dfe3ed"/></linearGradient>
+    <linearGradient id="flapR" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#dfe3ed"/><stop offset="1" stop-color="#e1e9f2"/></linearGradient>
+  </defs>
+  <ellipse cx="511" cy="825" rx="476" ry="158" fill="url(#shadow)"/>
+  <g fill="#e6eaf0">
+    <path d="M191 679c0 24-19 43-43 43s-43-19-43-43 19-72 43-72 43 48 43 72z"/>
+    <path d="M880 684c0 20-16 35-35 35s-36-15-36-35 16-59 36-59 35 39 35 59z"/>
+    <path d="M927 770c0 15-12 26-27 26s-26-11-26-26 12-44 26-44 27 29 27 44z"/>
+  </g>
+  <g fill="none" stroke="#d0d6e0" stroke-width="6" stroke-linecap="round">
+    <path d="M148 650v111m0-60 19-28m-19 10-20-20"/>
+    <path d="M845 660v92m0-50 15-22m-15 8-16-17"/>
+    <path d="M900 753v67m0-36 12-17m-12 6-12-12"/>
+  </g>
+  <path d="M511 363L231 443v315l280-93z" fill="url(#left)"/>
+  <path d="M231 443l280 80v328l-280-92z" fill="url(#leftFront)"/>
+  <path d="M511 363l280 80v315l-280-93z" fill="url(#right)"/>
+  <path d="M791 443l-280 80v328l280-92z" fill="url(#rightFront)"/>
+  <path d="M231 443l280 80-42 96-276-88z" fill="url(#flapL)"/>
+  <path d="M791 443l-280 80 43 96 276-88z" fill="url(#flapR)"/>
+  <path d="M231 443l280 80-27 141-253-89z" fill="#aeb7c5" opacity=".42"/>
+  <path d="M791 443l-280 80 40 129 240-83z" fill="#c3c9d2" opacity=".5"/>
+  <path d="M511 851L148 761l152-42z" fill="#bcc0cc" opacity=".36"/>
+  <g fill="none" stroke="#d3dbeb" stroke-width="5" stroke-linecap="round">
+    <path d="M625 177c-44 58-107 91-190 114-22 6-44 12-66 18"/>
+    <path d="M633 225c-27 31-58 59-93 84"/>
+  </g>
+  <g fill="#c9d0dc">
+    <path d="M712 370c36 8 62-1 70-25 3-8 2-13 3-19 10-2 18-1 24 2-5-8-34-10-47 1-12 11-14 35-24 34 8-16 14-40 40-45-15-12-34-5-42 10-8 15-8 42-24 42z"/>
+    <path d="M689 306c-21-7-32-19-27-40-5-5-8-7-11-8 5-5 19 4 25 11 5 8-1 20 3 25-1-13 5-28-8-36 17-4 23 14 18 48z" opacity=".8"/>
+    <path d="M708 257c-10-12-11-22 3-36-1-5-3-8-6-10 7-1 12 12 9 19-3 7-9 10-8 15 4-8 11-15 9-24 13 9 8 25-7 36z" opacity=".8"/>
+  </g>
+</svg>
