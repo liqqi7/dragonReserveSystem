@@ -1,0 +1,4 @@
+@import "../../styles/boardgames.wxss";
+.activity-tabs,.activity-actions{display:flex;gap:12rpx;flex-wrap:wrap;margin:24rpx 0}.activity-note{font-size:26.92rpx;line-height:1.6;margin:16rpx 0;white-space:pre-wrap}
+
+.activity-avatar-row { display:flex; align-items:center; margin-top:23.08rpx; padding-left:7.69rpx; }.activity-avatar-row .bg-avatar { margin-left:-7.69rpx; border:3.85rpx solid #FFFFFF; }

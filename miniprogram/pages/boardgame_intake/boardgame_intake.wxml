@@ -40,6 +40,7 @@
           <view wx:else class="intake-mini-cover placeholder"><text>{{item.detail_state === 'pending' ? '加载中' : '暂无封面'}}</text></view>
           <text class="intake-mini-title" overflow="ellipsis" max-lines="1">{{item.display_name || item.name}}</text>
           <text wx:if="{{item.owned_by_actor}}" class="intake-mini-owned">已拥有</text>
+          <text wx:if="{{item.expansion_count}}" class="intake-mini-exp">含{{item.expansion_count}}个扩展</text>
         </button>
       </view>
     </scroll-view>
@@ -72,6 +73,7 @@
       <view class="intake-data-row mechanics-row"><view class="intake-data-label"><text>玩法机制</text></view><text class="intake-data-value intake-mechanics-value">{{candidate.mechanics_label || '暂无资料'}}</text></view>
       <view class="intake-data-row"><text>人数</text><text class="intake-data-value">{{candidate.min_players || '?'}}–{{candidate.max_players || '?'}}人</text></view>
       <view class="intake-data-row"><text>时长</text><text class="intake-data-value">{{candidate.min_playtime_minutes || '?'}}–{{candidate.max_playtime_minutes || '?'}}分钟</text></view>
+      <block wx:if="{{!candidate.is_expansion}}">
       <view wx:if="{{candidate.owner_count}}" class="intake-owner-row" bindtap="openOwners">
         <text class="intake-owner-label">拥有者</text>
         <view class="intake-owner-summary">
@@ -87,8 +89,30 @@
         </view>
       </view>
       <view wx:else class="intake-first-owner-tip"><text>感谢你的贡献，成为了这个游戏的第一个拥有者，等着大家来借吧</text></view>
+      </block>
     </view>
-    <button class="{{saving || submitUnknown ? 'is-disabled' : ''}} intake-version-picker {{selection ? 'is-selected' : 'is-unselected'}}" bindtap="openVersions" disabled="{{saving || submitUnknown}}" aria-label="选择桌游版本">
+    <view wx:if="{{expansionOptions.length}}" class="intake-expansions">
+      <view class="intake-exp-head" bindtap="openExpansions" role="button" aria-label="打开扩展选择">
+        <text>扩展</text>
+        <view class="intake-exp-entry"><text class="intake-exp-count">{{expansionSelected.length ? '已选 ' + expansionSelected.length + ' 款' : '仅基础'}}</text><text class="intake-exp-chevron">›</text></view>
+      </view>
+      <scroll-view type="custom" enable-flex scroll-x class="intake-exp-cards" show-scrollbar="{{false}}">
+        <view class="intake-exp-card-row">
+          <view wx:for="{{expansionOptions}}" wx:key="bgg_id" class="intake-exp-card {{item.checked ? 'checked' : ''}}" bindtap="openExpansions" role="button">
+            <view class="intake-exp-card-cover">
+              <image wx:if="{{item.cover_url}}" class="cover-img" src="{{item.cover_url}}" mode="aspectFill"/>
+              <block wx:else>
+                <image class="cover-img" src="{{candidate.cover_url}}" mode="aspectFill"/>
+                <view class="cover-dim"><text class="cover-dim-text">🧩 扩展</text></view>
+              </block>
+              <view class="cover-name-band"><text class="cover-name-text">{{item.chinese_name || item.name}}</text></view>
+            </view>
+            <view wx:if="{{item.checked}}" class="intake-exp-card-check"><text>✓</text></view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+    <button wx:if="{{!candidate.is_expansion}}" class="{{saving || submitUnknown ? 'is-disabled' : ''}} intake-version-picker {{selection ? 'is-selected' : 'is-unselected'}}" bindtap="openVersions" disabled="{{saving || submitUnknown}}" aria-label="选择桌游版本">
       <text class="intake-version-value">{{candidate.owned_by_actor ? (candidate.ownedVersionLabel || candidate.owned_version_label || '版次未确定') : (selectedVersion ? (selectedVersion.display_name || selectedVersion.name || selectedVersion.languageLabel || '版本名称未知') : (selection === 'unspecified' ? '版次未确定' : '请选择桌游版本'))}}{{!candidate.owned_by_actor && selectedVersion.year_published ? ' · ' + selectedVersion.year_published : ''}}</text>
       <view class="intake-version-action"><text wx:if="{{!candidate.owned_by_actor}}">{{selection ? '更换' : '选择'}}</text><text class="intake-version-chevron">›</text></view>
     </button>
@@ -110,7 +134,8 @@
   </block>
 </scroll-view>
 <view wx:if="{{stage === 'version'}}" class="entry-footer">
-  <view role="button" class="{{saving || candidate.owned_by_actor || (stage === 'version' && !selection) ? 'is-disabled' : ''}} entry-button full" bindtap="save" aria-disabled="{{saving || candidate.owned_by_actor || (stage === 'version' && !selection)}}">{{candidate.owned_by_actor ? '您已拥有' : (submitUnknown ? '重试确认录入' : '确认录入')}}</view>
+  <view wx:if="{{candidate.is_expansion && candidate.base_name}}" role="button" class="entry-button full" bindtap="jumpToBaseFromDetail">跳转至本体</view>
+  <view wx:else role="button" class="{{saving || candidate.owned_by_actor || (stage === 'version' && !selection) ? 'is-disabled' : ''}} entry-button full" bindtap="save" aria-disabled="{{saving || candidate.owned_by_actor || (stage === 'version' && !selection)}}">{{candidate.owned_by_actor ? '您已拥有' : (submitUnknown ? '重试确认录入' : '确认录入')}}</view>
 </view>
 </view>
 <boardgame-sheet visible="{{versionsOpen}}" title="选择桌游版本" size="high" bindclose="closeVersions">
@@ -119,14 +144,30 @@
       <view wx:if="{{versionLoading}}" class="entry-empty"><text>正在获取版本…</text></view>
       <view role="button" wx:for="{{versions}}" wx:key="bgg_version_id" class="{{candidate.owned_by_actor ? 'is-disabled' : ''}} entry-result entry-card edition {{selection == item.bgg_version_id ? 'selected' : ''}}" data-id="{{item.bgg_version_id}}" bindtap="chooseVersion" aria-disabled="{{candidate.owned_by_actor}}">
         <image wx:if="{{item.cover_url}}" class="edition-cover" data-kind="version" data-id="{{item.bgg_version_id}}" binderror="imageError" src="{{item.cover_url}}" mode="aspectFill"/><view wx:else class="edition-cover placeholder"><text>暂无版本图</text></view>
-        <view class="grow"><view class="entry-name"><text>{{item.display_name || item.name || '版本名称未知'}}</text></view><view class="entry-meta"><text>{{item.languageLabel || '语言未知'}} · {{item.year_published || '年份未知'}}</text></view><view class="entry-muted"><text>{{item.publisherLabel || '出版商未知'}}</text></view></view><text class="choice">{{selection == item.bgg_version_id ? '✓' : '○'}}</text>
+        <view class="grow"><view class="entry-name"><text>{{item.display_name || item.name || '版本名称未知'}}</text></view><view class="entry-meta"><text>{{item.languageLabel || '语言未知'}} · {{item.year_published || '年份未知'}}</text></view><view class="entry-muted"><text>{{item.publisherLabel || '出版商未知'}}</text></view></view><view class="choice-circle {{selection == item.bgg_version_id ? 'on' : ''}}"><text wx:if="{{selection == item.bgg_version_id}}">✓</text></view>
       </view>
       <view wx:if="{{!versions.length && !versionLoading && !versionError}}" class="entry-empty"><text>BGG 暂无版本资料</text></view>
       <button wx:if="{{versionNext !== null}}" class="{{versionLoading ? 'is-disabled' : ''}} entry-button secondary full" bindtap="moreVersions" disabled="{{versionLoading}}">更多版本（共 {{versionTotal}} 个）</button>
-      <view role="button" class="{{candidate.owned_by_actor ? 'is-disabled' : ''}} entry-card unknown-version {{selection === 'unspecified' ? 'selected' : ''}}" bindtap="unspecifiedVersion" aria-disabled="{{candidate.owned_by_actor}}"><view class="grow"><view class="entry-name"><text>版次未确定</text></view><view class="entry-muted"><text>先关联这款桌游，版本信息稍后补充</text></view></view><text class="choice">{{selection === 'unspecified' ? '✓' : '○'}}</text></view>
+      <view role="button" class="{{candidate.owned_by_actor ? 'is-disabled' : ''}} entry-card unknown-version {{selection === 'unspecified' ? 'selected' : ''}}" bindtap="unspecifiedVersion" aria-disabled="{{candidate.owned_by_actor}}"><view class="grow"><view class="entry-name"><text>版次未确定</text></view><view class="entry-muted"><text>先关联这款桌游，版本信息稍后补充</text></view></view><view class="choice-circle {{selection === 'unspecified' ? 'on' : ''}}"><text wx:if="{{selection === 'unspecified'}}">✓</text></view></view>
     </view>
 </boardgame-sheet>
-<boardgame-sheet visible="{{ownersOpen}}" title="全部拥有者（{{candidate.owner_count}}）" kind="info" size="high" bindclose="closeOwners">
+<boardgame-sheet visible="{{expansionsOpen}}" title="选择扩展" kind="{{candidate.owned_by_actor ? '' : 'form'}}" showClose="{{false}}" size="high" bindclose="closeExpansions">
+  <view class="exp-sheet-meta"><text>已选 {{expansionSelected.length}} / {{expansionOptions.length}}</text></view>
+  <view class="exp-sheet-list">
+    <view wx:for="{{expansionOptions}}" wx:key="bgg_id" class="exp-sheet-item {{item.checked ? 'selected' : ''}} {{candidate.owned_by_actor ? 'is-disabled' : ''}}" data-bgg="{{item.bgg_id}}" bindtap="toggleExpansion" role="button" aria-disabled="{{candidate.owned_by_actor}}">
+      <image wx:if="{{item.cover_url}}" class="exp-sheet-cover" style="width:120rpx;height:150rpx;" src="{{item.cover_url}}" mode="aspectFill"/>
+      <view wx:else class="exp-sheet-cover cover-host"><image class="cover-img" src="{{candidate.cover_url}}" mode="aspectFill"/><view class="cover-dim"><text class="cover-dim-text">🧩 扩展</text></view></view>
+      <view class="exp-sheet-copy">
+        <view class="exp-sheet-name"><text>{{item.chinese_name || item.name}}</text></view>
+        <view class="exp-sheet-owners {{item.owner_count ? 'has' : 'is-none'}}"><text wx:if="{{item.owner_count}}" class="exp-sheet-owners-icon">✓</text><text>{{item.owners_label}}</text></view>
+      </view>
+      <text wx:if="{{item.year_published}}" class="exp-sheet-year">{{item.year_published}}</text>
+      <view class="choice-circle {{item.checked ? 'on' : ''}}"><text wx:if="{{item.checked}}">✓</text></view>
+    </view>
+  </view>
+  <button wx:if="{{!candidate.owned_by_actor}}" slot="footer" class="{{saving ? 'is-disabled' : ''}} entry-button full exp-sheet-confirm" bindtap="closeExpansions" disabled="{{saving}}">确认扩展</button>
+</boardgame-sheet>
+<boardgame-sheet visible="{{ownersOpen}}" title="全部拥有者 ({{candidate.owner_count}})" kind="info" size="high" bindclose="closeOwners">
   <view wx:for="{{candidate.owner_details}}" wx:key="id" class="intake-owner-detail">
     <view class="intake-owner-detail-avatar">
       <image wx:if="{{item.avatar_url}}" src="{{item.avatar_url}}" mode="aspectFill"/>

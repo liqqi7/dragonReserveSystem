@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "导入与核对",
+  "usingComponents": {
+    "boardgame-sheet": "/components/boardgame-sheet/index"
+  }
+}

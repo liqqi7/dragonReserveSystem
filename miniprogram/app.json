@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/activity_list/activity_list",
+    "pages/activity_calendar/activity_calendar",
     "pages/tools/tools",
     "pages/memory/memory",
     "pages/memory_create/memory_create",
@@ -8,6 +9,7 @@
     "pages/memory_review/memory_review",
     "pages/activity_detail/activity_detail",
     "pages/activity_cover_preview/activity_cover_preview",
+    "pages/welcome/welcome",
     "pages/history/history",
     "pages/profile/profile",
     "pages/checkin_map/checkin_map",
@@ -16,6 +18,8 @@
     "pages/activity_edit/activity_edit",
     "pages/boardgame_library/boardgame_library",
     "pages/boardgame_intake/boardgame_intake",
+    "pages/boardgame_plays/boardgame_plays",
+    "pages/boardgame_scoresheet/boardgame_scoresheet",
     "pages/boardgame_detail/boardgame_detail"
   ],
   "window": {

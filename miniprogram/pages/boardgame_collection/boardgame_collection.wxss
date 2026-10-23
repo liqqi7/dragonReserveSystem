@@ -1,0 +1,4 @@
+@import "../../styles/boardgames.wxss";
+.collection-tabs{display:flex;flex-wrap:wrap;gap:12rpx;margin:24rpx 0}.collection-hero{border-radius:28rpx;border:1rpx solid #FFE0B2;background:#FFF3E0;padding:40rpx;text-align:center;margin:28rpx 0}.collection-percent{font-size:61.54rpx;line-height:1.4;font-weight:700;color:#FF9800}.collection-number{font-size:46.15rpx;line-height:1.8;font-weight:700;color:#FF9800}
+
+.collection-filter-actions { margin-top:23.08rpx; }

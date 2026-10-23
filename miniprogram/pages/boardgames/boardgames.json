@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "桌游库",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "boardgame-sheet": "/components/boardgame-sheet/index"
+  }
+}

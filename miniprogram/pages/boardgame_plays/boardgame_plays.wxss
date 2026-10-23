@@ -1,0 +1,44 @@
+page{background:#111827}
+.plays-page{height:100vh;display:flex;flex-direction:column;background:#111827;color:#F9FAFB}
+.plays-nav{background:#111827;flex:none}
+.plays-nav-row{height:100rpx;display:flex;align-items:center;justify-content:space-between;padding:0 30.76923rpx;box-sizing:border-box}
+.plays-nav-icon image{display:block;width:34.61538rpx;height:34.61538rpx}
+.plays-nav-spacer{width:34.61538rpx;height:34.61538rpx}
+.plays-nav-title{font-size:38.46154rpx;line-height:53.84615rpx;font-weight:700}
+.plays-summary{flex:none;display:flex;flex-direction:column;gap:15.38462rpx;padding:23.07692rpx 30.76923rpx 0}
+.plays-game-name{color:#FFFFFF;font-size:30.76923rpx;line-height:42.30769rpx;font-weight:700}
+.plays-tabs{display:flex;gap:7.69231rpx;height:50rpx;align-items:center}
+.plays-tab{height:42.30769rpx;padding:0 19.23077rpx;display:flex;align-items:center;justify-content:center;border-radius:42.30769rpx;background:#1F2937;color:#9CA3AF;font-size:19.23077rpx;font-weight:500}
+.plays-tab.is-active{background:#FF9800;color:#FFFFFF;font-weight:700}
+.plays-scroll{flex:1;min-height:0;box-sizing:border-box;padding:23.07692rpx 30.76923rpx 30.76923rpx}
+.plays-hint{padding:46.15385rpx 0;text-align:center;color:#6B7280;font-size:26.92308rpx}
+.plays-hint.is-link{color:#9CA3AF}
+.play-card{display:flex;flex-direction:column;gap:13.46154rpx;background:#1F2937;border-radius:23.07692rpx;padding:19.23077rpx;margin-bottom:19.23077rpx}
+.play-card-head{display:flex;justify-content:space-between;align-items:center;min-height:34.61538rpx}
+.play-date{color:#FFFFFF;font-size:23.07692rpx;font-weight:700}
+.play-ops{display:flex;gap:3.84615rpx;align-items:center}
+.play-op{width:42.30769rpx;height:42.30769rpx;display:flex;align-items:center;justify-content:center}
+.play-op image{width:26.92308rpx;height:26.92308rpx}
+.play-row{display:flex;justify-content:space-between;align-items:center;height:32.69231rpx}
+.play-row-side{display:flex;gap:9.61538rpx;align-items:center}
+.play-trophy{width:25rpx;height:25rpx}
+.play-name{color:#D1D5DB;font-size:21.15385rpx}
+.play-name.is-winner{color:#FFD98A;font-weight:700}
+.play-score{color:#FFFFFF;font-size:21.15385rpx;font-weight:600}
+.play-score.is-winner{color:#FFD98A}
+.plays-bottom{flex:none;padding:7.69231rpx 30.76923rpx calc(46.15385rpx + env(safe-area-inset-bottom));background:#111827;border-top:1.92308rpx solid #1F2937}
+.plays-record-btn{height:84.61538rpx;display:flex;align-items:center;justify-content:center;background:#FF9800;border-radius:23.07692rpx;color:#FFFFFF;font-size:26.92308rpx;font-weight:700}
+.plays-dialog-mask{position:fixed;left:0;right:0;top:0;bottom:0;z-index:60;background:#00000080;display:flex;align-items:center;justify-content:center}
+.plays-dialog{width:576.92308rpx;box-sizing:border-box;background:#FFFFFF;border-radius:30.76923rpx;padding:38.46154rpx;display:flex;flex-direction:column;gap:30.76923rpx;align-items:center}
+.plays-dialog-head{display:flex;gap:15.38462rpx;align-items:center;justify-content:center}
+.plays-dialog-icon{width:34.61538rpx;height:34.61538rpx}
+.plays-dialog-title{color:#111827;font-size:30.76923rpx;font-weight:700}
+.plays-dialog-desc{width:100%;color:#4B5563;font-size:26.92308rpx;line-height:1.6}
+.plays-dialog-actions{width:100%;display:flex;gap:23.07692rpx}
+.plays-dialog-cancel,.plays-dialog-confirm{flex:1;height:84.61538rpx;display:flex;align-items:center;justify-content:center;border-radius:23.07692rpx;font-size:26.92308rpx;font-weight:600}
+.plays-dialog-cancel{background:#F5F5F5;color:#4B5563}
+.plays-dialog-confirm{background:#EF4444;color:#FFFFFF}
+.plays-dialog-confirm.is-disabled{background:#E5E7EB;color:#9CA3AF}
+
+/* 对局扩汇总行 */
+.play-exp{margin:7.69231rpx 0 11.53846rpx;color:#8A93A6;font-size:23.07692rpx;line-height:30.76923rpx}

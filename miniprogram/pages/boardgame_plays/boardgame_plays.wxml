@@ -1,0 +1,59 @@
+<view class="plays-page">
+  <view class="plays-nav" style="padding-top:{{statusBarHeight}}px">
+    <view class="plays-nav-row" style="height:{{navHeight}}px">
+      <view class="plays-nav-icon" bindtap="goBack"><image src="/images/icon-chevron-left.svg" mode="aspectFit"/></view>
+      <text class="plays-nav-title">对局记录</text>
+      <view class="plays-nav-spacer"></view>
+    </view>
+  </view>
+
+  <view class="plays-summary">
+    <text class="plays-game-name">{{gameName}}</text>
+    <view class="plays-tabs">
+      <view wx:for="{{tabs}}" wx:key="key" class="plays-tab {{scope === item.key ? 'is-active' : ''}}" bindtap="chooseScope" data-key="{{item.key}}">{{item.label}}</view>
+    </view>
+  </view>
+
+  <scroll-view type="custom" class="plays-scroll" scroll-y>
+    <view wx:if="{{loading && !items.length}}" class="plays-hint">正在加载…</view>
+    <view wx:elif="{{error}}" class="plays-hint" bindtap="load">{{error}} · 点击重试</view>
+    <view wx:elif="{{!items.length}}" class="plays-hint">还没有对局，点击下方按钮记录第一局</view>
+    <view wx:for="{{items}}" wx:key="id" class="play-card">
+      <view class="play-card-head">
+        <text class="play-date">{{item.dateLabel}}</text>
+        <view wx:if="{{item.can_edit}}" class="play-ops">
+          <view class="play-op" bindtap="editPlay" data-id="{{item.id}}"><image src="/images/icon-pencil-gray.svg" mode="aspectFit"/></view>
+          <view class="play-op" bindtap="askDeletePlay" data-id="{{item.id}}"><image src="/images/icon-trash-soft.svg" mode="aspectFit"/></view>
+        </view>
+      </view>
+      <view class="play-exp"><text>{{item.expLabel}}</text></view>
+      <view wx:for="{{item.players}}" wx:for-item="player" wx:key="id" class="play-row {{player.is_winner ? 'is-winner' : ''}}">
+        <view class="play-row-side">
+          <image wx:if="{{player.is_winner}}" class="play-trophy" src="/images/icon-trophy-gold.svg" mode="aspectFit"/>
+          <text class="play-name {{player.is_winner ? 'is-winner' : ''}}">{{player.display_name}}</text>
+        </view>
+        <text class="play-score {{player.is_winner ? 'is-winner' : ''}}">{{player.scoreDisplay}}</text>
+      </view>
+    </view>
+    <view wx:if="{{items.length && cursor}}" class="plays-hint {{loading ? '' : 'is-link'}}" bindtap="loadMore">{{loading ? '正在加载…' : '更多对局'}}</view>
+  </scroll-view>
+
+  <view class="plays-bottom">
+    <view class="plays-record-btn" bindtap="recordPlay" role="button">记录一局</view>
+  </view>
+
+  <view wx:if="{{deleteId}}" class="plays-dialog-mask" bindtap="cancelDelete">
+    <view class="plays-dialog" catchtap="noop">
+      <view class="plays-dialog-head">
+        <image class="plays-dialog-icon" src="/images/icon-alert-red.svg" mode="aspectFit"/>
+        <text class="plays-dialog-title">删除这局记录？</text>
+      </view>
+      <text class="plays-dialog-desc">删除后不再出现在对局记录里，确定吗？</text>
+      <view class="plays-dialog-actions">
+        <view class="plays-dialog-cancel" bindtap="cancelDelete">取消</view>
+        <view class="plays-dialog-confirm {{deleting ? 'is-disabled' : ''}}" bindtap="confirmDelete">{{deleting ? '删除中…' : '确认'}}</view>
+      </view>
+    </view>
+  </view>
+  <create-access-dialog id="session-expired-dialog" />
+</view>

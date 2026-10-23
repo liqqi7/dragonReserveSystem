@@ -19,6 +19,7 @@ module.exports = {
     searching:false, error:'', preview:null, preparing:false, previewError:'', candidate:null,
     versions:[], versionQuery:'', versionTotal:0, versionNext:null, versionLoading:false,
     versionError:'', descriptionExpanded:false, selection:null, selectedVersion:null, includeInventory:true, source:'bgg',
+    expansionOptions:[], expansionSelected:[], expansionsOpen:false,
     form:blankForm(), successMeta:'',
     saving:false, submitUnknown:false, recoveryName:'', formError:'', result:null},
 
@@ -49,9 +50,22 @@ module.exports = {
   inputQuery(e) {
     if (this.locked()) return;
     this._generation++; clearTimeout(this._poll); this._prepareKey = null;
-    this.setData({query:e.detail.value, searched:false, searching:false, results:[], preview:null, preparing:false, error:'', previewError:''});
+    this.setData({query:e.detail.value, searched:false, searching:false, results:[], preview:null, preparing:false, error:'', previewError:'', expansionOptions:[], expansionSelected:[]});
   },
   search() { return this.fetchSearch(0); },
+  jumpToBase(e) {
+    if (this._dead) return;
+    const name = ((e.currentTarget.dataset || {}).name || '').trim();
+    if (!name) return;
+    this.setData({query:name, error:''});
+    this.fetchSearch(0);
+  },
+  jumpToBaseFromDetail() {
+    const name = (this.data.candidate && this.data.candidate.base_name || '').trim();
+    if (!name) return;
+    this.setData({query:name, error:''});
+    this.fetchSearch(0);
+  },
   nextSearch() { if (this.data.nextOffset !== null) return this.fetchSearch(this.data.nextOffset); },
   previousSearch() { return this.fetchSearch(Math.max(0, this.data.offset - 10)); },
   async fetchSearch(offset) {
@@ -134,6 +148,8 @@ module.exports = {
     this.dirty();
     this.setData({stage:'version', searchFocus:false, source:'bgg', candidate, versions:[], versionQuery:'', selection:null,
       selectedVersion:null, versionError:'', descriptionExpanded:false,
+      expansionOptions:(candidate.expansion_links || []).map(l => ({...l, checked: !!l.owned_by_actor})),
+      expansionSelected:(candidate.expansion_links || []).filter(l => l.owned_by_actor).map(l => l.bgg_id),
       form:{...blankForm(), name:candidate.local_game_name || candidate.name}});
     await this.fetchVersions(false);
   },
@@ -191,6 +207,16 @@ module.exports = {
     } catch (error) { if (this.current(generation) && vg === this._versionGeneration) this.setData({versionError:api.message(error)}); }
     finally { if (this.current(generation) && vg === this._versionGeneration) this.setData({versionLoading:false}); }
   },
+  toggleExpansion(e) {
+    if (this.locked()) return;
+    if (this.data.candidate && this.data.candidate.owned_by_actor) return;  // 已录入的桌游，扩只读
+    const bgg = Number(e.currentTarget.dataset.bgg);
+    const options = this.data.expansionOptions.map(o => o.bgg_id === bgg ? {...o, checked:!o.checked} : o);
+    this.dirty();
+    this.setData({expansionOptions:options, expansionSelected:options.filter(o => o.checked).map(o => o.bgg_id)});
+  },
+  openExpansions() { if (!this._dead) this.setData({expansionsOpen:true}); },
+  closeExpansions() { this.setData({expansionsOpen:false}); },
   chooseVersion(e) {
     if (this.locked()) return;
     const id = Number(e.currentTarget.dataset.id), version = this.data.versions.find(v => v.bgg_version_id === id);
@@ -214,6 +240,7 @@ module.exports = {
       display_name:this.data.candidate.local_game_id ? null : this.data.form.name.trim(),
       bgg_version_id:this.data.selectedVersion ? this.data.selectedVersion.bgg_version_id : null,
       version_unspecified:this.data.selection === 'unspecified',
+      expansion_bgg_ids:this.data.expansionOptions.length ? this.data.expansionSelected : null,
       inventory:{owner_type:'member', owner_user_id:Number(this._account), quantity:1}};
   },
   async save() {
@@ -253,6 +280,6 @@ module.exports = {
     if (this.locked()) return;
     this._generation++; clearTimeout(this._poll); this.dirty(); this._prepareKey = null;
     this.setData({stage:'search',searchFocus:true,query:'',searched:false,results:[],preview:null,result:null,error:'',previewError:'',
-      candidate:null,selection:null,selectedVersion:null,includeInventory:true,searching:false,preparing:false});
+      candidate:null,selection:null,selectedVersion:null,includeInventory:true,searching:false,preparing:false,expansionOptions:[],expansionSelected:[],expansionsOpen:false});
   }
 };

@@ -1,0 +1,2 @@
+@import "../../styles/boardgames.wxss";
+.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:20rpx}.filter-tags{display:flex;flex-wrap:wrap;gap:12rpx}.filter-line{padding:20rpx 0;border-bottom:1rpx solid #E5E7EB}

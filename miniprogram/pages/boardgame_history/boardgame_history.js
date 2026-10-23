@@ -1,0 +1,13 @@
+const api=require('../../services/boardgames');const filters=require('../../utils/boardgameFilters');
+const STATUS={draft:'待完成',completed:'已完成',abandoned:'没开完',voided:'已作废'};
+Page({data:{query:{},items:[],loading:false,error:'',nextCursor:null,filterOpen:false,filterName:'',saveOpen:false,saving:false},
+ onLoad(options){this.setData({query:filters.load(options)});},onShow(){this.load();},onReachBottom(){if(this.data.nextCursor&&!this.data.loading)this.load(true);},
+ async load(more=false){more=more===true;const generation=this._generation=(this._generation||0)+1;this.setData({loading:true,error:''});try{const r=await api.get('/boardgame-plays',{...this.data.query,limit:20,cursor:more?this.data.nextCursor:null});if(generation!==this._generation)return;const items=r.items.map(p=>({...p,statusLabel:STATUS[p.status],playersLabel:p.players.map(x=>x.display_name_snapshot).join('、'),
+   resultLabel:p.result_status==='resolved'?'胜负已记录':'胜负未齐',durationLabel:p.duration_minutes?`${p.duration_minutes} 分钟`:'时长未记录'}));this.setData({items:more?[...this.data.items,...items]:items,nextCursor:r.next_cursor});}catch(e){if(generation===this._generation)this.setData({error:api.message(e)});}finally{if(generation===this._generation)this.setData({loading:false});}},
+ scope(e){this.setData({'query.scope':e.currentTarget.dataset.scope});this.load();},status(e){const v=e.currentTarget.dataset.value;this.setData({'query.status':v||null,...(v==='draft'?{'query.recorded_by':'me'}:{'query.recorded_by':null})});this.load();},
+ open(e){wx.navigateTo({url:`/pages/boardgame_play/boardgame_play?id=${e.currentTarget.dataset.id}`});},record(){wx.navigateTo({url:'/pages/boardgame_play/boardgame_play'+api.query({game_id:this.data.query.game_id,activity_id:(this.data.query.activity_ids||[]).length===1?this.data.query.activity_ids[0]:null})});},
+ openFilters(){this.setData({filterOpen:true});},closeFilters(){this.setData({filterOpen:false});},applyFilters(e){this.setData({query:e.detail.query,filterOpen:false});this.load();},
+ stats(){wx.navigateTo({url:filters.link('boardgame_stats',this.data.query)});},offline(){wx.navigateTo({url:'/pages/boardgame_offline/boardgame_offline'});},
+ openSave(){this.setData({saveOpen:true,filterName:''});},closeSave(){this.setData({saveOpen:false});},name(e){this.setData({filterName:e.detail.value});},
+ async saveFilter(){if(this.data.saving)return;this.setData({saving:true,error:''});try{await api.send('/boardgame-saved-filters','POST',{name:this.data.filterName,target:'plays',query:filters.clean(this.data.query)});this.setData({saveOpen:false});wx.showToast({title:'筛选已保存',icon:'none'});}catch(e){this.setData({error:api.message(e)});}finally{this.setData({saving:false});}}
+});

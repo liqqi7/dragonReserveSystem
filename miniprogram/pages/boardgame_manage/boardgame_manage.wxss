@@ -1,0 +1,2 @@
+@import "../../styles/boardgames.wxss";
+.manage-tabs { margin:30.77rpx 0; }.manage-filters { margin:23.08rpx 0; }.manage-actions { margin-top:23.08rpx; display:flex; flex-wrap:wrap; gap:15.38rpx; }.manage-message { white-space:pre-wrap; margin:23.08rpx 0; }.manage-name { font-size:30.77rpx; line-height:46.15rpx; font-weight:700; overflow-wrap:break-word; }.manage-arrow { color:#9CA3AF; flex:none; }.manage-impact { background:#FFFFFF; border-radius:30.77rpx; padding:0 23.08rpx; margin:23.08rpx 0; }
