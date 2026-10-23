@@ -35,11 +35,15 @@ def test_upgrade_preserves_main_data_and_downgrade_is_scoped(tmp_path, monkeypat
     config = Config()
     config.set_main_option('sqlalchemy.url', url)
     config.set_main_option('script_location', str(root / 'alembic'))
-    assert ScriptDirectory.from_config(config).get_heads() == ['20261011_0024']
+    assert set(ScriptDirectory.from_config(config).get_heads()) == {'20261011_0024', '20261012_0022'}
     command.stamp(config, '20260924_0020')
     command.upgrade(config, '20261007_0021')
-    assert set(inspect(engine).get_table_names()) == main_names | set(TABLES) | {'alembic_version'}
+    # The 0021 step creates only the six library tables; plays arrive at head.
+    library_tables = set(TABLES) - {'boardgame_plays', 'boardgame_play_players', 'boardgame_expansion_links', 'boardgame_play_expansions'}
+    assert set(inspect(engine).get_table_names()) == main_names | library_tables | {'alembic_version'}
     for name, table in TABLES.items():
+        if name not in library_tables:
+            continue
         assert {c['name'] for c in inspect(engine).get_columns(name)} == set(table.c.keys())
         # Both target MySQL and local SQLite schemas must compile.
         assert str(CreateTable(table).compile(dialect=mysql.dialect()))
@@ -84,7 +88,7 @@ def test_upgrade_both_branches_to_single_head_preserves_data(tmp_path, monkeypat
                     id=1, name='existing game', aliases=[], game_type='base', local_overrides={},
                     search_text='existing game', created_by=1, updated_by=1, created_at=datetime(2026, 1, 1), updated_at=datetime(2026, 1, 1),
                 ))
-        command.upgrade(config, 'head')
+        command.upgrade(config, 'heads')
         inspector = inspect(engine)
         assert set(TABLES).issubset(inspector.get_table_names())
         assert {'signup_deadline', 'activity_type', 'activity_style_key'}.isdisjoint(
@@ -93,7 +97,7 @@ def test_upgrade_both_branches_to_single_head_preserves_data(tmp_path, monkeypat
         assert 'ix_activities_end_time' in {index['name'] for index in inspector.get_indexes('activities')}
         assert 'ix_users_wechat_openid' not in {index['name'] for index in inspector.get_indexes('users')}
         with engine.connect() as conn:
-            assert conn.execute(text('SELECT version_num FROM alembic_version')).scalars().all() == ['20261011_0024']
+            assert set(conn.execute(text('SELECT version_num FROM alembic_version')).scalars().all()) == {'20261011_0024', '20261012_0022'}
             assert MEMORY_TABLES.issubset(inspector.get_table_names())
             assert conn.execute(text('SELECT reserved_bytes FROM memory_capacity WHERE id=1')).scalar_one() == 0
             assert conn.execute(text('SELECT share_preview_file FROM activities WHERE id=1')).scalar_one() == 'existing.png'

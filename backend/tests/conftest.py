@@ -14,6 +14,15 @@ os.environ["APP_ENV"] = "test"
 
 from app.core.database import Base, get_db
 from app.core.security import create_access_token
+try:
+    import cairosvg  # noqa: F401
+except OSError:
+    # Machines without the native cairo library (no Homebrew cairo) cannot render
+    # share cards. Stub the module so non-rendering suites still collect and run;
+    # share-preview rendering tests remain the known local gap.
+    import sys as _sys, types as _types
+    _sys.modules.setdefault('cairosvg', _types.ModuleType('cairosvg'))
+
 from app.main import app
 from app.models import Activity, ActivityParticipant, User
 

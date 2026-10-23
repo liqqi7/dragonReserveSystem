@@ -132,6 +132,7 @@ def run_once(factory, transport=None):
         ids = [identity for identity in job.params['ids'] if identity not in cached_ids]
         db.commit()
     try:
+        exp_ids = []
         if ids:
             with bgg_lock(engine) as acquired:
                 if not acquired:
@@ -158,12 +159,34 @@ def run_once(factory, transport=None):
             parsed = sources.thing_items(raw)
             if not parsed:
                 fail('empty_thing_response')
+            # 附属扩批次：把基础游戏引用的扩 id 并入同一预览批次（影子 item，
+            # 不进 params['ids']；candidate 用它给非在库扩补中文名）。
+            exp_ids = []
+            seen_ids = set(ids) | cached_ids
+            for entry in parsed:
+                for child in (entry['payload'].get('raw') or {}).get('children', []):
+                    attrs = child.get('attributes') or {}
+                    if child.get('tag') != 'link' or attrs.get('type') != 'boardgameexpansion':
+                        continue
+                    bid = sources.positive(attrs.get('id'))
+                    if (bid and bid not in seen_ids and bid not in exp_ids
+                            and 'promo' not in (attrs.get('value') or '').casefold()):
+                        exp_ids.append(bid)
+            if exp_ids:
+                try:
+                    with bgg_lock(engine) as exp_acquired:
+                        if exp_acquired:
+                            exp_status, exp_raw, _ = fetch_http(exp_ids[:20], transport)
+                            if exp_status == 200:
+                                parsed.extend(sources.thing_items(exp_raw))
+                except (httpx.HTTPError, OSError, AppError, ValueError, TypeError, KeyError, RecursionError):
+                    pass  # 扩批次是增强，失败不阻塞主预览
         else:
             parsed = []
         with factory() as db:
             job = fenced(db, job_id, owner)
             if job:
-                previews.persist_items(db, job, parsed)
+                previews.persist_items(db, job, parsed, extra_ids=exp_ids)
                 count = len(list(db.scalars(select(PreviewItem.id).where(PreviewItem.job_id == job_id))))
                 job.state = 'ready' if count else 'failed'
                 job.error_code = None if count else 'empty_thing_response'

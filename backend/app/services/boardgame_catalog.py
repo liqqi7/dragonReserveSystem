@@ -4,8 +4,8 @@ from decimal import Decimal
 from urllib.parse import urlparse
 from sqlalchemy import func, select
 from app.models import User
-from app.models.boardgame import BoardGame, Inventory, PreviewItem
-from app.schemas.boardgame import GameFields
+from app.models.boardgame import BoardGame, ExpansionLink, Inventory, PreviewItem
+from app.schemas.boardgame import GameCreate, GameFields, InventoryCreate
 from app.services.boardgame_common import (audit, check_revision, columns, fail, get, member, now, safe, stamp, touch, user_summary)
 from app.services.boardgame_labels import mechanic_label, version_view, edition_label, language_label
 
@@ -47,9 +47,16 @@ def library_metadata(payload):
     parsed = decimal_score(rating, [])
     score = Decimal(parsed) if parsed is not None else None
     tags = list(dict.fromkeys(mechanic_label(m) for m in mechanics if m))
+    def chinese_alias(name):
+        text = str(name)
+        # Japanese aliases share the CJK ideograph range; kana gives them away.
+        if re.search(r'[぀-ヿ]', text):
+            return False
+        return bool(re.search(r'[㐀-鿿]', text))
     chinese_name = next((re.sub(r'\s*\([^)]*\)', '', name).strip() for name in aliases
-                         if re.search(r'[\u3400-\u9fff]', str(name))), None)
-    return dict(bgg_rating=str(score.quantize(Decimal('0.01'))) if score is not None and 0 < score <= 10 else None,
+                         if chinese_alias(name)), None)
+    return dict(thumbnail_url=projection.get('thumbnail_url') or None,
+                bgg_rating=str(score.quantize(Decimal('0.01'))) if score is not None and 0 < score <= 10 else None,
                 bgg_rank=int(rank) if str(rank or '').isdigit() else None,
                 bgg_weight=str(weight) if weight is not None else None,
                 bgg_weight_display=(f'{Decimal(parsed_weight):.1f}' if (parsed_weight := decimal_score(weight, [])) is not None else None),
@@ -99,6 +106,7 @@ def game_detail(db, obj, actor, detail=True):
                                  cover_url=image))
         from app.services.boardgame_labels import version_view
         out['version_options'] = [version_view(v) for v in versions]
+        out['expansions'] = game_expansions(db, obj.id, actor)
         out.update(field_sources={k: 'manual' if k in obj.local_overrides else 'bgg' if obj.bgg_id else 'unknown'
                                   for k in GameFields.model_fields}, canonical_id=obj.merged_into_id,
                    permissions={'can_edit': False})
@@ -190,6 +198,24 @@ def change_inventory_version(db, obj, actor, payload):
     return obj
 
 
+def delete_inventory(db, obj, actor):
+    if not inventory_private(obj, actor):
+        fail('own_inventory_only', 403)
+    if obj.archived_at:
+        fail('inventory_unavailable', 409)
+    before = columns(obj, ['id', 'game_id', 'owner_user_id', 'status', 'edition_name', 'language',
+                           'bgg_version_id', 'archived_at', 'revision'])
+    obj.archived_at = now()
+    touch(obj, actor)
+    remaining_owners = db.scalar(select(func.count(func.distinct(Inventory.owner_user_id))).where(
+        Inventory.game_id == obj.game_id, Inventory.archived_at.is_(None),
+        Inventory.status != 'retired', Inventory.id != obj.id))
+    audit(db, obj, actor, 'archive', before, None,
+          columns(obj, ['id', 'game_id', 'owner_user_id', 'status', 'archived_at', 'revision']))
+    db.flush()
+    return remaining_owners or 0
+
+
 def inventory_private(obj, actor):
     return actor.role in ('user', 'admin') and obj.owner_user_id == actor.id
 
@@ -221,11 +247,271 @@ def create_inventory(db, actor, payload):
         fail('own_inventory_only', 403)
     existing = db.scalar(select(Inventory).where(Inventory.game_id == payload.game_id,
         Inventory.owner_user_id == actor.id).with_for_update())
-    if existing:
-        fail('already_owned', 409, inventory_id=existing.id)
     values = payload.model_dump(exclude={'quantity','game_id','owner_user_id'})
+    if existing:
+        if existing.archived_at is None:
+            fail('already_owned', 409, inventory_id=existing.id)
+        before = columns(existing, ['id', 'game_id', 'owner_user_id', 'status', 'edition_name', 'language',
+                                    'bgg_version_id', 'bgg_version_snapshot', 'remark', 'archived_at', 'revision'])
+        for key, value in values.items():
+            setattr(existing, key, value)
+        existing.archived_at = None
+        touch(existing, actor)
+        audit(db, existing, actor, 'restore', before, None,
+              columns(existing, ['id', 'game_id', 'owner_user_id', 'status', 'edition_name', 'language',
+                                 'bgg_version_id', 'bgg_version_snapshot', 'remark', 'archived_at', 'revision']))
+        db.flush()
+        return [existing]
     obj = Inventory(**stamp(actor, game_id=payload.game_id, owner_user_id=actor.id, **values))
     db.add(obj)
     db.flush()
     audit(db, obj, actor, 'create')
     return [obj]
+
+def game_expansions(db, game_id, actor=None):
+    """All expansions of the base game per BGG links, enriched with local data.
+
+    Shows the full BGG expansion family (not just linked ones); rows carry
+    in_library/linked flags plus owners/covers from the library when present,
+    falling back to the newest preview (shadow) payload otherwise.
+    """
+    from app.models.boardgame import PreviewItem
+    from app.services.boardgame_sources import positive
+
+    base = db.get(BoardGame, game_id)
+    if not base:
+        return []
+
+    def refs_from(game):
+        found = []
+        raw = (game.bgg_payload or {}).get('raw') or {}
+        for child in raw.get('children', []):
+            attrs = child.get('attributes') or {}
+            if child.get('tag') != 'link' or attrs.get('type') != 'boardgameexpansion':
+                continue
+            bid = positive(attrs.get('id'))
+            name = attrs.get('value')
+            if bid and 'promo' not in (name or '').casefold():
+                found.append({'bgg_id': bid, 'name': name})
+        return found
+
+    refs = refs_from(base)
+    linked = {l.expansion_game_id: l for l in db.scalars(
+        select(ExpansionLink).where(ExpansionLink.base_game_id == game_id))}
+
+    def build(ref, game, link):
+        in_lib = bool(game and not game.archived_at and not game.merged_into_id and game.is_visible)
+        if not in_lib:
+            game = None
+        payload = game.bgg_payload if game else None
+        if payload is None:
+            exp_item = db.scalar(select(PreviewItem).where(
+                PreviewItem.bgg_id == ref['bgg_id'], PreviewItem.source_kind == 'thing')
+                .order_by(PreviewItem.id.desc()).limit(1))
+            payload = exp_item.payload if exp_item else None
+        meta = library_metadata(payload)
+        proj = (payload or {}).get('projection') or {}
+        names, owned_exp = [], False
+        if game:
+            for row in db.scalars(select(Inventory).where(Inventory.game_id == game.id,
+                                                          Inventory.archived_at.is_(None))):
+                owner = user_summary(db, row.owner_user_id) if row.owner_user_id else None
+                names.append(owner['nickname'] if owner else row.owner_label or '俱乐部')
+                if actor and row.owner_user_id == actor.id:
+                    owned_exp = True
+        return {
+            'id': game.id if game else None,
+            'bgg_id': ref['bgg_id'],
+            'name': game.name if game else ref['name'],
+            'chinese_name': meta.get('chinese_name'),
+            'cover_url': (game.cover_url if game else None) or proj.get('cover_url'),
+            'year_published': (game.year_published if game else None) or proj.get('year_published'),
+            'game_type': 'expansion',
+            'in_library': bool(game),
+            'linked': bool(link),
+            'owners_label': '、'.join(names[:3]) if names else '无人拥有',
+            'owner_count': len(names),
+            'owned_by_actor': owned_exp,
+            'bgg_suggested': bool(link.bgg_suggested) if link else True,
+            'manual_decision': link.manual_decision if link else None,
+            'revision': link.revision if link else None,
+        }
+
+    out = []
+    seen = set()
+    for ref in refs:
+        seen.add(ref['bgg_id'])
+        game = db.scalar(select(BoardGame).where(BoardGame.bgg_id == ref['bgg_id']))
+        out.append(build(ref, game, linked.get(game.id) if game else None))
+    # Manual links outside the BGG family still show up.
+    for exp_id, link in linked.items():
+        game = db.get(BoardGame, exp_id)
+        if not game or game.bgg_id in seen or 'promo' in (game.name or '').casefold():
+            continue
+        seen.add(game.bgg_id)
+        out.append(build({'bgg_id': game.bgg_id, 'name': game.name}, game, link))
+    return out
+
+
+def _first_version(payload):
+    """First BGG version node from a stored payload's raw XML tree, if any."""
+    from app.services.boardgame_sources import positive
+    raw = (payload or {}).get('raw') or {}
+    for child in raw.get('children', []):
+        if child.get('tag') != 'versions':
+            continue
+        for node in child.get('children', []) or []:
+            attrs = node.get('attributes') or {}
+            if attrs.get('type') != 'boardgameversion':
+                continue
+            name = year = None
+            languages = []
+            for c in node.get('children', []) or []:
+                ca = c.get('attributes') or {}
+                if c.get('tag') == 'name' and ca.get('type') == 'primary':
+                    name = ca.get('value')
+                elif c.get('tag') == 'yearpublished':
+                    year = positive(ca.get('value'))
+                elif c.get('tag') == 'link' and ca.get('type') == 'language' and ca.get('value'):
+                    languages.append(ca['value'])
+            vid = positive(attrs.get('id'))
+            if vid:
+                return {'bgg_version_id': vid, 'name': name, 'year_published': year, 'languages': languages}
+    return None
+
+
+def set_my_expansions(db, game_id, actor, payload):
+    """Toggle the actor's own copies per expansion: check to own, uncheck to drop.
+
+    payload.expansion_game_ids carries BGG ids (not local ids), so every row of
+    the full family is toggleable: in-library expansions create/restore/archive
+    the actor's copy; not-in-library ones are first cataloged from the shadow
+    preview payload, then copied. Shared ExpansionLink data stays untouched.
+    """
+    from app.models.boardgame import PreviewItem
+    base = game(db, game_id, actor, usable=True, lock=True)
+    wanted = {int(identity) for identity in payload.expansion_game_ids}
+    added, archived = [], []
+    for exp in game_expansions(db, game_id, actor):
+        bid = exp['bgg_id']
+        gid = exp['id']
+        if bid in wanted:
+            if gid is None:
+                exp_item = db.scalar(select(PreviewItem).where(
+                    PreviewItem.bgg_id == bid, PreviewItem.source_kind == 'thing')
+                    .order_by(PreviewItem.id.desc()).limit(1))
+                if exp_item is None:
+                    continue
+                proj = (exp_item.payload or {}).get('projection', {})
+                game_obj = create_game(db, actor,
+                                       GameCreate(name=proj.get('name') or exp['name'],
+                                                  game_type='expansion', bgg_id=bid),
+                                       source=exp_item.payload)
+                game_obj.bgg_raw_xml, game_obj.bgg_content_hash = exp_item.raw_xml, exp_item.content_hash
+                game_obj.bgg_parser_version = str((exp_item.payload or {}).get('parser_version', 1))
+                game_obj.bgg_request_params, game_obj.bgg_synced_at = (
+                    {'id': bid, 'stats': 1, 'versions': 1}, exp_item.updated_at)
+                db.flush()
+                gid = game_obj.id
+            mine = db.scalar(select(Inventory).where(Inventory.game_id == gid,
+                                                     Inventory.owner_user_id == actor.id).limit(1))
+            if mine is not None and mine.archived_at is None:
+                continue
+            game_obj = db.get(BoardGame, gid)
+            version = _first_version(game_obj.bgg_payload) if game_obj else None
+            values = {}
+            if version:
+                values.update(edition_name=version['name'],
+                              language=', '.join(version['languages'])[:64] or None)
+            boxes = create_inventory(db, actor, InventoryCreate(game_id=gid, **values))
+            for box in boxes:
+                if version:
+                    box.bgg_version_id = version['bgg_version_id']
+            added.append(bid)
+        else:
+            if gid is None:
+                continue
+            mine = db.scalar(select(Inventory).where(Inventory.game_id == gid,
+                                                     Inventory.owner_user_id == actor.id,
+                                                     Inventory.archived_at.is_(None)).limit(1))
+            if mine is None:
+                continue
+            before = columns(mine, ['id', 'game_id', 'owner_user_id', 'status',
+                                    'archived_at', 'revision'])
+            mine.archived_at = now()
+            touch(mine, actor)
+            audit(db, mine, actor, 'archive', before, None,
+                  columns(mine, ['id', 'game_id', 'owner_user_id', 'status',
+                                 'archived_at', 'revision']))
+            archived.append(bid)
+    audit(db, base, actor, 'set_my_expansions', None, payload.reason,
+          {'added': added, 'archived': archived})
+    db.flush()
+    return game_expansions(db, game_id, actor)
+
+
+def validate_expansion_ids(db, game_id, expansion_ids):
+    """Every id must be a visible expansion game linked to the base game —
+    either by a saved ExpansionLink or by the official BGG family links
+    (catalog edits must never block recording a play with a BGG-official
+    expansion, even if someone cleared the local links)."""
+    if not expansion_ids:
+        return
+    if len(set(expansion_ids)) != len(expansion_ids):
+        fail('duplicate_expansion')
+    base = db.get(BoardGame, game_id)
+    if not base:
+        fail('not_found', 404)
+    allowed = set(db.scalars(select(ExpansionLink.expansion_game_id)
+                             .where(ExpansionLink.base_game_id == game_id)))
+    from app.services.boardgame_sources import positive as _positive
+    raw = (base.bgg_payload or {}).get('raw') or {}
+    for child in raw.get('children', []):
+        attrs = child.get('attributes') or {}
+        if child.get('tag') != 'link' or attrs.get('type') != 'boardgameexpansion':
+            continue
+        bid = _positive(attrs.get('id'))
+        if not bid:
+            continue
+        other = db.scalar(select(BoardGame).where(BoardGame.bgg_id == bid))
+        if other:
+            allowed.add(other.id)
+    for identity in expansion_ids:
+        g = db.get(BoardGame, identity)
+        if not g or not g.is_visible or g.archived_at or g.merged_into_id:
+            fail('expansion_not_found', 404)
+        if g.game_type != 'expansion':
+            fail('expansion_type_mismatch')
+        if identity not in allowed:
+            fail('expansion_not_linked', 409)
+
+def set_expansions(db, game_id, actor, payload):
+    """Replace the expansion link set of a base game with the given selection."""
+    base = game(db, game_id, actor, usable=True, lock=True)
+    if base.game_type == 'expansion':
+        fail('expansion_cannot_have_expansions')
+    ids = list(payload.expansion_game_ids)
+    if len(set(ids)) != len(ids):
+        fail('duplicate_expansion')
+    for identity in ids:
+        if identity == game_id:
+            fail('expansion_self_link')
+        g = db.get(BoardGame, identity)
+        if not g or not g.is_visible or g.archived_at or g.merged_into_id:
+            fail('expansion_not_found', 404)
+        if g.game_type != 'expansion':
+            fail('expansion_type_mismatch')
+    current = {link.expansion_game_id: link for link in
+               db.scalars(select(ExpansionLink).where(ExpansionLink.base_game_id == game_id).with_for_update())}
+    before = sorted(current)
+    for identity in ids:
+        if identity not in current:
+            db.add(ExpansionLink(base_game_id=game_id, expansion_game_id=identity, bgg_suggested=False,
+                                 manual_decision='inherit', updated_by=actor.id, updated_at=now(), revision=1))
+    for identity, link in current.items():
+        if identity not in ids:
+            db.delete(link)
+    audit(db, base, actor, 'set_expansions', {'expansion_game_ids': before}, payload.reason,
+          {'expansion_game_ids': sorted(ids)})
+    db.flush()
+    return game_expansions(db, game_id, actor)

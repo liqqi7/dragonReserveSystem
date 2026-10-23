@@ -5,7 +5,8 @@ from threading import Lock
 from time import monotonic
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
@@ -54,6 +55,18 @@ def _check_invite_rate_limit(user_id: int, client_ip: str) -> None:
                 raise HTTPException(status_code=429, detail="Too many invite attempts; try again later")
         for key in keys:
             _invite_attempts[key].append(now)
+
+
+@router.get("/search", summary="Search club members for play recording")
+def search_users(q: str = Query("", max_length=64), limit: int = Query(10, ge=1, le=20),
+                 db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role not in ("user", "admin"):
+        raise ValidationAppError("role_required", "需要成员身份")
+    stmt = select(User).where(User.role.in_(("user", "admin")))
+    if q.strip():
+        stmt = stmt.where(User.nickname.contains(q.strip(), autoescape=True))
+    rows = db.scalars(stmt.order_by(User.id).limit(limit)).all()
+    return {"items": [{"id": u.id, "nickname": u.nickname, "avatar_url": u.avatar_url} for u in rows]}
 
 
 @router.get("/me", response_model=CurrentUserResponse, summary="Get current user")

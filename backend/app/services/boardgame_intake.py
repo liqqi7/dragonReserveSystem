@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 
 from sqlalchemy import select
 
-from app.models.boardgame import BoardGame, PreviewItem, Inventory
+from app.models.boardgame import BoardGame, ExpansionLink, PreviewItem, Inventory
 from app.schemas.boardgame import GameCreate, InventoryCreate
 from app.services import boardgame_catalog as catalog, boardgame_preview as previews, boardgame_sources as sources
 from app.services.boardgame_labels import edition_label, language_label, mechanic_label, version_view
@@ -88,6 +88,101 @@ def versions(item):
     return found
 
 
+
+def thing_expansion_refs(item):
+    """Expansion references (bgg_id + display name) from a preview item's raw Thing XML."""
+    refs = []
+    root = item_root(item)
+    for link in root.findall('link'):
+        if link.get('type') != 'boardgameexpansion':
+            continue
+        bid = sources.positive(link.get('id'))
+        name = link.get('value')
+        if bid and 'promo' not in (name or '').casefold():  # 推广小件不进清单（用户确认直接隐藏）
+            refs.append({'bgg_id': bid, 'name': name})
+    return refs
+
+
+def link_expansions_from_thing(db, game, item, actor, only_bgg_ids=None):
+    """Create expansion links from a confirmed Thing payload when both sides exist locally."""
+    raw = (item.payload or {}).get('raw') or {}
+    for link in raw.get('children', []):
+        if link.get('tag') != 'link' or (link.get('attributes') or {}).get('type') != 'boardgameexpansion':
+            continue
+        if 'promo' in ((link.get('attributes') or {}).get('value') or '').casefold():
+            continue  # 推广小件不自动建关联
+        other_bgg = sources.positive((link.get('attributes') or {}).get('id'))
+        if not other_bgg:
+            continue
+        if only_bgg_ids is not None and other_bgg not in only_bgg_ids:
+            continue
+        other = db.scalar(select(BoardGame).where(BoardGame.bgg_id == other_bgg))
+        if not other or other.id == game.id:
+            continue
+        if game.game_type == 'expansion' and other.game_type != 'expansion':
+            base_id, exp_id = other.id, game.id
+        elif game.game_type != 'expansion' and other.game_type == 'expansion':
+            base_id, exp_id = game.id, other.id
+        else:
+            continue
+        if db.get(ExpansionLink, (base_id, exp_id)):
+            continue
+        db.add(ExpansionLink(base_game_id=base_id, expansion_game_id=exp_id, bgg_suggested=True,
+                             manual_decision='inherit', updated_by=actor.id, updated_at=now(), revision=1))
+
+def intake_expansions(db, game, item, actor, only_bgg_ids=None):
+    """Confirm selected expansions as real catalog entries plus actor's copies.
+
+    Not-in-library expansions are created from the shadow preview payload pulled
+    in the same preview batch; each new copy binds the first BGG version by
+    default (per product decision). Returns the expansion inventory boxes.
+    """
+    exp_boxes = []
+    for ref in thing_expansion_refs(item):
+        bid = ref['bgg_id']
+        if only_bgg_ids is not None and bid not in only_bgg_ids:
+            continue
+        exp_game = db.scalar(select(BoardGame).where(BoardGame.bgg_id == bid))
+        exp_item = db.scalar(select(PreviewItem).where(PreviewItem.bgg_id == bid,
+                                                       PreviewItem.source_kind == 'thing')
+                             .order_by(PreviewItem.id.desc()).limit(1))
+        if exp_game is None:
+            if exp_item is None:
+                continue  # No payload to build a catalog entry from; should not happen.
+            proj = exp_item.payload.get('projection', {})
+            exp_game = catalog.create_game(db, actor,
+                                           GameCreate(name=proj.get('name') or ref['name'],
+                                                      game_type='expansion', bgg_id=bid),
+                                           source=exp_item.payload)
+            exp_game.bgg_raw_xml, exp_game.bgg_content_hash = exp_item.raw_xml, exp_item.content_hash
+            exp_game.bgg_parser_version = str(exp_item.payload.get('parser_version', sources.PARSER_VERSION))
+            exp_game.bgg_request_params, exp_game.bgg_synced_at = {'id': bid, 'stats': 1, 'versions': 1}, exp_item.updated_at
+            db.flush()
+        already = db.scalar(select(Inventory.id).where(Inventory.game_id == exp_game.id,
+                                                       Inventory.owner_user_id == actor.id,
+                                                       Inventory.archived_at.is_(None)).limit(1))
+        if already:
+            continue
+        version = raw_version = None
+        if exp_item is not None:
+            first = next(iter(versions(exp_item).values()), None)
+            if first:
+                version, raw_version = first
+        values = {}
+        if version:
+            values.update(edition_name=version['name'],
+                          language=', '.join(version['languages'])[:64] or None)
+        boxes = catalog.create_inventory(db, actor, InventoryCreate(game_id=exp_game.id, **values))
+        for box in boxes:
+            if version:
+                box.bgg_version_id = version['bgg_version_id']
+                box.bgg_version_snapshot = dict(**deepcopy(version), bgg_id=bid,
+                                                raw=sources.xml_tree(raw_version),
+                                                source_hash=exp_item.content_hash, captured_at=safe(now()))
+        exp_boxes.extend(boxes)
+    return exp_boxes
+
+
 def candidate(db, item, actor, detail=False):
     root = item_root(item)
     p = item.payload.get('projection', {})
@@ -128,7 +223,9 @@ def candidate(db, item, actor, detail=False):
                                   'bgg_rating', 'bgg_rank', 'complexity')}
     out.update({key: out.get(key) or value for key, value in stats.items()})
     out.update(item_id=item.id, revision=item.revision, bgg_id=item.bgg_id,
-               display_name=existing.name if local_id else p.get('name'), original_name=p.get('name'),
+               display_name=(catalog.library_metadata(existing.bgg_payload if local_id else item.payload).get('chinese_name')
+                            or (existing.name if local_id else p.get('name'))),
+               original_name=p.get('name'),
                cover_url=image_url(root.findtext('image')), thumbnail_url=image_url(root.findtext('thumbnail')),
                local_game_id=local_id, local_game_name=existing.name if local_id else None,
                detail_state='ready', version_count=len(versions(item)),
@@ -216,6 +313,80 @@ def candidate(db, item, actor, detail=False):
         out['owned_versions'] = owned_versions
         out['owned_version_label'] = '、'.join(owned_version_labels)
         out['owned_by_actor'] = owned_by_actor
+    # 附属扩影子 item（worker 拉取）给非在库扩补中文名：不限本预览批次，
+    # 任何历史批次拉过的同 id 最新 ready item 都是合法来源（BGG 别名稳定，
+    # 缓存命中的预览 job 没有影子批次时尤其关键）。
+    refs = thing_expansion_refs(item)
+    wanted = {ref['bgg_id'] for ref in refs}
+    sibling_payloads = {}
+    if wanted:
+        for row in db.scalars(select(PreviewItem).where(
+                PreviewItem.source_kind == 'thing', PreviewItem.state == 'ready',
+                PreviewItem.bgg_id.in_(wanted), PreviewItem.id != item.id)
+                .order_by(PreviewItem.bgg_id, PreviewItem.id.desc())):
+            sibling_payloads.setdefault(row.bgg_id, row.payload)
+    # 当前条目为扩时：不输出扩展区数据（扩没有下级扩展，且本体/同族不应在此列出），
+    # 改为输出本体跳转信息（本地 ExpansionLink 优先，库内 base 类型兜底，词干兜底）。
+    is_expansion = bool((existing and existing.game_type == 'expansion') or root.get('type') == 'boardgameexpansion')
+    base_bgg_id = base_name = None
+    if is_expansion:
+        if local_id:
+            link_row = db.scalar(select(ExpansionLink).where(ExpansionLink.expansion_game_id == local_id))
+            base = db.get(BoardGame, link_row.base_game_id) if link_row else None
+            if base:
+                base_bgg_id = base.bgg_id
+                base_name = catalog.library_metadata(base.bgg_payload).get('chinese_name') or base.name
+        if base_bgg_id is None:
+            for link in root.findall('link'):
+                if link.get('type') != 'boardgameexpansion':
+                    continue
+                bid = sources.positive(link.get('id'))
+                if not bid or bid == item.bgg_id:
+                    continue
+                other = db.scalar(select(BoardGame).where(BoardGame.bgg_id == bid))
+                if other and other.game_type != 'expansion':
+                    base_bgg_id = bid
+                    base_name = catalog.library_metadata(other.bgg_payload).get('chinese_name') or other.name
+                    break
+        if base_name is None:
+            stem = (p.get('name') or '')
+            for sep in (':', '：'):
+                stem = stem.split(sep)[0]
+            base_name = stem.strip() or None
+
+    exp_links = []
+    for ref in (refs if not is_expansion else []):
+        local = db.scalar(select(BoardGame).where(BoardGame.bgg_id == ref['bgg_id']))
+        already = bool(local_id and local and db.get(ExpansionLink, (local_id, local.id)))
+        chinese = catalog.library_metadata(local.bgg_payload).get('chinese_name') if local else None
+        if chinese is None and not local and ref['bgg_id'] in sibling_payloads:
+            chinese = catalog.library_metadata(sibling_payloads[ref['bgg_id']]).get('chinese_name')
+        in_lib = bool(local and not local.archived_at)
+        # 卡片/抽屉展示字段：封面与年份在库取库 payload、非在库取影子 payload；
+        # 拥有者在库查库存（前 3 个昵称），非在库即「无人拥有」。
+        proj = ((local.bgg_payload if in_lib else sibling_payloads.get(ref['bgg_id'])) or {}).get('projection') or {}
+        owners_label, owner_count, owned_exp = '无人拥有', 0, False
+        if in_lib:
+            names = []
+            for row in db.scalars(select(Inventory).where(Inventory.game_id == local.id,
+                                                          Inventory.archived_at.is_(None))):
+                owner = catalog.user_summary(db, row.owner_user_id) if row.owner_user_id else None
+                names.append(owner['nickname'] if owner else row.owner_label or '俱乐部')
+                if row.owner_user_id == actor.id:
+                    owned_exp = True
+            owner_count = len(names)
+            owners_label = '、'.join(names[:3]) if names else '无人拥有'
+        exp_links.append({**ref, 'local_game_id': local.id if local else None,
+                          'in_library': in_lib, 'already_linked': already,
+                          'chinese_name': chinese,
+                          'cover_url': image_url(proj.get('cover_url')),
+                          'year_published': proj.get('year_published'),
+                          'owners_label': owners_label, 'owner_count': owner_count,
+                          'owned_by_actor': owned_exp})
+    out['expansion_links'] = exp_links
+    out['is_expansion'] = is_expansion
+    if base_bgg_id or base_name:
+        out['base_bgg_id'], out['base_name'] = base_bgg_id, base_name
     return safe(out)
 
 
@@ -289,6 +460,8 @@ def confirm(db, actor, form):
             # sessions disable autoflush, so persist source metadata first or that
             # reload will discard it. This remains inside the same transaction.
             db.flush()
+    expansion_boxes = intake_expansions(db, game, item, actor, form.expansion_bgg_ids)
+    link_expansions_from_thing(db, game, item, actor, only_bgg_ids=form.expansion_bgg_ids)
     boxes = []
     if form.inventory is not None:
         values = form.inventory.model_dump()
@@ -303,7 +476,7 @@ def confirm(db, actor, form):
                     raw=sources.xml_tree(raw_version), source_hash=item.content_hash, captured_at=safe(now()))
                 audit(db, box, actor, 'select_bgg_version', after={'bgg_version_id':box.bgg_version_id,
                       'bgg_version_snapshot':box.bgg_version_snapshot})
-    ids = [game.id, *[box.id for box in boxes]]
+    ids = [game.id, *[box.id for box in boxes], *[box.id for box in expansion_boxes]]
     if job:
         job.params = {**job.params, 'intake_hash': fingerprint,
                       'intake_result': {'game_id': game.id, 'inventory_ids': ids[1:]}}

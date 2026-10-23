@@ -31,7 +31,7 @@ def library(tmp_path, monkeypatch):
     # Load only the three new routers. Importing app.api.v1 normally also loads
     # unrelated share rendering dependencies, covered by the separate full suite.
     root = Path(__file__).resolve().parents[2] / 'app' / 'api' / 'v1'
-    for name in ('boardgames','boardgame_intake','boardgame_search'):
+    for name in ('boardgames','boardgame_intake','boardgame_search','boardgame_plays','users'):
         spec = importlib.util.spec_from_file_location(f'library_test_{name}', root / f'{name}.py')
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)

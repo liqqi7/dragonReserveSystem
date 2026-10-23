@@ -63,7 +63,7 @@ def thing_items(raw):
         names = [n.get('value') for n in node.findall('name') if n.get('value')]
         projection = dict(name=next((n.get('value') for n in node.findall('name') if n.get('type') == 'primary'), names[0] if names else '未命名桌游'),
             aliases=list(dict.fromkeys(names)), game_type='expansion' if node.get('type') == 'boardgameexpansion' else 'base',
-            description=node.findtext('description'), cover_url=node.findtext('image'), is_standalone=node.get('type') == 'boardgame',
+            description=node.findtext('description'), cover_url=node.findtext('image'), thumbnail_url=node.findtext('thumbnail'), is_standalone=node.get('type') == 'boardgame',
             categories=list(dict.fromkeys(n.get('value').strip() for n in node.findall('link')
                 if n.get('type') == 'boardgamecategory' and n.get('value', '').strip())),
             mechanics=list(dict.fromkeys(n.get('value').strip() for n in node.findall('link')
