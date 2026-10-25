@@ -21,7 +21,7 @@ def _winner_indexes(players):
 
 def _players(db, play_id):
     return db.scalars(select(PlayPlayer).where(PlayPlayer.play_id == play_id)
-                      .order_by(PlayPlayer.is_winner.desc(), PlayPlayer.score.desc().nulls_last(),
+                      .order_by(PlayPlayer.is_winner.desc(), PlayPlayer.score.is_(None), PlayPlayer.score.desc(),
                                 PlayPlayer.seat_order, PlayPlayer.id)).all()
 
 
