@@ -20,7 +20,7 @@
         <view class="recent-caption"><text>LATEST ARRIVALS · 最新录入</text><text>{{recentPosition}} / {{recentGames.length}}</text></view>
         <view class="recent-covers" bindtouchstart="coverTouchStart" bindtouchend="coverTouchEnd" bindtouchcancel="coverTouchCancel">
           <view wx:for="{{recentStack}}" wx:key="id" class="recent-cover-slot recent-slot-{{item.slot}}" data-index="{{item.recentIndex}}" bindtap="selectRecent">
-            <image wx:if="{{item.cover_url && !item.imageFailed}}" class="recent-cover" lazy-load="{{true}}" data-path="recentGames[{{item.recentIndex}}].cover_url" src="{{{{item.cover_thumb || item.cover_url}}}}" mode="aspectFill" binderror="imageError"/>
+            <image wx:if="{{item.cover_url && !item.imageFailed}}" class="recent-cover" lazy-load="{{true}}" data-path="recentGames[{{item.recentIndex}}].cover_url" src="{{item.cover_thumb || item.cover_url}}" mode="aspectFill" binderror="imageError"/>
             <view wx:else class="recent-cover recent-cover-placeholder"><text>暂无封面</text></view>
           </view>
         </view>
@@ -49,7 +49,7 @@
       <view wx:elif="{{games.length}}" class="library-grid">
         <view wx:for="{{games}}" wx:key="id" class="catalog-card" data-id="{{item.id}}" bindtap="openGame" role="button" aria-label="查看{{item.chinese_name || item.name}}详情">
           <view class="catalog-cover-wrap">
-            <image wx:if="{{item.cover_url && !item.imageFailed}}" class="catalog-cover" lazy-load="{{true}}" data-path="games[{{index}}].cover_url" src="{{{{item.cover_thumb || item.cover_url}}}}" mode="aspectFill" binderror="imageError" />
+            <image wx:if="{{item.cover_url && !item.imageFailed}}" class="catalog-cover" lazy-load="{{true}}" data-path="games[{{index}}].cover_url" src="{{item.cover_thumb || item.cover_url}}" mode="aspectFill" binderror="imageError" />
             <view wx:else class="catalog-cover catalog-cover-placeholder"><text>暂无封面</text></view>
             <view wx:if="{{item.ratingText}}" class="catalog-rating"><image class="rating-star" src="./star.svg"/><text>{{item.ratingText}}</text></view>
           </view>
