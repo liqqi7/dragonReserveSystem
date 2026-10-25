@@ -22,12 +22,13 @@ _DEFAULT_RULES = '{"competition_mode": "unscored", "score_direction": "none", "v
 def upgrade() -> None:
     bind = op.get_bind()
     existing = {c['name'] for c in sa.inspect(bind).get_columns('boardgames')}
+    # JSON columns on MySQL only accept expression defaults — wrap in parens.
     if 'default_rules' not in existing:
         op.add_column('boardgames', sa.Column('default_rules', sa.JSON(), nullable=False,
-                                              server_default=_DEFAULT_RULES))
+                                              server_default=sa.text("('" + _DEFAULT_RULES + "')")))
     if 'projection_warnings' not in existing:
         op.add_column('boardgames', sa.Column('projection_warnings', sa.JSON(), nullable=False,
-                                              server_default='[]'))
+                                              server_default=sa.text("('[]')")))
 
 
 def downgrade() -> None:
