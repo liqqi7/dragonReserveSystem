@@ -64,6 +64,16 @@ Page({
     this.loadAll();
   },
 
+  removeGame(gameId) {
+    // 详情页删除后定向移除：不重载列表，保留滚动位置
+    const id = Number(gameId);
+    this.setData({
+      games: this.data.games.filter(g => g.id !== id),
+      recentGames: this.data.recentGames.filter(g => g.id !== id),
+      recentIndex: 0,
+    });
+    this.updateRecent(0);
+  },
   onPullDownRefresh() {
     return this.loadAll().finally(() => wx.stopPullDownRefresh());
   },

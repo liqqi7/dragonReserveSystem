@@ -167,6 +167,8 @@ Page({
     try {
       await api.send(`/boardgame-inventory/${box.id}`, 'DELETE');
       if (!this.current(generation)) return;
+      const lib = getCurrentPages().find(p => p.route === 'pages/boardgame_library/boardgame_library');
+      if (lib && typeof lib.removeGame === 'function') lib.removeGame(this.data.id);
       this.setData({deleteDialogOpen:false, deleteDone:true});
     } catch (error) {
       if (this.current(generation)) {

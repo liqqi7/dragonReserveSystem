@@ -165,9 +165,9 @@ def delete_inventory(inventory_id: int, expected_revision: int | None = Query(No
     box = get(db, Inventory, inventory_id, True)
     if expected_revision is not None:
         check_revision(box, expected_revision)
-    remaining = catalog.delete_inventory(db, box, actor)
+    remaining, archived_expansions = catalog.delete_inventory(db, box, actor)
     return {'id': box.id, 'game_id': box.game_id, 'archived_at': box.archived_at,
-            'remaining_owners': remaining}
+            'remaining_owners': remaining, 'archived_expansion_ids': archived_expansions}
 
 
 @router.get('/boardgames/{game_id}/images')

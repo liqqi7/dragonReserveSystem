@@ -207,13 +207,44 @@ def delete_inventory(db, obj, actor):
                            'bgg_version_id', 'archived_at', 'revision'])
     obj.archived_at = now()
     touch(obj, actor)
+    archived_expansions = []
+    base_game = db.get(BoardGame, obj.game_id)
+    if base_game and base_game.game_type != 'expansion':
+        # 连带：删除基础游戏副本时，名下该游戏所有扩展的副本一并下架
+        from app.services.boardgame_sources import positive as _positive
+        exp_bgg_ids = set()
+        raw = (base_game.bgg_payload or {}).get('raw') or {}
+        for child in raw.get('children', []):
+            attrs = child.get('attributes') or {}
+            if child.get('tag') == 'link' and attrs.get('type') == 'boardgameexpansion':
+                bid = _positive(attrs.get('id'))
+                if bid:
+                    exp_bgg_ids.add(bid)
+        for (bid,) in db.execute(select(BoardGame.bgg_id)
+                                 .join(ExpansionLink, ExpansionLink.expansion_game_id == BoardGame.id)
+                                 .where(ExpansionLink.base_game_id == obj.game_id)):
+            if bid:
+                exp_bgg_ids.add(bid)
+        if exp_bgg_ids:
+            exp_game_ids = list(db.scalars(select(BoardGame.id).where(BoardGame.bgg_id.in_(exp_bgg_ids))))
+            for mine in db.scalars(select(Inventory).where(Inventory.game_id.in_(exp_game_ids),
+                                                           Inventory.owner_user_id == actor.id,
+                                                           Inventory.archived_at.is_(None))):
+                before_exp = columns(mine, ['id', 'game_id', 'owner_user_id', 'status',
+                                            'archived_at', 'revision'])
+                mine.archived_at = now()
+                touch(mine, actor)
+                audit(db, mine, actor, 'archive', before_exp, 'cascade_delete_base',
+                      columns(mine, ['id', 'game_id', 'owner_user_id', 'status',
+                                     'archived_at', 'revision']))
+                archived_expansions.append(mine.id)
     remaining_owners = db.scalar(select(func.count(func.distinct(Inventory.owner_user_id))).where(
         Inventory.game_id == obj.game_id, Inventory.archived_at.is_(None),
         Inventory.status != 'retired', Inventory.id != obj.id))
     audit(db, obj, actor, 'archive', before, None,
           columns(obj, ['id', 'game_id', 'owner_user_id', 'status', 'archived_at', 'revision']))
     db.flush()
-    return remaining_owners or 0
+    return remaining_owners or 0, archived_expansions
 
 
 def inventory_private(obj, actor):
