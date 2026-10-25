@@ -56,3 +56,10 @@ page{background:#111827}.detail-page{height:100vh;display:flex;flex-direction:co
 .exp-choice{flex:none;width:40rpx;height:40rpx;border-radius:10rpx;border:3rpx solid #D1D5DB;display:flex;align-items:center;justify-content:center;color:#fff;font-size:26rpx;background:#fff;box-sizing:border-box}
 .exp-choice.on{background:#FF9800;border-color:#FF9800}
 .exp-sheet-item.is-off{opacity:.55}
+
+/* 无封面扩占位：本体封面 + 深绿遮罩 + 扩展文字（与录入页一致） */
+.exp-sheet-cover.cover-host{position:relative;overflow:hidden}
+.cover-img{width:100%;height:100%;display:block}
+.cover-dim{position:absolute;left:0;top:0;width:100%;height:100%;background:rgba(20,48,42,0.72);display:flex;align-items:center;justify-content:center}
+.cover-dim-text{color:#FFFFFF;font-size:24rpx;font-weight:700;letter-spacing:2rpx}
+.exp-sheet-cover .cover-dim-text{font-size:18rpx}

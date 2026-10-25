@@ -6,7 +6,10 @@
       <view wx:for="{{game.expansions}}" wx:key="id" class="detail-exp-item">
         <view class="detail-exp-cover">
           <image wx:if="{{item.cover_url}}" src="{{item.cover_url}}" mode="aspectFill"/>
-          <view wx:else class="detail-exp-cover placeholder"><text>暂无封面</text></view>
+          <view wx:else class="detail-exp-cover cover-host">
+          <image wx:if="{{game.cover_url}}" class="cover-img" src="{{game.cover_url}}" mode="aspectFill"/>
+          <view class="cover-dim"><text class="cover-dim-text">🧩 扩展</text></view>
+        </view>
           <view class="detail-exp-shade"></view>
           <text class="detail-exp-name">{{item.chinese_name || item.name}}</text>
           <view wx:if="{{item.owner_count}}" class="detail-exp-own"><text>✓</text></view>
@@ -32,7 +35,10 @@
   <view class="exp-sheet-list">
     <view wx:for="{{expansionOptions}}" wx:key="id" class="exp-sheet-item {{item.checked ? 'selected' : ''}}" data-id="{{item.id}}" bindtap="toggleExpansion" role="button">
       <image wx:if="{{item.cover_url}}" class="exp-sheet-cover" src="{{item.cover_url}}" mode="aspectFill"/>
-      <view wx:else class="exp-sheet-cover placeholder"><text>暂无封面</text></view>
+      <view wx:else class="exp-sheet-cover cover-host">
+        <image wx:if="{{game.cover_url}}" class="cover-img" src="{{game.cover_url}}" mode="aspectFill"/>
+        <view class="cover-dim"><text class="cover-dim-text">🧩 扩展</text></view>
+      </view>
       <view class="exp-sheet-copy">
         <view class="exp-sheet-name"><text>{{item.chinese_name || item.name}}</text></view>
         <view class="exp-sheet-owners {{item.owner_count ? 'has' : 'is-none'}}"><text wx:if="{{item.owner_count}}" class="exp-sheet-owners-icon">✓</text><text>{{item.owners_label}}</text></view>

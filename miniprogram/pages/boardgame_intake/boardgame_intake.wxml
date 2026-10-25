@@ -102,7 +102,7 @@
             <view class="intake-exp-card-cover">
               <image wx:if="{{item.cover_url}}" class="cover-img" src="{{item.cover_url}}" mode="aspectFill"/>
               <block wx:else>
-                <image class="cover-img" src="{{candidate.cover_url}}" mode="aspectFill"/>
+                <image wx:if="{{candidate.cover_url}}" class="cover-img" src="{{candidate.cover_url}}" mode="aspectFill"/>
                 <view class="cover-dim"><text class="cover-dim-text">🧩 扩展</text></view>
               </block>
               <view class="cover-name-band"><text class="cover-name-text">{{item.chinese_name || item.name}}</text></view>
@@ -156,7 +156,7 @@
   <view class="exp-sheet-list">
     <view wx:for="{{expansionOptions}}" wx:key="bgg_id" class="exp-sheet-item {{item.checked ? 'selected' : ''}} {{candidate.owned_by_actor ? 'is-disabled' : ''}}" data-bgg="{{item.bgg_id}}" bindtap="toggleExpansion" role="button" aria-disabled="{{candidate.owned_by_actor}}">
       <image wx:if="{{item.cover_url}}" class="exp-sheet-cover" style="width:120rpx;height:150rpx;" src="{{item.cover_url}}" mode="aspectFill"/>
-      <view wx:else class="exp-sheet-cover cover-host"><image class="cover-img" src="{{candidate.cover_url}}" mode="aspectFill"/><view class="cover-dim"><text class="cover-dim-text">🧩 扩展</text></view></view>
+      <view wx:else class="exp-sheet-cover cover-host"><image wx:if="{{candidate.cover_url}}" class="cover-img" src="{{candidate.cover_url}}" mode="aspectFill"/><view class="cover-dim"><text class="cover-dim-text">🧩 扩展</text></view></view>
       <view class="exp-sheet-copy">
         <view class="exp-sheet-name"><text>{{item.chinese_name || item.name}}</text></view>
         <view class="exp-sheet-owners {{item.owner_count ? 'has' : 'is-none'}}"><text wx:if="{{item.owner_count}}" class="exp-sheet-owners-icon">✓</text><text>{{item.owners_label}}</text></view>
