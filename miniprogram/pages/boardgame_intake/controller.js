@@ -17,8 +17,8 @@ const successMeta = game => {
 module.exports = {
   data: {stage:'search', query:'', searchFocus:false, searched:false, results:[], total:0, offset:0, nextOffset:null,
     searching:false, error:'', preview:null, preparing:false, previewError:'', candidate:null,
-    versions:[], versionQuery:'', versionTotal:0, versionNext:null, versionLoading:false,
-    versionError:'', descriptionExpanded:false, selection:null, selectedVersion:null, includeInventory:true, source:'bgg',
+    versions:[], versionTotal:0, versionNext:null, versionLoading:false,
+    versionError:'', descriptionExpanded:false, selection:null, selectedVersion:null,
     form:blankForm(), successMeta:'',
     saving:false, submitUnknown:false, recoveryName:'', formError:'', result:null},
 
@@ -132,15 +132,10 @@ module.exports = {
     const candidate = this.data.results.find(i => i.bgg_id === Number(e.currentTarget.dataset.id));
     if (!candidate || candidate.detail_state !== 'ready' || !this.data.preview || this.data.preview.state !== 'ready') return;
     this.dirty();
-    this.setData({stage:'version', searchFocus:false, source:'bgg', candidate, versions:[], versionQuery:'', selection:null,
+    this.setData({stage:'version', searchFocus:false, candidate, versions:[], selection:null,
       selectedVersion:null, versionError:'', descriptionExpanded:false,
       form:{...blankForm(), name:candidate.local_game_name || candidate.name}});
     await this.fetchVersions(false);
-  },
-  versionInput(e) {
-    if (this.locked()) return;
-    this._versionGeneration++;
-    this.setData({versionQuery:e.detail.value, versions:[], versionNext:null, versionLoading:false, versionError:''});
   },
   searchVersions() { return this.fetchVersions(false); },
   moreVersions() { if (this.data.versionNext !== null) return this.fetchVersions(true); },
@@ -151,7 +146,7 @@ module.exports = {
     this.setData({versionLoading:true, versionError:''});
     try {
       const result = await api.get(`/boardgame-intake-previews/${preview.id}/items/${candidate.item_id}`,
-        {q:this.data.versionQuery.trim(), offset:more ? this.data.versionNext : 0, limit:20});
+        {offset:more ? this.data.versionNext : 0, limit:20});
       if (!this.current(generation) || vg !== this._versionGeneration) return;
       // Keep statistics from the preview item when an older/partial detail
       // response does not include them. The detail request must not erase
@@ -218,7 +213,7 @@ module.exports = {
   },
   async save() {
     if (this.data.saving || !this.current(this._generation)) return;
-    if (this.data.source === 'bgg' && this.data.candidate && this.data.candidate.owned_by_actor) return;
+    if (this.data.candidate && this.data.candidate.owned_by_actor) return;
     try { if (!this._savePayload) this._savePayload = this.payload(); }
     catch (error) { this.setData({formError:api.message(error)}); return; }
     this._saveKey = this._saveKey || api.uuid();
@@ -248,11 +243,10 @@ module.exports = {
       if (saved && saved.key === this._saveKey) wx.removeStorageSync(this._pendingStorage);
     } catch (error) { /* Keeping a successful request is safe: it will replay on reopening. */ }
   },
-  viewResult() { if (this.data.result) wx.redirectTo({url:`/pages/boardgame_detail/boardgame_detail?id=${this.data.result.game_id}`}); },
   newEntry() {
     if (this.locked()) return;
     this._generation++; clearTimeout(this._poll); this.dirty(); this._prepareKey = null;
     this.setData({stage:'search',searchFocus:true,query:'',searched:false,results:[],preview:null,result:null,error:'',previewError:'',
-      candidate:null,selection:null,selectedVersion:null,includeInventory:true,searching:false,preparing:false});
+      candidate:null,selection:null,selectedVersion:null,searching:false,preparing:false});
   }
 };

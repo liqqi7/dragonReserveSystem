@@ -1589,6 +1589,29 @@ test("feed loading keeps the detail usable and preserves a swipe made before the
   instance.onUnload();
 });
 
+test("opening the third video keeps it active while feed reindexing never animates from the first slide", async () => {
+  let respond;
+  const detail = publishedMemory(5, [8], {media: [{id: 8, kind: "video", duration: 5}]});
+  const instance = page("memory_detail", {detail: async () => detail,
+    list: () => new Promise(resolve => {respond = resolve;})}).instance;
+  instance.onLoad({id: "5", media_id: "8"});
+  const loading = instance.load(); await tick();
+  assert.equal(instance.data.index, 0);
+  assert.equal(instance.data.current.id, 8);
+  const generation = instance.data.videoGeneration;
+  respond({items: [publishedMemory(7, [10]), publishedMemory(6, [9]), detail], cursor: null});
+  await loading;
+  assert.deepEqual(Array.from(instance.data.viewerMedia, item => item.id), [10, 9, 8]);
+  assert.equal(instance.data.index, 2);
+  assert.equal(instance.data.current.id, 8);
+  assert.equal(instance.data.videoGeneration, generation, "reindexing must not restart the clicked video");
+  const swiper = source("pages/memory_detail/memory_detail.wxml").match(/<swiper\s[^>]*>/)[0];
+  assert.match(swiper, /scroll-with-animation="\{\{false\}\}"/);
+  instance.change({detail: {current: 1, source: "touch"}});
+  assert.equal(instance.data.current.id, 9, "manual swiping must still select the adjacent item");
+  instance.onUnload();
+});
+
 test("public queue reindex events do not pause or restart the visible video", async () => {
   let pauses = 0;
   const detail = publishedMemory(5, [8], {media: [{id: 8, kind: "video", duration: 5}]});
@@ -3851,10 +3874,11 @@ test("playback controls auto-hide except while reviewing; leaving cancels all ti
   const hide = timers.get(instance._controlsTimer);
   hide();
   assert.equal(instance.data.controlsVisible, false);
-  instance.toggleSelection();
+  instance.data.memory.status = "pending";
+  instance.beginReview();
   assert.equal(instance.data.controlsVisible, true);
   assert.equal(timers.size, 0);
-  instance.toggleSelection();
+  instance.closeSelection();
   instance.videoTap();
   instance.onHide();
   assert.equal(timers.size, 0);

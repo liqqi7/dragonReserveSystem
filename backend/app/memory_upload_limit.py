@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from starlette.formparsers import MultiPartException
 
 from app.services.memory_media import VIDEO_MAX_BYTES
+from app.utils.media import MAX_AVATAR_BYTES
 
 
 class MemoryUploadLimitMiddleware:
@@ -12,11 +13,18 @@ class MemoryUploadLimitMiddleware:
 
     async def __call__(self, scope, receive, send):
         path = scope.get("path", "")
-        if scope["type"] != "http" or "/memory-drafts/" not in path or "/media/" not in path:
+        if scope["type"] != "http":
             return await self.app(scope, receive, send)
-        limit = VIDEO_MAX_BYTES + 128 * 1024
+        if path.rstrip("/").endswith("/users/me/avatar"):
+            limit = MAX_AVATAR_BYTES + 128 * 1024
+            error = {"code": "VALIDATION_ERROR", "message": "头像上传请求不能超过 2MB 加表单开销"}
+        elif "/memory-drafts/" in path and "/media/" in path:
+            limit = VIDEO_MAX_BYTES + 128 * 1024
+            error = {"code": "MEMORY_MEDIA_INVALID", "message": "图片和视频每个文件最多 20MB，上传请求不能过大"}
+        else:
+            return await self.app(scope, receive, send)
         headers = dict(scope.get("headers", []))
-        response = JSONResponse({"code": "MEMORY_MEDIA_INVALID", "message": "图片和视频每个文件最多 20MB，上传请求不能过大"}, status_code=413)
+        response = JSONResponse(error, status_code=413)
         try:
             if int(headers.get(b"content-length", b"0")) > limit:
                 return await response(scope, receive, send)

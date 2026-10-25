@@ -42,7 +42,7 @@ function setup() {
       throw new Error(name);
     }
   });
-  return { app, storage, users, logins, prompts, auth: authModule.exports };
+  return { app, storage, users, logins, prompts, wx, userService, logger, auth: authModule.exports };
 }
 
 const tick = () => new Promise(resolve => setImmediate(resolve));
@@ -199,4 +199,68 @@ test('validation waiting on a failed login resolves false and the next login rem
   h.users[0].resolve(nextUser);
   await nextLogin;
   assert.equal(h.app.globalData.userId, '8');
+});
+
+
+function profilePage(h, methods = {}) {
+  let definition;
+  Object.assign(h.wx, {showLoading() {}, hideLoading() {}, showToast() {}});
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../pages/profile/profile.js'), 'utf8'), {
+    Page: value => {definition = value;}, getApp: () => h.app, wx: h.wx,
+    require(name) {
+      if (name.endsWith('/user')) return {...h.userService, ...methods};
+      if (name.endsWith('/auth')) return h.auth;
+      if (name.endsWith('/logger')) return h.logger;
+      if (name.endsWith('/profileUtils')) return require('../utils/profileUtils');
+      if (name.endsWith('/profilePresentation')) return {getProfileSubtitle: () => ''};
+      return {};
+    }
+  });
+  const page = {...definition, data: structuredClone(definition.data),
+    setData(patch) {Object.assign(this.data, patch);}};
+  page.data.hasUser = true;
+  page.data.editNickname = 'Updated';
+  page.data.permissionInput = 'test-invite';
+  return page;
+}
+
+test('profile login reuses the validated login user instead of issuing another profile request', async () => {
+  const h = setup(), p = profilePage(h);
+  const login = p.startRegister(); await tick();
+  h.logins[0].resolve({access_token:'first-token'}); await tick();
+  h.users[0].resolve(firstUser); await login;
+  assert.equal(h.users.length, 1);
+  assert.equal(p.data.hasUser, true);
+  assert.equal(p.data.user.nickname, firstUser.nickname);
+});
+
+for (const method of ['saveProfile', 'submitPermission', 'confirmDeletePermission']) {
+  for (const boundary of ['logout', 'switch account', 'unload']) {
+    test(`late profile ${method} cannot commit after ${boundary}`, async () => {
+      const h = setup(), response = deferred();
+      h.app.applyCurrentUser(firstUser, 'first-token');
+      const p = profilePage(h, {updateMe: () => response.promise,
+        updateMyRole: () => response.promise, clearMyRole: () => response.promise});
+      const pending = p[method](); await tick();
+      if (boundary === 'logout') p.confirmLogout();
+      else if (boundary === 'switch account') h.app.applyCurrentUser(nextUser, 'next-token');
+      else p.onUnload();
+      const before = JSON.stringify(h.app.globalData);
+      response.resolve({...firstUser, nickname:'Late response'}); await pending;
+      assert.equal(JSON.stringify(h.app.globalData), before);
+      assert.notEqual(h.storage.get('userNickname'), 'Late response');
+      if (boundary === 'logout') assert.equal(p.data.hasUser, false);
+    });
+  }
+}
+
+
+test('same-account validation does not discard a successful pending profile change', async () => {
+  const h = setup(), response = deferred();
+  h.app.applyCurrentUser(firstUser, 'first-token');
+  const p = profilePage(h, {updateMe: () => response.promise});
+  const pending = p.saveProfile(); await tick();
+  h.app.applyCurrentUser(firstUser, 'first-token');
+  response.resolve({...firstUser, nickname:'Saved nickname'}); await pending;
+  assert.equal(h.app.globalData.userProfile.nickname, 'Saved nickname');
 });

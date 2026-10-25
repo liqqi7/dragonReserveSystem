@@ -257,3 +257,27 @@ test("removing activity coordinates invalidates an older in-flight distance resp
   assert.equal(locations.length, 1);
   assert.equal(page.data.locationDistanceText, "");
 });
+
+
+test("fixed navigation changes arrow color at the measured white panel boundary and restores on return", () => {
+  const {page} = createPage();
+  page.data.activity = {_id: '73'};
+  let complete;
+  page.createSelectorQuery = () => ({
+    select(selector) {assert.equal(selector, '.detail-panel'); return this;},
+    boundingClientRect() {return this;}, exec(callback) {complete = callback;}
+  });
+  page.measureNavigationBoundary();
+  complete([{top:300}]);
+  const boundary = 300 - page.data.statusBarHeight - 44 * page._windowWidthPx / 750;
+  page.onDetailScroll({detail:{scrollTop:boundary - 1}});
+  assert.equal(page.data.darkNavigation, false);
+  page.onDetailScroll({detail:{scrollTop:boundary + 1}});
+  assert.equal(page.data.darkNavigation, true);
+  page.onDetailScroll({detail:{scrollTop:0}});
+  assert.equal(page.data.darkNavigation, false);
+  page.measureNavigationBoundary();
+  page.onUnload();
+  complete([{top:0}]);
+  assert.equal(page.data.darkNavigation, false, "detached layout callbacks must not update the arrow");
+});

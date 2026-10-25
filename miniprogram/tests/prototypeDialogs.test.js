@@ -214,7 +214,7 @@ test("logout modal matches P37gp and cancels without clearing account", () => {
     Page: (value) => { definition = value; },
     getApp: () => app,
     require: (id) => id.endsWith("/config") ? { getApiBaseUrl: () => "" } : {},
-    wx: { showToast: (value) => toasts.push(value) }
+    wx: { hideLoading() {}, showToast: (value) => toasts.push(value) }
   });
   let options;
   const page = {

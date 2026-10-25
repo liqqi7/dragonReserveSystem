@@ -3,10 +3,9 @@ import re
 from decimal import Decimal
 from urllib.parse import urlparse
 from sqlalchemy import func, select
-from app.models import User
 from app.models.boardgame import BoardGame, Inventory, PreviewItem
 from app.schemas.boardgame import GameFields
-from app.services.boardgame_common import (audit, check_revision, columns, fail, get, member, now, safe, stamp, touch, user_summary)
+from app.services.boardgame_common import (audit, check_revision, columns, fail, get, member, stamp, touch, user_summary)
 from app.services.boardgame_labels import mechanic_label, version_view, edition_label, language_label
 
 GAME_PUBLIC = ['id', 'bgg_id', 'name', 'original_name', 'game_type', 'is_standalone', 'cover_url', 'min_players', 'max_players', 'min_playtime_minutes', 'max_playtime_minutes', 'min_age', 'year_published', 'complexity', 'sort_order', 'archived_at', 'revision']

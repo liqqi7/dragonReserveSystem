@@ -159,3 +159,24 @@ test("payload includes the selected cover and no activity type", () => {
   const unlimitedPayload = buildActivityPayload({ ...form, limitEnabled: false }, { mode: "create" });
   assert.equal(unlimitedPayload.max_participants, null);
 });
+
+
+test("subproject names accept 15 characters and reject 16 in create and edit", () => {
+  const now = new Date(2026, 7, 16, 10, 0, 0);
+  const base = {
+    ...buildCreateForm(now), name: "活动", remark: "活动说明", activityCoverId: "lam-001",
+    subItemsEnabled: true
+  };
+  for (const mode of ["create", "edit"]) {
+    for (const name of ["项".repeat(15), "桌游Game123活动测试甲乙"]) {
+      assert.equal(name.length, 15);
+      const form = { ...base, subItems: [{ name, max_participants: 4 }] };
+      assert.equal(validateActivityForm(form, { mode, now }).ok, true);
+      assert.equal(buildActivityPayload(form, { mode }).sub_items[0].name, name);
+    }
+    for (const name of ["项".repeat(16), "", "   "]) {
+      assert.deepEqual(validateActivityForm({ ...base, subItems: [{ name, max_participants: 4 }] }, { mode, now }),
+        { ok: false, message: "请填写1–15字的子项目名称" });
+    }
+  }
+});

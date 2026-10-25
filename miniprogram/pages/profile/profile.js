@@ -33,6 +33,13 @@ function normalizeAvatarUrl(url) {
   return value;
 }
 
+function captureProfileSession(page) {
+  const {accessToken, userId} = app.globalData;
+  const session = page._profileSession || 0;
+  return () => !page._unloaded && accessToken === app.globalData.accessToken &&
+    userId === app.globalData.userId && session === (page._profileSession || 0);
+}
+
 function syncProfileTabBarModalMask(page, visible) {
   const applyMask = () => {
     const tabBar = page && typeof page.getTabBar === "function" ? page.getTabBar() : null;
@@ -70,6 +77,7 @@ Page({
   },
 
   onLoad() {
+    this._unloaded = false;
     let statusBarHeight = 0;
     try {
       const info = typeof wx.getWindowInfo === "function" ? wx.getWindowInfo() : wx.getSystemInfoSync();
@@ -87,27 +95,11 @@ Page({
       selected: 3,
       hidden: false
     });
-    this.syncGuestState();
     this.refreshMemoryReviewState();
     if (this.data.showPermissionModal || this.data.showDeletePermissionModal) {
       syncProfileTabBarModalMask(this, true);
     }
-    const hasLocalAuth = !!wx.getStorageSync("accessToken");
-    const userId = app.globalData.userId;
-    const profile = app.globalData.userProfile;
-    if (hasLocalAuth && userId && profile) {
-      this.setData({
-        hasUser: true,
-        isGuest: !app.globalData.isAuthenticated,
-        user: {
-          nickname: profile.nickname || "",
-          avatarUrl: normalizeAvatarUrl(profile.avatarUrl || ""),
-          subtitle: getProfileSubtitle(profile.role || app.globalData.userRole, profile.createdAt)
-        }
-      });
-    } else {
-      this.setData({ hasUser: false });
-    }
+    this.syncProfileState();
 
     const pendingCreateAccessAction = String(app.globalData.pendingCreateAccessAction || "");
     if (pendingCreateAccessAction) {
@@ -122,18 +114,16 @@ Page({
     }
 
     app.ensureUserReady(() => {
-      const currentUser = app.globalData.userProfile || {};
-      this.setData({
-        hasUser: true,
-        isGuest: !app.globalData.isAuthenticated,
-        user: {
-          nickname: currentUser.nickname || "",
-          avatarUrl: normalizeAvatarUrl(currentUser.avatarUrl || ""),
-          subtitle: getProfileSubtitle(currentUser.role || app.globalData.userRole, currentUser.createdAt)
-        }
-      });
+      if (this._unloaded) return;
+      this.syncProfileState();
       this.refreshMemoryReviewState();
     });
+  },
+
+  onUnload() {
+    this._unloaded = true;
+    this._memoryRequest = (this._memoryRequest || 0) + 1;
+    syncProfileTabBarModalMask(this, false);
   },
 
   onHide() {
@@ -163,52 +153,28 @@ Page({
     }
   },
 
-  syncGuestState() {
-    const hasWeChatAuth = !!wx.getStorageSync("hasWeChatAuth");
-    const isGuest = !hasWeChatAuth || !app.globalData.isAuthenticated;
-    this.setData({ isGuest });
-  },
-
-  loadUserProfile() {
-    if (!app.globalData.accessToken) {
-      this.setData({ hasUser: false, isGuest: !app.globalData.isAuthenticated });
-      return Promise.resolve(null);
-    }
-
-    return userService.getMe()
-      .then((user) => {
-        app.applyCurrentUser(user);
-        this.refreshMemoryReviewState();
-        this.setData({
-          hasUser: true,
-          isGuest: !app.globalData.isAuthenticated,
-          user: {
-            nickname: user.nickname || "",
-            avatarUrl: normalizeAvatarUrl(user.avatar_url || ""),
-            subtitle: getProfileSubtitle(user.role || app.globalData.userRole, user.created_at)
-          }
-        });
-        return user;
-      })
-      .catch((err) => {
-        logPageError("load_profile", err);
-        this.setData({
-          hasUser: false,
-          isGuest: !app.globalData.isAuthenticated
-        });
-        throw err;
-      });
+  syncProfileState() {
+    const profile = app.globalData.userProfile;
+    const hasUser = !!(app.globalData.accessToken && app.globalData.userId && profile);
+    this.setData({hasUser, isGuest: !app.globalData.isAuthenticated,
+      user: hasUser ? {
+        nickname: profile.nickname || "",
+        avatarUrl: normalizeAvatarUrl(profile.avatarUrl || ""),
+        subtitle: getProfileSubtitle(profile.role || app.globalData.userRole, profile.createdAt)
+      } : {nickname: "", avatarUrl: "", subtitle: ""}
+    });
   },
 
   startRegister(options = {}) {
     const openEditAfterLogin = !!options.openEditAfterLogin;
     const openPermissionAfterLogin = !!options.openPermissionAfterLogin;
     wx.showLoading({ title: "登录中...", mask: true });
-    authService.loginWithWechat(app)
-      .then(() => {
-        return this.loadUserProfile();
-      })
-      .then(() => {
+    return authService.loginWithWechat(app)
+      .then(({authRes, user}) => {
+        if (this._unloaded || app.globalData.accessToken !== authRes.access_token ||
+            String(app.globalData.userId) !== String(user.id)) return;
+        this.syncProfileState();
+        this.refreshMemoryReviewState();
         if (openEditAfterLogin) {
           this.openEditModal();
         } else if (openPermissionAfterLogin) {
@@ -277,9 +243,11 @@ Page({
       wx.showToast({ title: "请输入邀请码", icon: "none" });
       return;
     }
+    const isCurrent = captureProfileSession(this);
     this.setData({ permissionSubmitting: true });
-    userService.updateMyRole(input)
+    return userService.updateMyRole(input)
       .then((user) => {
+        if (!isCurrent()) return;
         app.applyCurrentUser(user);
         this.setData({
           showPermissionModal: false,
@@ -295,6 +263,7 @@ Page({
         wx.showToast({ title: "已获取权限", icon: "success" });
       })
       .catch((err) => {
+        if (!isCurrent()) return;
         this.setData({ permissionSubmitting: false });
         wx.showToast({ title: err.message || "邀请码错误", icon: "none" });
       });
@@ -318,9 +287,11 @@ Page({
 
   confirmDeletePermission() {
     if (this.data.permissionRemoving) return;
+    const isCurrent = captureProfileSession(this);
     this.setData({ permissionRemoving: true });
-    userService.clearMyRole()
+    return userService.clearMyRole()
       .then((user) => {
+        if (!isCurrent()) return;
         app.applyCurrentUser(user);
         this.setData({
           isGuest: true,
@@ -335,6 +306,7 @@ Page({
         wx.showToast({ title: "已恢复为游客", icon: "success" });
       })
       .catch((err) => {
+        if (!isCurrent()) return;
         this.setData({ permissionRemoving: false });
         wx.showToast({ title: err.message || "恢复失败", icon: "none" });
       });
@@ -358,8 +330,15 @@ Page({
 
   confirmLogout() {
     if (!this.data.hasUser) return;
+    this._profileSession = (this._profileSession || 0) + 1;
     app.logout();
+    wx.hideLoading();
+    this._memoryRequest = (this._memoryRequest || 0) + 1;
+    syncProfileTabBarModalMask(this, false);
     this.setData({
+      isMemoryAdmin: false, memoryPendingCount: 0,
+      showEditModal: false, showPermissionModal: false, showDeletePermissionModal: false,
+      permissionSubmitting: false, permissionRemoving: false,
       hasUser: false,
       isGuest: true,
       user: { nickname: "", avatarUrl: "", subtitle: "" }
@@ -423,18 +402,20 @@ Page({
       return;
     }
 
+    const isCurrent = captureProfileSession(this);
     wx.showLoading({ title: "保存中...", mask: true });
 
     const avatarTask = avatarUrl && isTemporaryAvatarUrl(avatarUrl)
       ? userService.uploadAvatar(avatarUrl).then((res) => res.avatar_url)
       : Promise.resolve(avatarUrl || currentAvatarUrl);
 
-    avatarTask
-      .then((resolvedAvatarUrl) => userService.updateMe({
-        nickname,
-        avatar_url: resolvedAvatarUrl || ""
-      }))
+    return avatarTask
+      .then((resolvedAvatarUrl) => {
+        if (!isCurrent()) return null;
+        return userService.updateMe({nickname, avatar_url: resolvedAvatarUrl || ""});
+      })
       .then((user) => {
+        if (!user || !isCurrent()) return;
         app.applyCurrentUser(user);
         this.setData({
           hasUser: true,
@@ -450,6 +431,7 @@ Page({
         wx.showToast({ title: "保存成功", icon: "success" });
       })
       .catch((err) => {
+        if (!isCurrent()) return;
         logPageError("save_profile", err);
         wx.hideLoading();
         wx.showToast({ title: err.message || "保存失败", icon: "none" });

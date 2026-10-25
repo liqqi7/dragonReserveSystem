@@ -77,3 +77,38 @@ def test_legacy_invite_codes_are_rejected(client, user_headers, legacy_code) -> 
 
     assert response.status_code == 422
     assert response.json()["message"] == "Invite code is invalid"
+
+
+@pytest.mark.parametrize("size,expected", [(2 * 1024 * 1024, 200), (2 * 1024 * 1024 + 1, 422)])
+def test_avatar_file_size_boundary(client, user_headers, size, expected):
+    response = client.post("/api/v1/users/me/avatar", headers=user_headers,
+                           files={"file": ("avatar.png", b"x" * size, "image/png")})
+    assert response.status_code == expected
+
+
+def test_avatar_rejects_large_request_before_multipart_parsing(client):
+    response = client.post("/api/v1/users/me/avatar", content=b"x",
+                           headers={"Content-Type": "multipart/form-data; boundary=test",
+                                    "Content-Length": str(2 * 1024 * 1024 + 128 * 1024 + 1)})
+    assert response.status_code == 413
+
+
+def test_avatar_read_is_bounded_and_upload_is_closed():
+    import asyncio
+    from app.api.v1.users import upload_my_avatar
+    from app.core.exceptions import ValidationAppError
+    from app.utils.media import MAX_AVATAR_BYTES
+
+    class Upload:
+        content_type = "image/png"
+        closed = False
+        async def read(self, size=-1):
+            assert size == MAX_AVATAR_BYTES + 1
+            return b"x" * size
+        async def close(self):
+            self.closed = True
+
+    upload = Upload()
+    with pytest.raises(ValidationAppError):
+        asyncio.run(upload_my_avatar(None, upload, None))
+    assert upload.closed

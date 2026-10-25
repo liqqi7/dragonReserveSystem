@@ -787,3 +787,15 @@ test("home cache recomputes both participation flags by user id only", () => {
   assert.equal(legacy.hasSignedUp, false);
   assert.equal(legacy.hasCheckedIn, false);
 });
+
+
+test("activity detail back navigation stays outside scroll content without adding a backdrop", () => {
+  const scrollContent = wxml.match(/<scroll-view\b[\s\S]*?<\/scroll-view>/)[0];
+  assert.doesNotMatch(scrollContent, /bindtap="onTapBack"/);
+  const fixedNavbar = wxml.match(/<view class="custom-navbar custom-navbar--fixed"[\s\S]*?<\/view>\s*<\/view>\s*<\/view>/)[0];
+  assert.match(fixedNavbar, /padding-top: \{\{statusBarHeight\}\}px/);
+  assert.match(fixedNavbar, /bindtap="onTapBack"/);
+  assert.match(fixedNavbar, /aria-label="返回"/);
+  assert.match(wxss, /\.custom-navbar--fixed\s*\{[^}]*position:\s*fixed;[^}]*right:\s*auto;[^}]*width:\s*120rpx;/s);
+  assert.doesNotMatch(wxss, /\.nav-back--floating|\.nav-back-floating-hover/);
+});

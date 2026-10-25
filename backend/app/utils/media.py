@@ -5,5 +5,8 @@ from pathlib import Path
 from app.core.config import get_settings
 
 
+MAX_AVATAR_BYTES = 2 * 1024 * 1024
+
+
 def resolve_media_root() -> Path:
     return Path(get_settings().media_root).resolve()

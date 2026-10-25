@@ -57,7 +57,6 @@ Page({
     } catch (_) { if (this.current(generation)) this.setData({detailImages:[],detailGalleryPosition:'',galleryError:'实体预览暂未加载成功'}); }
     finally { if (this.current(generation)) this.setData({galleryLoading:false}); }
   },
-  retryGallery() { this.loadGallery(); },
   async loadOwners(more = false, generation = this._generation) {
     if (more && (!this.data.inventoryCursor || this.data.ownersLoading)) return;
     this.setData({ownersLoading:true,ownerError:''});

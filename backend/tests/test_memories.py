@@ -950,7 +950,9 @@ def test_processed_submission_reaches_admin_without_wechat_credentials_or_networ
     assert client.get(f"/api/v1/memories/{memory.id}").status_code == 404
 
 
-def test_chunked_upload_limit_closes_spooled_files(monkeypatch):
+@pytest.mark.parametrize("path,limit", [("/memory-drafts/1/media/0", memory_media.VIDEO_MAX_BYTES),
+                                        ("/api/v1/users/me/avatar", 2 * 1024 * 1024)])
+def test_chunked_upload_limit_closes_spooled_files(monkeypatch, path, limit):
     from fastapi import FastAPI, UploadFile, File
     from starlette import formparsers
     from app.memory_upload_limit import MemoryUploadLimitMiddleware
@@ -962,7 +964,7 @@ def test_chunked_upload_limit_closes_spooled_files(monkeypatch):
         return result
     monkeypatch.setattr(formparsers, "SpooledTemporaryFile", tracked)
     app = FastAPI()
-    @app.post("/memory-drafts/1/media/0")
+    @app.post(path)
     async def upload(file: UploadFile = File(...)):
         return {"size": file.size}
     middleware = MemoryUploadLimitMiddleware(app)
@@ -970,14 +972,14 @@ def test_chunked_upload_limit_closes_spooled_files(monkeypatch):
         chunks = iter([
             b'--test\r\nContent-Disposition: form-data; name="file"; filename="a.mp4"\r\n\r\n',
             b"x" * (1024 * 1024),
-            b"x" * memory_media.VIDEO_MAX_BYTES,
+            b"x" * limit,
         ])
         async def receive():
             return {"type": "http.request", "body": next(chunks), "more_body": True}
         messages = []
         async def send(message):
             messages.append(message)
-        await middleware({"type": "http", "method": "POST", "path": "/memory-drafts/1/media/0",
+        await middleware({"type": "http", "method": "POST", "path": path,
             "query_string": b"", "headers": [(b"content-type", b"multipart/form-data; boundary=test")],
             "http_version": "1.1", "scheme": "http", "server": ("test", 80), "client": ("test", 123)}, receive, send)
         assert messages[0]["status"] == 413

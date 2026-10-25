@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 MAX_ACTIVITY_NAME_LENGTH = 10
 MAX_ACTIVITY_REMARK_LENGTH = 200
+MAX_SUBITEM_NAME_LENGTH = 15
 
 
 def _validate_required_text(value: object, field_name: str) -> object:
@@ -45,7 +46,7 @@ class ActivitySubItemInput(BaseModel):
         return _validate_required_text(value, "name")
 
     id: Optional[int] = Field(default=None, gt=0)
-    name: str = Field(min_length=1, max_length=64)
+    name: str = Field(min_length=1, max_length=MAX_SUBITEM_NAME_LENGTH)
     max_participants: int = Field(ge=1, le=999)
 
 

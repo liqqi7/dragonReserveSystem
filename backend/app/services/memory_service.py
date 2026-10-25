@@ -1,6 +1,6 @@
 """Private uploads and revision-checked, per-asset publishing."""
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 import hashlib
 import hmac
 from pathlib import Path

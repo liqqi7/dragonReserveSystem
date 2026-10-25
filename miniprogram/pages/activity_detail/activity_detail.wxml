@@ -112,15 +112,6 @@
         <view wx:if="{{!activity.largeCardBgImageUrl}}" class="hero-placeholder"></view>
         <view class="hero-shade"></view>
 
-        <view class="custom-navbar" style="padding-top: {{statusBarHeight}}px">
-          <view class="navbar-inner">
-            <view class="nav-back" hover-class="nav-back-hover" hover-stay-time="80" bindtap="onTapBack">
-              <image class="nav-back-icon" src="/images/activity-detail-chevron-left.svg" mode="aspectFit" />
-            </view>
-            <view class="nav-placeholder"></view>
-          </view>
-        </view>
-
         <view class="hero-copy">
           <view class="hero-status-row">
             <view class="status-pill {{detailStatusClass}}">{{activity.detailStatusTag}}</view>
@@ -281,6 +272,14 @@
     </block>
     </view>
   </scroll-view>
+
+  <view class="custom-navbar custom-navbar--fixed" style="padding-top: {{statusBarHeight}}px">
+    <view class="navbar-inner">
+      <view class="nav-back" hover-class="nav-back-hover" hover-stay-time="80" bindtap="onTapBack" aria-role="button" aria-label="返回">
+        <image class="nav-back-icon" src="{{darkNavigation ? '/images/activity-create-chevron-left.svg' : '/images/activity-detail-chevron-left.svg'}}" mode="aspectFit" />
+      </view>
+    </view>
+  </view>
 
   <button wx:if="{{activity && detailContentVisible && showBackToTop}}" class="back-to-top"
     style="bottom: calc({{bottomBarHeightRpx}}rpx + 23.08rpx);"

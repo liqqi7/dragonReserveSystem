@@ -4,7 +4,7 @@
 <view class="memory-viewer" prop="{{videoPointerState}}" change:prop="{{videoPointer.sync}}" bindtouchmove="{{videoPointer.move}}" bindtouchend="{{videoPointer.end}}" bindtouchcancel="{{videoPointer.cancel}}">
   <image wx:if="{{entrySource}}" class="viewer-image" src="{{entrySource}}" mode="aspectFit" />
   <vertical-drag-gesture-handler wx:if="{{memory}}" native-view="swiper" tag="memory-pager" simultaneous-handlers="{{['memory-scale']}}" worklet:should-accept-gesture="pagerAllowed" worklet:should-response-on-move="pagerAllowed">
-  <swiper class="viewer-stage" vertical current="{{index}}" circular="{{false}}" cache-extent="1" disable-touch="{{zoomed || fullScreen || seeking || selectionOpen || busy}}" bindchange="change">
+  <swiper class="viewer-stage" vertical current="{{index}}" scroll-with-animation="{{false}}" circular="{{false}}" cache-extent="1" disable-touch="{{zoomed || fullScreen || seeking || selectionOpen || busy}}" bindchange="change">
     <swiper-item wx:for="{{viewerMedia}}" wx:for-index="mediaIndex" wx:key="id" class="viewer-slide">
       <scale-gesture-handler wx:if="{{item.kind === 'image' && mediaIndex === index && item.url}}" tag="memory-scale" simultaneous-handlers="{{['memory-pan', 'memory-pager']}}" worklet:ongesture="photoScale">
         <pan-gesture-handler tag="memory-pan" simultaneous-handlers="{{['memory-scale']}}" worklet:should-accept-gesture="photoPanAllowed" worklet:ongesture="photoPan">

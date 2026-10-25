@@ -4,6 +4,7 @@ const DEFAULT_MAX_PARTICIPANTS = 12;
 const MIN_MAX_PARTICIPANTS = 3;
 const MAX_NAME_LENGTH = 10;
 const MAX_REMARK_LENGTH = 200;
+const MAX_SUBITEM_NAME_LENGTH = 15;
 
 function normalizeSubItems(items, quota) {
   const limit = Math.max(MIN_MAX_PARTICIPANTS, Math.min(999, Number(quota) || DEFAULT_MAX_PARTICIPANTS));
@@ -129,7 +130,7 @@ function validateActivityForm(form, options = {}) {
     const items = form.subItems || [];
     if (!items.length || items.length > 4) return { ok: false, message: "请添加1–4个子项目" };
     for (const item of items) {
-      if (!String(item.name || "").trim() || String(item.name).trim().length > 64) return { ok: false, message: "请填写1–64字的子项目名称" };
+      if (!String(item.name || "").trim() || String(item.name).trim().length > MAX_SUBITEM_NAME_LENGTH) return { ok: false, message: `请填写1–${MAX_SUBITEM_NAME_LENGTH}字的子项目名称` };
       const capacity = Number(item.max_participants);
       if (!Number.isInteger(capacity) || capacity < 1 || capacity > 999) return { ok: false, message: "子项目名额需为1–999的整数" };
       if (capacity < Number(item.current_participants || 0)) return { ok: false, message: "子项目名额不能少于已报名人数" };
@@ -165,6 +166,7 @@ module.exports = {
   MIN_MAX_PARTICIPANTS,
   MAX_NAME_LENGTH,
   MAX_REMARK_LENGTH,
+  MAX_SUBITEM_NAME_LENGTH,
   normalizeSubItems,
   splitDateTime,
   toLocalDateTime,

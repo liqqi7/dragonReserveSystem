@@ -98,3 +98,25 @@ def test_single_project_preserves_creator_signup(client, admin_headers):
     activity = create(client, admin_headers, sub_items=[]).json()
     assert len(activity["participants"]) == 1
     assert activity["sub_items"] == []
+
+
+@pytest.mark.parametrize("name", ["项" * 15, "桌游Game123活动测试甲乙"])
+def test_subitem_name_length_on_create_and_edit(client, admin_headers, name):
+    response = create(client, admin_headers, sub_items=[dict(name=name, max_participants=4)])
+    assert response.status_code == 201, response.text
+    activity = response.json()
+    assert activity["sub_items"][0]["name"] == name
+    item = activity["sub_items"][0]
+    url = f"/api/v2/activities/{activity['id']}"
+    edited_name = "改" * 15
+    response = client.patch(url, headers=admin_headers, json={"sub_items": [
+        dict(id=item["id"], name=edited_name, max_participants=4)]})
+    assert response.status_code == 200, response.text
+    assert response.json()["sub_items"][0]["name"] == edited_name
+
+    long_name = "项" * 16
+    assert create(client, admin_headers, sub_items=[dict(name=long_name, max_participants=4)]).status_code == 422
+    response = client.patch(url, headers=admin_headers, json={"sub_items": [
+        dict(id=item["id"], name=long_name, max_participants=4)]})
+    assert response.status_code == 422
+    assert client.get(url).json()["sub_items"][0]["name"] == edited_name

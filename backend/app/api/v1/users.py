@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
-from app.utils.media import resolve_media_root
+from app.utils.media import MAX_AVATAR_BYTES, resolve_media_root
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.exceptions import ValidationAppError
@@ -28,7 +28,6 @@ CONTENT_TYPE_EXTENSIONS = {
     "image/webp": ".webp",
     "image/gif": ".gif",
 }
-MAX_AVATAR_BYTES = 2 * 1024 * 1024
 _INVITE_WINDOW_SECONDS = 3600
 _INVITE_USER_LIMIT = 5
 _INVITE_IP_LIMIT = 20
@@ -87,7 +86,7 @@ async def upload_my_avatar(
         if file.content_type not in ALLOWED_AVATAR_CONTENT_TYPES:
             raise ValidationAppError("Avatar must be a JPEG, PNG, WebP, or GIF image")
 
-        content = await file.read()
+        content = await file.read(MAX_AVATAR_BYTES + 1)
         if not content:
             raise ValidationAppError("Uploaded avatar is empty")
         if len(content) > MAX_AVATAR_BYTES:

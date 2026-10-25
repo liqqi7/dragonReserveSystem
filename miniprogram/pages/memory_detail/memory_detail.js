@@ -1313,13 +1313,6 @@ Page({
     this.setViewerData({ selectionOpen: false });
     this.scheduleHide();
   },
-  toggleSelection() {
-    this.setViewerData({
-      selectionOpen: !this.data.selectionOpen,
-      controlsVisible: true,
-    });
-    this.scheduleHide();
-  },
   mediaError(event) {
     if (this._unloaded) return;
     const id = Number(event && event.currentTarget && event.currentTarget.dataset.id);

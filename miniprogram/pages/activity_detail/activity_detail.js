@@ -87,6 +87,7 @@ Page({
     bottomBarSafeAreaRpx: 0,
     bottomBarHeightRpx: 107.69,
     showBackToTop: false,
+    darkNavigation: false,
     detailScrollTop: 0,
     activityId: "",
     activity: null,
@@ -175,7 +176,7 @@ Page({
         signupBottomInsetRpx: this.renderer === "webview" ? bottomBarSafeAreaRpx : safeBottomRpx,
         bottomBarSafeAreaRpx,
         bottomBarHeightRpx
-      });
+      }, () => this.measureNavigationBoundary());
     } catch (e) {
       this._windowWidthPx = 390;
       this.setData({ bottomBarHeightRpx: 107.69, safeBottomRpx: 0, bottomBarSafeAreaRpx: 0, signupBottomInsetRpx: 0 });
@@ -231,9 +232,30 @@ Page({
     const scrollTop = Math.max(0, Number(e.detail && e.detail.scrollTop) || 0);
     this._detailScrollTop = scrollTop;
     const showBackToTop = scrollTop >= this._backToTopThresholdPx;
-    if (showBackToTop !== this.data.showBackToTop) {
-      this.setData({ showBackToTop });
-    }
+    const darkNavigation = !!this.data.loadError || scrollTop >= (this._navigationBoundaryPx ?? Infinity);
+    const patch = {};
+    if (showBackToTop !== this.data.showBackToTop) patch.showBackToTop = showBackToTop;
+    if (darkNavigation !== this.data.darkNavigation) patch.darkNavigation = darkNavigation;
+    if (Object.keys(patch).length) this.setData(patch);
+  },
+
+  measureNavigationBoundary() {
+    if (this._detailUnloaded || !this.data.activity || typeof this.createSelectorQuery !== "function") return;
+    const activity = this.data.activity;
+    const measure = () => {
+      if (this._detailUnloaded || this.data.activity !== activity) return;
+      this.createSelectorQuery().select(".detail-panel").boundingClientRect().exec(rects => {
+        if (this._detailUnloaded || this.data.activity !== activity) return;
+        const top = rects && rects[0] && rects[0].top;
+        if (!Number.isFinite(top)) return;
+        const scrollTop = this._detailScrollTop || 0;
+        const buttonCenter = this.data.statusBarHeight + 44 * this._windowWidthPx / 750;
+        this._navigationBoundaryPx = top + scrollTop - buttonCenter;
+        this.onDetailScroll({detail: {scrollTop}});
+      });
+    };
+    if (typeof wx.nextTick === "function") wx.nextTick(measure);
+    else measure();
   },
 
   backToTop() {
@@ -407,6 +429,7 @@ Page({
       detailSkeletonLeaving: false,
       detailContentVisible: true,
       loadError: (error && error.message) || "加载失败",
+      darkNavigation: true,
       sharePreviewImageUrl: ""
     });
   },
@@ -579,6 +602,7 @@ Page({
       weather: buildWeatherView(resolveActivityWeather(activity))
     }, () => {
       this.updateRemarkOverflow();
+      this.measureNavigationBoundary();
       if (typeof onApplied === "function") onApplied();
     });
     if (useLocalShareImage) this.preloadLocalTestShareImage(shareSource);
