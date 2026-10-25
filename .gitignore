@@ -71,3 +71,4 @@ backend/secrets/
 /handoff/
 /backend/storage-private/
 /.genflow_tmp/
+backend/run/*.pid
