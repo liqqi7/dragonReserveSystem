@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "记分纸",
+  "navigationStyle": "custom",
+  "renderer": "skyline",
+  "usingComponents": {
+    "create-access-dialog": "../../components/create-access-dialog/index"
+  },
+  "disableScroll": true,
+  "glassEaselWebview": true
+}

@@ -33,6 +33,9 @@ def exchange_wechat_code(code: str) -> dict:
     s = get_settings()
 
     if not s.wechat_app_id or not s.wechat_app_secret:
+        # Local development bypass: fixed openid, no real WeChat exchange needed.
+        if s.wechat_dev_openid:
+            return {"openid": s.wechat_dev_openid}
         raise ValidationAppError("WeChat login is not configured")
 
     try:

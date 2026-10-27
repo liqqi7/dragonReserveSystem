@@ -57,9 +57,10 @@ def new_job(db, actor, kind, params):
     return job
 
 
-def persist_items(db, job, parsed):
+def persist_items(db, job, parsed, extra_ids=()):
+    keep = set(job.params['ids']) | set(extra_ids)
     for values in parsed:
-        if values['bgg_id'] not in job.params['ids']:
+        if values['bgg_id'] not in keep:
             continue
         item = db.scalar(select(PreviewItem).where(PreviewItem.job_id == job.id,
             PreviewItem.source_kind == 'thing', PreviewItem.bgg_id == values['bgg_id']))

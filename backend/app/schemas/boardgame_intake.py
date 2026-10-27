@@ -30,6 +30,7 @@ class IntakeConfirm(Strict):
     display_name: Name | None = None
     game: GameCreate | None = None
     inventory: IntakeInventory
+    expansion_bgg_ids: list[Id] | None = None
 
     @model_validator(mode='after')
     def shape(self):

@@ -20,15 +20,15 @@
         <view class="recent-caption"><text>LATEST ARRIVALS · 最新录入</text><text>{{recentPosition}} / {{recentGames.length}}</text></view>
         <view class="recent-covers" bindtouchstart="coverTouchStart" bindtouchend="coverTouchEnd" bindtouchcancel="coverTouchCancel">
           <view wx:for="{{recentStack}}" wx:key="id" class="recent-cover-slot recent-slot-{{item.slot}}" data-index="{{item.recentIndex}}" bindtap="selectRecent">
-            <image wx:if="{{item.cover_url && !item.imageFailed}}" class="recent-cover" data-path="recentGames[{{item.recentIndex}}].cover_url" src="{{item.cover_url}}" mode="aspectFill" binderror="imageError"/>
+            <image wx:if="{{item.cover_url && !item.imageFailed}}" class="recent-cover" lazy-load="{{true}}" data-path="recentGames[{{item.recentIndex}}].cover_url" src="{{item.cover_thumb || item.cover_url}}" mode="aspectFill" binderror="imageError"/>
             <view wx:else class="recent-cover recent-cover-placeholder"><text>暂无封面</text></view>
           </view>
         </view>
         <swiper class="recent-details" current="{{recentIndex}}" previous-margin="32px" next-margin="32px" circular="{{recentGames.length > 1}}" bindchange="recentChanged">
           <swiper-item wx:for="{{recentGames}}" wx:key="id">
             <view class="recent-detail-card" data-id="{{item.id}}" bindtap="openGame">
-              <view class="recent-title-row"><text class="recent-title" overflow="ellipsis" max-lines="1">{{item.original_name || item.name}}</text><view wx:if="{{item.ratingText}}" class="recent-rating"><image src="./star.svg"/><text>{{item.ratingText}}</text></view></view>
-              <text class="recent-subtitle" overflow="ellipsis" max-lines="1">{{item.name !== item.original_name ? item.name : ''}}</text>
+              <view class="recent-title-row"><text class="recent-title" overflow="ellipsis" max-lines="1">{{item.chinese_name || item.name || item.original_name}}</text><view wx:if="{{item.ratingText}}" class="recent-rating"><image src="./star.svg"/><text>{{item.ratingText}}</text></view></view>
+              <text class="recent-subtitle" overflow="ellipsis" max-lines="1">{{item.original_name && item.original_name !== (item.chinese_name || item.name) ? item.original_name : ''}}</text>
               <view class="recent-meta"><view><image src="./players.svg"/><text>{{item.displayPlayers}}</text></view><view><image src="./clock.svg"/><text>{{item.displayTime}}</text></view><view><image src="./weight.svg"/>重度 {{item.weightText}}</view></view>
               <view class="recent-tags"><text wx:for="{{item.featureTags}}" wx:for-item="tag" wx:key="id">{{tag.name}}</text><text wx:if="{{item.year_published}}">{{item.year_published}}</text></view>
             </view>
@@ -47,14 +47,14 @@
       <view wx:if="{{error}}" class="library-error" bindtap="retry"><text>{{error}} · 点击重试</text></view>
       <view wx:if="{{loading && !games.length}}" class="library-grid library-grid-skeleton"><view wx:for="{{[1,2,3,4]}}" wx:key="*this" class="library-skeleton-card"></view></view>
       <view wx:elif="{{games.length}}" class="library-grid">
-        <view wx:for="{{games}}" wx:key="id" class="catalog-card" data-id="{{item.id}}" bindtap="openGame" role="button" aria-label="查看{{item.display_name || item.name}}详情">
+        <view wx:for="{{games}}" wx:key="id" class="catalog-card" data-id="{{item.id}}" bindtap="openGame" role="button" aria-label="查看{{item.chinese_name || item.name}}详情">
           <view class="catalog-cover-wrap">
-            <image wx:if="{{item.cover_url && !item.imageFailed}}" class="catalog-cover" data-path="games[{{index}}].cover_url" src="{{item.cover_url}}" mode="aspectFill" binderror="imageError" />
+            <image wx:if="{{item.cover_url && !item.imageFailed}}" class="catalog-cover" lazy-load="{{true}}" data-path="games[{{index}}].cover_url" src="{{item.cover_thumb || item.cover_url}}" mode="aspectFill" binderror="imageError" />
             <view wx:else class="catalog-cover catalog-cover-placeholder"><text>暂无封面</text></view>
             <view wx:if="{{item.ratingText}}" class="catalog-rating"><image class="rating-star" src="./star.svg"/><text>{{item.ratingText}}</text></view>
           </view>
           <view class="catalog-body">
-            <text class="catalog-title" overflow="ellipsis" max-lines="1">{{item.display_name || item.name}}</text>
+            <text class="catalog-title" overflow="ellipsis" max-lines="1">{{item.chinese_name || item.name}}</text>
             <view class="catalog-meta"><view><image src="./players.svg"/><text>{{item.displayPlayers}}</text></view><view><image src="./clock.svg"/><text>{{item.compactTime}}</text></view><view><image src="./weight.svg"/><text>{{item.displayComplexity}}</text></view></view>
             <view wx:if="{{item.tags.length}}" class="catalog-tags"><text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="id" class="catalog-tag">{{tag.name}}</text></view>
           </view>
@@ -70,14 +70,55 @@
   <view class="library-add" style="{{bottomContentInsetRpx !== null ? 'bottom:' + bottomContentInsetRpx + 'rpx;' : ''}}" role="button" bindtap="openEntry" aria-label="录入桌游"><view></view><view></view></view>
 </view>
 
-<boardgame-sheet visible="{{filterOpen}}" title="全部筛选" show-close="{{false}}" kind="form" size="high" bindclose="closeFilter">
-  <view class="filter-label"><text>人数</text></view>
-  <input placeholder-style="color:#9CA3AF;font-size:14px" class="filter-input" type="number" value="{{filterDraft.player_count}}" data-key="player_count" bindinput="filterField" placeholder="例如 4" />
-  <view class="filter-label"><text>最长游戏时间（分钟）</text></view>
-  <input placeholder-style="color:#9CA3AF;font-size:14px" class="filter-input" type="number" value="{{filterDraft.max_minutes}}" data-key="max_minutes" bindinput="filterField" placeholder="不限" />
-  <view class="filter-label"><text>复杂度（1–5）</text></view>
-  <view class="filter-range"><input placeholder-style="color:#9CA3AF;font-size:14px" class="filter-input" type="digit" value="{{filterDraft.min_complexity}}" data-key="min_complexity" bindinput="filterField" placeholder="最低" /><text>—</text><input placeholder-style="color:#9CA3AF;font-size:14px" class="filter-input" type="digit" value="{{filterDraft.max_complexity}}" data-key="max_complexity" bindinput="filterField" placeholder="最高" /></view>
-  <view slot="footer" class="filter-actions"><button class="filter-reset" bindtap="resetFilter">重置</button><button class="filter-apply" bindtap="applyFilter">查看桌游</button></view>
+<boardgame-sheet visible="{{filterOpen}}" title="筛选桌游" show-close="{{false}}" kind="form" size="high" bindclose="closeFilter">
+  <view class="fgroup">
+    <view class="fgroup-label">人数</view>
+    <view class="frange">
+      <view class="ffield"><input placeholder-style="color:#98A2B3;font-size:14px" class="ffield-input" type="number" value="{{filterDraft.min_players}}" data-key="min_players" bindinput="filterField" placeholder="最少"/><text class="ffield-unit">人</text></view>
+      <view class="fdash"></view>
+      <view class="ffield"><input placeholder-style="color:#98A2B3;font-size:14px" class="ffield-input" type="number" value="{{filterDraft.max_players}}" data-key="max_players" bindinput="filterField" placeholder="最多"/><text class="ffield-unit">人</text></view>
+    </view>
+  </view>
+  <view class="fgroup">
+    <view class="fgroup-label">游戏时长</view>
+    <view class="frange">
+      <view class="ffield"><input placeholder-style="color:#98A2B3;font-size:14px" class="ffield-input" type="number" value="{{filterDraft.min_minutes}}" data-key="min_minutes" bindinput="filterField" placeholder="最短"/><text class="ffield-unit">分钟</text></view>
+      <view class="fdash"></view>
+      <view class="ffield"><input placeholder-style="color:#98A2B3;font-size:14px" class="ffield-input" type="number" value="{{filterDraft.max_minutes}}" data-key="max_minutes" bindinput="filterField" placeholder="最长"/><text class="ffield-unit">分钟</text></view>
+    </view>
+  </view>
+  <view class="fgroup">
+    <view class="fgroup-label">复杂度</view>
+    <view class="frange">
+      <view class="ffield"><input placeholder-style="color:#98A2B3;font-size:14px" class="ffield-input" type="digit" value="{{filterDraft.min_complexity}}" data-key="min_complexity" bindinput="filterField" placeholder="最低"/><text class="ffield-unit">/5</text></view>
+      <view class="fdash"></view>
+      <view class="ffield"><input placeholder-style="color:#98A2B3;font-size:14px" class="ffield-input" type="digit" value="{{filterDraft.max_complexity}}" data-key="max_complexity" bindinput="filterField" placeholder="最高"/><text class="ffield-unit">/5</text></view>
+    </view>
+  </view>
+  <view class="fgroup">
+    <view class="fgroup-label">持有者</view>
+    <view class="owner-box">
+      <view class="owner-search">
+        <image class="owner-search-icon" src="./search.svg"/>
+        <input class="owner-search-input" value="{{ownerSearch}}" bindinput="ownerSearchInput" placeholder="继续搜索持有者" placeholder-style="color:#98A2B3;font-size:12px"/>
+        <view wx:if="{{ownerSearch}}" class="owner-clear" bindtap="clearOwnerSearch">×</view>
+      </view>
+      <view wx:for="{{ownerResults}}" wx:key="id" class="owner-result {{item.selected ? 'owner-result-selected' : ''}}" data-id="{{item.id}}" bindtap="toggleOwner">
+        <image wx:if="{{item.avatar_url}}" class="owner-avatar" src="{{item.avatar_url}}"/>
+        <view wx:else class="owner-avatar owner-avatar-fallback"><text>{{item.nickname.slice(0,1)}}</text></view>
+        <text class="owner-name">{{item.nickname}}</text>
+        <block wx:if="{{!item.selected}}"><text class="owner-count">{{item.game_count}} 款</text><view class="owner-add">+</view></block>
+        <text wx:else class="owner-selected-mark">✓ 已选择</text>
+      </view>
+    </view>
+    <view wx:if="{{selectedOwners.length}}" class="owner-tags">
+      <view wx:for="{{selectedOwners}}" wx:key="id" class="owner-tag" data-id="{{item.id}}" bindtap="removeOwner">
+        <text>{{item.nickname}}</text><text class="owner-tag-x">×</text>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{filterError}}" class="ferror">{{filterError}}</view>
+  <view slot="footer" class="filter-actions"><button class="filter-reset" bindtap="resetFilter">重置</button><button class="filter-apply" bindtap="applyFilter">应用筛选</button></view>
 </boardgame-sheet>
 
 <create-access-dialog id="session-expired-dialog" />

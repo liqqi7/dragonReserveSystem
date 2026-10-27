@@ -12,8 +12,8 @@ const owners = items => {
 Page({
   data:{id:null,game:null,inventory:[],myVersions:[],versionOptions:[],ownerRows:[],ownerPreview:[],ownerCount:0,
     detailImages:[],detailGalleryPosition:'',galleryLoading:false,galleryError:'',inventoryCursor:null,
-    loading:false,error:'',statusBarHeight:0,navHeight:44,inventoryOpen:false,ownerOpen:false,
-    selectedVersionId:null,currentVersionId:null,saving:false,formError:'',ownerError:'',ownersLoading:false,descriptionOpen:false,ownerAccess:false},
+    loading:false,error:'',statusBarHeight:0,navHeight:44,inventoryOpen:false,ownerOpen:false,expansionsOpen:false,expansionOptions:[],expSaving:false,expError:'',
+    selectedVersionId:null,currentVersionId:null,saving:false,formError:'',ownerError:'',ownersLoading:false,descriptionOpen:false,ownerAccess:false,deleteDialogOpen:false,deleteSoleOwner:false,deleting:false,deleteDone:false},
   onLoad(options) {
     this._account = String(wx.getStorageSync('userId'));
     this._generation = 0;
@@ -27,6 +27,36 @@ Page({
       this.setData({statusBarHeight:info.statusBarHeight || 0,
         navHeight:capsule.top && capsule.height ? (capsule.top - info.statusBarHeight)*2 + capsule.height : 44});
     } catch (_) {}
+  },
+  openExpansions() {
+    if (!this.data.game || !this.data.game.expansions) return;
+    this.setData({expansionOptions:(this.data.game.expansions || []).map(e => ({...e, checked: !!e.owned_by_actor})), expError:'', expansionsOpen:true});
+  },
+  closeExpansions() { this.setData({expansionsOpen:false}); },
+  toggleExpansion(e) {
+    if (!this.data.ownerAccess) return;
+    const id = Number(e.currentTarget.dataset.id);
+    const target = this.data.expansionOptions.find(o => o.id === id);
+    if (!target) return;  // 全集可勾：勾选=改为已拥有，取消=我没有
+
+    this.setData({expansionOptions:this.data.expansionOptions.map(o => o.id === id ? {...o, checked:!o.checked} : o)});
+  },
+  async saveExpansions() {
+    if (this.data.expSaving || !this.data.ownerAccess) return;
+    const generation = this._generation;
+    this.setData({expSaving:true, expError:''});
+    try {
+      const ids = this.data.expansionOptions.filter(o => o.checked).map(o => o.bgg_id);
+      const result = await api.send(`/boardgames/${this.data.id}/my-expansions`, 'PUT', {expansion_game_ids: ids});
+      if (!this.current(generation)) return;
+      this.setData({game:{...this.data.game, expansions:((result && result.items) || [])}, expansionsOpen:false});
+      wx.showToast({title:'更换成功', icon:'success'});
+    } catch (error) {
+      if (this.current(generation)) this.setData({expError:api.message(error)});
+      if (error && (error.statusCode === 404 || error.statusCode === 409)) this.load();
+    } finally {
+      if (this.current(generation)) this.setData({expSaving:false});
+    }
   },
   onShow() { this.load(); },
   onUnload() { this._dead = true; this._generation++; },
@@ -118,5 +148,37 @@ Page({
         }
       }
     } finally { if(this.current(generation)) this.setData({saving:false}); }
+  },
+  noop() {},
+  recordPlay() {
+    if (!this.data.id) return;
+    wx.navigateTo({url:`/pages/boardgame_plays/boardgame_plays?id=${this.data.id}&name=${encodeURIComponent(this.data.game?.chinese_name || this.data.game?.name || '')}`});
+  },
+  openDeleteDialog() {
+    if (!this.data.myVersions.length || this.data.deleting) return;
+    this.setData({deleteDialogOpen:true, deleteSoleOwner:Number(this.data.ownerCount) <= 1});
+  },
+  closeDeleteDialog() { if (!this.data.deleting) this.setData({deleteDialogOpen:false}); },
+  async confirmDelete() {
+    const box = this.data.myVersions[0], generation = this._generation;
+    if (!box || this.data.deleting) return;
+    this.setData({deleting:true});
+    try {
+      await api.send(`/boardgame-inventory/${box.id}`, 'DELETE');
+      if (!this.current(generation)) return;
+      const lib = getCurrentPages().find(p => p.route === 'pages/boardgame_library/boardgame_library');
+      if (lib && typeof lib.removeGame === 'function') lib.removeGame(this.data.id);
+      this.setData({deleteDialogOpen:false, deleteDone:true});
+    } catch (error) {
+      if (this.current(generation)) {
+        this.setData({deleteDialogOpen:false});
+        wx.showToast({title:api.message(error), icon:'none'});
+        if (error.statusCode === 404 || error.statusCode === 409) this.load();
+      }
+    } finally { if (this.current(generation)) this.setData({deleting:false}); }
+  },
+  goBackLibrary() {
+    if (getCurrentPages().length > 1) wx.navigateBack();
+    else wx.redirectTo({url:'/pages/boardgame_library/boardgame_library'});
   }
 });

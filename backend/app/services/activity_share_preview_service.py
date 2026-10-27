@@ -12,7 +12,11 @@ from pathlib import Path
 import re
 import tempfile
 
-import cairosvg
+try:
+    import cairosvg
+except OSError:
+    # Native cairo is optional at import time; only share-card rendering needs it.
+    cairosvg = None
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from sqlalchemy import update
 from sqlalchemy.orm import Session
@@ -207,6 +211,8 @@ def _cover_layout(width: int, height: int) -> tuple[int, int, int, int]:
 def _icon(name: str) -> Image.Image:
     if name not in {"map-pin", "clock-3"}:
         raise ValueError("Unknown share icon")
+    if cairosvg is None:
+        raise RuntimeError('native cairo library is unavailable on this machine')
     png = cairosvg.svg2png(url=str(SHARE_ICON_ROOT / f"{name}.svg"),
                            output_width=ICON_SIZE * 3, output_height=ICON_SIZE * 3)
     with Image.open(BytesIO(png)) as image:

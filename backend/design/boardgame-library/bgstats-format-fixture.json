@@ -1,0 +1,19 @@
+{
+  "games": [{"id": 11, "uuid": "00000000-0000-4000-8000-000000000011", "name": "示例桌游", "bggId": 1001, "highestWins": true}],
+  "players": [
+    {"id": 21, "uuid": "00000000-0000-4000-8000-000000000021", "name": "示例甲"},
+    {"id": 22, "uuid": "00000000-0000-4000-8000-000000000022", "name": "示例乙"},
+    {"id": 23, "uuid": "00000000-0000-4000-8000-000000000023", "name": "未参加此局的人"}
+  ],
+  "locations": [{"id": 31, "name": "示例地点"}],
+  "userInfo": {"meRefId": 21},
+  "plays": [{
+    "uuid": "00000000-0000-4000-8000-000000000041", "gameRefId": 11, "locationRefId": 31,
+    "bggId": 0, "playDate": "2026-07-01 18:30:00", "durationMin": 45, "ignored": false,
+    "playerScores": [
+      {"playerRefId": 21, "score": "0", "rank": 0, "seatOrder": 0, "winner": true},
+      {"playerRefId": 22, "score": "-2.5", "rank": 0, "seatOrder": 0, "winner": false}
+    ],
+    "unknownFutureField": {"preserve": ["yes"]}
+  }]
+}

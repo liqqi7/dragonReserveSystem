@@ -66,3 +66,10 @@ backend/secrets/
 *.db
 *.db-*
 *.sqlite*
+
+# Local data & handoff artifacts (kept out of repo)
+/research/
+/handoff/
+/backend/storage-private/
+/.genflow_tmp/
+backend/run/*.pid

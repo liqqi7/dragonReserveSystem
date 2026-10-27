@@ -42,7 +42,12 @@ Page({
     filterCount: 0,
     filterTags: [],
     emptyFiltered: false,
-    bottomContentInsetRpx: null
+    bottomContentInsetRpx: null,
+    ownerSearch: '',
+    ownerResults: [],
+    selectedOwners: [],
+    appliedOwners: [],
+    filterError: ''
   },
 
   onLoad(options) {
@@ -57,9 +62,22 @@ Page({
 
   onResize() {if(this.renderer === 'webview')this.setData({bottomContentInsetRpx:getBottomContentInsetRpx()});},
   onShow() {
+    // 从详情页返回：页面实例仍在，列表数据与滚动位置原样保留，不再全量重载；
+    // 需要刷新用下拉刷新（onPullDownRefresh）。
+    if (this.data.games && this.data.games.length) return;
     this.loadAll();
   },
 
+  removeGame(gameId) {
+    // 详情页删除后定向移除：不重载列表，保留滚动位置
+    const id = Number(gameId);
+    this.setData({
+      games: this.data.games.filter(g => g.id !== id),
+      recentGames: this.data.recentGames.filter(g => g.id !== id),
+      recentIndex: 0,
+    });
+    this.updateRecent(0);
+  },
   onPullDownRefresh() {
     return this.loadAll().finally(() => wx.stopPullDownRefresh());
   },
@@ -183,7 +201,10 @@ Page({
     this.loadAll();
   },
 
-  openFilter() { this.setData({filterOpen:true, filterDraft:{...this.data.filterForm}}); },
+  openFilter() {
+    this.setData({ filterOpen: true, filterDraft: { ...this.data.filterForm },
+      selectedOwners: [...this.data.appliedOwners], ownerSearch: '', ownerResults: [], filterError: '' });
+  },
 
   closeFilter() {
     this.setData({ filterOpen: false });
@@ -194,18 +215,74 @@ Page({
   },
 
   applyFilter() {
-    const source = this.data.filterDraft;
+    const source = this.data.filterDraft || {};
+    const pairs = [['min_players', 'max_players'], ['min_minutes', 'max_minutes'], ['min_complexity', 'max_complexity']];
     const filter = {};
-    ['player_count', 'max_minutes', 'min_complexity', 'max_complexity'].forEach(key => {
-      if (source[key] !== '' && source[key] !== undefined && source[key] !== null) filter[key] = Number(source[key]);
-    });
-    this.setData({ filterForm: filter, filterCount: Object.keys(filter).length, filterOpen: false });
+    for (const [lo, hi] of pairs) {
+      const rawLo = source[lo], rawHi = source[hi];
+      const lov = rawLo === '' || rawLo === undefined || rawLo === null ? null : Number(rawLo);
+      const hiv = rawHi === '' || rawHi === undefined || rawHi === null ? null : Number(rawHi);
+      if (lov !== null && hiv !== null && lov > hiv) {
+        this.setData({ filterError: '区间设置有问题：最小值不能大于最大值' });
+        return;
+      }
+      if (lov !== null) filter[lo] = lov;
+      if (hiv !== null) filter[hi] = hiv;
+    }
+    const owners = this.data.selectedOwners;
+    if (owners.length) filter.owner_user_ids = owners.map(o => o.id);
+    let count = 0;
+    pairs.forEach(([lo, hi]) => { if (filter[lo] !== undefined || filter[hi] !== undefined) count += 1; });
+    if (owners.length) count += 1;
+    this.setData({ filterForm: filter, appliedOwners: owners, filterCount: count, filterOpen: false, filterError: '' });
     this.loadGames(true);
   },
 
   resetFilter() {
-    this.setData({ filterForm: {}, filterCount: 0, filterOpen: false });
+    this.setData({ filterForm: {}, filterCount: 0, filterOpen: false, filterDraft: {},
+      selectedOwners: [], appliedOwners: [], ownerSearch: '', ownerResults: [], filterError: '' });
     this.loadGames(true);
+  },
+
+  ownerSearchInput(event) {
+    const value = event.detail.value || '';
+    this.setData({ ownerSearch: value });
+    clearTimeout(this._ownerTimer);
+    this._ownerTimer = setTimeout(() => this.fetchOwners(), 300);
+  },
+
+  async fetchOwners() {
+    try {
+      const result = await api.get('/boardgame-owners', { q: this.data.ownerSearch.trim(), limit: 20 });
+      const selected = this.data.selectedOwners.map(o => o.id);
+      this.setData({ ownerResults: (result.items || []).map(i => ({ ...i, selected: selected.includes(i.id) })) });
+    } catch (error) {
+      this.setData({ ownerResults: [] });
+    }
+  },
+
+  clearOwnerSearch() {
+    this.setData({ ownerSearch: '', ownerResults: [] });
+  },
+
+  toggleOwner(event) {
+    const id = Number(event.currentTarget.dataset.id);
+    const item = this.data.ownerResults.find(i => i.id === id);
+    if (!item) return;
+    const exists = this.data.selectedOwners.some(o => o.id === id);
+    const selectedOwners = exists
+      ? this.data.selectedOwners.filter(o => o.id !== id)
+      : [...this.data.selectedOwners, item];
+    this.setData({
+      selectedOwners,
+      ownerResults: this.data.ownerResults.map(i => ({ ...i, selected: selectedOwners.some(o => o.id === i.id) }))
+    });
+  },
+
+  removeOwner(event) {
+    const id = Number(event.currentTarget.dataset.id);
+    const selectedOwners = this.data.selectedOwners.filter(o => o.id !== id);
+    this.setData({ selectedOwners, ownerResults: this.data.ownerResults.map(i => ({ ...i, selected: selectedOwners.some(o => o.id === i.id) })) });
   },
 
   imageError(event) {
@@ -215,6 +292,7 @@ Page({
 
   onUnload() {
     clearTimeout(this._searchTimer);
+    clearTimeout(this._ownerTimer);
     this._generation = (this._generation || 0) + 1;
   }
 });

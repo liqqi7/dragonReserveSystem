@@ -59,3 +59,7 @@ class InventoryCreate(InventoryFields):
 
 class InventoryVersionChange(Revision):
     bgg_version_id: Id
+
+class ExpansionLinksPut(Strict):
+    expansion_game_ids: list[Id] = Field(default_factory=list, max_length=50)
+    reason: Reason | None = None

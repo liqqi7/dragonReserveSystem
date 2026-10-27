@@ -24,7 +24,7 @@ function load(name, renderer, width, inset, component = false) {
 
 test('bottom-space audit covers all registered pages without padding fullscreen media or game surfaces', () => {
   const handled = ['activity_list', 'history', 'profile', 'memory_create', 'activity_create', 'activity_edit',
-    'activity_detail', 'boardgame_library', 'boardgame_intake', 'checkin_map', 'memory_detail'];
+    'activity_detail', 'boardgame_plays', 'boardgame_scoresheet', 'boardgame_library', 'boardgame_intake', 'checkin_map', 'memory_detail'];
   const retained = {
     memory: '140px design-scale tail already clears the floating navigation',
     memory_review: 'scrolling card tail and full-width action-sheet rows have their own spacing',
@@ -41,11 +41,11 @@ test('bottom-space audit covers all registered pages without padding fullscreen 
 test('WebView action footers meet the minimum on narrow and PC windows without adding safe area twice', () => {
   for (const width of [320, 390, 620]) for (const inset of [0, 34]) {
     const target = Math.max(24, inset), px = value => value * width / 750;
-    for (const name of ['activity_create', 'activity_edit', 'boardgame_intake', 'checkin_map']) {
+    for (const name of ['activity_create', 'activity_edit', 'boardgame_intake', 'checkin_map', 'boardgame_plays', 'boardgame_scoresheet']) {
       const {instance} = load(name, 'webview', width, inset);
       instance.onResize();
       const gap = name === 'checkin_map' ? px(instance.data.footerPaddingRpx + 24) :
-        px(instance.data[name === 'boardgame_intake' ? 'footerPaddingRpx' : 'footerSafeAreaRpx']);
+        px(instance.data[['boardgame_intake', 'boardgame_plays', 'boardgame_scoresheet'].includes(name) ? 'footerPaddingRpx' : 'footerSafeAreaRpx']);
       assert.ok(gap >= target - 0.01, `${name}: ${gap}px at ${width}px`);
       if (name !== 'checkin_map') assert.ok(Math.abs(gap - target) < 0.01);
     }
@@ -72,7 +72,7 @@ test('Skyline retains its prototype offsets and CSS-owned boardgame/map footer s
   const detail = load('activity_detail', 'skyline', 390, 34).instance;
   detail.onResize(); assert.equal(detail.data.bottomBarSafeAreaRpx, 44.23);
   assert.equal(detail.data.signupBottomInsetRpx, 65.38);
-  for (const name of ['checkin_map', 'boardgame_intake']) {
+  for (const name of ['checkin_map', 'boardgame_intake', 'boardgame_plays', 'boardgame_scoresheet']) {
     const p = load(name, 'skyline', 390, 34).instance;
     p.onResize(); assert.equal(p.data.footerPaddingRpx, null);
   }

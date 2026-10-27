@@ -359,3 +359,54 @@ page { background:#F8FAFC; }
 .intake-version-chevron { font-size:38.46154rpx; line-height:53.84615rpx; font-weight:500; }
 
 .intake-page{height:100vh;display:flex;flex-direction:column}.intake-nav{flex:none}.intake-content{height:0;flex:1;min-height:0}.entry-footer{position:relative;flex:none}.intake-content.version-stage.has-footer,.entry-page.has-footer{padding-bottom:46.15385rpx}
+
+.intake-mini-exp { display:block; margin-top:3.84615rpx; color:#B45309; font-size:19.23077rpx; line-height:26.92308rpx; }
+.intake-mini-base { display:block; margin-top:3.84615rpx; color:#6745A7; font-size:19.23077rpx; line-height:26.92308rpx; font-weight:700; text-decoration:underline; }
+.intake-expansions { margin-top:23.07692rpx; }
+.intake-exp-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:15.38462rpx; color:#111827; font-size:26.92308rpx; line-height:38.46154rpx; font-weight:700; }
+.intake-exp-count { color:#FF9800; font-size:23.07692rpx; font-weight:600; }
+.intake-exp-list { display:flex; flex-direction:column; gap:15.38462rpx; }
+.intake-exp-item { display:flex; align-items:center; justify-content:space-between; gap:19.23077rpx; padding:23.07692rpx 26.92308rpx; border:1.92308rpx solid #E5E7EB; border-radius:23.07692rpx; background:#FFFFFF; box-sizing:border-box; }
+.intake-exp-item.checked { border-color:#FF9800; background:#FFFBEB; }
+.intake-exp-copy { flex:1; min-width:0; display:flex; align-items:center; gap:15.38462rpx; }
+.intake-exp-name { flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; color:#111827; font-size:26.92308rpx; line-height:38.46154rpx; font-weight:600; }
+.intake-exp-flag { flex:none; padding:3.84615rpx 11.53846rpx; border-radius:11.53846rpx; background:#F2F4F7; color:#667085; font-size:19.23077rpx; line-height:26.92308rpx; }
+.intake-exp-choice { flex:none; color:#FF9800; font-size:30.76923rpx; font-weight:700; }
+
+/* 扩展区横排小卡（设计稿：已选 N 款 › + 封面小卡） */
+.intake-exp-head { display:flex; justify-content:space-between; align-items:center; }
+.intake-exp-entry { display:flex; align-items:center; gap:4rpx; }
+.intake-exp-count { color:#FF9800; font-size:24rpx; font-weight:700; }
+.intake-exp-chevron { color:#FF9800; font-size:28rpx; }
+.intake-exp-cards { margin-top:16rpx; height:116rpx; }
+.intake-exp-card-row { display:flex; gap:16rpx; height:116rpx; }
+.intake-exp-card { position:relative; flex:none; width:216rpx; }
+.intake-exp-card-cover { position:relative; width:216rpx; height:108rpx; border-radius:16rpx; overflow:hidden; background:#F3F4F6; }
+.intake-exp-card-cover.placeholder { display:flex; align-items:center; justify-content:center; color:#9CA3AF; font-size:20rpx; }
+.intake-exp-card-name { display:block; margin-top:8rpx; font-size:24rpx; color:#374151; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.intake-exp-card-check { position:absolute; top:8rpx; left:8rpx; width:36rpx; height:36rpx; border-radius:50%; background:#FF9800; color:#fff; font-size:24rpx; display:flex; align-items:center; justify-content:center; }
+/* 扩展选择抽屉 */
+.exp-sheet-meta { display:flex; justify-content:flex-end; color:#6B7280; font-size:24rpx; margin-bottom:16rpx; }
+.exp-sheet-item { position:relative; display:flex; align-items:center; gap:20rpx; padding:20rpx 24rpx; border-radius:24rpx; margin-bottom:16rpx; background:#FFFFFF; border:2rpx solid #E7EAF0; box-sizing:border-box; }
+.exp-sheet-item.selected { background:#FFF8EC; border-color:#FF9800; }
+.exp-sheet-cover { position:relative; overflow:hidden; width:120rpx; height:150rpx; border-radius:16rpx; flex:none; background:#F3F4F6; }
+.exp-sheet-cover .cover-dim-text { font-size:18rpx; }
+.exp-sheet-copy { flex:1; min-width:0; }
+.exp-sheet-name { font-size:28rpx; font-weight:700; color:#111827; }
+.exp-sheet-owners { margin-top:6rpx; font-size:22rpx; color:#6B7280; display:flex; align-items:center; }
+.exp-sheet-owners.has { color:#B45309; }
+.exp-sheet-owners-icon { display:flex; align-items:center; justify-content:center; width:24rpx; height:24rpx; margin-right:8rpx; border-radius:50%; background:#22C55E; color:#FFFFFF; font-size:16rpx; font-weight:700; }
+.exp-sheet-owners.is-none { color:#9CA3AF; }
+.exp-sheet-year { position:absolute; top:20rpx; right:24rpx; color:#9CA3AF; font-size:22rpx; }
+.choice-circle { flex:none; width:40rpx; height:40rpx; border-radius:50%; border:3rpx solid #D1D5DB; display:flex; align-items:center; justify-content:center; color:#fff; font-size:26rpx; background:#fff; box-sizing:border-box; }
+.choice-circle.on { background:#FF9800; border-color:#FF9800; }
+.exp-sheet-confirm, .version-sheet-confirm { margin-top:0; width:673rpx; margin-left:auto; margin-right:auto; box-sizing:border-box; min-height:88rpx; border-radius:22rpx; font-size:30rpx; }
+.intake-version-list .entry-card.selected { background:#FFF3E0; }
+
+/* 占位卡：本体封面 + 深绿遮罩 + 描述文字 */
+.cover-img { width:100%; height:100%; display:block; }
+.cover-dim { position:absolute; left:0; top:0; width:100%; height:100%; background:rgba(20,48,42,0.72); display:flex; align-items:center; justify-content:center; }
+.cover-dim-text { color:#FFFFFF; font-size:24rpx; font-weight:700; letter-spacing:2rpx; }
+.cover-name-band { position:absolute; left:0; bottom:0; width:100%; height:40rpx; padding:0 16rpx; box-sizing:border-box; background:rgba(17,24,39,0.72); display:flex; align-items:center; overflow:hidden; }
+.cover-name-text { color:#FFFFFF; font-size:22rpx; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.exp-sheet-item .choice-circle { border-radius:10rpx; }

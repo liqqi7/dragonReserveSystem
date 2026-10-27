@@ -1,0 +1,116 @@
+<view class="sheet-page">
+  <view class="sheet-nav" style="padding-top:{{statusBarHeight}}px">
+    <view class="sheet-nav-row" style="height:{{navHeight}}px">
+      <view class="sheet-nav-icon" bindtap="goBack"><image src="/images/icon-chevron-left-dark.svg" mode="aspectFit"/></view>
+      <text class="sheet-nav-title">记分纸</text>
+      <view class="sheet-nav-spacer"></view>
+    </view>
+  </view>
+
+  <scroll-view type="custom" class="sheet-body" scroll-y>
+    <view class="sheet-title-row">
+      <text class="sheet-game-name">{{gameName}}</text>
+      <view class="sheet-date" bindtap="openDate">
+        <text class="sheet-date-label">{{dateLabel}}</text>
+        <image class="sheet-date-icon" src="/images/tab-calendar-days-lucide.svg" mode="aspectFit"/>
+      </view>
+    </view>
+
+    <view wx:if="{{expansionOptions.length}}" class="sheet-exp">
+      <view class="sheet-exp-summary" bindtap="toggleExpOpen" role="button" aria-label="展开或收起扩展列表">
+        <text class="sheet-exp-label">扩展</text>
+        <text class="sheet-exp-value">{{expSummary}}</text>
+        <image class="sheet-exp-arrow" style="width:26.92rpx;height:15.58rpx;" src="/images/{{expOpen ? 'exp-arrow-up' : 'exp-arrow-down'}}.png" mode="aspectFit"/>
+      </view>
+      <view wx:if="{{expOpen}}" class="sheet-exp-list">
+        <view wx:for="{{expansionOptions}}" wx:key="id" class="sheet-exp-row" data-index="{{index}}" bindtap="toggleScoreExpansion" role="button">
+          <text class="sheet-exp-name">{{item.chinese_name || item.name}}</text>
+          <view class="sheet-exp-box {{item.checked ? 'on' : ''}}"><text wx:if="{{item.checked}}">✓</text></view>
+        </view>
+      </view>
+    </view>
+    <view class="sheet-players">
+      <view wx:for="{{players}}" wx:key="user_id" class="sheet-player">
+        <view class="sheet-avatar">
+          <image wx:if="{{item.avatar_url}}" src="{{item.avatar_url}}" mode="aspectFill"/>
+          <text wx:else>{{item.initial}}</text>
+        </view>
+        <view class="sheet-name-wrap"><text class="sheet-name">{{item.display_name}}</text></view>
+        <view class="sheet-score-box" bindtap="openCalc" data-index="{{index}}">
+          <text class="sheet-score-value {{item.scoreText ? '' : 'is-ph'}}">{{item.scoreText || '输入分数'}}</text>
+          <text class="sheet-score-unit">分</text>
+        </view>
+        <view wx:if="{{players.length > 1}}" class="sheet-remove" bindtap="removePlayer" data-index="{{index}}">
+          <image src="/images/icon-x-gray.svg" mode="aspectFit"/>
+        </view>
+      </view>
+    </view>
+
+    <view class="sheet-search">
+      <image class="sheet-search-icon" src="/images/icon-search-gray.svg" mode="aspectFit"/>
+      <input class="sheet-search-input" placeholder="添加玩家" placeholder-class="sheet-search-ph"
+             value="{{keyword}}" bindinput="keywordInput" bindfocus="keywordFocus"/>
+      <view wx:if="{{keyword}}" class="sheet-search-clear" bindtap="clearKeyword">
+        <image src="/images/icon-x-gray.svg" mode="aspectFit"/>
+      </view>
+    </view>
+    <view wx:if="{{keyword && !searching}}" class="sheet-suggest">
+      <view wx:if="{{!candidates.length}}" class="sheet-suggest-empty">没有匹配的成员</view>
+      <view wx:for="{{candidates}}" wx:key="id" class="sheet-candidate" bindtap="addPlayer" data-index="{{index}}">
+        <view class="sheet-avatar is-small">
+          <image wx:if="{{item.avatar_url}}" src="{{item.avatar_url}}" mode="aspectFill"/>
+          <text wx:else>{{item.initial}}</text>
+        </view>
+        <view class="sheet-name-wrap"><text class="sheet-name">{{item.nickname}}</text></view>
+        <view class="sheet-add"><image src="/images/icon-plus-orange.svg" mode="aspectFit"/></view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="sheet-bottom" style="{{footerPaddingRpx !== null ? 'padding-bottom:' + footerPaddingRpx + 'rpx;' : ''}}">
+    <view class="sheet-save {{saving || !canSave ? 'is-disabled' : ''}}" bindtap="save">{{saving ? '保存中…' : '保存本局'}}</view>
+  </view>
+
+  <view wx:if="{{calcOpen}}" class="calc-mask" bindtap="closeCalc">
+    <view class="calc-panel" catchtap="noop">
+      <view class="calc-head">
+        <text class="calc-title">分数计算器</text>
+        <view class="calc-close" bindtap="closeCalc"><image src="/images/icon-x-gray.svg" mode="aspectFit"/></view>
+      </view>
+      <view class="calc-display">
+        <text class="calc-expr">{{calcExpr || ' '}}</text>
+        <text class="calc-result">{{calcResult !== '' ? calcResult : '0'}}</text>
+      </view>
+      <view class="calc-keys">
+        <view wx:for="{{calcRows}}" wx:for-item="row" wx:key="index" class="calc-row">
+          <view wx:for="{{row}}" wx:for-item="key" wx:key="*this" class="calc-key {{key.cls}}" bindtap="pressKey" data-key="{{key.k}}">{{key.k}}</view>
+        </view>
+      </view>
+      <view class="calc-confirm {{calcResult === '' ? 'is-disabled' : ''}}" bindtap="confirmCalc">{{calcResult !== '' ? '使用 ' + calcResult + ' 分' : '请输入'}}</view>
+    </view>
+  </view>
+  <view wx:if="{{dateOpen}}" class="calc-mask" bindtap="closeDate">
+    <view class="calc-panel date-panel" catchtap="noop">
+      <view class="calc-head">
+        <text class="calc-title">选择日期</text>
+      </view>
+      <view class="date-month-row">
+        <view class="date-month-arrow" bindtap="prevMonth"><image src="/images/icon-chevron-left-600.svg" mode="aspectFit"/></view>
+        <text class="date-month-title">{{viewYear}}年{{viewMonth}}月</text>
+        <view class="date-month-arrow" bindtap="nextMonth"><image src="/images/icon-chevron-right-600.svg" mode="aspectFit"/></view>
+      </view>
+      <view class="date-week-row">
+        <text wx:for="{{calWeeks}}" wx:key="*this" class="date-week">{{item}}</text>
+      </view>
+      <view class="date-grid">
+        <view wx:for="{{calCells}}" wx:key="index" wx:for-index="index"
+              class="date-cell {{item.today ? 'is-today' : ''}} {{item.selected ? 'is-selected' : ''}}"
+              bindtap="pickDate" data-iso="{{item.iso}}">
+          <text>{{item.d}}</text>
+        </view>
+      </view>
+      <view class="calc-confirm" bindtap="confirmDate">{{calConfirm}}</view>
+    </view>
+  </view>
+  <create-access-dialog id="session-expired-dialog" />
+</view>

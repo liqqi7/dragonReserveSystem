@@ -1,0 +1,432 @@
+{
+  "version": "2.20",
+  "children": [
+    {
+      "type": "frame",
+      "id": "aiA001",
+      "x": 0,
+      "y": 0,
+      "name": "分区标识 · 记分纸",
+      "clip": true,
+      "width": 104,
+      "height": 844,
+      "fill": "#F7F3FF",
+      "stroke": "#CDBFEB",
+      "strokeWidth": 1,
+      "layout": "vertical",
+      "gap": 16,
+      "padding": [28, 20],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {"type": "text", "id": "aiA002", "name": "竖排文字-1", "fill": "#6745A7", "content": "记", "fontFamily": "Noto Sans SC", "fontSize": 32, "fontWeight": "700"},
+        {"type": "text", "id": "aiA003", "name": "竖排文字-2", "fill": "#6745A7", "content": "分", "fontFamily": "Noto Sans SC", "fontSize": 32, "fontWeight": "700"},
+        {"type": "text", "id": "aiA004", "name": "竖排文字-3", "fill": "#6745A7", "content": "纸", "fontFamily": "Noto Sans SC", "fontSize": 32, "fontWeight": "700"}
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "aiB001",
+      "x": 208,
+      "y": 0,
+      "name": "页面 · 记分纸 · 对局中",
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "#F7F3FF",
+      "layout": "vertical",
+      "gap": 16,
+      "padding": [54, 16, 16, 16],
+      "children": [
+        {
+          "type": "frame",
+          "id": "aiB002",
+          "name": "顶部导航",
+          "width": "fill_container",
+          "fill": "#00000000",
+          "gap": 12,
+          "alignItems": "center",
+          "justifyContent": "space-between",
+          "padding": [4, 4],
+          "children": [
+            {"type": "text", "id": "aiB003", "name": "返回", "fill": "#111827", "content": "‹", "fontFamily": "Noto Sans SC", "fontSize": 24, "fontWeight": "normal"},
+            {"type": "text", "id": "aiB004", "name": "标题", "fill": "#111827", "content": "记分纸", "fontFamily": "Noto Sans SC", "fontSize": 20, "fontWeight": "700"},
+            {"type": "text", "id": "aiB005", "name": "结束对局", "fill": "#6745A7", "content": "结束对局", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"}
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aiB006",
+          "name": "对局信息卡",
+          "width": "fill_container",
+          "fill": "#FFFFFF",
+          "stroke": "#CDBFEB",
+          "strokeWidth": 1,
+          "radius": 16,
+          "layout": "vertical",
+          "gap": 6,
+          "padding": 16,
+          "children": [
+            {"type": "text", "id": "aiB007", "name": "桌游名称", "fill": "#111827", "content": "阿瓦隆", "fontFamily": "Noto Sans SC", "fontSize": 20, "fontWeight": "700"},
+            {"type": "text", "id": "aiB008", "name": "对局元信息", "fill": "#6B7280", "content": "第 3 轮 · 4 名玩家 · 已进行 23 分钟", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"}
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aiB010",
+          "name": "玩家卡 · 第1名",
+          "width": "fill_container",
+          "fill": "#FFFFFF",
+          "stroke": "#CDBFEB",
+          "strokeWidth": 1,
+          "radius": 16,
+          "gap": 12,
+          "alignItems": "center",
+          "padding": 16,
+          "children": [
+            {"type": "frame", "id": "aiB011", "name": "名次", "width": 32, "height": 32, "fill": "#6745A7", "radius": 16, "justifyContent": "center", "alignItems": "center", "children": [
+              {"type": "text", "id": "aiB012", "name": "名次数字", "fill": "#FFFFFF", "content": "1", "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": "700"}
+            ]},
+            {"type": "frame", "id": "aiB013", "name": "玩家与本轮", "width": "fill_container", "layout": "vertical", "gap": 2, "children": [
+              {"type": "text", "id": "aiB014", "name": "玩家名", "fill": "#111827", "content": "小库", "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": "700"},
+              {"type": "text", "id": "aiB015", "name": "本轮得分", "fill": "#6B7280", "content": "本轮 +7", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"}
+            ]},
+            {"type": "text", "id": "aiB016", "name": "总分", "fill": "#6745A7", "content": "42", "fontFamily": "Noto Sans SC", "fontSize": 32, "fontWeight": "700"}
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aiB020",
+          "name": "玩家卡 · 第2名",
+          "width": "fill_container",
+          "fill": "#FFFFFF",
+          "stroke": "#CDBFEB",
+          "strokeWidth": 1,
+          "radius": 16,
+          "gap": 12,
+          "alignItems": "center",
+          "padding": 16,
+          "children": [
+            {"type": "frame", "id": "aiB021", "name": "名次", "width": 32, "height": 32, "fill": "#F3F4F6", "radius": 16, "justifyContent": "center", "alignItems": "center", "children": [
+              {"type": "text", "id": "aiB022", "name": "名次数字", "fill": "#6B7280", "content": "2", "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": "700"}
+            ]},
+            {"type": "frame", "id": "aiB023", "name": "玩家与本轮", "width": "fill_container", "layout": "vertical", "gap": 2, "children": [
+              {"type": "text", "id": "aiB024", "name": "玩家名", "fill": "#111827", "content": "阿龙", "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": "700"},
+              {"type": "text", "id": "aiB025", "name": "本轮得分", "fill": "#6B7280", "content": "本轮 +5", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"}
+            ]},
+            {"type": "text", "id": "aiB026", "name": "总分", "fill": "#111827", "content": "38", "fontFamily": "Noto Sans SC", "fontSize": 32, "fontWeight": "700"}
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aiB030",
+          "name": "玩家卡 · 第3名",
+          "width": "fill_container",
+          "fill": "#FFFFFF",
+          "stroke": "#CDBFEB",
+          "strokeWidth": 1,
+          "radius": 16,
+          "gap": 12,
+          "alignItems": "center",
+          "padding": 16,
+          "children": [
+            {"type": "frame", "id": "aiB031", "name": "名次", "width": 32, "height": 32, "fill": "#F3F4F6", "radius": 16, "justifyContent": "center", "alignItems": "center", "children": [
+              {"type": "text", "id": "aiB032", "name": "名次数字", "fill": "#6B7280", "content": "3", "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": "700"}
+            ]},
+            {"type": "frame", "id": "aiB033", "name": "玩家与本轮", "width": "fill_container", "layout": "vertical", "gap": 2, "children": [
+              {"type": "text", "id": "aiB034", "name": "玩家名", "fill": "#111827", "content": "城城", "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": "700"},
+              {"type": "text", "id": "aiB035", "name": "本轮得分", "fill": "#6B7280", "content": "本轮 -2", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"}
+            ]},
+            {"type": "text", "id": "aiB036", "name": "总分", "fill": "#111827", "content": "29", "fontFamily": "Noto Sans SC", "fontSize": 32, "fontWeight": "700"}
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aiB040",
+          "name": "玩家卡 · 第4名",
+          "width": "fill_container",
+          "fill": "#FFFFFF",
+          "stroke": "#CDBFEB",
+          "strokeWidth": 1,
+          "radius": 16,
+          "gap": 12,
+          "alignItems": "center",
+          "padding": 16,
+          "children": [
+            {"type": "frame", "id": "aiB041", "name": "名次", "width": 32, "height": 32, "fill": "#F3F4F6", "radius": 16, "justifyContent": "center", "alignItems": "center", "children": [
+              {"type": "text", "id": "aiB042", "name": "名次数字", "fill": "#6B7280", "content": "4", "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": "700"}
+            ]},
+            {"type": "frame", "id": "aiB043", "name": "玩家与本轮", "width": "fill_container", "layout": "vertical", "gap": 2, "children": [
+              {"type": "text", "id": "aiB044", "name": "玩家名", "fill": "#111827", "content": "草莓酱", "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": "700"},
+              {"type": "text", "id": "aiB045", "name": "本轮得分", "fill": "#6B7280", "content": "本轮 +1", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"}
+            ]},
+            {"type": "text", "id": "aiB046", "name": "总分", "fill": "#111827", "content": "21", "fontFamily": "Noto Sans SC", "fontSize": 32, "fontWeight": "700"}
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aiB050",
+          "name": "主按钮 · 记录下一轮",
+          "width": "fill_container",
+          "fill": "#6745A7",
+          "radius": 12,
+          "padding": [14, 0],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {"type": "text", "id": "aiB051", "name": "按钮文字", "fill": "#FFFFFF", "content": "记录下一轮", "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": "700"}
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "aiC001",
+      "x": 702,
+      "y": 0,
+      "name": "页面 · 记分纸 · 对局记录",
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "#F7F3FF",
+      "layout": "vertical",
+      "gap": 16,
+      "padding": [54, 16, 16, 16],
+      "children": [
+        {
+          "type": "frame",
+          "id": "aiC002",
+          "name": "顶部导航",
+          "width": "fill_container",
+          "fill": "#00000000",
+          "gap": 12,
+          "alignItems": "center",
+          "justifyContent": "space-between",
+          "padding": [4, 4],
+          "children": [
+            {"type": "text", "id": "aiC003", "name": "返回", "fill": "#111827", "content": "‹", "fontFamily": "Noto Sans SC", "fontSize": 24, "fontWeight": "normal"},
+            {"type": "text", "id": "aiC004", "name": "标题", "fill": "#111827", "content": "对局记录", "fontFamily": "Noto Sans SC", "fontSize": 20, "fontWeight": "700"},
+            {"type": "text", "id": "aiC005", "name": "右侧占位", "fill": "#00000000", "content": "　", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"}
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aiC006",
+          "name": "筛选 Tab",
+          "width": "fill_container",
+          "gap": 8,
+          "children": [
+            {"type": "frame", "id": "aiC007", "name": "Tab · 全部 · 选中", "fill": "#6745A7", "radius": 16, "padding": [6, 14], "justifyContent": "center", "alignItems": "center", "children": [
+              {"type": "text", "id": "aiC008", "name": "文字", "fill": "#FFFFFF", "content": "全部", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "700"}
+            ]},
+            {"type": "frame", "id": "aiC009", "name": "Tab · 胜利", "fill": "#FFFFFF", "stroke": "#CDBFEB", "strokeWidth": 1, "radius": 16, "padding": [6, 14], "justifyContent": "center", "alignItems": "center", "children": [
+              {"type": "text", "id": "aiC010", "name": "文字", "fill": "#6B7280", "content": "胜利", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"}
+            ]},
+            {"type": "frame", "id": "aiC011", "name": "Tab · 失利", "fill": "#FFFFFF", "stroke": "#CDBFEB", "strokeWidth": 1, "radius": 16, "padding": [6, 14], "justifyContent": "center", "alignItems": "center", "children": [
+              {"type": "text", "id": "aiC012", "name": "文字", "fill": "#6B7280", "content": "失利", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"}
+            ]}
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aiC020",
+          "name": "记录卡 · 1",
+          "width": "fill_container",
+          "fill": "#FFFFFF",
+          "stroke": "#CDBFEB",
+          "strokeWidth": 1,
+          "radius": 16,
+          "gap": 12,
+          "alignItems": "center",
+          "padding": 16,
+          "children": [
+            {"type": "frame", "id": "aiC021", "name": "封面色块", "width": 48, "height": 48, "fill": "#6745A7", "radius": 12, "justifyContent": "center", "alignItems": "center", "children": [
+              {"type": "text", "id": "aiC022", "name": "封面字", "fill": "#FFFFFF", "content": "瓦", "fontFamily": "Noto Sans SC", "fontSize": 20, "fontWeight": "700"}
+            ]},
+            {"type": "frame", "id": "aiC023", "name": "记录信息", "width": "fill_container", "layout": "vertical", "gap": 4, "children": [
+              {"type": "text", "id": "aiC024", "name": "桌游名", "fill": "#111827", "content": "阿瓦隆", "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": "700"},
+              {"type": "text", "id": "aiC025", "name": "元信息", "fill": "#6B7280", "content": "10月11日 · 4 人 · 5 轮", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"}
+            ]},
+            {"type": "frame", "id": "aiC026", "name": "结果徽章 · 胜", "fill": "#6745A7", "radius": 12, "padding": [4, 10], "justifyContent": "center", "alignItems": "center", "children": [
+              {"type": "text", "id": "aiC027", "name": "徽章字", "fill": "#FFFFFF", "content": "胜", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "700"}
+            ]}
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aiC030",
+          "name": "记录卡 · 2",
+          "width": "fill_container",
+          "fill": "#FFFFFF",
+          "stroke": "#CDBFEB",
+          "strokeWidth": 1,
+          "radius": 16,
+          "gap": 12,
+          "alignItems": "center",
+          "padding": 16,
+          "children": [
+            {"type": "frame", "id": "aiC031", "name": "封面色块", "width": 48, "height": 48, "fill": "#CDBFEB", "radius": 12, "justifyContent": "center", "alignItems": "center", "children": [
+              {"type": "text", "id": "aiC032", "name": "封面字", "fill": "#6745A7", "content": "卡", "fontFamily": "Noto Sans SC", "fontSize": 20, "fontWeight": "700"}
+            ]},
+            {"type": "frame", "id": "aiC033", "name": "记录信息", "width": "fill_container", "layout": "vertical", "gap": 4, "children": [
+              {"type": "text", "id": "aiC034", "name": "桌游名", "fill": "#111827", "content": "卡坦岛", "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": "700"},
+              {"type": "text", "id": "aiC035", "name": "元信息", "fill": "#6B7280", "content": "10月8日 · 3 人 · 1 局", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"}
+            ]},
+            {"type": "frame", "id": "aiC036", "name": "结果徽章 · 负", "fill": "#F3F4F6", "radius": 12, "padding": [4, 10], "justifyContent": "center", "alignItems": "center", "children": [
+              {"type": "text", "id": "aiC037", "name": "徽章字", "fill": "#6B7280", "content": "负", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "700"}
+            ]}
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aiC040",
+          "name": "记录卡 · 3",
+          "width": "fill_container",
+          "fill": "#FFFFFF",
+          "stroke": "#CDBFEB",
+          "strokeWidth": 1,
+          "radius": 16,
+          "gap": 12,
+          "alignItems": "center",
+          "padding": 16,
+          "children": [
+            {"type": "frame", "id": "aiC041", "name": "封面色块", "width": 48, "height": 48, "fill": "#F3F4F6", "radius": 12, "justifyContent": "center", "alignItems": "center", "children": [
+              {"type": "text", "id": "aiC042", "name": "封面字", "fill": "#6B7280", "content": "现", "fontFamily": "Noto Sans SC", "fontSize": 20, "fontWeight": "700"}
+            ]},
+            {"type": "frame", "id": "aiC043", "name": "记录信息", "width": "fill_container", "layout": "vertical", "gap": 4, "children": [
+              {"type": "text", "id": "aiC044", "name": "桌游名", "fill": "#111827", "content": "现代艺术", "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": "700"},
+              {"type": "text", "id": "aiC045", "name": "元信息", "fill": "#6B7280", "content": "9月30日 · 5 人 · 4 轮", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"}
+            ]},
+            {"type": "frame", "id": "aiC046", "name": "结果徽章 · 胜", "fill": "#6745A7", "radius": 12, "padding": [4, 10], "justifyContent": "center", "alignItems": "center", "children": [
+              {"type": "text", "id": "aiC047", "name": "徽章字", "fill": "#FFFFFF", "content": "胜", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "700"}
+            ]}
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "aiD001",
+      "x": 1196,
+      "y": 0,
+      "name": "页面 · 记分纸 · 对局详情",
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "#F7F3FF",
+      "layout": "vertical",
+      "gap": 16,
+      "padding": [54, 16, 16, 16],
+      "children": [
+        {
+          "type": "frame",
+          "id": "aiD002",
+          "name": "顶部导航",
+          "width": "fill_container",
+          "fill": "#00000000",
+          "gap": 12,
+          "alignItems": "center",
+          "justifyContent": "space-between",
+          "padding": [4, 4],
+          "children": [
+            {"type": "text", "id": "aiD003", "name": "返回", "fill": "#111827", "content": "‹", "fontFamily": "Noto Sans SC", "fontSize": 24, "fontWeight": "normal"},
+            {"type": "text", "id": "aiD004", "name": "标题", "fill": "#111827", "content": "对局详情", "fontFamily": "Noto Sans SC", "fontSize": 20, "fontWeight": "700"},
+            {"type": "text", "id": "aiD005", "name": "分享", "fill": "#6745A7", "content": "分享", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"}
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aiD006",
+          "name": "冠军汇总卡",
+          "width": "fill_container",
+          "fill": "#6745A7",
+          "radius": 16,
+          "layout": "vertical",
+          "gap": 6,
+          "padding": 20,
+          "children": [
+            {"type": "text", "id": "aiD007", "name": "冠军标签", "fill": "#CDBFEB", "content": "本场冠军 · 阿瓦隆 · 5 轮", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"},
+            {"type": "text", "id": "aiD008", "name": "冠军名", "fill": "#FFFFFF", "content": "小库 · 42 分", "fontFamily": "Noto Sans SC", "fontSize": 24, "fontWeight": "700"},
+            {"type": "text", "id": "aiD009", "name": "日期", "fill": "#CDBFEB", "content": "2026年10月11日 · 4 名玩家", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"}
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aiD010",
+          "name": "轮次明细表",
+          "width": "fill_container",
+          "fill": "#FFFFFF",
+          "stroke": "#CDBFEB",
+          "strokeWidth": 1,
+          "radius": 16,
+          "layout": "vertical",
+          "gap": 0,
+          "padding": [8, 16],
+          "children": [
+            {"type": "frame", "id": "aiD011", "name": "表头", "width": "fill_container", "gap": 0, "padding": [10, 0], "alignItems": "center", "children": [
+              {"type": "text", "id": "aiD012", "name": "列 · 轮次", "width": 60, "fill": "#6B7280", "content": "轮次", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD013", "name": "列 · 小库", "width": 70, "fill": "#6B7280", "content": "小库", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD014", "name": "列 · 阿龙", "width": 70, "fill": "#6B7280", "content": "阿龙", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD015", "name": "列 · 城城", "width": 70, "fill": "#6B7280", "content": "城城", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD016", "name": "列 · 草莓", "width": 70, "fill": "#6B7280", "content": "草莓", "fontFamily": "Noto Sans SC", "fontSize": 12, "fontWeight": "normal"}
+            ]},
+            {"type": "frame", "id": "aiD017", "name": "行 · 第1轮", "width": "fill_container", "gap": 0, "padding": [10, 0], "alignItems": "center", "children": [
+              {"type": "text", "id": "aiD018", "name": "轮次", "width": 60, "fill": "#6B7280", "content": "1", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD019", "name": "分", "width": 70, "fill": "#111827", "content": "+10", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD020", "name": "分", "width": 70, "fill": "#111827", "content": "+8", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD021", "name": "分", "width": 70, "fill": "#111827", "content": "+6", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD022", "name": "分", "width": 70, "fill": "#111827", "content": "+4", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"}
+            ]},
+            {"type": "frame", "id": "aiD023", "name": "行 · 第2轮", "width": "fill_container", "gap": 0, "padding": [10, 0], "alignItems": "center", "children": [
+              {"type": "text", "id": "aiD024", "name": "轮次", "width": 60, "fill": "#6B7280", "content": "2", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD025", "name": "分", "width": 70, "fill": "#111827", "content": "+12", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD026", "name": "分", "width": 70, "fill": "#111827", "content": "+9", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD027", "name": "分", "width": 70, "fill": "#111827", "content": "+10", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD028", "name": "分", "width": 70, "fill": "#111827", "content": "+7", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"}
+            ]},
+            {"type": "frame", "id": "aiD029", "name": "行 · 第3轮", "width": "fill_container", "gap": 0, "padding": [10, 0], "alignItems": "center", "children": [
+              {"type": "text", "id": "aiD030", "name": "轮次", "width": 60, "fill": "#6B7280", "content": "3", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD031", "name": "分", "width": 70, "fill": "#111827", "content": "+7", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD032", "name": "分", "width": 70, "fill": "#111827", "content": "+5", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD033", "name": "分", "width": 70, "fill": "#111827", "content": "-2", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"},
+              {"type": "text", "id": "aiD034", "name": "分", "width": 70, "fill": "#111827", "content": "+1", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"}
+            ]},
+            {"type": "frame", "id": "aiD035", "name": "行 · 总计", "width": "fill_container", "gap": 0, "padding": [12, 0], "alignItems": "center", "children": [
+              {"type": "text", "id": "aiD036", "name": "轮次", "width": 60, "fill": "#111827", "content": "总计", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "700"},
+              {"type": "text", "id": "aiD037", "name": "分", "width": 70, "fill": "#6745A7", "content": "42", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "700"},
+              {"type": "text", "id": "aiD038", "name": "分", "width": 70, "fill": "#111827", "content": "38", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "700"},
+              {"type": "text", "id": "aiD039", "name": "分", "width": 70, "fill": "#111827", "content": "29", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "700"},
+              {"type": "text", "id": "aiD040", "name": "分", "width": 70, "fill": "#111827", "content": "21", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "700"}
+            ]}
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "aiE001",
+      "x": 1690,
+      "y": 0,
+      "name": "状态 · 记分纸 · 空状态",
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "#F7F3FF",
+      "layout": "vertical",
+      "gap": 16,
+      "padding": [54, 32, 16, 32],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {"type": "frame", "id": "aiE002", "name": "空状态图形", "width": 96, "height": 96, "fill": "#FFFFFF", "stroke": "#CDBFEB", "strokeWidth": 1, "radius": 48, "justifyContent": "center", "alignItems": "center", "children": [
+          {"type": "text", "id": "aiE003", "name": "图形字", "fill": "#CDBFEB", "content": "记", "fontFamily": "Noto Sans SC", "fontSize": 32, "fontWeight": "700"}
+        ]},
+        {"type": "text", "id": "aiE004", "name": "主文案", "fill": "#111827", "content": "还没有对局记录", "fontFamily": "Noto Sans SC", "fontSize": 20, "fontWeight": "700"},
+        {"type": "text", "id": "aiE005", "name": "副文案", "fill": "#6B7280", "content": "每次桌游开局后，用记分纸记录每轮得分，自动累计总分并排名", "fontFamily": "Noto Sans SC", "fontSize": 14, "fontWeight": "normal"},
+        {"type": "frame", "id": "aiE006", "name": "主按钮 · 开始记分", "width": "fill_container", "fill": "#6745A7", "radius": 12, "padding": [14, 0], "justifyContent": "center", "alignItems": "center", "children": [
+          {"type": "text", "id": "aiE007", "name": "按钮文字", "fill": "#FFFFFF", "content": "开始记分", "fontFamily": "Noto Sans SC", "fontSize": 16, "fontWeight": "700"}
+        ]}
+      ]
+    }
+  ]
+}
