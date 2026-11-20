@@ -100,37 +100,24 @@
   line-height: 38.46154rpx;
 }
 
-.profile-editor-avatar-button,
-.profile-editor-avatar-image,
-.profile-editor-avatar-placeholder {
-  width: 76.92308rpx;
-  height: 76.92308rpx;
-  border-radius: 38.46154rpx;
-}
-
-button.profile-editor-avatar-button {
+.profile-editor-avatar-button {
   flex: none;
   width: 76.92308rpx;
   height: 76.92308rpx;
-  min-width: 76.92308rpx;
-  max-width: 76.92308rpx;
-  min-height: 76.92308rpx;
-  max-height: 76.92308rpx;
-  padding: 0;
-  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   box-sizing: border-box;
+  border-radius: 38.46154rpx;
   border: 1.92308rpx solid #e5e7eb;
   background: #f9fafb;
-  line-height: 0;
 }
 
-.profile-editor-avatar-button::after,
-.profile-editor-button::after {
-  border: none;
+.profile-editor-avatar-image,
+.profile-editor-avatar-placeholder {
+  width: 100%;
+  height: 100%;
 }
 
 .profile-editor-avatar-image {
@@ -187,6 +174,10 @@ button.profile-editor-avatar-button {
   font-weight: 600;
   line-height: 84.61538rpx;
   box-sizing: border-box;
+}
+
+.profile-editor-button::after {
+  border: none;
 }
 
 .profile-editor-button-cancel {
