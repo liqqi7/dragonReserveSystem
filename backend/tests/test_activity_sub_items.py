@@ -1,11 +1,12 @@
 from datetime import timedelta
 
 import pytest
+from sqlalchemy import event, select
+from sqlalchemy.exc import OperationalError
 
-from app.models import Activity
+from app.models import Activity, ActivityParticipant
 from app.models.activity import ActivityParticipantSubItem
 from app.services.activity_service import _app_now
-from sqlalchemy import select
 
 
 def create(client, headers, **changes):
@@ -53,6 +54,35 @@ def test_invalid_selection_is_atomic(client, admin_headers, user_headers, select
         selection = [activity["sub_items"][0]["id"]] * 2
     assert signup(client, user_headers, activity, selection).status_code == 422
     assert client.get(f"/api/v2/activities/{activity['id']}").json()["participants"] == []
+
+
+@pytest.mark.parametrize(("deadlocks", "expected_status"), [(1, 200), (2, 409)])
+def test_grouped_signup_retries_deadlock_once(client, admin_headers, user_headers, db_session, deadlocks, expected_status):
+    activity = create(client, admin_headers).json()
+    ids = [item["id"] for item in activity["sub_items"]]
+    attempts = 0
+
+    @event.listens_for(db_session, "after_flush")
+    def simulate_deadlock(session, flush_context):
+        nonlocal attempts
+        if any(isinstance(row, ActivityParticipant) for row in session.new):
+            attempts += 1
+            if attempts <= deadlocks:
+                raise OperationalError(None, None, RuntimeError(1213, "Deadlock found"))
+
+    response = signup(client, user_headers, activity, ids)
+    assert response.status_code == expected_status, response.text
+    assert attempts == 2
+    participant_ids = db_session.scalars(select(ActivityParticipant.id).where(
+        ActivityParticipant.activity_id == activity["id"])).all()
+    links = db_session.execute(select(ActivityParticipantSubItem.participant_id, ActivityParticipantSubItem.sub_item_id)
+                               .where(ActivityParticipantSubItem.activity_id == activity["id"])).all()
+    if expected_status == 200:
+        assert participant_ids == [response.json()["participant_id"]]
+        assert sorted(links) == [(participant_ids[0], item_id) for item_id in sorted(ids)]
+    else:
+        assert participant_ids == []
+        assert links == []
 
 
 def test_full_subitem_and_edit_guards(client, admin_headers, user_headers, second_user_headers):

@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from sqlalchemy import select, update
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.orm.attributes import set_committed_value
 
@@ -243,6 +244,22 @@ def replace_sub_items(activity: Activity, items: list[dict]) -> None:
 def signup_activity(db: Session, activity: Activity, user: User, sub_item_ids: list[int] | None = None) -> ActivityParticipant:
     """Register once for the entire activity; selected projects are atomic."""
 
+    for attempt in range(2):
+        try:
+            participant = _signup_once(db, activity, user, sub_item_ids)
+            break
+        except OperationalError as exc:
+            if exc.orig.args[:1] != (1213,):
+                raise
+            # InnoDB rolled back the deadlock victim. Recheck capacity under fresh locks.
+            db.rollback()
+            if attempt == 1:
+                raise ConflictError("报名繁忙，请稍后重试") from exc
+    db.refresh(participant)
+    return participant
+
+
+def _signup_once(db: Session, activity: Activity, user: User, sub_item_ids: list[int] | None) -> ActivityParticipant:
     activity = lock_activity(db, activity)
     if activity.status in TERMINAL_ACTIVITY_STATUSES:
         message = "Activity has been cancelled" if activity.status == CANCELLED else f"活动{activity.status}"
@@ -287,7 +304,6 @@ def signup_activity(db: Session, activity: Activity, user: User, sub_item_ids: l
         db.add(ActivityParticipantSubItem(activity_id=activity.id, participant_id=participant.id,
                                           sub_item_id=item_id, user_id=user.id))
     db.commit()
-    db.refresh(participant)
     return participant
 
 

@@ -14,6 +14,7 @@ const { resolveLocalMediaUrl, isLocalTestMediaUrl, getApiEnvironment } = require
 const { chooseUploadedAvatar } = require("../../utils/avatarPicker");
 const { getBottomSafeAreaRpx, getBottomContentInsetRpx, getWindowInfoCompat } = require("../../utils/safeArea");
 const { resolveActivityWeather } = require("../../utils/activityWeatherCache");
+const { animateSignupConfetti } = require("../../utils/signupConfetti");
 const {
   formatActivityDate,
   formatActivityTime,
@@ -105,6 +106,7 @@ Page({
     signupOptions: [],
     signupSelection: [],
     signupSubmitting: false,
+    showSignupConfetti: false,
     signupSheetContentHeightRpx: 742.31,
     projectMembersContainerRendered: false,
     showProjectMembers: false,
@@ -201,6 +203,7 @@ Page({
   },
 
   onShow() {
+    this._detailHidden = false;
     this.syncUser();
     if (!this.data.activityId) return;
     if (!this._hasShownOnce) {
@@ -211,6 +214,9 @@ Page({
   },
 
   onHide() {
+    this._detailHidden = true;
+    this._signupConfettiAfterSheet = false;
+    this.stopSignupConfetti();
     if (this._detailLoadingVisible) {
       wx.hideLoading();
       this._detailLoadingVisible = false;
@@ -807,8 +813,40 @@ Page({
   onSubItemSignupAfterLeave() {
     if (!this.data.showSubItemSignup && this.data.subItemSignupContainerRendered) {
       this.setData({ subItemSignupContainerRendered: false });
+      if (this._signupConfettiAfterSheet) {
+        this._signupConfettiAfterSheet = false;
+        this.playSignupConfetti();
+      }
     }
   },
+
+  playSignupConfetti() {
+    if (this._detailHidden || this._detailUnloaded) return;
+    this.stopSignupConfetti();
+    const run = { cancel: null };
+    this._signupConfetti = run;
+    this.setData({ showSignupConfetti: true }, () => {
+      if (this._signupConfetti !== run) return;
+      this.createSelectorQuery().select("#signup-confetti-canvas").fields({ node: true, size: true }).exec(results => {
+        if (this._signupConfetti !== run) return;
+        const info = results && results[0];
+        if (info && info.node && info.width > 0 && info.height > 0) {
+          run.cancel = animateSignupConfetti(info.node, info.width, info.height, getWindowInfoCompat().pixelRatio, () => {
+            if (this._signupConfetti === run) this.stopSignupConfetti();
+          });
+        }
+        if (!run.cancel) this.stopSignupConfetti();
+      });
+    });
+  },
+
+  stopSignupConfetti() {
+    const run = this._signupConfetti;
+    this._signupConfetti = null;
+    if (run && run.cancel) run.cancel();
+    if (!this._detailUnloaded && this.data.showSignupConfetti) this.setData({ showSignupConfetti: false });
+  },
+
   toggleSignupOption(e) {
     if (this.data.signupSubmitting) return;
     const id = Number(e.currentTarget.dataset.id);
@@ -1043,7 +1081,10 @@ Page({
       .signupActivity(activity._id, selectedIds || [])
       .then(() => {
         wx.hideLoading();
+        const waitForSheet = this.data.subItemSignupContainerRendered;
+        this._signupConfettiAfterSheet = waitForSheet && !this._detailHidden && !this._detailUnloaded;
         this.setData({ showSubItemSignup: false, signupSelection: [] });
+        if (!waitForSheet) this.playSignupConfetti();
         wx.showToast({ title: "报名成功", icon: "success" });
         return this.refreshDetail({ silent: true });
       })

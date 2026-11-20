@@ -29,11 +29,29 @@ def test_update_current_user_rejects_external_avatar_url(client, user_headers) -
     assert response.status_code == 422
 
 
-def test_upload_current_user_avatar_returns_permanent_url(client, user_headers) -> None:
+@pytest.mark.parametrize("base_path", ["", "/test-api"])
+def test_uploaded_avatar_url_can_be_saved_to_profile(client, user_headers, monkeypatch, base_path) -> None:
+    from app.api.v1 import users as users_api
+    from app.services import user_service
+
+    public_base = f"https://media.example.test{base_path}"
+    monkeypatch.setattr(users_api.settings, "public_base_url", public_base)
+    monkeypatch.setattr(user_service.settings, "public_base_url", public_base)
     response = client.post("/api/v1/users/me/avatar", headers=user_headers, files={"file": ("avatar.png", BytesIO(b"\x89PNG\r\n\x1a\nfake"), "image/png")})
     assert response.status_code == 200
-    avatar_path = urlparse(response.json()["avatar_url"]).path
+    avatar_url = response.json()["avatar_url"]
+    assert avatar_url.startswith(f"{public_base}/media/avatars/")
+    avatar_path = urlparse(avatar_url).path.removeprefix(base_path)
     assert client.get(avatar_path).status_code == 200
+
+    saved = client.patch("/api/v1/users/me", headers=user_headers, json={"nickname": "Renamed", "avatar_url": avatar_url})
+    assert saved.status_code == 200
+    assert saved.json()["nickname"] == "Renamed"
+    assert saved.json()["avatar_url"] == avatar_url
+
+    other_host = avatar_url.replace("media.example.test", "other.example.test")
+    rejected = client.patch("/api/v1/users/me", headers=user_headers, json={"nickname": "Renamed", "avatar_url": other_host})
+    assert rejected.status_code == 422
 
 
 def test_user_invite_code_grants_user_role(client, user_headers, monkeypatch) -> None:

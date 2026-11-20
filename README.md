@@ -49,6 +49,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\start_backend_test.ps1
 
 正常发版的发布门槛、执行顺序与回滚条件见 [后端发布说明](backend/README.md#记忆模块正式发布)。
 
+从干净的发版目录运行 `node scripts/init_miniprogram_config.cjs --production`，再用该目录编译和上传小程序。命令会生成或核对正式 `config.js`，现有配置与正式模板不一致时退出。
+
 ## 发布时保留登录状态
 
 发布必须保留生产 `JWT_SECRET_KEY`、`JWT_ALGORITHM` 及登录凭证有效期配置，不生成或替换签名密钥。已确认接受旧密钥风险的既有部署，可在发布时设置 `ALLOW_LEGACY_JWT_SECRET=true`，仅放宽旧密钥占位标识检查；默认关闭，新部署不得开启。空密钥、程序内置默认密钥及其他生产安全配置仍会被拒绝，实际签名和验签流程不变，原有未过期凭证继续有效。开启兼容时启动日志会记录风险提示，但不打印密钥或凭证。代码更新本身不会自动修改服务器配置。

@@ -1,4 +1,25 @@
+from types import SimpleNamespace
+
+import pytest
+
+from app.core.exceptions import ValidationAppError
 from app.models import User
+from app.services import auth_service
+
+
+@pytest.mark.parametrize("production", [True, False])
+def test_fixed_wechat_identity_is_only_available_outside_production(monkeypatch, production):
+    settings = SimpleNamespace(
+        wechat_app_id="", wechat_app_secret="", wechat_dev_openid="fixture-openid",
+        is_production_runtime=production,
+    )
+    monkeypatch.setattr(auth_service, "get_settings", lambda: settings)
+
+    if production:
+        with pytest.raises(ValidationAppError, match="WeChat login is not configured"):
+            auth_service.exchange_wechat_code("fixture-code")
+    else:
+        assert auth_service.exchange_wechat_code("fixture-code") == {"openid": "fixture-openid"}
 
 
 def test_wechat_login_success(client, monkeypatch) -> None:

@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { createParticles, sampleParticle } = require("../utils/signupConfetti");
 
 const pageDirectory = path.join(__dirname, "../pages/activity_detail");
 const pageSource = fs.readFileSync(path.join(pageDirectory, "activity_detail.js"), "utf8");
@@ -18,6 +19,8 @@ function makePage() {
   const requests = [];
   const notifications = [];
   const refreshes = [];
+  const canvasQueries = [];
+  const animations = [];
   const app = { globalData: {
     accessToken: "fixture-token",
     userId: "17",
@@ -40,6 +43,14 @@ function makePage() {
         isDefaultNickname: () => false,
         isDefaultAvatar: () => false
       };
+      if (name === "../../utils/safeArea") return { getWindowInfoCompat: () => ({ pixelRatio: 3 }) };
+      if (name === "../../utils/signupConfetti") return {
+        animateSignupConfetti(node, width, height, pixelRatio, finish) {
+          const animation = { node, width, height, pixelRatio, finish, cancelled: false };
+          animations.push(animation);
+          return () => { animation.cancelled = true; };
+        }
+      };
       return {};
     },
     wx: {
@@ -49,9 +60,7 @@ function makePage() {
       hideLoading() {},
       showToast: value => notifications.push(value)
     },
-    console: { error() {} },
-    setTimeout,
-    clearTimeout
+    console: { error() {} }
   });
   const page = {
     ...definition,
@@ -60,6 +69,13 @@ function makePage() {
       patches.push(plain(patch));
       Object.assign(this.data, patch);
       if (callback) callback();
+    },
+    createSelectorQuery() {
+      return {
+        select(selector) { assert.equal(selector, "#signup-confetti-canvas"); return this; },
+        fields() { return this; },
+        exec(callback) { canvasQueries.push(callback); }
+      };
     },
     refreshDetail(options) { refreshes.push(options); return Promise.resolve(); }
   };
@@ -74,8 +90,9 @@ function makePage() {
     ]
   };
   return {
-    page, patches, requests, notifications, refreshes,
-    flushNextTick() { while (nextTicks.length) nextTicks.shift()(); }
+    page, patches, requests, notifications, refreshes, canvasQueries, animations,
+    flushNextTick() { while (nextTicks.length) nextTicks.shift()(); },
+    finishCanvasQuery() { canvasQueries.shift()([{ node: {}, width: 390, height: 844 }]); }
   };
 }
 
@@ -130,6 +147,11 @@ test("empty selection sends no signup; pending signup locks selection and preven
   assert.deepEqual(plain(h.page.data.signupSelection), []);
   assert.equal(h.refreshes.length, 1);
   assert.equal(h.notifications.at(-1).title, "报名成功");
+  assert.equal(h.page.data.showSignupConfetti, false, "wait for the native sheet to finish closing");
+  h.page.onSubItemSignupAfterLeave();
+  assert.equal(h.page.data.showSignupConfetti, true);
+  h.page.onSubItemSignupAfterLeave();
+  assert.equal(h.canvasQueries.length, 1, "duplicate afterleave cannot replay the effect");
 });
 
 test("failed signup releases the lock and refreshes project availability before reopening", async () => {
@@ -145,6 +167,8 @@ test("failed signup releases the lock and refreshes project availability before 
   assert.deepEqual(plain(h.page.data.signupSelection), []);
   assert.equal(h.refreshes.length, 1);
   assert.equal(h.notifications.at(-1).title, "该子项目人数已满");
+  h.page.onSubItemSignupAfterLeave();
+  assert.equal(h.page.data.showSignupConfetti, false);
 
   h.page.data.activity.subItems[0].current_participants = 4;
   h.page.directSignup(h.page.data.activity);
@@ -165,11 +189,70 @@ test("activities without sub-projects retain direct signup and do not open the p
     assert.deepEqual(h.requests[0].selectedIds, []);
     assert.equal(h.page.data.subItemSignupContainerRendered, false);
     assert.equal(h.page.data.showSubItemSignup, false);
+    assert.equal(h.page.data.showSignupConfetti, false, "wait for successful signup");
     h.requests[0].resolve();
     await tick();
     assert.equal(h.page.data.signupSubmitting, false);
     assert.equal(h.notifications.at(-1).title, "报名成功");
+    assert.equal(h.page.data.showSignupConfetti, true);
+    h.finishCanvasQuery();
+    assert.equal(h.animations.length, 1);
+    h.animations[0].finish();
+    assert.equal(h.page.data.showSignupConfetti, false);
   }
+});
+
+test("leaving during grouped signup prevents a late celebration on return", async () => {
+  const h = makePage();
+  h.page.directSignup(h.page.data.activity);
+  h.flushNextTick();
+  h.page.toggleSignupOption(tap({ id: 101 }));
+  h.page.confirmSubItemSignup();
+  h.requests[0].resolve();
+  await tick();
+
+  h.page.onHide();
+  h.page.onShow();
+  h.page.onSubItemSignupAfterLeave();
+  assert.equal(h.page.data.showSignupConfetti, false);
+  assert.equal(h.canvasQueries.length, 0);
+});
+
+test("a canvas callback received after navigation cannot start a confetti animation", () => {
+  const h = makePage();
+  h.page.playSignupConfetti();
+  h.page.onHide();
+  h.finishCanvasQuery();
+
+  assert.equal(h.page.data.showSignupConfetti, false);
+  assert.equal(h.animations.length, 0);
+});
+
+test("signup confetti rises from the bottom, spreads across the screen, and drifts down slowly", () => {
+  let seed = 5213;
+  const particles = createParticles(() => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return seed / 4294967296;
+  });
+  assert.equal(particles.length, 120);
+
+  const columns = Array(8).fill(0);
+  for (const particle of particles) {
+    assert.ok(sampleParticle(particle, particle.delay).y > 1, "starts below the bottom edge");
+    if (particle.launchY > 0.85) {
+      assert.ok(sampleParticle(particle, particle.delay + 0.5).y < 0.31, "the stronger launches reach the upper third");
+    }
+    const spread = sampleParticle(particle, 1.5);
+    if (spread && spread.y >= 0 && spread.y < 1 && spread.x >= 0 && spread.x < 1) {
+      columns[Math.floor(spread.x * columns.length)]++;
+    }
+    const later = sampleParticle(particle, 3.5);
+    if (spread && later) {
+      const fallPerSecond = (later.y - spread.y) / 2;
+      assert.ok(fallPerSecond >= 0.08 && fallPerSecond <= 0.15, "falls within the intended range of screen heights per second");
+    }
+  }
+  assert.ok(Math.min(...columns) >= 7 && Math.max(...columns) <= 22, String(columns));
 });
 
 test("project members contain only that project's registrations, including people who joined several projects", () => {

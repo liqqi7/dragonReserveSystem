@@ -76,7 +76,7 @@ def test_memory_upgrade_preserves_existing_data_and_rejects_destructive_rollback
     assert_success(migrate("upgrade", "20261010_0023"))
     with engine.begin() as connection:
         connection.execute(text("INSERT INTO users (id,nickname,role,wechat_openid) VALUES (1,'preserve','admin','memory-migration-probe')"))
-    assert_success(migrate("upgrade", "head"))
+    assert_success(migrate("upgrade", "20261011_0024"))
     with engine.connect() as connection:
         assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "20261011_0024"
         assert tuple(connection.execute(text("SELECT nickname,role,wechat_openid FROM users WHERE id=1")).one()) == (
@@ -87,6 +87,26 @@ def test_memory_upgrade_preserves_existing_data_and_rejects_destructive_rollback
     assert result.returncode != 0 and "preserve submissions" in result.stderr
     with engine.connect() as connection:
         assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "20261011_0024"
+        assert connection.scalar(text("SELECT nickname FROM users WHERE id=1")) == "preserve"
+
+
+def test_merge_memory_and_plays_from_both_production_heads(migration_db):
+    engine, migrate = migration_db
+    assert_success(migrate("upgrade", "20261011_0024"))
+    assert_success(migrate("upgrade", "20261025_0025"))
+    with engine.begin() as connection:
+        assert set(connection.execute(text("SELECT version_num FROM alembic_version")).scalars()) == {
+            "20261011_0024", "20261025_0025"
+        }
+        connection.execute(text("INSERT INTO users (id,nickname,role,wechat_openid) VALUES (1,'preserve','admin','merge-probe')"))
+    tables = set(inspect(engine).get_table_names())
+    assert {"memories", "boardgame_plays"} <= tables
+
+    assert_success(migrate("upgrade", "head"))
+
+    assert set(inspect(engine).get_table_names()) == tables
+    with engine.connect() as connection:
+        assert connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one() == "20261027_0026"
         assert connection.scalar(text("SELECT nickname FROM users WHERE id=1")) == "preserve"
 
 

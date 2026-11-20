@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const {spawnSync} = require('node:child_process');
-const {initialize} = require('../../scripts/init_miniprogram_config.cjs');
+const {initialize, initializeProduction} = require('../../scripts/init_miniprogram_config.cjs');
 
 function checkout(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'dragon-config-checkout-'));
@@ -43,6 +43,31 @@ test('configuration initialization preserves existing machine settings byte for 
   fs.writeFileSync(file, original);
   assert.equal(initialize(root, 'http://127.0.0.1:8999/api/v1').created, false);
   assert.equal(fs.readFileSync(file, 'utf8'), original);
+});
+
+test('production initialization generates and verifies the official API module', t => {
+  const root = checkout(t);
+  assert.equal(initializeProduction(root).created, true);
+  const config = require(path.join(root, 'miniprogram/services/config.js'));
+  assert.equal(config.getApiBaseUrl(), 'https://dragon.liqqihome.top/api/v1');
+  assert.equal(config.getApiEnvironment(), 'production');
+  assert.equal(initializeProduction(root).created, false);
+});
+
+test('production initialization stops on test config without overwriting it', t => {
+  const root = checkout(t), file = path.join(root, 'miniprogram/services/config.js');
+  initialize(root);
+  const localConfig = fs.readFileSync(file, 'utf8');
+  assert.throws(() => initializeProduction(root), /与正式模板不一致/);
+  assert.equal(fs.readFileSync(file, 'utf8'), localConfig);
+});
+
+test('production initialization refuses a template pointing to a test API', t => {
+  const root = checkout(t), file = path.join(root, 'miniprogram/services/config.js');
+  const template = file + '.template';
+  fs.writeFileSync(template, fs.readFileSync(template, 'utf8').replace('https://dragon.liqqihome.top/api/v1', 'http://127.0.0.1:8001/api/v1'));
+  assert.throws(() => initializeProduction(root), /必须指向生产 HTTPS/);
+  assert.equal(fs.existsSync(file), false);
 });
 
 test('custom API initialization keeps the media helpers and rejects credential-bearing URLs', t => {

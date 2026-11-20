@@ -376,3 +376,7 @@
 </page-container>
 
 <create-access-dialog id="session-expired-dialog" />
+
+<view wx:if="{{showSignupConfetti}}" class="signup-confetti" aria-hidden="true">
+  <canvas id="signup-confetti-canvas" class="signup-confetti-canvas" type="2d"></canvas>
+</view>

@@ -27,9 +27,13 @@ def update_current_user(db: Session, user: User, payload: UpdateCurrentUserReque
 
     avatar_url = payload.avatar_url
     if avatar_url and avatar_url != user.avatar_url:
-        avatar_path = urlparse(avatar_url).path
-        expected_prefix = f"{settings.media_url_prefix.rstrip('/')}/avatars/"
-        if not avatar_path.startswith(expected_prefix):
+        avatar = urlparse(avatar_url)
+        public_base = urlparse(settings.public_base_url)
+        expected_prefix = f"{public_base.path.rstrip('/')}{settings.media_url_prefix.rstrip('/')}/avatars/"
+        if not avatar.path.startswith(expected_prefix) or (
+            public_base.netloc and avatar.netloc
+            and (avatar.scheme, avatar.netloc) != (public_base.scheme, public_base.netloc)
+        ):
             raise ValidationAppError("Avatar must be uploaded through the avatar upload endpoint")
 
     user.nickname = payload.nickname
