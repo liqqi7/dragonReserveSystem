@@ -630,6 +630,7 @@ test("prototype key sizes, colors, typography and action layout do not regress",
   assert.doesNotMatch(wxss, /font-family\s*:/);
   assert.doesNotMatch(wxml, /fact-value-time/);
   assert.match(wxss, /\.participant-separator\s*\{[^}]*font-size:\s*30\.77rpx;[^}]*font-weight:\s*500;[^}]*line-height:\s*44\.23rpx;/s);
+  assert.match(wxss, /\.project-count\s*>\s*text\s*\{[^}]*line-height:\s*38\.46rpx;/s);
   assert.match(wxss, /\.fact-participants\s*\{[^}]*flex:\s*0 0 180\.77rpx;/s);
   assert.match(wxss, /\.location-card\s*\{[^}]*height:\s*388\.46rpx;/s);
   assert.match(wxss, /\.location-name\s*\{[^}]*font-size:\s*26\.92rpx;/s);

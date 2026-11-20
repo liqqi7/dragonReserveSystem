@@ -1309,6 +1309,7 @@ button.bottom-primary {
 .project-name { flex: 1; min-width: 0; font-size: 26.92rpx; font-weight: 600; color: #111827; }
 .project-participants { display: flex; align-items: center; gap: 11.54rpx; flex-shrink: 0; }
 .project-count { display: flex; align-items: center; gap: 5.77rpx; font-size: 26.92rpx; font-weight: 600; color: #111827; }
+.project-count > text { line-height: 38.46rpx; }
 .project-count-separator { color: #9ca3af; font-weight: 500; }
 
 /* 报名选择抽屉与 FDMKv / UQw8P 共用同一组状态样式。 */
